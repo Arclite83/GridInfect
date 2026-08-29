@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GridInfect</string>
+    <string name="app_id">478989149128</string>
+    <string name="achievement_cant_stop_the_signal">CgkIyMfpr_gNEAIQAQ</string>
+    <string name="achievement_2_bits">CgkIyMfpr_gNEAIQBQ</string>
+    <string name="achievement_firewall">CgkIyMfpr_gNEAIQAg</string>
+    <string name="achievement_antivirus">CgkIyMfpr_gNEAIQAw</string>
+    <string name="achievement_system_restore">CgkIyMfpr_gNEAIQBA</string>
+    <string name="leaderboard_beginner_free_play">CgkIyMfpr_gNEAIQBw</string>
+    <string name="leaderboard_easy_free_play">CgkIyMfpr_gNEAIQCA</string>
+    <string name="leaderboard_medium_free_play">CgkIyMfpr_gNEAIQCQ</string>
+    <string name="leaderboard_hard_free_play">CgkIyMfpr_gNEAIQCg</string>
+    <string name="leaderboard_challenging_free_play">CgkIyMfpr_gNEAIQCw</string>
+    
+    <string name="gamehelper_sign_in_failed">Failed to sign in. Please check your network connection and try again.</string>
+    <string name="gamehelper_app_misconfigured">The application is incorrectly configured. Check that the package name and signing certificate match the client ID created in Developer Console. Also, if the application is not yet published, check that the account you are trying to sign in with is listed as a tester account. See logs for more information.</string>
+    <string name="gamehelper_license_failed">License check failed.</string>
+    <string name="gamehelper_unknown_error">Unknown error.</string>
+</resources>
