@@ -1,0 +1,24 @@
+# Unity generated
+/Library/
+/Temp/
+/Obj/
+/Logs/
+/UserSettings/
+/Build/
+/Builds/
+/MemoryCaptures/
+/Recordings/
+
+# Everything under ProjectSettings except what we pin is Unity-generated
+# with sane defaults on first open; commit more of it from the Mac once the
+# editor has written it.
+
+# IDE / OS
+*.csproj
+*.sln
+*.suo
+*.user
+.vs/
+.idea/
+.DS_Store
+crashlytics-build.properties

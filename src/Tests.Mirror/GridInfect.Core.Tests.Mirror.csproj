@@ -1,0 +1,27 @@
+<!--
+  Mirror test project: runs the same NUnit tests Unity's edit-mode runner
+  executes (unity/Assets/_Project/Tests/EditMode), headless via `dotnet test`.
+  Tests locate docs/test_vectors.json by walking up to the repo root, so no
+  fixtures are copied.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>GridInfect.Core.Tests.Mirror</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../unity/Assets/_Project/Tests/EditMode/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Core.Mirror/GridInfect.Core.Mirror.csproj" />
+  </ItemGroup>
+</Project>

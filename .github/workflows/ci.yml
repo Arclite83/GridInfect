@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Vectors self-verify
+        run: python3 docs/tools/verify_test_vectors.py
+
+      - name: Derived files are current
+        run: |
+          python3 tools/bake_levels.py
+          python3 tools/gen_undo_fixtures.py
+          git diff --exit-code -- unity/Assets/_Project/Core/Levels/ClassicLevelData.g.cs \
+                                  unity/Assets/_Project/Tests/EditMode/UndoFixtures.g.cs
+
+      - name: Build and test (mirror of Unity edit-mode suite)
+        run: dotnet test src/Tests.Mirror/GridInfect.Core.Tests.Mirror.csproj --nologo
+
+      - name: Adapter compile check against Unity API stubs
+        run: dotnet build src/Game.Mirror/GridInfect.Game.Mirror.csproj --nologo

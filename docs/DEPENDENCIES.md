@@ -3,6 +3,37 @@
 Date: 2026-08-30. Companion: [`REQUIREMENTS.md`](REQUIREMENTS.md) — every
 entry here cites the requirement(s) it exists for (§10 has the full map).
 
+> **Baseline delta (2026-08-30, build-over-buy pass — see
+> [`../ARCHITECTURE.md`](../ARCHITECTURE.md)).** The shipped baseline shrank
+> wave 1 below what §3 specifies; packaged products earn their place when a
+> requirement actually lands:
+>
+> - **No `com.unity.nuget.newtonsoft-json`** — a ~300-line `MiniJson` in
+>   `Bloodhound.Engine` covers vectors, saves, and the action log.
+> - **No `com.unity.inputsystem`** — the baseline drag is legacy
+>   `UnityEngine.Input` (single-pointer, satisfying R-115); revisit only if a
+>   real input requirement outgrows it.
+> - **URP is in the baseline, adopted from code** — built-in is in
+>   maintenance, so the manifest pins `com.unity.render-pipelines.universal`
+>   (the editor locks core-package versions to itself; the pinned number
+>   auto-corrects on first open) and an editor script creates and assigns the
+>   pipeline asset — no template, no manual setup. Forward renderer for the
+>   procedural baseline; the §2 2D Renderer (which needs a Light2D) arrives
+>   with the art overhaul. HDRP was never a candidate: it does not ship on
+>   mobile.
+> - Wave 1 as shipped: URP + `com.unity.test-framework`, nothing else.
+> - The §6 assembly layout gained a fourth assembly: `Bloodhound.Engine`, the
+>   reusable game-agnostic kernel under `GridInfect.Core`.
+>   [`../ARCHITECTURE.md`](../ARCHITECTURE.md) §1 is now authoritative for the
+>   module graph.
+>
+> §4–§11 (ads/consent/IAP/analytics SDKs, Asset Store candidates, project
+> settings, version pins) are untouched and remain the plan of record for
+> their waves. The Asset Store list stays a *candidate* list under
+> build-over-buy: PrimeTween-class utilities are cheap wins; the others get
+> re-justified against "implement the needed fraction ourselves" when the
+> overhaul begins.
+
 Version-verification note: this session's proxy blocks `unity.com`,
 `docs.unity3d.com`, `developers.google.com`, and `assetstore.unity.com`
 directly; versions below were verified today via the Unity package registry
