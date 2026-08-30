@@ -43,14 +43,14 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 | R-104 | MVP | Placement per RULES §3: drop legal iff cell value ∈ {1,4} and no other placed piece occupies it; any illegal drop returns the piece to its tray slot (clearing it if it was placed); touching a piece unplaces it instantly; `setPiece` is clear-then-place. | RULES §3 |
 | R-105 | MVP | Infection spread bit-exact per RULES §4: synchronous, offset 1–10 outer loop, L,R,U,D inner order; walls/switches/traps stop a direction; void, edges, and infected cells are passed over without stopping; 99 cells skipped without stopping; event/repel-queue ordering preserved (offset-major, then L,R,U,D). | RULES §4 |
 | R-106 | MVP | Deferred resolution 0.3 s after a successful drop, in this order: win check first (a winning placement ignores tripped traps and queued repels), else full reset if tripped, else run repels in queue order. | RULES §4.1 |
-| R-107 | MVP | Resolution cancellation preserved: touching any piece within the 0.3 s window cancels the pending resolution entirely (no win check, no reset, no repels); discarded state clears at the next placement. Keeps levels 41 and 87 winnable exactly as shipped. | RULES §4.1; PORT_NOTES §2; test_vectors `requires_reset_cancel_exploit` |
+| R-107 | MVP | Resolution is **never cancellable**. The original's touch-cancellation (`LevelMenuScene.cpp:693`, `stopAllActions` on the 0.3 s timer node) is a confirmed bug and is not ported — resolution always runs, win check first. Verified consequence (2026-08-30): **no level depends on the bug** — exhaustive search + replayed clean solutions prove ids 40/86 winnable by ordering their single trap-tripping placement last (RULES §4.1 correction). A touch landing inside the 0.3 s beat fast-forwards the pending resolution (it resolves immediately, then the touch is processed) so input never queues or drops. | RULES §4.1 (corrected); fast-forward choice **NEW — needs approval** |
 | R-108 | MVP | Repel semantics per RULES §5: origin = switch cell, direction = opposite of incoming spread; walk 1–10 un-infecting 4→1; stopped only by a placed piece; queue cleared only at next placement (running it does not empty it). | RULES §5 |
 | R-109 | MVP | Reset trap semantics per RULES §6: on non-winning resolution, all 4→1 and all pieces return to tray; static cells untouched. | RULES §6 |
 | R-110 | MVP | Undo semantics per RULES §7: instant clear, row/column retraction with 99 marking, re-propagation of remaining pieces in piece-index order with *synchronous* resolution per piece, repel-queue accumulation across undos, mid-undo win possible. | RULES §7 |
 | R-111 | MVP | Win when no cell has value 1; not all pieces need placing; solved event drives progression. | RULES §8 |
 | R-112 | MVP | No loss condition, timer failure, or move limit; unlimited free undo; in-level reset button = full reset while unsolved, fresh reload once solved. | RULES §9; MODES §1.1 |
 | R-113 | MVP | The core exposes board-change / level-solved / pieces-unbound as plain C# events; the Unity layer is a pure listener (no game logic in renderers except the cancellable 0.3 s timer, which the Unity layer owns). | RULES §10; PORT_NOTES §2, §6 |
-| R-114 | MVP | Mechanical equivalence proven by replaying all 128 vectors — every per-step golden board, including `pending_check_cancelled` steps — in edit-mode tests. | test_vectors.json; user constraint |
+| R-114 | MVP | Mechanical equivalence proven by replaying all 128 vectors — every per-step golden board — in edit-mode tests. The stored solutions for ids 40/86 still record the original's exploit; run `docs/tools/regen_clean_solutions_40_86.py` once to regenerate those two entries exploit-free (verified clean solutions in RULES §4.1 correction), after which no vector anywhere models the cancellation. | test_vectors.json; user constraint |
 | R-115 | MVP | Single active touch: one drag at a time, additional simultaneous touches ignored. The original's multi-touch behavior is UNKNOWN in the spec; this is the port's decision. | **NEW — needs approval** (resolves RULES UNKNOWN) |
 
 ## 2. Classic progression
@@ -139,7 +139,7 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 
 | ID | Pri | Requirement | Trace |
 |---|---|---|---|
-| R-1101 | MVP | Model state changes are legible the same frame they occur; any added cosmetic animation must neither obscure board state nor stretch/shrink the 0.3 s cancellable resolution window (R-107 depends on it). | ASSETS §6; RULES §4.1 |
+| R-1101 | MVP | Model state changes are legible the same frame they occur; any added cosmetic animation must not obscure board state. The 0.3 s resolution beat is presentation only — input during it fast-forwards resolution (R-107), it is never an input-cancellation window. | ASSETS §6; RULES §4.1 (corrected) |
 | R-1102 | LATER | The ASSETS §6 timing table (0.10 s drop snap, 0.15 s tray return, 0.5 s scene fades, etc., all linear) is the starting values for the new presentation — free to change, but changes are deliberate, not accidental. | ASSETS §6 |
 | R-1103 | MVP | Landscape-only; the 6×11 board plus 8-slot tray fits every supported aspect ratio via resolution-relative layout. | ASSETS §3, §6; PORT_NOTES §4 |
 | R-1104 | MVP | Target frame rate 60 (the original targeted 90; nothing in a turn-based puzzle needs it, and battery + thermals on an ad-supported title argue down). | **NEW — needs approval** |
@@ -168,6 +168,7 @@ Decisions the ingest specs cannot source. Each is my recommendation; veto
 individually.
 
 1. **R-115** — single-touch input (original multi-touch behavior unknowable from the repo).
+1a. **R-107** — the cancellation bug is *not* ported (you confirmed bug); the sub-decision needing approval is fast-forward-on-touch during the 0.3 s beat (vs. briefly ignoring input).
 2. **R-502** — fresh JSON save format, no legacy `GridInfectSave.txt` import.
 3. **R-601/602/604/605** — AdMob; interstitial-on-solve as the only MVP format (3rd-solve grace, 90 s cap); demo-ID discipline; Play ad declarations.
 4. **R-603** — rewarded "skip level" (adds a mechanic; easiest honest reward sink).
@@ -185,7 +186,7 @@ individually.
 From the specs' own UNKNOWN sections, still open:
 
 - **Original multi-touch behavior** (RULES) — bypassed by decision R-115.
-- **Whether the 0.3 s cancellation was intentional** (RULES) — moot: R-107 preserves the behavior either way.
+- **Whether the 0.3 s cancellation was intentional** (RULES) — resolved 2026-08-30: the author confirmed it is a bug; R-107 removes it, and an independent exhaustive search proved no level requires it (RULES §4.1 correction).
 - **Achievement/leaderboard display names, icons, descriptions** (MODES §6) — only IDs survive; new names must be authored for R-205/R-306.
 - **Whether the old Play/App Store listings still exist and who controls them** (MODES §6) — decides new-app vs. update, and R-1203.
 - **`POL-pencil-maze-long.wav` license and `Overhaul.ttf` provenance** (ASSETS §8) — sidestepped by not shipping them (R-902); reopen only if you want the original track back.

@@ -194,9 +194,11 @@ Edit-mode only, editor on macOS, no device, no player build (R-1302):
   root and loads `docs/test_vectors.json` directly — one source of truth, no
   copied fixture to drift.
 - For each of the 128 levels: construct the board, apply the solution
-  placements through the Core API (honoring `pending_check_cancelled` steps
-  via the Core's resolution API), assert every `board_after` and the final
-  win — the C# mirror of `docs/tools/verify_test_vectors.py`.
+  placements through the Core API, resolve after every placement (the
+  cancellation bug is not ported — R-107), assert every `board_after` and
+  the final win — the C# mirror of `docs/tools/verify_test_vectors.py`.
+  Run `docs/tools/regen_clean_solutions_40_86.py` once first so the
+  vectors for ids 40/86 are exploit-free (RULES §4.1 correction).
 - Runs in the Test Runner window and headless:
   `Unity -batchmode -runTests -testPlatform EditMode -projectPath unity`.
 

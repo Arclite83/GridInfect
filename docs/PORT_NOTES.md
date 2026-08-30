@@ -40,13 +40,17 @@ replace. Paths relative to `grid-infect-cocos2dx/`.
 - The 0.3 s deferred resolution (`RULES.md` §4.1) is implemented as a
   `CCSequence(CCDelayTime(0.3), CCCallFuncN)` **running on a 1×1 sprite
   (tag 999)**, and is cancelled by `stopAllActions()` on that sprite in
-  `ccTouchBegan` (`Renderers/LevelMenuScene.cpp`). This is not an
-  incidental animation: cancellation suppresses the win check, repels,
-  and the board reset for the pending placement, and levels 41/87
-  (ids 40/86) are winnable **only** through it (`test_vectors.json`).
-  A Unity port needs an explicit, cancellable timer with the same
-  semantics — or an explicit decision to diverge, which changes the
-  winnability of two shipped levels and softens every reset-trap level.
+  `ccTouchBegan` (`Renderers/LevelMenuScene.cpp`). Cancellation
+  suppresses the win check, repels, and the board reset for the pending
+  placement. **Correction (2026-08-30):** this note previously said
+  levels 41/87 (ids 40/86) are winnable only through the cancellation —
+  that was wrong; both are winnable cleanly by placing their single
+  necessary trap-tripping piece last, where the win-check-before-reset
+  ordering makes the trip free (see `RULES.md` §4.1 correction for
+  verified solutions). The author has confirmed the cancellation is a
+  bug: the Unity port does **not** reproduce it — resolution always
+  runs. The only behavior change is that reset traps always fire on
+  non-winning placements, which is the intended rule.
 - The synchronous re-resolution during undo (`Game::clearPiece` calling
   `delayThenCheckForWin()` directly, per remaining piece) bypasses the
   0.3 s delay entirely. Port both paths, not one unified one, if
