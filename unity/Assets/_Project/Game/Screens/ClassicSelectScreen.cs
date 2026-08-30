@@ -3,11 +3,6 @@ using UnityEngine;
 
 namespace GridInfect.Game
 {
-    /// <summary>
-    /// Level select: 128 levels, 32 per page (8 × 4), 4 pages; the page
-    /// persists for the app session (MODES §1.1). Locked levels are disabled
-    /// and dimmed; level 1 is always playable.
-    /// </summary>
     public sealed class ClassicSelectScreen : AppScreen
     {
         const int Columns = 8;

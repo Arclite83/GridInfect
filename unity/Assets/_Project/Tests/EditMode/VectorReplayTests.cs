@@ -5,13 +5,9 @@ using NUnit.Framework;
 
 namespace GridInfect.Core.Tests
 {
-    /// <summary>
-    /// Mechanical-equivalence proof (REQUIREMENTS R-114): every one of the
-    /// 128 shipped levels replays its recorded solution through the real
-    /// action pipeline, asserting every per-placement golden board and the
-    /// final win. A second pass replays the captured action log into fresh
-    /// state — the log, not the live session, is the load-bearing record.
-    /// </summary>
+    // The equivalence proof: all 128 shipped levels replay their recorded
+    // solutions through the action pipeline against every per-step golden
+    // board, then replay again from the captured action log.
     [TestFixture]
     public class VectorReplayTests
     {

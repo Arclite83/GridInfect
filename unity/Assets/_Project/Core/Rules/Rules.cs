@@ -1,32 +1,18 @@
 namespace GridInfect.Core
 {
-    /// <summary>
-    /// The mechanical rules of Grid Infect — a line-faithful port of
-    /// Game.cpp (grid-infect-cocos2dx/Classes/Core), specified in
-    /// docs/RULES.md and proven equivalent by replaying every per-step golden
-    /// board in docs/test_vectors.json.
-    ///
-    /// These are the pure decision/mutation functions actions apply. Nothing
-    /// here is public policy: only actions call into this class.
-    ///
-    /// Deliberate divergence from the original, none of which changes board
-    /// math: the 0.3 s resolution-cancellation quirk is not ported (confirmed
-    /// bug, REQUIREMENTS R-107) — resolution state is modeled explicitly as
-    /// LevelSession.ResolutionPending and always resolves.
-    /// </summary>
+    // Line-faithful port of Game.cpp (grid-infect-cocos2dx/Classes/Core),
+    // spec in docs/RULES.md, proven by replaying every golden board in
+    // docs/test_vectors.json. Only actions call these mutators.
     public static class Rules
     {
-        /// <summary>Game::getBoardPosition — -1 when out of bounds.</summary>
+        // Game::getBoardPosition — -1 out of bounds
         public static int GetBoardPosition(LevelSession s, int i, int j)
         {
             if (!Grid.InBounds(i, j)) return -1;
             return s.Board[Grid.Loc(i, j)];
         }
 
-        /// <summary>
-        /// Game::changeBoard — writes only in-bounds, non-void cells whose
-        /// value differs; fires the cell event on the placement path.
-        /// </summary>
+        // Game::changeBoard — writes only in-bounds, non-void, differing cells
         public static bool ChangeBoard(LevelSession s, int i, int j, byte value, bool fireEvents)
         {
             if (!Grid.InBounds(i, j)) return false;
@@ -40,11 +26,8 @@ namespace GridInfect.Core
             return false;
         }
 
-        /// <summary>
-        /// LevelMenu::ccTouchEnded placement legality: the target must hold 1
-        /// or 4, the piece must be in the tray, and no other placed piece may
-        /// occupy the cell.
-        /// </summary>
+        // LevelMenu::ccTouchEnded legality: cell holds 1 or 4, piece in tray,
+        // no other placed piece on the cell
         public static bool CanPlace(LevelSession s, int pieceIndex, int i, int j)
         {
             if (pieceIndex < 0 || pieceIndex >= s.Pieces.Length) return false;
@@ -57,14 +40,11 @@ namespace GridInfect.Core
             return bp == Cell.Active || bp == Cell.Infected;
         }
 
-        /// <summary>
-        /// Game::setPiece — clear-then-place, reset the repel queue and trip
-        /// flag, spread. Resolution (win check / reset / repels) is a separate
-        /// step: the placement leaves the session ResolutionPending.
-        /// </summary>
+        // Game::setPiece — clear-then-place, fresh repel queue and trip flag,
+        // spread now; consequences wait for board.resolve
         public static void SetPiece(LevelSession s, int pieceIndex, int i, int j)
         {
-            ClearPiece(s, pieceIndex); // no-op for a tray piece; literal safety in the original
+            ClearPiece(s, pieceIndex);
 
             s.RepelQueue.Clear();
             s.ResetTripped = false;
@@ -77,20 +57,15 @@ namespace GridInfect.Core
             s.ResolutionPending = true;
         }
 
-        /// <summary>
-        /// Game::delayThenCheckForWin, run via the board.resolve action after
-        /// the presentation beat. Order is contract (RULES.md §4.1): win check
-        /// first — a winning placement ignores tripped traps and queued
-        /// repels — else full reset if tripped, else repels in queue order.
-        /// Running the queue does not empty it (it is cleared at the next
-        /// placement).
-        /// </summary>
         public static void Resolve(LevelSession s)
         {
             s.ResolutionPending = false;
             ResolveCore(s);
         }
 
+        // Game::delayThenCheckForWin — order is contract (RULES §4.1): win
+        // first, else reset if tripped, else repels; running the queue does
+        // not empty it (only the next placement does)
         static void ResolveCore(LevelSession s)
         {
             bool win = CheckForWin(s);
@@ -111,14 +86,10 @@ namespace GridInfect.Core
             }
         }
 
-        /// <summary>
-        /// Game::clearPiece — the undo path (RULES.md §7), ported literally:
-        /// row/column retraction with 99 marking, re-propagation of the
-        /// remaining pieces in piece-index order each followed by a
-        /// synchronous resolution (which re-runs the still-uncleared repel
-        /// queue and can win or full-reset mid-undo), then 99 reversion and a
-        /// renderer resync event per non-void cell.
-        /// </summary>
+        // Game::clearPiece — undo (RULES §7): row/col retraction with 99
+        // marks, re-propagate remaining pieces in index order with a
+        // synchronous resolution each (queue accumulates; can win or full-
+        // reset mid-undo), then 99 reversion and a resync event per cell
         public static void ClearPiece(LevelSession s, int pieceIndex)
         {
             if (pieceIndex < 0 || pieceIndex >= s.Pieces.Length) return;
@@ -153,12 +124,9 @@ namespace GridInfect.Core
             }
         }
 
-        /// <summary>
-        /// Game::propagatePiece — offset-major rings 1..10, inner direction
-        /// order L,R,U,D. Walls/switches/traps stop a direction; 99 is skipped
-        /// without stopping; voids, edges, and infected cells are written over
-        /// (no-op) without stopping — infection jumps gaps.
-        /// </summary>
+        // Game::propagatePiece — offset-major rings 1..10, inner order
+        // L,R,U,D; 2/3/5 stop a direction, 99 skips without stopping, voids
+        // and edges are passed over (infection jumps gaps)
         public static void PropagatePiece(LevelSession s, int pieceIndex, bool fireEvents)
         {
             ref PieceState piece = ref s.Pieces[pieceIndex];
@@ -170,7 +138,7 @@ namespace GridInfect.Core
             {
                 for (int d = 0; d < 4; d++)
                 {
-                    Dir dir = (Dir)d; // enum order L,R,U,D matches the fixed inner order
+                    Dir dir = (Dir)d;
                     if (stopped[d] || !TileArms.Has(piece.Tile, dir)) continue;
 
                     int i = piece.I + TileArms.Di(dir) * offset;
@@ -192,7 +160,7 @@ namespace GridInfect.Core
                     }
                     else if (bp == Cell.UndoMark)
                     {
-                        // skip: do not change, do not stop
+                        // skip, don't stop
                     }
                     else
                     {
@@ -202,11 +170,8 @@ namespace GridInfect.Core
             }
         }
 
-        /// <summary>
-        /// Game::propagateRepel — walk 1..10 from the switch; the whole repel
-        /// stops at the first placed piece; 4 -> 1 along the way; nothing else
-        /// stops it. Events always fire on this path (as in the original).
-        /// </summary>
+        // Game::propagateRepel — 4 -> 1 along the walk; only a placed piece
+        // stops it (walls and voids are walked over)
         public static void PropagateRepel(LevelSession s, Repel repel)
         {
             for (int offset = 1; offset <= Grid.SpreadRange; offset++)
@@ -217,7 +182,7 @@ namespace GridInfect.Core
                 for (int k = 0; k < s.Pieces.Length; k++)
                 {
                     if (s.Pieces[k].Placed && s.Pieces[k].I == i && s.Pieces[k].J == j)
-                        return; // hit a piece: the entire repel is done
+                        return;
                 }
 
                 if (GetBoardPosition(s, i, j) == Cell.Infected)
@@ -227,7 +192,8 @@ namespace GridInfect.Core
             }
         }
 
-        /// <summary>Game::checkForWin — solved when no cell holds value 1.</summary>
+        // Game::checkForWin — only value 1 blocks; 99 marks don't, so a
+        // mid-undo check can "win" early (faithful quirk, ARCHITECTURE §5)
         public static bool CheckForWin(LevelSession s)
         {
             for (int loc = 0; loc < Grid.Cells; loc++)
@@ -237,12 +203,8 @@ namespace GridInfect.Core
             return true;
         }
 
-        /// <summary>
-        /// Game::resetBoard — undo's row/column retraction: on the cleared
-        /// piece's row or column, 4 -> 1 and 1 -> 99 (the 99 mark protects
-        /// cells that were uninfected from re-propagation). Direct writes, no
-        /// events (the undo path resyncs at the end).
-        /// </summary>
+        // Game::resetBoard — on the cleared piece's row/col: 4 -> 1, and
+        // 1 -> 99 so re-propagation can't infect what was uninfected
         public static void ResetBoard(LevelSession s, int pieceI, int pieceJ)
         {
             for (int i = 0; i < Grid.Height; i++)
@@ -257,11 +219,7 @@ namespace GridInfect.Core
             }
         }
 
-        /// <summary>
-        /// Game::fullReset — every infected cell reverts to active (event per
-        /// cell), every piece returns to the tray, pieces-unbound fires.
-        /// Static cells are untouched.
-        /// </summary>
+        // Game::fullReset — 4 -> 1 everywhere, all pieces to the tray
         public static void FullReset(LevelSession s)
         {
             for (int i = 0; i < Grid.Height; i++)

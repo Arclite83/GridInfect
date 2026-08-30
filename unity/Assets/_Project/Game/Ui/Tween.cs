@@ -4,11 +4,6 @@ using UnityEngine;
 
 namespace GridInfect.Game
 {
-    /// <summary>
-    /// Minimal linear tween runner (the original animated exclusively with
-    /// linear CCMoveTo — ASSETS.md §6). Positions only; driven from
-    /// GameApp.Update. ~40 lines instead of a tween package.
-    /// </summary>
     public sealed class TweenRunner
     {
         sealed class Move

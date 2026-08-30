@@ -2,17 +2,8 @@ using UnityEngine;
 
 namespace GridInfect.Game
 {
-    /// <summary>
-    /// Procedural UI primitives — sprites from one shared white texture,
-    /// text via TextMesh with a built-in font. Zero asset and zero package
-    /// dependencies: the whole baseline presentation is built in code so the
-    /// project runs on a fresh clone with no imports (build over buy; the art
-    /// overhaul replaces looks, not structure).
-    ///
-    /// Coordinate system: one orthographic camera, 1 world unit = 1 screen
-    /// pixel, origin at screen center. All layout is percentage-of-screen,
-    /// as in the original.
-    /// </summary>
+    // Procedural primitives: one white texture and a built-in font, zero assets.
+    // 1 world unit = 1 screen pixel, origin at screen center.
     public static class Ui
     {
         static Sprite _whiteSprite;
@@ -58,7 +49,6 @@ namespace GridInfect.Game
             }
         }
 
-        /// <summary>A solid rectangle: sizePx in pixels, position set by the caller.</summary>
         public static GameObject MakeRect(string name, Transform parent, Vector2 sizePx, Color color, int sortingOrder)
         {
             var go = new GameObject(name);
@@ -71,7 +61,6 @@ namespace GridInfect.Game
             return go;
         }
 
-        /// <summary>Centered text; heightPx approximates the glyph height in pixels.</summary>
         public static TextMesh MakeText(string name, Transform parent, string text, float heightPx, Color color, int sortingOrder)
         {
             var go = new GameObject(name);
@@ -97,7 +86,6 @@ namespace GridInfect.Game
         }
     }
 
-    /// <summary>A tappable rectangle: world-space bounds plus a callback.</summary>
     public sealed class UiButton
     {
         public GameObject Root;
@@ -107,7 +95,6 @@ namespace GridInfect.Game
 
         public bool HitTest(Vector2 worldPoint) => Enabled && Bounds.Contains(worldPoint);
 
-        /// <summary>A labeled rectangular button with the standard chrome.</summary>
         public static UiButton Make(Transform parent, string label, Vector2 center, Vector2 sizePx,
             Color background, Color textColor, System.Action onClick, int sortingOrder = 20)
         {

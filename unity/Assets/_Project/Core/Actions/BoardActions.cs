@@ -2,11 +2,6 @@ using Bloodhound.Engine;
 
 namespace GridInfect.Core
 {
-    /// <summary>
-    /// piece.place — drop a tray piece on a legal cell and spread. Leaves the
-    /// session ResolutionPending; the presentation beat ends with
-    /// board.resolve (never skipped, only fast-forwarded).
-    /// </summary>
     public sealed class PlacePieceAction : GameAction<GameState>
     {
         public override string Name => "piece.place";
@@ -31,10 +26,6 @@ namespace GridInfect.Core
         }
     }
 
-    /// <summary>
-    /// board.resolve — the deferred consequence of the last placement:
-    /// win check first, else reset if tripped, else repels in queue order.
-    /// </summary>
     public sealed class ResolveBoardAction : GameAction<GameState>
     {
         public override string Name => "board.resolve";
@@ -53,10 +44,6 @@ namespace GridInfect.Core
         }
     }
 
-    /// <summary>
-    /// piece.clear — undo: pick a placed piece off the board (RULES.md §7).
-    /// Free and unlimited.
-    /// </summary>
     public sealed class ClearPieceAction : GameAction<GameState>
     {
         public override string Name => "piece.clear";

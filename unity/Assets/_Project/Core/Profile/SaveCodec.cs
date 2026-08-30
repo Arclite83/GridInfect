@@ -3,17 +3,7 @@ using Bloodhound.Engine;
 
 namespace GridInfect.Core
 {
-    /// <summary>
-    /// Versioned save serialization for <see cref="Profile"/> — pure string in
-    /// / string out; where the file lives is the persistence adapter's
-    /// business (REQUIREMENTS R-501/R-502: fresh versioned JSON format, no
-    /// legacy GridInfectSave.txt import).
-    ///
-    /// Change policy is expand/contract: new fields are additive with
-    /// defaults on read; removing or re-typing a field requires a version
-    /// bump plus a reader for every version still in the wild. Unknown keys
-    /// are ignored on read and dropped on the next write.
-    /// </summary>
+    // Expand/contract: new fields are additive with read defaults; unknown keys are ignored.
     public static class SaveCodec
     {
         public const int Version = 1;
@@ -43,11 +33,6 @@ namespace GridInfect.Core
             });
         }
 
-        /// <summary>
-        /// Parse a save. Corrupt or unreadable input yields a fresh profile
-        /// (progress loss beats a crash loop; the adapter logs it). Fields are
-        /// read tolerantly: missing keys default, extra keys are ignored.
-        /// </summary>
         public static Profile Load(string json)
         {
             var profile = new Profile();

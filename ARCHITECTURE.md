@@ -113,8 +113,13 @@ specified in `docs/RULES.md`. Proof of equivalence is layered:
    against a second independent port — `tools/gen_undo_fixtures.py` extends
    the Python reference with a literal `clearPiece` and bakes expected
    outcomes into `UndoFixtures.g.cs`.
-3. **Generator**: structural invariants, the GENERATOR §5 solvability proof
-   replayed through the real rules, and golden seed lock-ins.
+3. **Generator**: the GENERATOR §5 solvability proof replayed through the
+   real rules, and golden seed lock-ins.
+
+The suite is deliberately a limited, load-bearing subset — integration and
+rule-based tests on the verticals above plus the save round-trip and the
+gates below. No unit-test padding: a test earns its place by catching a
+player-visible regression.
 
 Faithfully ported quirks (contract, do not "fix" silently):
 - repel queue is cleared only at the next placement, so undo re-propagation
@@ -134,8 +139,8 @@ ossifying or eroding:
   Engine and Core).
 - **`ArchitectureGateTests`** enforce the same rules under `dotnet test`:
   no `UnityEngine` in Engine/Core sources, no `GridInfect` in Engine sources,
-  no direct `Rules` mutation from the adapter, registry ⇔ constants ⇔ this
-  document all in sync, `aggregate.verb` naming.
+  no direct `Rules` mutation from the adapter, and registry ⇔ constants ⇔
+  this document kept in sync.
 - **CI** (`.github/workflows/ci.yml`) runs the full suite on every push.
 
 ## 7. Performance posture
@@ -153,10 +158,14 @@ that rounds to zero — the discipline is the point, the next game inherits it.
 The Unity layer owns exactly one piece of timing: scheduling `board.resolve`
 0.3 s after a drop (fast-forwarding on input). Everything else it does is
 listen (`CellChanged` / `LevelSolved` / `PiecesUnbound` — R-113) and render.
-The baseline look is 100% procedural (one white texture, built-in font, zero
-packages, zero serialized scene content — any empty scene boots via
-`RuntimeInitializeOnLoadMethod`), so the project runs on a fresh clone; the
-art overhaul replaces looks without touching structure. Timing table:
+The baseline look is 100% procedural (one white texture, built-in font,
+zero serialized scene content — any empty scene boots via
+`RuntimeInitializeOnLoadMethod`), so the project runs on a fresh clone.
+Rendering is URP (built-in is in maintenance): the pipeline asset is created
+and assigned from code on first editor open
+(`_Project/Editor/RenderPipelineSetup.cs` — forward renderer; the 2D
+Renderer, which wants a Light2D, comes with the art pass). The art overhaul
+replaces looks without touching structure. Timing table:
 `PresentationConfig` (from ASSETS §6, linear everywhere). Accessibility is
 structural from day one: every special cell state carries a shape glyph,
 never color alone (R-1001).

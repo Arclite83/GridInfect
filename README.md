@@ -28,7 +28,7 @@ board states extracted from the 2014 code.
 
 ```sh
 cd src
-dotnet test            # 198 tests: rules vs. all 128 golden vectors, undo, generator, gates
+dotnet test    # golden vector replay (128 levels), undo cross-check, generator goldens, gates
 ```
 
 Requires a .NET 8 SDK. The same tests run inside Unity's edit-mode runner.
@@ -39,17 +39,22 @@ Requires a .NET 8 SDK. The same tests run inside Unity's edit-mode runner.
    pinned patch is in `ProjectSettings/ProjectVersion.txt` — accept an upgrade
    to a newer patch if Hub offers one.
 2. Open the project, let it import (first open generates `Library/` and meta
-   files — commit the `.meta` files it creates).
+   files — commit the `.meta` files it creates). URP is set up automatically:
+   an editor script creates and assigns the pipeline asset under
+   `Assets/Settings/` on first open.
 3. Press **Play** in any empty scene — the game boots procedurally
    (`RuntimeInitializeOnLoadMethod`), no scene setup required. Set the Game
    view to a landscape resolution (e.g. 16:9).
 4. Tests: Window → General → Test Runner → EditMode → Run All. Headless:
    `Unity -batchmode -runTests -testPlatform EditMode -projectPath unity`.
+   The suite is a deliberately limited, load-bearing subset (golden replay,
+   undo cross-check, generator goldens, gates) — mirror-run by CI on every
+   push.
 
 The baseline presentation is deliberately placeholder (one white texture,
-built-in font, zero packages beyond the test framework): the mechanics,
-architecture, and tests are the deliverable; the art/feel overhaul lands on
-top without touching structure.
+built-in font, everything procedural under URP): the mechanics, architecture,
+and tests are the deliverable; the art/feel overhaul lands on top without
+touching structure.
 
 ## Regenerating derived files
 

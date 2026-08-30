@@ -2,15 +2,8 @@ using NUnit.Framework;
 
 namespace GridInfect.Core.Tests
 {
-    /// <summary>
-    /// The undo path (RULES.md §7) has no shipped vectors, so it is verified
-    /// against an independent second port: tools/gen_undo_fixtures.py extends
-    /// the Python reference implementation with a literal Game::clearPiece
-    /// and captures expected outcomes for adversarial scenarios (repel queue
-    /// accumulation, stale reset flags, wall walk-over on re-run, and the
-    /// faithfully-ported 99-blind win check). Two independent ports agreeing
-    /// is the cross-check.
-    /// </summary>
+    // Undo has no shipped vectors; scenarios are cross-checked against an
+    // independent second port (tools/gen_undo_fixtures.py).
     [TestFixture]
     public class UndoTests
     {

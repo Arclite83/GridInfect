@@ -3,12 +3,8 @@ using Bloodhound.Engine;
 
 namespace GridInfect.Core
 {
-    /// <summary>
-    /// The action registry for Grid Infect — the complete list of writers of
-    /// meaningful state. Documented as the registry artifact in
-    /// ARCHITECTURE.md; the gate test asserts this list and that document
-    /// stay in sync with the registered names.
-    /// </summary>
+    // The complete list of writers of meaningful state; a gate test keeps this,
+    // the registry, and ARCHITECTURE.md in sync.
     public static class GridInfectActions
     {
         public const string LevelLoad = "level.load";
@@ -40,7 +36,6 @@ namespace GridInfect.Core
             registry.Register(new AbortFreePlayAction());
         }
 
-        /// <summary>A fully wired dispatcher over fresh state — the one-call entry point for adapters and tests.</summary>
         public static Dispatcher<GameState> CreateDispatcher()
         {
             var registry = new ActionRegistry<GameState>();
@@ -49,7 +44,6 @@ namespace GridInfect.Core
         }
     }
 
-    /// <summary>Typed input builders — the only place input payload keys are spelled by callers.</summary>
     public static class Inputs
     {
         public static Dictionary<string, object> LevelLoad(int levelId) =>

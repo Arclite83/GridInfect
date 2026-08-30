@@ -13,12 +13,15 @@ entry here cites the requirement(s) it exists for (§10 has the full map).
 > - **No `com.unity.inputsystem`** — the baseline drag is legacy
 >   `UnityEngine.Input` (single-pointer, satisfying R-115); revisit only if a
 >   real input requirement outgrows it.
-> - **No URP pin and no 2D template** — the baseline presentation is
->   procedural sprites on the built-in pipeline so the project opens and runs
->   with an empty `Packages/manifest.json` (+ test framework). URP (§2)
->   remains the plan **for the presentation overhaul**, adopted when the art
->   work starts.
-> - Wave 1 as shipped: `com.unity.test-framework` and nothing else.
+> - **URP is in the baseline, adopted from code** — built-in is in
+>   maintenance, so the manifest pins `com.unity.render-pipelines.universal`
+>   (the editor locks core-package versions to itself; the pinned number
+>   auto-corrects on first open) and an editor script creates and assigns the
+>   pipeline asset — no template, no manual setup. Forward renderer for the
+>   procedural baseline; the §2 2D Renderer (which needs a Light2D) arrives
+>   with the art overhaul. HDRP was never a candidate: it does not ship on
+>   mobile.
+> - Wave 1 as shipped: URP + `com.unity.test-framework`, nothing else.
 > - The §6 assembly layout gained a fourth assembly: `Bloodhound.Engine`, the
 >   reusable game-agnostic kernel under `GridInfect.Core`.
 >   [`../ARCHITECTURE.md`](../ARCHITECTURE.md) §1 is now authoritative for the

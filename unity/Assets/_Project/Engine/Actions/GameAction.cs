@@ -3,34 +3,20 @@ using System.Collections.Generic;
 
 namespace Bloodhound.Engine
 {
-    /// <summary>
-    /// A named, versioned writer of meaningful state — the only kind of writer
-    /// there is. Implementations declare one Name (unique in the registry, one
-    /// owner module), Validate as a pure precondition over (state, input), and
-    /// Execute as the single mutation site. Mechanical reads live in query
-    /// classes, never here; policy lives in pure decision functions the action
-    /// calls, not in adapter branches.
-    /// </summary>
+    // The only kind of writer there is: one name, one owner module, Validate as
+    // a pure precondition, Execute as the sole mutation site.
     public abstract class GameAction<TState>
     {
-        /// <summary>Registry name, "aggregate.verb" (e.g. "piece.place").</summary>
         public abstract string Name { get; }
 
-        /// <summary>
-        /// Contract version. Bump when input schema or semantics change;
-        /// change is additive — a new behavior is a new version or a new
-        /// action, never an in-place break of a logged contract.
-        /// </summary>
         public virtual int Version => 1;
 
-        /// <summary>Null when the action may run; otherwise a reason string.</summary>
         public abstract string Validate(TState state, ActionInput input);
 
-        /// <summary>Apply the action. Runs only after Validate returned null.</summary>
         public abstract void Execute(TState state, ActionInput input);
     }
 
-    /// <summary>Result of a dispatch: applied (with its log entry) or rejected (with a reason).</summary>
+    // A rejection is an answer, not an error: nothing logged, nothing mutated.
     public readonly struct ActionResult
     {
         public readonly ActionEntry Entry;   // null when rejected
@@ -48,10 +34,6 @@ namespace Bloodhound.Engine
         public static ActionResult Rejected(string reason) => new ActionResult(null, reason ?? "rejected");
     }
 
-    /// <summary>
-    /// The action registry — the second founding artifact (the schema being the
-    /// first). Maps every action name to its single implementation.
-    /// </summary>
     public sealed class ActionRegistry<TState>
     {
         readonly Dictionary<string, GameAction<TState>> _actions =
@@ -79,18 +61,12 @@ namespace Bloodhound.Engine
         public bool TryGet(string name, out GameAction<TState> action) => _actions.TryGetValue(name, out action);
     }
 
-    /// <summary>
-    /// Owns the state, the registry, and the log; every meaningful mutation
-    /// goes through <see cref="Dispatch"/>. Replay folds a stored log over a
-    /// fresh state through the exact same path.
-    /// </summary>
     public sealed class Dispatcher<TState>
     {
         public TState State { get; }
         public ActionRegistry<TState> Registry { get; }
         public ActionLog Log { get; } = new ActionLog();
 
-        /// <summary>Fired after an entry is applied and logged (persistence hooks live here).</summary>
         public event Action<ActionEntry> Applied;
 
         public Dispatcher(TState state, ActionRegistry<TState> registry)
@@ -120,11 +96,6 @@ namespace Bloodhound.Engine
             return ActionResult.Ok(entry);
         }
 
-        /// <summary>
-        /// Re-apply a stored log against this dispatcher's (fresh) state.
-        /// A replay failure means the log and the code disagree — surface it,
-        /// never skip entries.
-        /// </summary>
         public void Replay(IEnumerable<ActionEntry> entries)
         {
             foreach (var stored in entries)

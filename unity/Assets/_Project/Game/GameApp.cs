@@ -5,11 +5,6 @@ using UnityEngine;
 
 namespace GridInfect.Game
 {
-    /// <summary>
-    /// Bootstraps the game with zero serialized scene content: any empty
-    /// scene works — press Play. Everything (camera, UI, board) is built
-    /// procedurally by the adapter layer.
-    /// </summary>
     public static class Boot
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -22,12 +17,6 @@ namespace GridInfect.Game
         }
     }
 
-    /// <summary>
-    /// The single engine-side hub: owns the dispatcher (all writes are action
-    /// dispatches), the persistence port, the screen stack, tweens, the
-    /// resolution beat, and input routing. Everything below it renders and
-    /// reads; nothing below it mutates game state directly (gated by test).
-    /// </summary>
     public sealed class GameApp : MonoBehaviour
     {
         public Dispatcher<GameState> Dispatcher { get; private set; }
@@ -67,7 +56,6 @@ namespace GridInfect.Game
             Screens.Show(new MainMenuScreen(), instant: true);
         }
 
-        /// <summary>Dispatch an action; rejections are logged, not thrown (they are answers, not errors).</summary>
         public ActionResult Do(string action, Dictionary<string, object> input = null)
         {
             var result = Dispatcher.Dispatch(action, input);
@@ -75,17 +63,11 @@ namespace GridInfect.Game
             return result;
         }
 
-        /// <summary>Start the 0.3 s resolution beat after a successful placement.</summary>
         public void ScheduleResolve()
         {
             _resolveAt = Time.unscaledTime + PresentationConfig.ResolveDelay;
         }
 
-        /// <summary>
-        /// Resolve immediately if a resolution is pending (the fast-forward of
-        /// R-107: input never cancels or skips a resolution, it only hurries
-        /// it). Returns true when a resolution ran.
-        /// </summary>
         public bool FastForwardResolve()
         {
             if (State.Session != null && State.Session.ResolutionPending)

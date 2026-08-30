@@ -5,15 +5,8 @@ using System.Text;
 
 namespace Bloodhound.Engine
 {
-    /// <summary>
-    /// Minimal, dependency-free JSON parser and writer.
-    ///
-    /// Owned by the kernel because JSON is the kernel's boundary format: action
-    /// log entries, save files, and test fixtures all pass through it. Values
-    /// map to: object -> Dictionary&lt;string, object&gt;, array -> List&lt;object&gt;,
-    /// string -> string, number -> long (when integral) or double, true/false ->
-    /// bool, null -> null.
-    /// </summary>
+    // Boundary JSON for the kernel: log entries, saves, test fixtures.
+    // Integral numbers parse as long, everything else as double.
     public static class MiniJson
     {
         public static object Parse(string text)

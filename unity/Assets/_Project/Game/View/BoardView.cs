@@ -5,13 +5,6 @@ using Grid = GridInfect.Core.Grid;
 
 namespace GridInfect.Game
 {
-    /// <summary>
-    /// Pure listener over one LevelSession (R-113): renders the 66 cells and
-    /// swaps their look on CellChanged — a color/glyph swap only, no
-    /// animation, exactly the original's read (ASSETS.md §6). Layout metrics
-    /// per LevelMenuScene::init: cell = 11% of screen height, 5% gutters,
-    /// column 5 on screen-center, row 0 centered at 80% screen height.
-    /// </summary>
     public sealed class BoardView
     {
         public readonly float CellSize;
@@ -60,7 +53,6 @@ namespace GridInfect.Game
             return new Vector2(x, y);
         }
 
-        /// <summary>The cell under a world point, or (-1,-1). Hit areas are full cell rects.</summary>
         public (int i, int j) CellAt(Vector2 world)
         {
             for (int i = 0; i < Grid.Height; i++)

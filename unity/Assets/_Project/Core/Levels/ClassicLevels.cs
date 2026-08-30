@@ -2,13 +2,7 @@ using System;
 
 namespace GridInfect.Core
 {
-    /// <summary>
-    /// The 128 shipped classic levels. Data lives in ClassicLevelData.g.cs,
-    /// generated from docs/test_vectors.json by tools/bake_levels.py — the
-    /// vectors are the single source of truth; nothing here is
-    /// hand-transcribed (REQUIREMENTS R-102). Boards are 66-char strings of
-    /// cell digits; pieces are comma-joined tile names.
-    /// </summary>
+    // Baked from docs/test_vectors.json by tools/bake_levels.py — never hand-edited.
     public static class ClassicLevels
     {
         public const int Count = 128;

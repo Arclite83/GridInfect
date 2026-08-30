@@ -3,11 +3,6 @@ using UnityEngine;
 
 namespace GridInfect.Game
 {
-    /// <summary>
-    /// One tray piece: a body square plus a bar per arm — the piece IS its
-    /// arms, readable without art. Hit area is the full cell-sized square
-    /// (PORT_NOTES §4: hit tests are sprite rects, not visible shape).
-    /// </summary>
     public sealed class PieceView
     {
         public readonly int Index;

@@ -2,17 +2,13 @@ using System;
 
 namespace GridInfect.Core
 {
-    /// <summary>
-    /// The 15 piece types — every non-empty combination of the four cardinal
-    /// arms. Ordinal order is contract: it is the rand()%15 domain in the
-    /// generator and the original C enum order (Enums.h). Never reorder.
-    /// </summary>
+    // Ordinal order is contract: the rand()%15 domain and the original enum order. Never reorder.
     public enum Tile : byte
     {
         L, R, U, D, LR, LU, LD, RU, RD, UD, LRU, LRD, LUD, RUD, LRUD
     }
 
-    /// <summary>Ordinal order indexes the save arrays (original Enums.h order). Never reorder.</summary>
+    // Ordinal order indexes the save arrays. Never reorder.
     public enum Difficulty : byte
     {
         Beginner, Easy, Medium, Hard, Challenging
@@ -23,17 +19,12 @@ namespace GridInfect.Core
         Classic, FreePlay
     }
 
-    /// <summary>Cardinal direction of spread / repel travel.</summary>
     public enum Dir : byte
     {
         L, R, U, D
     }
 
-    /// <summary>
-    /// Board cell values — the wire values of the original int board, kept
-    /// verbatim (RULES.md §1.1). 2/3/5 are immutable during play; 1 ↔ 4
-    /// (and transiently 99, inside undo only) are the mutable states.
-    /// </summary>
+    // Wire values of the original int board (RULES §1.1). 2/3/5 never change during play.
     public static class Cell
     {
         public const byte Void = 0;
@@ -45,7 +36,6 @@ namespace GridInfect.Core
         public const byte UndoMark = 99;
     }
 
-    /// <summary>Fixed board geometry (RULES.md §1): 6 rows × 11 columns, row-major.</summary>
     public static class Grid
     {
         public const int Width = 11;
@@ -57,7 +47,6 @@ namespace GridInfect.Core
         public static bool InBounds(int i, int j) => i >= 0 && i < Height && j >= 0 && j < Width;
     }
 
-    /// <summary>Arm lookup for tiles. Bit order L=1, R=2, U=4, D=8, table in Tile ordinal order.</summary>
     public static class TileArms
     {
         static readonly byte[] Arms =
@@ -86,25 +75,17 @@ namespace GridInfect.Core
             }
         }
 
-        /// <summary>Row delta for one step in a direction.</summary>
         public static int Di(Dir dir) => dir == Dir.U ? -1 : dir == Dir.D ? 1 : 0;
 
-        /// <summary>Column delta for one step in a direction.</summary>
         public static int Dj(Dir dir) => dir == Dir.L ? -1 : dir == Dir.R ? 1 : 0;
     }
 
-    /// <summary>
-    /// Immutable level definition: the board layout and the ordered piece
-    /// list. Invariants are enforced here so nothing downstream ever sees an
-    /// unvalidated shape.
-    /// </summary>
     public sealed class LevelDef
     {
         public const int MaxPieces = 8; // tray capacity (renderer allocates 8 slots)
 
         readonly byte[] _board;
 
-        /// <summary>Classic level id 0..127, or -1 for generated levels.</summary>
         public readonly int ClassicId;
         public readonly Tile[] Pieces;
 
@@ -132,11 +113,9 @@ namespace GridInfect.Core
 
         public byte BoardAt(int loc) => _board[loc];
 
-        /// <summary>Copy the initial board into a session's working array.</summary>
         public void CopyBoardTo(byte[] target) => Array.Copy(_board, target, Grid.Cells);
     }
 
-    /// <summary>A queued repel: origin switch cell and travel direction (back along the line).</summary>
     public readonly struct Repel
     {
         public readonly sbyte I;
@@ -151,7 +130,6 @@ namespace GridInfect.Core
         }
     }
 
-    /// <summary>Placement state of one piece: in the tray (I=J=-1) or on the board.</summary>
     public struct PieceState
     {
         public Tile Tile;

@@ -3,11 +3,6 @@ using UnityEngine;
 
 namespace GridInfect.Game
 {
-    /// <summary>
-    /// A screen: one owned GameObject subtree plus buttons and input hooks.
-    /// Screens are plain classes (not MonoBehaviours) driven by GameApp — all
-    /// engine coupling stays in one Update loop.
-    /// </summary>
     public abstract class AppScreen
     {
         protected GameApp App { get; private set; }
@@ -32,17 +27,12 @@ namespace GridInfect.Game
 
         public virtual void Tick(float dt) { }
 
-        /// <summary>Non-button press; return true when consumed.</summary>
         public virtual bool OnPress(Vector2 world) => false;
         public virtual void OnDrag(Vector2 world) { }
         public virtual void OnRelease(Vector2 world) { }
     }
 
-    /// <summary>
-    /// Owns the current screen and the fade between screens (every navigation
-    /// is a 0.5 s fade, ASSETS.md §6: 0.25 s to black, swap, 0.25 s back).
-    /// Input is ignored while transitioning.
-    /// </summary>
+    // Every navigation: 0.25 s to black, swap screens, 0.25 s back (ASSETS §6).
     public sealed class ScreenManager
     {
         public AppScreen Current { get; private set; }

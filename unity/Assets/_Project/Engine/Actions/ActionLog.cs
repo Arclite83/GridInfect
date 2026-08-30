@@ -3,11 +3,6 @@ using System.Collections.Generic;
 
 namespace Bloodhound.Engine
 {
-    /// <summary>
-    /// One applied action. Entries are immutable once appended; the input
-    /// payload is stored exactly as dispatched (JSON-shaped), so a log replays
-    /// bit-identically through the registry.
-    /// </summary>
     public sealed class ActionEntry
     {
         public int Seq;                              // 1-based position in the log
@@ -15,7 +10,6 @@ namespace Bloodhound.Engine
         public int Version;                          // action contract version at dispatch time
         public Dictionary<string, object> Input;     // raw payload, stored verbatim
 
-        /// <summary>Idempotency key: unique within a run, stable across replays.</summary>
         public string Key(Guid runId) => runId.ToString("N") + ":" + Seq;
 
         public Dictionary<string, object> ToJson() => new Dictionary<string, object>
@@ -42,13 +36,8 @@ namespace Bloodhound.Engine
         }
     }
 
-    /// <summary>
-    /// Append-only action log — the load-bearing primitive. Everything that
-    /// changed meaningful state is here, in order; audit, replay, undo-debug,
-    /// retry, and sync all read this one structure. The kernel keeps it in
-    /// memory; durability is an adapter concern (subscribe to
-    /// <see cref="Dispatcher{TState}.Applied"/> and append to a sink).
-    /// </summary>
+    // Append-only, inputs stored verbatim — the load-bearing record: replay,
+    // audit, and sync all read this one structure.
     public sealed class ActionLog
     {
         readonly List<ActionEntry> _entries = new List<ActionEntry>();
@@ -78,7 +67,6 @@ namespace Bloodhound.Engine
             RunId = Guid.NewGuid();
         }
 
-        /// <summary>Serialize the whole log (for saves, bug reports, goldens).</summary>
         public string ToJson()
         {
             var entries = new List<object>(_entries.Count);

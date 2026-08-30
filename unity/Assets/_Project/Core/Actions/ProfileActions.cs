@@ -2,12 +2,6 @@ using Bloodhound.Engine;
 
 namespace GridInfect.Core
 {
-    /// <summary>
-    /// progress.unlock — record a classic level as unlocked. Dispatched by the
-    /// adapter when a solve unlocks its successor (solving id N unlocks id
-    /// N+1 and nothing else, MODES.md §1.1); logged so replay reproduces
-    /// progression.
-    /// </summary>
     public sealed class UnlockLevelAction : GameAction<GameState>
     {
         public override string Name => "progress.unlock";
@@ -28,7 +22,6 @@ namespace GridInfect.Core
         }
     }
 
-    /// <summary>settings.mute — audio preference, persisted.</summary>
     public sealed class SetMutedAction : GameAction<GameState>
     {
         public override string Name => "settings.mute";

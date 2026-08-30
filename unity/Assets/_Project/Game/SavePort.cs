@@ -5,11 +5,6 @@ using UnityEngine;
 
 namespace GridInfect.Game
 {
-    /// <summary>
-    /// Persistence adapter: write-through of the Profile after any dispatch
-    /// that dirtied it (R-501). Format is SaveCodec's versioned JSON in
-    /// Application.persistentDataPath (R-502); this class only moves strings.
-    /// </summary>
     public sealed class SavePort
     {
         readonly string _path;

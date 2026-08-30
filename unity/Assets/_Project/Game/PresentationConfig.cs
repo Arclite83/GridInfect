@@ -1,10 +1,5 @@
 namespace GridInfect.Game
 {
-    /// <summary>
-    /// The presentation timing table — the original's read/feel, document of
-    /// record ASSETS.md §6. All motion is linear (the original used CCMoveTo
-    /// exclusively). Change deliberately, not accidentally (R-1102).
-    /// </summary>
     public static class PresentationConfig
     {
         // The resolution beat: consequences (win check / reset / repels) land

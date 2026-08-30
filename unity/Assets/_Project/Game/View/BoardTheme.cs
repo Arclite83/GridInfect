@@ -2,13 +2,6 @@ using UnityEngine;
 
 namespace GridInfect.Game
 {
-    /// <summary>
-    /// Baseline palette and cell glyphs. Placeholder look for the art
-    /// overhaul, but the accessibility rule is structural from day one
-    /// (R-1001): every special cell state carries a shape, never color alone —
-    /// wall = inset block, switch = diamond, trap = X — and active vs infected
-    /// differ strongly in luminance, not just hue.
-    /// </summary>
     public static class BoardTheme
     {
         public static readonly Color Background = new Color(0.086f, 0.086f, 0.118f);

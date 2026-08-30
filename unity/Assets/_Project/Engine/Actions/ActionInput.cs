@@ -3,19 +3,12 @@ using System.Collections.Generic;
 
 namespace Bloodhound.Engine
 {
-    /// <summary>Thrown when an action input fails its schema.</summary>
     public sealed class ActionSchemaException : Exception
     {
         public ActionSchemaException(string message) : base(message) { }
     }
 
-    /// <summary>
-    /// Typed view over an action's raw input payload (the JSON-shaped
-    /// dictionary that is stored verbatim in the action log). Actions read
-    /// inputs only through this: it is the single place raw payloads become
-    /// domain values, and its failures are schema failures, reported as
-    /// rejections rather than crashes.
-    /// </summary>
+    // The one place raw payloads become domain values; failures surface as rejections.
     public readonly struct ActionInput
     {
         public static readonly Dictionary<string, object> Empty = new Dictionary<string, object>();

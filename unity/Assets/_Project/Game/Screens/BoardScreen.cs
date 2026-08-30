@@ -3,12 +3,6 @@ using UnityEngine;
 
 namespace GridInfect.Game
 {
-    /// <summary>
-    /// The play screen for both modes: board, tray, drag input, the 0.3 s
-    /// resolution beat (scheduled here, enforced by the core), the solved
-    /// popup, and the Free Play HUD/clock. All game logic lives behind the
-    /// action registry; this class only dispatches and renders.
-    /// </summary>
     public sealed class BoardScreen : AppScreen
     {
         BoardView _board;

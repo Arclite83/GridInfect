@@ -3,13 +3,6 @@ using UnityEngine;
 
 namespace GridInfect.Game
 {
-    /// <summary>
-    /// Free Play menu: five difficulties, per-difficulty best time, and the
-    /// unlock ladder — each difficulty opens after 3 completions of the
-    /// previous (MODES §2.4). Choosing one generates the run's 5 levels up
-    /// front (seeded from the wall clock, logged for deterministic replay)
-    /// and enters the board behind the BEGIN gate.
-    /// </summary>
     public sealed class FreePlayMenuScreen : AppScreen
     {
         static readonly Difficulty[] Order =

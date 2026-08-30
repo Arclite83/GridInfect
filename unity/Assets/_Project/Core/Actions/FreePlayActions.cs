@@ -2,11 +2,6 @@ using Bloodhound.Engine;
 
 namespace GridInfect.Core
 {
-    /// <summary>
-    /// freeplay.begin — the BEGIN button: starts the run clock. Wall-clock
-    /// milliseconds arrive as input so the log replays deterministically
-    /// (MODES.md §2.2: wall clock, backgrounding does not pause it).
-    /// </summary>
     public sealed class BeginFreePlayAction : GameAction<GameState>
     {
         public override string Name => "freeplay.begin";
@@ -25,11 +20,6 @@ namespace GridInfect.Core
         }
     }
 
-    /// <summary>
-    /// freeplay.advance — after solving levels 1–4 of a run, bind the next
-    /// generated level. The clock keeps running; there is no pause between
-    /// levels.
-    /// </summary>
     public sealed class AdvanceFreePlayAction : GameAction<GameState>
     {
         public override string Name => "freeplay.advance";
@@ -50,13 +40,6 @@ namespace GridInfect.Core
         }
     }
 
-    /// <summary>
-    /// freeplay.complete — the 5th solve stops the clock and records the
-    /// result: best time overwritten iff lower or none, completion count
-    /// incremented (drives the difficulty unlock ladder, MODES.md §2.3–2.4).
-    /// A backward-moving clock is rejected here; the adapter's running
-    /// display also aborts the run on a negative duration (cheat guard).
-    /// </summary>
     public sealed class CompleteFreePlayAction : GameAction<GameState>
     {
         public override string Name => "freeplay.complete";
@@ -91,10 +74,6 @@ namespace GridInfect.Core
         }
     }
 
-    /// <summary>
-    /// freeplay.abort — leave a run (back-out or the cheat guard tripping).
-    /// Nothing is recorded.
-    /// </summary>
     public sealed class AbortFreePlayAction : GameAction<GameState>
     {
         public override string Name => "freeplay.abort";

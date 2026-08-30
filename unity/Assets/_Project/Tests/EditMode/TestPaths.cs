@@ -3,12 +3,6 @@ using System.IO;
 
 namespace GridInfect.Core.Tests
 {
-    /// <summary>
-    /// Locates the repo root (the directory containing docs/test_vectors.json)
-    /// from wherever the tests run: the Unity editor (CWD = unity/) or
-    /// `dotnet test` (base dir = src/Tests.Mirror/bin/...). One source of
-    /// truth, no copied fixtures.
-    /// </summary>
     internal static class TestPaths
     {
         static string _repoRoot;
