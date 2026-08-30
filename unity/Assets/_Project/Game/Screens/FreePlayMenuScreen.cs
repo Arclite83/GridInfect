@@ -25,27 +25,13 @@ namespace GridInfect.Game
             for (int n = 0; n < Order.Length; n++)
             {
                 var difficulty = Order[n];
-                bool unlocked = Queries.IsDifficultyUnlocked(profile, difficulty);
                 float y = h * 0.28f - n * h * 0.14f;
 
-                string label = difficulty.ToString().ToUpperInvariant();
-                if (!unlocked)
-                {
-                    int remaining = Queries.RunsRemainingToUnlock(profile, difficulty);
-                    string previous = Order[n - 1].ToString().ToUpperInvariant();
-                    label = Queries.IsDifficultyUnlocked(profile, Order[n - 1])
-                        ? $"PLAY {previous} {remaining} MORE TIME{(remaining == 1 ? "" : "S")}"
-                        : label + " LOCKED";
-                }
-
                 var captured = difficulty;
-                var button = UiButton.Make(Root.transform, label,
+                Buttons.Add(UiButton.Make(Root.transform, difficulty.ToString().ToUpperInvariant(),
                     new Vector2(-w * 0.12f, y), new Vector2(w * 0.44f, h * 0.11f),
-                    unlocked ? BoardTheme.ButtonBg : BoardTheme.ButtonBgDisabled,
-                    unlocked ? BoardTheme.Text : BoardTheme.TextDim,
-                    () => StartRun(captured));
-                button.Enabled = unlocked;
-                Buttons.Add(button);
+                    BoardTheme.ButtonBg, BoardTheme.Text,
+                    () => StartRun(captured)));
 
                 var best = Ui.MakeText($"best:{difficulty}", Root.transform,
                     Queries.FormatBestTime(profile.BestTimesMs[n]), h * 0.04f, BoardTheme.Accent, 2);
