@@ -1,0 +1,16 @@
+<!--
+  Minimal UnityEngine API stubs — compile-time only, used by Game.Mirror to
+  type-check the adapter layer without a Unity installation. Signatures must
+  match UnityEngine's public API for the members the adapter uses; bodies are
+  inert. Never referenced by anything Unity compiles.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>UnityEngine</AssemblyName>
+    <RootNamespace>UnityEngine</RootNamespace>
+    <NoWarn>CS0067;CS0649</NoWarn>
+  </PropertyGroup>
+</Project>

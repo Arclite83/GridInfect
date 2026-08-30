@@ -1,0 +1,22 @@
+<!--
+  Compile-check project for the Unity adapter layer (unity/Assets/_Project/
+  Game) against the minimal UnityEngine stubs in ../UnityStubs. This catches
+  syntax/type errors in adapter code on machines without Unity. It produces
+  nothing runnable; the real assembly is compiled by Unity.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>GridInfect.Game.Mirror</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../unity/Assets/_Project/Game/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Core.Mirror/GridInfect.Core.Mirror.csproj" />
+    <ProjectReference Include="../UnityStubs/UnityEngine.Stubs.csproj" />
+  </ItemGroup>
+</Project>

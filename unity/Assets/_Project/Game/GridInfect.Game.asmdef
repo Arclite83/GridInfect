@@ -1,0 +1,17 @@
+{
+    "name": "GridInfect.Game",
+    "rootNamespace": "GridInfect.Game",
+    "references": [
+        "Bloodhound.Engine",
+        "GridInfect.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
