@@ -32,17 +32,31 @@ namespace GridInfect.Game
             {
                 if (_font == null)
                 {
-                    // Unity 2022.2+ ships LegacySans; older editors ship Arial.
-                    try { _font = Resources.GetBuiltinResource<Font>("LegacySans.ttf"); }
-                    catch (System.Exception) { }
+                    // Newer editors (6000.5+) dropped the built-in legacy fonts,
+                    // and probing a missing builtin logs an error — ask the OS first.
+                    string[] installed = Font.GetOSInstalledFontNames() ?? new string[0];
+                    foreach (string name in new[] { "Arial", "Helvetica", "Segoe UI", "Liberation Sans", "DejaVu Sans", "Roboto" })
+                    {
+                        if (System.Array.IndexOf(installed, name) >= 0)
+                        {
+                            _font = Font.CreateDynamicFontFromOSFont(name, 64);
+                            break;
+                        }
+                    }
+                    // Older editors ship a builtin: LegacySans (2022.2+) or Arial.
+                    if (_font == null)
+                    {
+                        try { _font = Resources.GetBuiltinResource<Font>("LegacySans.ttf"); }
+                        catch (System.Exception) { }
+                    }
                     if (_font == null)
                     {
                         try { _font = Resources.GetBuiltinResource<Font>("Arial.ttf"); }
                         catch (System.Exception) { }
                     }
-                    if (_font == null)
+                    if (_font == null && installed.Length > 0)
                     {
-                        _font = Font.CreateDynamicFontFromOSFont("Helvetica", 64);
+                        _font = Font.CreateDynamicFontFromOSFont(installed[0], 64);
                     }
                 }
                 return _font;

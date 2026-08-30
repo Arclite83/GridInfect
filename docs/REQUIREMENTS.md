@@ -71,7 +71,7 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 | R-302 | LATER | Timer: starts at BEGIN, wall-clock milliseconds, runs continuously across the 5 levels, stops on the 5th solve; backgrounding does not pause; negative computed duration aborts the run to the menu. | MODES §2.2 |
 | R-303 | LATER | Running HUD (difficulty, n/5, live clock at ≥20 Hz refresh) and the `m:ss:mmm` time format as default copy; overhaul may restyle. | MODES §2.2 |
 | R-304 | LATER | Per-difficulty local best time (overwrite iff lower or none) and completion count, persisted. | MODES §2.3 |
-| R-305 | LATER | Unlock ladder: each difficulty unlocks after 3 completions of the previous; locked buttons show remaining count. | MODES §2.4 |
+| R-305 | CUT | Unlock ladder dropped: every difficulty is always playable. (Original gated each behind 3 completions of the previous; locked buttons showed the remaining count.) | MODES §2.4; **changed from original** |
 | R-306 | LATER | Five timed leaderboards re-mapped to a live service (same choice as R-205). | MODES §2.3; **NEW — needs approval** |
 
 ## 4. Generator integration

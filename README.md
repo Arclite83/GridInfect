@@ -14,7 +14,7 @@ board states extracted from the 2014 code.
 | Path | What it is |
 |---|---|
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | The baseline: schema, action registry, module graph, gates. Start here |
-| [`unity/`](unity/) | The Unity project (Unity 6000.3.x). All C# lives here, once |
+| [`unity/`](unity/) | The Unity project (Unity 6). All C# lives here, once |
 | [`unity/Assets/_Project/Engine/`](unity/Assets/_Project/Engine/) | `Bloodhound.Engine` — reusable, game-agnostic kernel (actions, log, RNG, JSON) |
 | [`unity/Assets/_Project/Core/`](unity/Assets/_Project/Core/) | `GridInfect.Core` — rules, actions, generator, levels, save model. Pure C#, zero UnityEngine |
 | [`unity/Assets/_Project/Game/`](unity/Assets/_Project/Game/) | Unity adapter: procedural UI, input, the 0.3 s beat. No game logic |
@@ -35,9 +35,13 @@ Requires a .NET 8 SDK. The same tests run inside Unity's edit-mode runner.
 
 ## Open the game (Unity)
 
-1. Unity Hub → Add → `unity/`. Any **6000.3.x (Unity 6.3 LTS)** works; the
-   pinned patch is in `ProjectSettings/ProjectVersion.txt` — accept an upgrade
-   to a newer patch if Hub offers one.
+Full first-open walkthrough (what to commit, folder layout, asset policy):
+[`docs/UNITY_SETUP.md`](docs/UNITY_SETUP.md).
+
+1. Unity Hub → Add → the `unity/` folder (not the repo root). The pinned
+   editor is in `ProjectSettings/ProjectVersion.txt` (currently
+   **6000.5.10f1**); any newer Unity 6 patch works — accept the upgrade if
+   Hub offers one.
 2. Open the project, let it import (first open generates `Library/` and meta
    files — commit the `.meta` files it creates). URP is set up automatically:
    an editor script creates and assigns the pipeline asset under

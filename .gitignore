@@ -45,3 +45,57 @@ __pycache__/
 # .NET mirror build output (src/)
 src/**/bin/
 src/**/obj/
+
+# ---------------------------------------------------------------------------
+# Unity (project root: unity/). Generated state stays out; everything under
+# Assets/ (including .meta files), Packages/, and ProjectSettings/ is
+# committed. See docs/UNITY_SETUP.md.
+# ---------------------------------------------------------------------------
+unity/[Ll]ibrary/
+unity/[Tt]emp/
+unity/[Oo]bj/
+unity/[Ll]ogs/
+unity/[Uu]serSettings/
+unity/[Mm]emoryCaptures/
+unity/[Rr]ecordings/
+unity/[Bb]uild/
+unity/[Bb]uilds/
+unity/ExportedObj/
+unity/.vs/
+unity/.idea/
+unity/.consulo/
+unity/.gradle/
+
+# IDE solution/project files Unity regenerates on demand
+unity/*.csproj
+unity/*.sln
+
+# Transient scene the test runner drops into Assets/ mid-run
+unity/Assets/InitTestScene*.unity*
+
+# Unity crash/report droppings and packaged output
+sysinfo.txt
+*.stackdump
+*.aab
+*.unitypackage
+
+# ---------------------------------------------------------------------------
+# Asset policy: no heavy files in the repo, no LFS (docs/UNITY_SETUP.md).
+# unity/Assets/_Local/ is a git-ignored staging area — heavy WIP and source
+# art live there (or outside the repo) on each machine. Committed runtime
+# assets are small exported formats (png/ogg). `git add -f` is the deliberate
+# escape hatch if a listed format ever genuinely belongs in the repo.
+# ---------------------------------------------------------------------------
+unity/Assets/_Local/
+unity/Assets/_Local.meta
+
+# Source-art working formats (heavy; export don't commit)
+*.psd
+*.psb
+*.xcf
+*.kra
+*.blend
+*.blend[0-9]
+
+# Uncompressed audio masters (commit .ogg exports instead)
+*.wav
