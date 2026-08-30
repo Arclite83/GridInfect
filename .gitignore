@@ -1,0 +1,43 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+
+# Android (Eclipse/ant-era layout used by proj.android)
+grid-infect-cocos2dx/proj.android/gen/
+grid-infect-cocos2dx/proj.android/bin/
+grid-infect-cocos2dx/proj.android/obj/
+grid-infect-cocos2dx/proj.android/libs/
+grid-infect-cocos2dx/proj.android/assets/
+local.properties
+*.apk
+*.ap_
+*.dex
+*.class
+
+# Visual Studio (proj.win32 / proj.winrt / proj.wp8*)
+*.suo
+*.sdf
+*.opensdf
+*.user
+Debug/
+Release/
+Debug.win32/
+Release.win32/
+ipch/
+Bin/
+obj/
+
+# Native build output
+*.o
+*.a
+*.so
+*.dylib
+
+# Python tooling used for spec extraction
+__pycache__/
+*.pyc
