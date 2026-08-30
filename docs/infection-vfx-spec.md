@@ -144,3 +144,97 @@ Each is an independent bool on the board controller, default on unless noted.
 7. Placement input during an active wave is accepted on the frame it occurs and starts a new wave.
 8. Changing a `BoardPalette` asset restyles the whole board with no code or shader edits.
 9. Bloom threshold rejects the resting board. A screenshot with no active infection has no bloom.
+
+---
+
+## As built
+
+Implemented in `unity/Assets/_Project/Game/`: `Shaders/GridInfectBoard.shader`
+(everything the board draws), `View/BoardPalette.cs` + `Resources/BoardPalette.asset`
+(the palette), `View/BoardStateTexture.cs` (the data texture), `View/BoardNoise.cs`
+(the blot), `View/BoardView.cs` (quad, clock, juice switches, wave scheduling),
+`View/BoardBloom.cs`, `Audio/HopClickAudio.cs`. The locked parameters live in
+`PresentationConfig.Infection`; `InfectionVfxSpecTests` fails if this document
+and that table stop agreeing.
+
+Where the build deviates from the spec above, and why.
+
+### Board size
+
+Grid Infect's board is 11 x 6, not 8 wide (`Grid`, fixed by RULES §1). The
+timeline is unchanged; the totals move: the longest ray is 10 hops, so 400 ms
+of travel, 750 ms to settle, 1200 ms to fully cool.
+
+### Cell state ids
+
+The R channel carries the game's own wire vocabulary — `0` void, `1` active,
+`2` wall, `3` repel switch, `4` infected, `5` reset trap — rather than the
+spec's four-state table. Grid Infect ships two states the table does not name,
+and a lossy remap would mean a second enum to keep in sync with `Rules`. The
+wire value is already a superset, so it goes across unchanged. "Immune" is the
+wall; "empty" is active; void is a hole in the board and draws neither border
+nor fill.
+
+The reserved A channel carries the transition kind: `0` none, `1` infecting,
+`2` receding, `3` conflict flash. It is what lets one texel describe both what
+a cell is and what is happening to it.
+
+### Spread rule
+
+Already data, not code, and already a straight-ray walk: `Rules.PropagatePiece`
+steps offset-major rings 1..`Grid.SpreadRange` over the arms of a `Tile`, which
+is exactly `BugType { directions, range }` under a different name. No spread
+code was added.
+
+Nothing in the view re-derives it either. `BoardView` brackets a placement,
+watches `CellChanged`, and reads depth off the Manhattan distance from the seed
+and the entry direction off the sign of the offset — correct precisely because
+the spread is rays. One place mirrors a rule: finding which trap stopped a ray,
+so the conflict overprint can light when the beam reaches it instead of when
+the reset lands 300 ms later.
+
+### Conflict
+
+Grid Infect has no per-cell conflict state. The reset trap is the conflict
+event: the trap overprints red on the ray that hit it (it already carries the X
+glyph), and the board shakes when the reset lands. The replay button also full-
+resets and deliberately does not shake.
+
+### Recession
+
+Not in the spec, needed by the game: repels walk infection back off a ray and
+undo lifts a piece. Receding cells run the same blot in reverse, staggered by
+hop for a repel (it walks) and simultaneous for an undo or a reset (they do
+not).
+
+### Edge sparks
+
+Confined to the cell's own pitch tile so each fragment tests eight sparks and
+never its neighbours'. They read as thrown off the band; they do not cross into
+the next cell.
+
+### Glitch band
+
+Read as straddling the front — `p - 0.12 < t <= p + 0.15` — rather than
+`t <= p + 0.15` alone, which would flicker the entire filled area rather than a
+band. Band and ghost both fade out over the last of the dissolve, because a
+cell must be hard-edged and static within 350 ms.
+
+### Bloom
+
+Threshold 1.0: only what the board pushes into HDR blooms, which is the hot
+fill, the edge band, the active trace and the seed marker. That is strictly
+above the cooled fill and the resting border, and it also rejects the white UI
+text, which a luminance-tuned threshold would not.
+
+The project still renders in **gamma** colour space. Bloom works there, but the
+falloff is not physically right, and switching to linear would restyle every
+procedural sprite on every screen at once. Left for the art pass, with the rest
+of the colour work.
+
+### Not verified here
+
+Acceptance criteria 2, 5 and 6 are runtime judgements — frame rate on device,
+legibility at 5 cm, the bleed reading as ink across hop values — and need the
+editor. What is structural holds by construction: one `MeshRenderer` with one
+material for the whole board, and an infection change that writes texels only.

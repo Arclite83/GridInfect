@@ -124,7 +124,9 @@ namespace GridInfect.Game
                 if (_bound.Pieces[k].Placed)
                 {
                     // Touching a placed piece unplaces it instantly (RULES §3).
+                    _board.BeginUndo();
                     var clear = App.Do(GridInfectActions.PieceClear, Inputs.PieceClear(k));
+                    _board.EndBatch();
                     if (!clear.Applied) return true;
                 }
                 _dragIndex = k;
@@ -149,7 +151,12 @@ namespace GridInfect.Game
             var (i, j) = _board.CellAt(world);
             if (i >= 0)
             {
+                // The wave is open across the dispatch: every CellChanged the
+                // spread raises inside it is scheduled off this seed, and the
+                // action is still applied on the frame the touch landed.
+                _board.BeginWave(i, j);
                 var place = App.Do(GridInfectActions.PiecePlace, Inputs.PiecePlace(index, i, j));
+                _board.EndBatch(place.Applied);
                 if (place.Applied)
                 {
                     Vector2 center = _board.CellCenter(i, j);
@@ -229,6 +236,12 @@ namespace GridInfect.Game
 
         public override void Tick(float dt)
         {
+            if (_board != null)
+            {
+                _board.Muted = App.State.Profile.Muted;
+                _board.Tick(dt);
+            }
+
             if (App.State.Mode != GameMode.FreePlay) return;
             var run = App.State.FreePlayRun;
             if (run == null || run.Completed) return;
@@ -342,7 +355,9 @@ namespace GridInfect.Game
             }
             else
             {
+                _board.BeginReset();
                 App.Do(GridInfectActions.LevelReset);
+                _board.EndBatch();
             }
         }
     }

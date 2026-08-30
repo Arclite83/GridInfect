@@ -23,5 +23,37 @@ namespace GridInfect.Game
         public const int TrayCenterSlot = 3;
 
         public const int TargetFrameRate = 60;      // R-1104
+
+        // Infection VFX (docs/infection-vfx-spec.md "Locked parameters").
+        // Blocks, hop, bias, glow hold and glow fade are fixed; trace and
+        // bleed are the two remaining tunables. InfectionVfxSpecTests keeps
+        // this table and the spec from drifting apart.
+        public static class Infection
+        {
+            public const int Blocks = 16;           // blocks per cell
+            public const float Hop = 0.040f;        // 40 ms between ray steps
+            public const float Bias = 0.30f;        // noise -> entry-edge lean
+            public const float GlowHold = 0.150f;   // 150 ms at full emission
+            public const float GlowFade = 0.300f;   // 300 ms cooling to rest
+            public const float TraceDur = 0.090f;   // 90 ms trace pulse
+            public const float BleedDur = 0.260f;   // 260 ms bleed dissolve
+
+            // Derived juice timings; each has an on/off switch on BoardView.
+            public const float ArrivalPulseGain = 1.4f;
+            public const float ArrivalPulseDur = 0.060f;
+            public const float ConflictShakePx = 2f;
+            public const float ConflictShakeDur = 0.120f;
+            public const float ConflictFlashDur = 0.500f;
+            public const float SparkLife = 0.200f;
+            public const float TraceDimLevel = 0.30f;
+            public const float GhostTrailDur = 0.200f;
+
+            public const int HopPitchCapSemitones = 7;
+
+            // Written into the state texture for anything that did not arrive
+            // through a wave: far enough in the past that every curve reads as
+            // fully settled on the first frame.
+            public const float SettledLongAgo = -1000f;
+        }
     }
 }

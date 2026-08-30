@@ -141,6 +141,12 @@ ossifying or eroding:
   no `UnityEngine` in Engine/Core sources, no `GridInfect` in Engine sources,
   no direct `Rules` mutation from the adapter, and registry ⇔ constants ⇔
   this document kept in sync.
+- **`InfectionVfxSpecTests`** do the same for the art contract: the locked
+  parameter table and the palette in `docs/infection-vfx-spec.md` ⇔
+  `PresentationConfig.Infection` ⇔ `BoardPalette` ⇔ the board shader's
+  properties, plus "no literal colour in the shader" and "every juice layer is
+  an independent switch". The presentation layer is Unity-only, so these are
+  source gates, not behaviour tests.
 - **CI** (`.github/workflows/ci.yml`) runs the full suite on every push.
 
 ## 7. Performance posture
@@ -148,10 +154,12 @@ ossifying or eroding:
 The hot path is spread propagation: flat `byte[66]`, struct pieces and
 repels, stackalloc direction flags, no LINQ, no allocation per placement
 beyond log entries (human-rate). JSON exists only at boundaries (save, log
-serialization, test fixtures). The renderer redraws cells only on
-`CellChanged`, never per frame; text and sprites come from one shared
-texture/font. Frame budget target is 60 fps (R-1104) with a turn-based load
-that rounds to zero — the discipline is the point, the next game inherits it.
+serialization, test fixtures). The board is one quad with one material, and a
+`CellChanged` writes texels in an `11x6` data texture — no GameObjects, no
+mesh rebuild, no allocation per placement; text and tray pieces come from one
+shared texture/font. Frame budget target is 60 fps (R-1104) with a turn-based
+load that rounds to zero — the discipline is the point, the next game inherits
+it.
 
 ## 8. Presentation contract
 
@@ -169,6 +177,19 @@ replaces looks without touching structure. Timing table:
 `PresentationConfig` (from ASSETS §6, linear everywhere). Accessibility is
 structural from day one: every special cell state carries a shape glyph,
 never color alone (R-1001).
+
+The board itself is `docs/infection-vfx-spec.md`, built the same way — one
+quad, one material, zero imported art. Cell state goes into a point-filtered
+`RGBAFloat` texture (value, transition start time, packed entry direction,
+transition kind) and `GridInfect/Board` reads it; the shader never writes back
+and never gates input, so a placement landing mid-bleed just changes texels
+while the cells already in flight keep running off their own start times.
+`BoardView` derives a cell's place in the wave from the seed of the placement
+it brackets — depth is the Manhattan distance, entry direction is the sign of
+the offset — so the view learns the spread from `CellChanged` and never
+duplicates a rule. Every colour, including the board background behind the
+chrome, comes from one `BoardPalette` asset; the juice layers are plain bools
+on `BoardView`.
 
 ## 9. Change policy
 
