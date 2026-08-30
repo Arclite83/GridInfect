@@ -151,18 +151,38 @@ The renderer, not the core, sequences the *consequences* of a placement
      fires, you still win!").
   2. Otherwise, if the reset-tripped flag is set: `Game::fullReset` (§6).
   3. Otherwise: run every queued repel, in queue order (§5).
-- **Cancellation quirk (load-bearing):** `LevelMenu::ccTouchBegan` calls
+- **Cancellation quirk (confirmed bug — not ported):**
+  `LevelMenu::ccTouchBegan` calls
   `this->getChildByTag(999)->stopAllActions()` whenever the player
   touches any tray/board piece. Touching a piece within 0.3 s of a drop
   therefore **cancels the pending resolution entirely**: no win check, no
   reset, no repels for that placement. The queued repels and the
-  reset-tripped flag are discarded at the next `setPiece`. Two shipped
-  levels — 41 and 87 (ids 40 and 86) — are **unwinnable without this
-  cancellation** (exhaustive search; see `test_vectors.json`
-  `requires_reset_cancel_exploit` and `_meta.reset_cancel_exploit`).
-  Level 41 (id 40) requires suppressing two resets; level 87 (id 86)
-  requires suppressing one. Whether to reproduce this in a port is a
-  design decision; the original behaves as described.
+  reset-tripped flag are discarded at the next `setPiece`.
+
+  **Correction (2026-08-30):** this document previously claimed levels 41
+  and 87 (ids 40 and 86) were unwinnable without the cancellation. That
+  claim was wrong. Because the win check runs *before* the reset (step 1
+  above), a reset trap hit by the placement that completes the board is
+  free — and an exhaustive search over all piece-to-cell assignments
+  (exact for these two levels: they contain only walls and traps, no
+  repel switches, so spread is order-independent) shows every covering
+  assignment needs at most **one** trap-tripping piece, even when all
+  five pieces are forced onto the board. Ordering that placement last
+  wins legitimately. Verified clean solutions (piece @ (row, col),
+  trap-tripper last):
+  - Level 41 (id 40): `R@(2,1)`, `LRU@(5,7)`, `LD@(0,8)`, `LRD@(3,3)`,
+    `D@(1,1)` — D trips the trap and completes the board.
+  - Level 87 (id 86): `LD@(1,6)`, `LRUD@(3,8)`, `RU@(5,7)`, `RD@(2,2)`,
+    `L@(4,4)` — L trips the trap and completes the board.
+
+  The *recorded original solutions* in `test_vectors.json` for these two
+  levels do use the cancellation (`requires_reset_cancel_exploit`,
+  `pending_check_cancelled`) — read that flag as "this stored solution
+  relies on the exploit", not "the level requires it". The author has
+  confirmed the cancellation is a bug; the Unity rebuild does not
+  reproduce it (`REQUIREMENTS.md` R-107), and no level needs it.
+  `docs/tools/regen_clean_solutions_40_86.py` regenerates the two
+  levels' vector entries exploit-free.
 
 ## 5. Repel switches (value 3)
 
@@ -294,9 +314,9 @@ cell — there is no animation on infection (see `ASSETS.md` §Timing).
 
 ## UNKNOWN
 
-- **Whether the 0.3 s cancellation (§4.1) was intentional design** for
-  levels 41/87 or an accident. Not resolvable from source; would need the
-  author. The mechanics above are what the code does either way.
+- ~~**Whether the 0.3 s cancellation (§4.1) was intentional design**~~
+  Resolved 2026-08-30: the author confirmed it is a bug, and the §4.1
+  correction shows no level depends on it. It is not ported.
 - **Multi-touch behavior.** `LevelMenu::registerWithTouchDispatcher`
   registers a targeted delegate with `swallowsTouches=true`, priority 0.
   Behavior when a second finger touches during a drag depends on

@@ -143,9 +143,9 @@ game code**. All durations from `Classes/Renderers/*.cpp`.
 instantaneous flood-fill; the only temporal staging in the whole
 mechanic is the 0.3 s beat between the flood and its consequences
 (repel retraction / board reset / COMPLETE popup). A port that animates
-the wavefront is changing presentation the original did not have — and
-must keep resolution cancellable-by-touch within the window if it wants
-to preserve the behavior of levels 41/87 (`RULES.md` §4.1).
+the wavefront is changing presentation the original did not have. (The
+touch-cancellation tied to this window was a bug and is not ported;
+levels 41/87 do not require it — see the `RULES.md` §4.1 correction.)
 
 ### Cell state change
 
