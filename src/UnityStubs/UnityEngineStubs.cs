@@ -132,6 +132,7 @@ namespace UnityEngine
     {
         public Material material => null;
         public static Font CreateDynamicFontFromOSFont(string fontname, int size) => null;
+        public static string[] GetOSInstalledFontNames() => new string[0];
     }
 
     public sealed class TextMesh : Component
