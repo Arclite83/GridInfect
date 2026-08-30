@@ -41,3 +41,7 @@ obj/
 # Python tooling used for spec extraction
 __pycache__/
 *.pyc
+
+# .NET mirror build output (src/)
+src/**/bin/
+src/**/obj/

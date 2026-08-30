@@ -1,0 +1,22 @@
+<!--
+  Mirror project: compiles the exact same sources Unity compiles for the
+  Bloodhound.Engine and GridInfect.Core assemblies (unity/Assets/_Project/
+  Engine + Core), so the pure-C# core can be built and tested headless
+  without a Unity installation. Unity remains the runtime consumer; this
+  project must never grow sources of its own.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>GridInfect.Core.Mirror</AssemblyName>
+    <RootNamespace>GridInfect.Core</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../unity/Assets/_Project/Engine/**/*.cs" />
+    <Compile Include="../../unity/Assets/_Project/Core/**/*.cs" />
+  </ItemGroup>
+</Project>
