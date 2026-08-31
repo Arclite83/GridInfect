@@ -1,7 +1,7 @@
 # Grid Infect
 
 A Unity/C# rebuild of Grid Infect (Bloodhound Studios, 2014 — originally
-cocos2d-x). Drag pieces onto a 6×11 grid; each piece infects along its arms;
+cocos2d-x). Drag pieces onto an 11×6 grid; each piece infects along its arms;
 infect every cell to win. 128 shipped classic levels plus a timed Free Play
 mode with generated boards.
 

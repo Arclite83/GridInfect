@@ -77,7 +77,7 @@ own icon handling.
 
 | Original | Where | Unity note |
 |---|---|---|
-| Scene graph of tagged children (`getChildByTag`) — cells are tags 0–65, pieces 300–307, popup widgets 400–1000 | `LevelMenuScene.cpp` | Replace with direct references; the tag scheme is an implementation detail, but cell-tag = `i*11+j` mirrors the board encoding |
+| Scene graph of tagged children (`getChildByTag`) — cells are tags 0–65, pieces 300–307, popup widgets 400–1000 | `LevelMenuScene.cpp` | Replace with direct references; the tag scheme is an implementation detail, but cell-tag = `i*11+j` mirrors the original's board encoding (the port transposes the board — ARCHITECTURE §2) |
 | `CCTextureCache` texture swaps for cell state | `bindLevel`, `onChangeBoardIndex` | Sprite swap on a per-cell renderer; no animation (see `ASSETS.md` §6) |
 | `CCMoveTo` (always linear) for every animation | all scenes | Unity tweens must use linear interpolation to match feel; durations in `ASSETS.md` §6 |
 | `CCTransitionFade(0.5f)` between scenes | all scenes | 0.5 s fade on every navigation |

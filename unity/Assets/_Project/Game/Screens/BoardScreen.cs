@@ -75,7 +75,8 @@ namespace GridInfect.Game
             _pieces = new PieceView[session.Pieces.Length];
             for (int k = 0; k < session.Pieces.Length; k++)
             {
-                _pieces[k] = new PieceView(Root.transform, k, session.Pieces[k].Tile, _board.CellSize, TraySlot(k));
+                _pieces[k] = new PieceView(Root.transform, k, session.Pieces[k].Tile,
+                    TrayTileSize(session.Pieces.Length), TraySlot(k));
             }
             session.LevelSolved += OnSolved;
             session.PiecesUnbound += OnPiecesUnbound;
@@ -107,10 +108,24 @@ namespace GridInfect.Game
             _dragIndex = -1;
         }
 
+        // The original racked the tray into eight fixed slots and centred on
+        // slot 3. Six columns of board leave no room for that, so the tray
+        // centres on the pieces the level actually has and shrinks only if
+        // they would not fit the width — which, at a real maximum of six
+        // pieces, they always do.
+        float TrayTileSize(int count)
+        {
+            float board = _board != null ? _board.CellSize : ScreenH * PresentationConfig.CellHeightPct;
+            float byWidth = ScreenW * PresentationConfig.BoardWidthPct
+                            / (count * PresentationConfig.TraySlotPitch);
+            return Mathf.Min(board, byWidth);
+        }
+
         Vector2 TraySlot(int k)
         {
-            float size = _board != null ? _board.CellSize : ScreenH * PresentationConfig.CellHeightPct;
-            float x = (k - PresentationConfig.TrayCenterSlot) * size * PresentationConfig.TraySlotPitch;
+            int count = _bound != null ? _bound.Pieces.Length : PresentationConfig.TraySlots;
+            float size = TrayTileSize(count);
+            float x = (k - (count - 1) / 2f) * size * PresentationConfig.TraySlotPitch;
             float y = -ScreenH / 2f + ScreenH * PresentationConfig.TrayBottomPct + size / 2f;
             return new Vector2(x, y);
         }

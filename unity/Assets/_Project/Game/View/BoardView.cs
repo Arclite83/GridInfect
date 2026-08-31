@@ -145,8 +145,8 @@ namespace GridInfect.Game
         }
 
         // Whichever of the three binds. Height caps the cell the way the
-        // original did; width is what an 11-wide board hits first on a phone
-        // held upright; the band is what stops the board growing into the tray.
+        // original did; width is the phone's short edge across six columns;
+        // the band is what stops an 11-tall board growing into the tray.
         static float MeasureCellSize()
         {
             MeasureBand(out float bottom, out float top);
@@ -169,7 +169,10 @@ namespace GridInfect.Game
 
         public Vector2 CellCenter(int i, int j)
         {
-            float x = (j - Grid.Width / 2) * Pitch;
+            // (Width - 1) / 2, not Width / 2: an even column count has no
+            // middle column, and integer division put the board half a pitch
+            // off centre the moment it stopped being 11 wide.
+            float x = (j - (Grid.Width - 1) / 2f) * Pitch;
             return new Vector2(x, _row0Y - i * Pitch);
         }
 

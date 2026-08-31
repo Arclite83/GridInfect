@@ -16,7 +16,7 @@ Companion files:
 
 ## 1. Board
 
-- Every level is a fixed **6 rows × 11 columns** grid
+- Every level is a fixed **11 rows × 6 columns** grid (transposed from the original's 6×11 for portrait — see ARCHITECTURE §2)
   (`Classes/Core/Level.h`: `Height = 6`, `Width = 11`). There is no
   per-level size variation; level shapes are made by marking cells void.
 - Storage is a flat row-major `int Board[66]`; index `loc = i * 11 + j`
@@ -114,7 +114,7 @@ When a piece is placed at `(i, j)`:
        `changeBoard(cell, 4)`. This infects value-1 cells; it is a no-op
        for void (0), for already-infected (4), and out of bounds — and in
        all of these cases **propagation continues**.
-4. Because the board is 11 wide and 6 tall and the range is 10, an
+4. Because the board is 6 wide and 11 tall and the range is 10, an
    unobstructed arm always reaches the board edge.
 
 Consequences that must be preserved:

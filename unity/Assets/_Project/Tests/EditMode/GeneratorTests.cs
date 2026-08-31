@@ -6,6 +6,9 @@ namespace GridInfect.Core.Tests
     // Two load-bearing checks: generated levels are winnable through the real
     // rules (GENERATOR.md §5 by construction), and golden seeds lock the
     // generator against drift — a diff here changes every player's boards.
+    // These values were recaptured when the board was transposed to portrait
+    // (Grid): a different board shape is a different generator domain, so the
+    // same seed legitimately yields a different level.
     [TestFixture]
     public class GeneratorTests
     {
@@ -36,11 +39,11 @@ namespace GridInfect.Core.Tests
             }
         }
 
-        [TestCase(Difficulty.Beginner, ".........................1111.........1..........1..........1.....|D,L")]
-        [TestCase(Difficulty.Easy, "...............11..111.....1111........1..........1..........1....|D,R,L")]
-        [TestCase(Difficulty.Medium, "......1....111.1.1......1...1....111.11.......1..........1..1.....|D,UD,L,LD")]
-        [TestCase(Difficulty.Hard, "....1......1.1.1.......11.1.1..1.......1..1.......1..........1..1.|D,UD,L,LD")]
-        [TestCase(Difficulty.Challenging, ".1..1..1...111.11111.1.1..1.1111..1....111...1.....1....11.11.1...|D,RUD,R,LRD,LU")]
+        [TestCase(Difficulty.Beginner, ".........................1111....1.....1.....1....................|D,L")]
+        [TestCase(Difficulty.Easy, "..1.1...1.....1.1....11...111.11111...1.....1.....1......11.......|D,LUD,U")]
+        [TestCase(Difficulty.Medium, "............111.1..111111..111.....1...1.....1.....1.1............|D,L,R,LD")]
+        [TestCase(Difficulty.Hard, ".....1..1..1..11....11.1...1.1..1111....11..1111..1111..1.11..1.1.|D,RUD,LD,UD")]
+        [TestCase(Difficulty.Challenging, ".1.....11..1..11...111...11111..11111.1111..111...111...1.1...1.1.|D,RUD,LD,RU,LU")]
         public void GoldenBoardsAreStable(Difficulty difficulty, string expected)
         {
             var rng = new Pcg32(42);

@@ -29,10 +29,10 @@ namespace GridInfect.Core.Tests
             new Scenario
             {
                 Name = "single_undo_restores_board",
-                Board = "......................11111111111...........11111111111...........",
-                Pieces = "LR",
-                Script = "P0@2,5;C0",
-                ExpectedBoard = "......................11111111111...........11111111111...........",
+                Board = "..1.1...1.1...1.1...1.1...1.1...1.1...1.1...1.1...1.1...1.1...1.1.",
+                Pieces = "UD",
+                Script = "P0@5,2;C0",
+                ExpectedBoard = "..1.1...1.1...1.1...1.1...1.1...1.1...1.1...1.1...1.1...1.1...1.1.",
                 ExpectedRepelQueue = 0,
                 ExpectedPlacedMask = 0,
                 ExpectedSolved = false,
@@ -42,10 +42,10 @@ namespace GridInfect.Core.Tests
             new Scenario
             {
                 Name = "undo_keeps_other_pieces_coverage",
-                Board = ".....1..1..11111111111.....1..1..........1..........1..11111111111",
-                Pieces = "LR,UD",
-                Script = "P0@1,3;P1@3,8;C1",
-                ExpectedBoard = ".....1..1..44444444444.....1..1..........1..........1..11111111111",
+                Board = ".1...1.1...1.1...1.1...1.1...1111..1.1...1.1...1111111.1...1.1...1",
+                Pieces = "UD,LR",
+                Script = "P0@3,1;P1@8,3;C1",
+                ExpectedBoard = ".4...1.4...1.4...1.4...1.4...1141..1.4...1.4...1141111.4...1.4...1",
                 ExpectedRepelQueue = 0,
                 ExpectedPlacedMask = 1,
                 ExpectedSolved = false,
@@ -55,10 +55,10 @@ namespace GridInfect.Core.Tests
             new Scenario
             {
                 Name = "undo_accumulates_repel_queue",
-                Board = "......................31111111111...........11111111111...........",
-                Pieces = "LR,L",
-                Script = "P0@2,5;P1@2,7;C1",
-                ExpectedBoard = "......................31111444444...........11111111111...........",
+                Board = "..3.1...1.1...1.1...1.1...1.1...1.1...1.1...1.1...1.1...1.1...1.1.",
+                Pieces = "UD,U",
+                Script = "P0@5,2;P1@7,2;C1",
+                ExpectedBoard = "..3.1...1.1...1.1...1.1...1.1...4.1...4.1...4.1...4.1...4.1...4.1.",
                 ExpectedRepelQueue = 2,
                 ExpectedPlacedMask = 1,
                 ExpectedSolved = false,
@@ -68,10 +68,10 @@ namespace GridInfect.Core.Tests
             new Scenario
             {
                 Name = "stale_trip_flag_full_resets_mid_undo",
-                Board = "......................11111111115..................1..............",
-                Pieces = "R,D",
-                Script = "P1@2,7;P0@2,0;C1",
-                ExpectedBoard = "......................11111111115..................1..............",
+                Board = "..1.....1.....1.....1.....1.....1.....1.....1.1...1.....1.....5...",
+                Pieces = "D,R",
+                Script = "P1@7,2;P0@0,2;C1",
+                ExpectedBoard = "..1.....1.....1.....1.....1.....1.....1.....1.1...1.....1.....5...",
                 ExpectedRepelQueue = 0,
                 ExpectedPlacedMask = 0,
                 ExpectedSolved = false,
@@ -81,10 +81,10 @@ namespace GridInfect.Core.Tests
             new Scenario
             {
                 Name = "repel_rerun_walks_over_wall_after_undo",
-                Board = "......................11121111113...........11111111111...........",
-                Pieces = "LR,R",
-                Script = "P0@2,1;P1@2,4;C1",
-                ExpectedBoard = "......................44121111113...........11111111111...........",
+                Board = "..1.1...1.1...1.1...2.1...1.1...1.1...1.1...1.1...1.1...1.1...3.1.",
+                Pieces = "UD,D",
+                Script = "P0@1,2;P1@4,2;C1",
+                ExpectedBoard = "..4.1...4.1...1.1...2.1...1.1...1.1...1.1...1.1...1.1...1.1...3.1.",
                 ExpectedRepelQueue = 1,
                 ExpectedPlacedMask = 1,
                 ExpectedSolved = false,
@@ -94,10 +94,10 @@ namespace GridInfect.Core.Tests
             new Scenario
             {
                 Name = "mid_undo_win_check_ignores_99_marks",
-                Board = ".....1................11111111111.................................",
-                Pieces = "LR,D",
-                Script = "P0@2,4;P1@2,5;C1",
-                ExpectedBoard = ".....1................44444444444.................................",
+                Board = "..1.....1.....1.....1.....1...1.1.....1.....1.....1.....1.....1...",
+                Pieces = "UD,R",
+                Script = "P0@4,2;P1@5,2;C1",
+                ExpectedBoard = "..4.....4.....4.....4.....4...1.4.....4.....4.....4.....4.....4...",
                 ExpectedRepelQueue = 0,
                 ExpectedPlacedMask = 1,
                 ExpectedSolved = true,

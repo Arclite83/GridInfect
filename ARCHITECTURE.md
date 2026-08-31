@@ -46,7 +46,7 @@ files, touches) into these types at the boundary.
 
 | Type | Shape | Invariants |
 |---|---|---|
-| `Grid` | 6 rows × 11 columns, row-major `loc = i*11 + j` | fixed forever for this game (RULES §1) |
+| `Grid` | 11 rows × 6 columns, row-major `loc = i*6 + j` | fixed for this game. Transposed once from the original's 6×11 when the game went portrait (R-1103) by `(i, j) -> (j, i)` with arms remapped `L<->U`, `R<->D` — an exact conjugate, so `docs/test_vectors.json` still replays step for step (`tools/transpose_board_to_portrait.py`) |
 | `Cell` | byte values `0` void, `1` active, `2` wall, `3` switch, `4` infected, `5` trap, `99` undo mark | 2/3/5 immutable during play; 99 never visible between moves |
 | `Tile` | enum, the 15 L/R/U/D arm combinations | **ordinal order is contract** (rand-domain + original enum order); never reorder |
 | `Difficulty` | enum Beginner…Challenging | ordinal indexes the save arrays; never reorder |
@@ -155,7 +155,7 @@ The hot path is spread propagation: flat `byte[66]`, struct pieces and
 repels, stackalloc direction flags, no LINQ, no allocation per placement
 beyond log entries (human-rate). JSON exists only at boundaries (save, log
 serialization, test fixtures). The board is one quad with one material, and a
-`CellChanged` writes texels in an `11x6` data texture — no GameObjects, no
+`CellChanged` writes texels in a `6x11` data texture — no GameObjects, no
 mesh rebuild, no allocation per placement; text and tray pieces come from one
 shared texture/font. Frame budget target is 60 fps (R-1104) with a turn-based
 load that rounds to zero — the discipline is the point, the next game inherits
