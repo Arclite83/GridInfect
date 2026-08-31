@@ -220,17 +220,25 @@ Read as straddling the front — `p - 0.12 < t <= p + 0.15` — rather than
 band. Band and ghost both fade out over the last of the dissolve, because a
 cell must be hard-edged and static within 350 ms.
 
-### Bloom
+### Bloom and colour space
+
+The project now renders in **linear** colour space, which is what
+`docs/DEPENDENCIES.md` always specified and what the emission and cooling
+maths here assume — the setting had simply never been flipped. `lerp(hot,
+cooled, k)` is a real interpolation now, and the bloom falloff is physical.
 
 Threshold 1.0: only what the board pushes into HDR blooms, which is the hot
-fill, the edge band, the active trace and the seed marker. That is strictly
-above the cooled fill and the resting border, and it also rejects the white UI
-text, which a luminance-tuned threshold would not.
+fill, the edge band, the active trace and the seed marker. Everything at rest
+sits well under it — cooled fill 0.32 linear, immune hatch 0.25, cell border
+0.13 — and so does the UI chrome, which peaks at 0.83 for white text and
+exactly 1.0 for pure white. A luminance-tuned threshold would have caught the
+text; "above LDR" does not.
 
-The project still renders in **gamma** colour space. Bloom works there, but the
-falloff is not physically right, and switching to linear would restyle every
-procedural sprite on every screen at once. Left for the art pass, with the rest
-of the colour work.
+One conversion is manual. `Material.SetColor` hands its value straight to the
+GPU, unlike a sprite tint or a camera clear colour, which Unity converts for
+you. The palette is authored in sRGB hex, so `BoardView.SetPaletteColor`
+converts when the active colour space is linear — and only then, so flipping
+the project setting back cannot silently double-darken the board.
 
 ### Not verified here
 

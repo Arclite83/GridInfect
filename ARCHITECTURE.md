@@ -178,6 +178,11 @@ replaces looks without touching structure. Timing table:
 structural from day one: every special cell state carries a shape glyph,
 never color alone (R-1001).
 
+Rendering is **linear** (`docs/DEPENDENCIES.md`): correct blending under URP,
+and the min spec supports it everywhere we ship. Colours authored in sRGB are
+converted where Unity does not do it for us — `Material.SetColor` is the one
+such path in the adapter.
+
 The board itself is `docs/infection-vfx-spec.md`, built the same way — one
 quad, one material, zero imported art. Cell state goes into a point-filtered
 `RGBAFloat` texture (value, transition start time, packed entry direction,

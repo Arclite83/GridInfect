@@ -38,6 +38,8 @@ namespace UnityEngine
         public float r, g, b, a;
         public Color(float r, float g, float b, float a = 1f) { this.r = r; this.g = g; this.b = b; this.a = a; }
         public static Color white => new Color(1f, 1f, 1f);
+        public Color linear => this;
+        public Color gamma => this;
     }
 
     public struct Rect
@@ -64,6 +66,7 @@ namespace UnityEngine
     }
 
     public enum HideFlags { None, HideAndDontSave }
+    public enum ColorSpace { Gamma, Linear }
     public enum TextureFormat { RGBA32, RGBAFloat }
     public enum FilterMode { Point, Bilinear, Trilinear }
     public enum TextureWrapMode { Repeat, Clamp }
@@ -260,6 +263,11 @@ namespace UnityEngine
     {
         public static int width => 1280;
         public static int height => 720;
+    }
+
+    public static class QualitySettings
+    {
+        public static ColorSpace activeColorSpace => ColorSpace.Linear;
     }
 
     public static class Application

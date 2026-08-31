@@ -33,9 +33,11 @@ namespace GridInfect.Game
         public Color Glyph = Hex("#0B1020");          // shape glyphs read as holes in the fill
 
         // ---- emission / bloom ----
-        // Hot output is pushed above 1 so it lands in the HDR buffer; the bloom
-        // threshold then sits at 1, which rejects every LDR colour on the board
-        // (cooled fill, cell border, immune hatch) and all of the UI chrome.
+        // Colours here are sRGB hex, as authored; BoardView converts them for
+        // linear rendering on the way to the material. Hot output is pushed
+        // above 1 so it lands in the HDR buffer, and the bloom threshold sits
+        // at 1, which rejects every LDR colour on the board (cooled fill, cell
+        // border, immune hatch) and all of the UI chrome.
         [Min(1f)] public float HotEmission = 2.2f;
         [Min(0f)] public float BloomThreshold = 1.0f;
         [Min(0f)] public float BloomIntensity = 0.9f;

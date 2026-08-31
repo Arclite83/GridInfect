@@ -362,19 +362,28 @@ namespace GridInfect.Game
             _material.SetFloat("_GhostTrailDur", Vfx.GhostTrailDur);
             _material.SetFloat("_ConflictDur", Vfx.ConflictFlashDur);
 
-            _material.SetColor("_ColBackground", _palette.Background);
-            _material.SetColor("_ColGridLine", _palette.GridLine);
-            _material.SetColor("_ColCellBorder", _palette.CellBorder);
-            _material.SetColor("_ColInfected", _palette.Infected);
-            _material.SetColor("_ColCooled", _palette.Cooled);
-            _material.SetColor("_ColBleedEdge", _palette.BleedEdge);
-            _material.SetColor("_ColGhost", _palette.Ghost);
-            _material.SetColor("_ColSeed", _palette.Seed);
-            _material.SetColor("_ColImmuneHatch", _palette.ImmuneHatch);
-            _material.SetColor("_ColSwitch", _palette.RepelSwitch);
-            _material.SetColor("_ColTrap", _palette.ResetTrap);
-            _material.SetColor("_ColConflict", _palette.Conflict);
-            _material.SetColor("_ColGlyph", _palette.Glyph);
+            SetPaletteColor("_ColBackground", _palette.Background);
+            SetPaletteColor("_ColGridLine", _palette.GridLine);
+            SetPaletteColor("_ColCellBorder", _palette.CellBorder);
+            SetPaletteColor("_ColInfected", _palette.Infected);
+            SetPaletteColor("_ColCooled", _palette.Cooled);
+            SetPaletteColor("_ColBleedEdge", _palette.BleedEdge);
+            SetPaletteColor("_ColGhost", _palette.Ghost);
+            SetPaletteColor("_ColSeed", _palette.Seed);
+            SetPaletteColor("_ColImmuneHatch", _palette.ImmuneHatch);
+            SetPaletteColor("_ColSwitch", _palette.RepelSwitch);
+            SetPaletteColor("_ColTrap", _palette.ResetTrap);
+            SetPaletteColor("_ColConflict", _palette.Conflict);
+            SetPaletteColor("_ColGlyph", _palette.Glyph);
+        }
+
+        // Material.SetColor hands the value straight to the GPU — unlike a
+        // sprite tint or a camera clear colour, nothing converts it for us. The
+        // palette is authored in sRGB, so in linear rendering it converts here.
+        void SetPaletteColor(string property, Color color)
+        {
+            _material.SetColor(property,
+                QualitySettings.activeColorSpace == ColorSpace.Linear ? color.linear : color);
         }
 
         static Mesh BuildQuad(float width, float height)

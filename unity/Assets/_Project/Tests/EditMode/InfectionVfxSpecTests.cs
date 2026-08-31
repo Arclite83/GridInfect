@@ -139,6 +139,23 @@ namespace GridInfect.Core.Tests
         }
 
         [Test]
+        public void ProjectRendersLinear()
+        {
+            // The emission and cooling maths, and a bloom threshold of 1 that
+            // rejects the resting board, both assume linear rendering — which
+            // is what docs/DEPENDENCIES.md specifies. Gamma would still draw,
+            // just wrong, and quietly.
+            string dependencies = File.ReadAllText(Path.Combine(TestPaths.RepoRoot, "docs", "DEPENDENCIES.md"));
+            Assert.That(dependencies, Does.Match(@"\|\s*Color space\s*\|\s*\*\*Linear\*\*"),
+                "docs/DEPENDENCIES.md no longer specifies linear; this gate needs rewriting, not deleting");
+
+            string settings = File.ReadAllText(
+                Path.Combine(TestPaths.RepoRoot, "unity", "ProjectSettings", "ProjectSettings.asset"));
+            Assert.That(settings, Does.Match(@"(?m)^\s*m_ActiveColorSpace:\s*1\s*$"),
+                "the Unity project is not set to linear colour space");
+        }
+
+        [Test]
         public void JuiceLayersAreIndependentSwitchesOnTheBoard()
         {
             string view = File.ReadAllText(GamePath("View", "BoardView.cs"));
