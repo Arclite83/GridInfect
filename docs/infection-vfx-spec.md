@@ -240,6 +240,35 @@ you. The palette is authored in sRGB hex, so `BoardView.SetPaletteColor`
 converts when the active colour space is linear — and only then, so flipping
 the project setting back cannot silently double-darken the board.
 
+The volume also carries **Neutral** tonemapping. Without a curve, the hot fill
+— palette colour times 2.2 — hard-clips per channel, and `#00D9FF` lands on
+pure `#00FFFF`: the authored hue is gone exactly where the eye is looking.
+Neutral rolls the highlights off instead and lets the bloom do the work of
+reading as bright. It slightly compresses LDR highlights too, so white UI text
+sits a shade lower than before.
+
+### The blot has to be a flat histogram
+
+Summed value noise is bell-shaped. With the field normalised min-to-max, nearly
+every block sits near 0.5, so `p` sweeping 0 to 1 does almost nothing until it
+reaches the middle, where the whole cell flips at once — and the bleed reads as
+static rather than ink. `BoardNoise` rank-normalises instead, which leaves the
+spatial structure alone and re-spreads the values, so the filled fraction
+tracks `p` directly and the 0.12 edge band is 12% of a cell rather than most of
+it.
+
+### Open: bias 0.3 does not give the edge band an edge
+
+`t = lerp(noise, entryDistance, _Bias)`, and at bias 0.3 that field is
+noise-dominant — so a *threshold* band in `t` is a scattered set of blocks, not
+a spatial band. The bleed edge therefore reads as sparkle across the whole
+transition zone rather than as a front, and step 7's "edge band" is not an
+edge. Past roughly 0.6, with the band nearer 0.05, it becomes the ink the spec
+describes.
+
+Bias is a locked parameter and this is an art call, so nothing has been
+changed. Both knobs are live in the WebGL bench if you want to see it.
+
 ### Not verified here
 
 Acceptance criteria 2, 5 and 6 are runtime judgements — frame rate on device,

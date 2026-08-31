@@ -46,7 +46,6 @@ namespace GridInfect.Game
             };
 
             var pixels = new Color[width * height];
-            float min = float.MaxValue, max = float.MinValue;
             var values = new float[width * height];
 
             for (int octave = 0; octave < LatticeX.Length; octave++)
@@ -64,16 +63,23 @@ namespace GridInfect.Game
                 }
             }
 
-            for (int n = 0; n < values.Length; n++)
+            // Rank-normalise, rather than rescale min..max. Summed value noise
+            // is bell-shaped: nearly every block lands near the middle, so a
+            // dissolve threshold sweeping 0..1 does almost nothing, then flips
+            // the whole cell at once, and the bleed reads as static instead of
+            // ink. A flat histogram makes the filled fraction track p directly,
+            // which is also what makes the 0.12 edge band 12% of a cell rather
+            // than most of it. Spatial structure is untouched — only the values
+            // are re-spread.
+            var order = new int[values.Length];
+            for (int n = 0; n < order.Length; n++) order[n] = n;
+            var keys = (float[])values.Clone();
+            System.Array.Sort(keys, order);
+            float last = order.Length > 1 ? order.Length - 1 : 1;
+            for (int rank = 0; rank < order.Length; rank++)
             {
-                if (values[n] < min) min = values[n];
-                if (values[n] > max) max = values[n];
-            }
-            float span = Mathf.Max(max - min, 1e-4f);
-            for (int n = 0; n < values.Length; n++)
-            {
-                float g = (values[n] - min) / span;
-                pixels[n] = new Color(g, g, g, 1f);
+                float g = rank / last;
+                pixels[order[rank]] = new Color(g, g, g, 1f);
             }
 
             texture.SetPixels(pixels);

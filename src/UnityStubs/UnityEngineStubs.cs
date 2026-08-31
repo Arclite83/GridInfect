@@ -344,6 +344,15 @@ namespace UnityEngine.Rendering.Universal
         public ClampedFloatParameter scatter = new ClampedFloatParameter();
     }
 
+    public enum TonemappingMode { None, Neutral, ACES }
+
+    public sealed class TonemappingModeParameter : VolumeParameter<TonemappingMode> { }
+
+    public sealed class Tonemapping : VolumeComponent
+    {
+        public TonemappingModeParameter mode = new TonemappingModeParameter();
+    }
+
     public sealed class UniversalAdditionalCameraData : MonoBehaviour
     {
         public bool renderPostProcessing { get; set; }
