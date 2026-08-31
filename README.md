@@ -48,7 +48,7 @@ Full first-open walkthrough (what to commit, folder layout, asset policy):
    `Assets/Settings/` on first open.
 3. Press **Play** in any empty scene — the game boots procedurally
    (`RuntimeInitializeOnLoadMethod`), no scene setup required. Set the Game
-   view to a landscape resolution (e.g. 16:9).
+   view to a portrait resolution (e.g. 1080×2340).
 4. Tests: Window → General → Test Runner → EditMode → Run All. Headless:
    `Unity -batchmode -runTests -testPlatform EditMode -projectPath unity`.
    The suite is a deliberately limited, load-bearing subset (golden replay,

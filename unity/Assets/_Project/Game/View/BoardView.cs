@@ -55,6 +55,7 @@ namespace GridInfect.Game
         readonly Mesh _quad;
         readonly HopClickAudio _audio;
         readonly Vector3 _boardHome;
+        readonly float _row0Y;
 
         float _boardTime;
         float _shakeUntil = float.NegativeInfinity;
@@ -80,14 +81,15 @@ namespace GridInfect.Game
             _session = session;
             _palette = palette;
 
-            CellSize = UnityEngine.Screen.height * PresentationConfig.CellHeightPct;
+            CellSize = MeasureCellSize();
             Pitch = CellSize * PresentationConfig.CellPitch;
+            _row0Y = MeasureRow0Y(Pitch);
 
             _root = new GameObject("board");
             _root.transform.SetParent(parent, false);
-            // Row 0 sits at BoardTopPct; the quad spans the whole COLS x ROWS
-            // lattice, gutters included, so cell UV and pitch stay uniform.
-            _boardHome = new Vector3(0f, CellCenter(0, 0).y - (Grid.Height - 1) * Pitch / 2f, 0.5f);
+            // The quad spans the whole COLS x ROWS lattice, gutters included,
+            // so cell UV and pitch stay uniform.
+            _boardHome = new Vector3(0f, _row0Y - (Grid.Height - 1) * Pitch / 2f, 0.5f);
             _root.transform.localPosition = _boardHome;
 
             _state = new BoardStateTexture();
@@ -132,11 +134,43 @@ namespace GridInfect.Game
 
         // ---- layout ----
 
+        // The band the board gets: above the tray, below the title and HUD.
+        // Measured from the bottom of the screen, and independent of the cell
+        // size so the fit below cannot chase its own tail.
+        static void MeasureBand(out float bottom, out float top)
+        {
+            float h = UnityEngine.Screen.height;
+            bottom = h * (PresentationConfig.TrayBottomPct + PresentationConfig.CellHeightPct);
+            top = h * PresentationConfig.BoardCeilingPct;
+        }
+
+        // Whichever of the three binds. Height caps the cell the way the
+        // original did; width is what an 11-wide board hits first on a phone
+        // held upright; the band is what stops the board growing into the tray.
+        static float MeasureCellSize()
+        {
+            MeasureBand(out float bottom, out float top);
+            float byHeight = UnityEngine.Screen.height * PresentationConfig.CellHeightPct;
+            float byWidth = UnityEngine.Screen.width * PresentationConfig.BoardWidthPct
+                            / (Grid.Width * PresentationConfig.CellPitch);
+            float byBand = (top - bottom) / (Grid.Height * PresentationConfig.CellPitch);
+            return Mathf.Min(byHeight, Mathf.Min(byWidth, byBand));
+        }
+
+        // Row 0's centre: the board sits centred in that band, which is what
+        // keeps it composed when a tall screen leaves far more room than a
+        // wide one.
+        static float MeasureRow0Y(float pitch)
+        {
+            MeasureBand(out float bottom, out float top);
+            float centre = (bottom + top) / 2f - UnityEngine.Screen.height / 2f;
+            return centre + (Grid.Height - 1) * pitch / 2f;
+        }
+
         public Vector2 CellCenter(int i, int j)
         {
             float x = (j - Grid.Width / 2) * Pitch;
-            float y = UnityEngine.Screen.height * (PresentationConfig.BoardTopPct - 0.5f) - i * Pitch;
-            return new Vector2(x, y);
+            return new Vector2(x, _row0Y - i * Pitch);
         }
 
         public (int i, int j) CellAt(Vector2 world)
@@ -363,6 +397,7 @@ namespace GridInfect.Game
             _material.SetFloat("_ConflictDur", Vfx.ConflictFlashDur);
 
             SetPaletteColor("_ColBackground", _palette.Background);
+            SetPaletteColor("_ColCellPlate", _palette.CellPlate);
             SetPaletteColor("_ColGridLine", _palette.GridLine);
             SetPaletteColor("_ColCellBorder", _palette.CellBorder);
             SetPaletteColor("_ColInfected", _palette.Infected);

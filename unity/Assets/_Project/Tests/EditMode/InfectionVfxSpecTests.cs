@@ -156,6 +156,51 @@ namespace GridInfect.Core.Tests
         }
 
         [Test]
+        public void ProjectShipsPortrait()
+        {
+            // The board is sized by whichever axis binds, so it survives either
+            // orientation — but the shipped one is a product decision, and a
+            // stray editor toggle should not be able to change it quietly.
+            string dependencies = File.ReadAllText(Path.Combine(TestPaths.RepoRoot, "docs", "DEPENDENCIES.md"));
+            Assert.That(dependencies, Does.Match(@"\|\s*Orientation\s*\|\s*\*\*Portrait\*\*"),
+                "docs/DEPENDENCIES.md no longer specifies portrait; this gate needs rewriting, not deleting");
+
+            string settings = File.ReadAllText(
+                Path.Combine(TestPaths.RepoRoot, "unity", "ProjectSettings", "ProjectSettings.asset"));
+            Assert.That(settings, Does.Match(@"(?m)^\s*defaultScreenOrientation:\s*0\s*$"),
+                "the Unity project's default orientation is not Portrait");
+            foreach (string landscape in new[] { "allowedAutorotateToLandscapeRight", "allowedAutorotateToLandscapeLeft" })
+            {
+                Assert.That(settings, Does.Match(@"(?m)^\s*" + landscape + @":\s*0\s*$"),
+                    $"{landscape} is still allowed");
+            }
+        }
+
+        [Test]
+        public void BoardFitsEitherAxis()
+        {
+            // An 11-wide board driven off screen height alone runs off the side
+            // of a portrait phone. The cell size has to be the smaller of the
+            // two fits, and the tray has to follow the board rather than
+            // measuring itself.
+            string config = File.ReadAllText(ConfigPath);
+            Assert.That(config, Does.Contain("BoardWidthPct"), "no width budget for the board");
+
+            string view = File.ReadAllText(GamePath("View", "BoardView.cs"));
+            foreach (string limit in new[] { "byHeight", "byWidth", "byBand" })
+            {
+                Assert.That(view, Does.Contain(limit),
+                    $"BoardView does not measure the '{limit}' limit on the cell size");
+            }
+            Assert.That(view, Does.Match(@"Mathf\.Min\(byHeight, Mathf\.Min\(byWidth, byBand\)\)"),
+                "BoardView does not take the smallest of the three fits");
+
+            string screen = File.ReadAllText(GamePath("Screens", "BoardScreen.cs"));
+            Assert.That(screen, Does.Contain("_board.CellSize"),
+                "the tray does not take its size from the board");
+        }
+
+        [Test]
         public void JuiceLayersAreIndependentSwitchesOnTheBoard()
         {
             string view = File.ReadAllText(GamePath("View", "BoardView.cs"));

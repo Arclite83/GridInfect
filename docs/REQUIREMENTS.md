@@ -141,7 +141,7 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 |---|---|---|---|
 | R-1101 | MVP | Model state changes are legible the same frame they occur; any added cosmetic animation must not obscure board state. The 0.3 s resolution beat is presentation only — input during it fast-forwards resolution (R-107), it is never an input-cancellation window. | ASSETS §6; RULES §4.1 (corrected) |
 | R-1102 | LATER | The ASSETS §6 timing table (0.10 s drop snap, 0.15 s tray return, 0.5 s scene fades, etc., all linear) is the starting values for the new presentation — free to change, but changes are deliberate, not accidental. | ASSETS §6 |
-| R-1103 | MVP | Landscape-only; the 6×11 board plus 8-slot tray fits every supported aspect ratio via resolution-relative layout. | ASSETS §3, §6; PORT_NOTES §4 |
+| R-1103 | MVP | **Portrait-only** (revised — the original shipped landscape-locked). The 6×11 board plus 8-slot tray fits every supported aspect ratio via resolution-relative layout: the board is sized by whichever axis binds, so width sets the cell on a phone held upright and height still sets it on a tablet. | ASSETS §3, §6; PORT_NOTES §4 |
 | R-1104 | MVP | Target frame rate 60 (the original targeted 90; nothing in a turn-based puzzle needs it, and battery + thermals on an ad-supported title argue down). | **NEW — needs approval** |
 
 ## 12. Platform & compliance

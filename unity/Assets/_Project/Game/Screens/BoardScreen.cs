@@ -20,22 +20,26 @@ namespace GridInfect.Game
         static float ScreenW => UnityEngine.Screen.width;
         static float ScreenH => UnityEngine.Screen.height;
 
+        // Boxes and type come off the short edge so a control keeps its shape
+        // when the screen turns; positions stay fractions of their own axis.
+        static float Short => PresentationConfig.ShortEdge;
+
         protected override void Build()
         {
             float topY = ScreenH * 0.44f;
             _backButton = UiButton.Make(Root.transform, "MENU",
-                new Vector2(-ScreenW * 0.42f, topY), new Vector2(ScreenW * 0.12f, ScreenH * 0.07f),
+                new Vector2(-ScreenW * 0.42f, topY), new Vector2(ScreenW * 0.12f, Short * 0.07f),
                 BoardTheme.ButtonBg, BoardTheme.Text, GoBack);
             Buttons.Add(_backButton);
             _resetButton = UiButton.Make(Root.transform, "RESET",
-                new Vector2(ScreenW * 0.42f, topY), new Vector2(ScreenW * 0.12f, ScreenH * 0.07f),
+                new Vector2(ScreenW * 0.42f, topY), new Vector2(ScreenW * 0.12f, Short * 0.07f),
                 BoardTheme.ButtonBg, BoardTheme.Text, ResetLevel);
             Buttons.Add(_resetButton);
 
-            _title = Ui.MakeText("title", Root.transform, "", ScreenH * 0.045f, BoardTheme.Text, 2);
+            _title = Ui.MakeText("title", Root.transform, "", Short * 0.045f, BoardTheme.Text, 2);
             Ui.SetPos(_title.gameObject, 0f, topY);
 
-            _hud = Ui.MakeText("hud", Root.transform, "", ScreenH * 0.035f, BoardTheme.Accent, 2);
+            _hud = Ui.MakeText("hud", Root.transform, "", Short * 0.035f, BoardTheme.Accent, 2);
             Ui.SetPos(_hud.gameObject, 0f, topY - ScreenH * 0.055f);
 
             App.State.SessionChanged += OnSessionChanged;
@@ -105,7 +109,7 @@ namespace GridInfect.Game
 
         Vector2 TraySlot(int k)
         {
-            float size = ScreenH * PresentationConfig.CellHeightPct;
+            float size = _board != null ? _board.CellSize : ScreenH * PresentationConfig.CellHeightPct;
             float x = (k - PresentationConfig.TrayCenterSlot) * size * PresentationConfig.TraySlotPitch;
             float y = -ScreenH / 2f + ScreenH * PresentationConfig.TrayBottomPct + size / 2f;
             return new Vector2(x, y);
@@ -223,7 +227,7 @@ namespace GridInfect.Game
             var cover = Ui.MakeRect("bg", _beginCover.transform, new Vector2(ScreenW, ScreenH * 0.86f), BoardTheme.Background, 30);
             Ui.SetPos(cover, 0f, -ScreenH * 0.07f); // board area only; title stays visible
             var begin = UiButton.Make(_beginCover.transform, "BEGIN",
-                new Vector2(0f, 0f), new Vector2(ScreenW * 0.24f, ScreenH * 0.12f),
+                new Vector2(0f, 0f), new Vector2(ScreenW * 0.24f, Short * 0.12f),
                 BoardTheme.Accent, BoardTheme.GlyphDark, () =>
                 {
                     App.Do(GridInfectActions.FreePlayBegin, Inputs.Now(GameApp.NowMs()));
@@ -263,8 +267,8 @@ namespace GridInfect.Game
         void ShowSolvedPopup(int nextLevelId)
         {
             OpenPopup("COMPLETE");
-            float y = -ScreenH * 0.06f;
-            var size = new Vector2(ScreenW * 0.16f, ScreenH * 0.09f);
+            float y = -Short * 0.06f;
+            var size = new Vector2(ScreenW * 0.16f, Short * 0.09f);
             AddPopupButton("MENU", new Vector2(-ScreenW * 0.19f, y), size, GoBack);
             AddPopupButton("REPLAY", new Vector2(0f, y), size,
                 () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(App.State.ClassicLevelId)));
@@ -278,8 +282,8 @@ namespace GridInfect.Game
         void ShowCompletedPopup(long durationMs)
         {
             OpenPopup($"COMPLETED IN:\n{Queries.FormatDuration(durationMs)}");
-            AddPopupButton("MENU", new Vector2(0f, -ScreenH * 0.06f),
-                new Vector2(ScreenW * 0.16f, ScreenH * 0.09f),
+            AddPopupButton("MENU", new Vector2(0f, -Short * 0.06f),
+                new Vector2(ScreenW * 0.16f, Short * 0.09f),
                 () => App.Screens.Show(new FreePlayMenuScreen()));
         }
 
@@ -295,9 +299,9 @@ namespace GridInfect.Game
 
             var panel = new GameObject("panel");
             panel.transform.SetParent(_popup.transform, false);
-            Ui.MakeRect("bg", panel.transform, new Vector2(ScreenW * 0.62f, ScreenH * 0.36f), BoardTheme.ButtonBg, 41);
-            var text = Ui.MakeText("message", panel.transform, message, ScreenH * 0.05f, BoardTheme.Text, 42);
-            Ui.SetPos(text.gameObject, 0f, ScreenH * 0.08f);
+            Ui.MakeRect("bg", panel.transform, new Vector2(ScreenW * 0.62f, Short * 0.36f), BoardTheme.ButtonBg, 41);
+            var text = Ui.MakeText("message", panel.transform, message, Short * 0.05f, BoardTheme.Text, 42);
+            Ui.SetPos(text.gameObject, 0f, Short * 0.08f);
 
             // Slide in (0.15 s, linear).
             panel.transform.localPosition = new Vector3(0f, -ScreenH, 0f);

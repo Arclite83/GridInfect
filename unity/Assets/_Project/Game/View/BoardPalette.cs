@@ -14,6 +14,7 @@ namespace GridInfect.Game
     {
         // ---- spec palette ----
         public Color Background = Hex("#0B1020");     // near-black, never pure black
+        public Color CellPlate = Hex("#141C33");      // every cell that exists
         public Color GridLine = Hex("#1B2A48");       // hairline, always visible
         public Color CellBorder = Hex("#2B3F63");     // 1 px, empty cells
         public Color Infected = Hex("#00D9FF");       // HDR emissive, cools on fade

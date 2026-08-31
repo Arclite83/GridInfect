@@ -60,6 +60,7 @@ Shader "GridInfect/Board"
         // Palette. Every colour arrives from BoardPalette; the defaults here
         // are only what the inspector shows on a bare material.
         _ColBackground ("Board background", Color) = (0, 0, 0, 1)
+        _ColCellPlate ("Cell plate", Color) = (0, 0, 0, 1)
         _ColGridLine ("Grid line", Color) = (0, 0, 0, 1)
         _ColCellBorder ("Cell border", Color) = (0, 0, 0, 1)
         _ColInfected ("Infected fill", Color) = (0, 0, 0, 1)
@@ -107,7 +108,7 @@ Shader "GridInfect/Board"
                 float _EdgeSparks, _SparkLife;
                 float _TraceDim, _TraceDimLevel;
                 float _GhostTrail, _GhostTrailDur;
-                float4 _ColBackground, _ColGridLine, _ColCellBorder, _ColInfected, _ColCooled;
+                float4 _ColBackground, _ColCellPlate, _ColGridLine, _ColCellBorder, _ColInfected, _ColCooled;
                 float4 _ColBleedEdge, _ColGhost, _ColSeed, _ColImmuneHatch;
                 float4 _ColSwitch, _ColTrap, _ColConflict, _ColGlyph;
             CBUFFER_END
@@ -265,12 +266,14 @@ Shader "GridInfect/Board"
 
                 if (value != CELL_VOID && inCell)
                 {
-                    col = _ColBackground.rgb;
+                    // Every cell that exists sits on a plate. A 1 px border on
+                    // the board background was not enough to tell an empty cell
+                    // from a hole at thumb size (criterion 5) — the fill is what
+                    // carries it, and the border sharpens the edge.
+                    col = _ColCellPlate.rgb;
 
                     if (value == CELL_ACTIVE)
                     {
-                        // The 1 px border is what makes an empty cell read as a
-                        // cell against the same background.
                         if (onBorder) col = _ColCellBorder.rgb;
 
                         if (kind == TR_RECEDE)
@@ -293,7 +296,7 @@ Shader "GridInfect/Board"
                     {
                         // Immune: 45 degree hatch, constant on-screen pitch.
                         float hatch = frac((px.x + px.y) / (_HatchPitchPx * 1.41421356));
-                        col = (hatch < 0.5) ? _ColImmuneHatch.rgb : _ColBackground.rgb;
+                        col = (hatch < 0.5) ? _ColImmuneHatch.rgb : _ColCellPlate.rgb;
                         if (onBorder) col = _ColCellBorder.rgb;
                     }
                     else if (value == CELL_SWITCH)

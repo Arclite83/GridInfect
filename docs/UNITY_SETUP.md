@@ -42,7 +42,7 @@ scene gives everyone the same starting point:
    hit-tests procedurally.
 3. **File → Build Profiles** (Unity 6's Build Settings) → **Scene List** →
    add `Main.unity` as the only entry.
-4. Set the **Game view** to a landscape resolution (e.g. 16:9) and press
+4. Set the **Game view** to a portrait resolution (e.g. 1080×2340) and press
    **Play** — you should land on the main menu.
 
 ## 3. Tests

@@ -13,14 +13,24 @@ namespace GridInfect.Game
         public const float PopupSlide = 0.15f;      // COMPLETE popup / BEGIN dismiss
         public const float PageSlide = 0.20f;       // classic level-select paging
 
-        // Board layout metrics (LevelMenuScene::init).
-        public const float CellHeightPct = 0.11f;   // cell sprite = 11% of screen height
+        // Board layout metrics (LevelMenuScene::init), made orientation-
+        // agnostic: the board fits whichever axis binds. Height sets the cell
+        // size on a landscape screen and width on a portrait one, so an
+        // 11-wide board can never run off the side of a phone held upright.
+        public const float CellHeightPct = 0.11f;   // cap: cell = 11% of screen height
+        public const float BoardWidthPct = 0.94f;   // the board spans at most 94% of the width
         public const float CellPitch = 1.05f;       // 5% gutters both axes
-        public const float BoardTopPct = 0.80f;     // row 0 centered at 80% screen height
+        public const float BoardCeilingPct = 0.855f; // board stays below the title and HUD
         public const float TrayBottomPct = 0.075f;  // tray pieces 7.5% from the bottom
         public const float TraySlotPitch = 1.1f * 1.1f;
         public const int TraySlots = 8;
         public const int TrayCenterSlot = 3;
+
+        // Anything square-ish — button boxes, glyphs, type — is sized off the
+        // short edge, so a control keeps its proportions when the screen turns.
+        // Positions stay fractions of the axis they belong to.
+        public static float ShortEdge =>
+            UnityEngine.Mathf.Min(UnityEngine.Screen.width, UnityEngine.Screen.height);
 
         public const int TargetFrameRate = 60;      // R-1104
 

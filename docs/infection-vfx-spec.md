@@ -23,6 +23,7 @@ Neon circuit on near-black. Flat fills, hard edges, no gradients in the base art
 | Element | Colour | Notes |
 |---|---|---|
 | Board background | `#0B1020` | Near-black, never pure black |
+| Cell plate | `#141C33` | Every cell that exists; a hole shows the background |
 | Grid lines | `#1B2A48` | Hairline, always visible |
 | Cell border (empty) | `#2B3F63` | 1 px |
 | Infected fill | `#00D9FF` | HDR emissive, cools on fade |
