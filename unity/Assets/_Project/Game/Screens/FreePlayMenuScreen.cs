@@ -1,8 +1,11 @@
 using GridInfect.Core;
 using UnityEngine;
+using L = GridInfect.Game.PresentationConfig.Layout;
 
 namespace GridInfect.Game
 {
+    // Portrait: five full-width rows centred in the screen, each carrying its
+    // own best time on the right rather than in a second column.
     public sealed class FreePlayMenuScreen : AppScreen
     {
         static readonly Difficulty[] Order =
@@ -12,30 +15,26 @@ namespace GridInfect.Game
 
         protected override void Build()
         {
-            float h = UnityEngine.Screen.height;
-            float w = UnityEngine.Screen.width;
-
-            var title = Ui.MakeText("title", Root.transform, "FREE PLAY", h * 0.05f, BoardTheme.Text, 2);
-            Ui.SetPos(title.gameObject, 0f, h * 0.44f);
-            Buttons.Add(UiButton.Make(Root.transform, "MENU",
-                new Vector2(-w * 0.42f, h * 0.44f), new Vector2(w * 0.12f, h * 0.07f),
+            var title = Ui.MakeText("title", Root.transform, "FREE PLAY", L.HeadingText, BoardTheme.Text, 2);
+            Ui.SetPos(title.gameObject, 0f, L.TopBarY);
+            Buttons.Add(UiButton.Make(Root.transform, "MENU", L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
 
             var profile = App.State.Profile;
+            var size = new Vector2(L.ContentWidth, L.ButtonHeight);
+
             for (int n = 0; n < Order.Length; n++)
             {
                 var difficulty = Order[n];
-                float y = h * 0.28f - n * h * 0.14f;
+                float y = L.StackRowY(n, Order.Length, L.ButtonHeight, 0f);
 
                 var captured = difficulty;
                 Buttons.Add(UiButton.Make(Root.transform, difficulty.ToString().ToUpperInvariant(),
-                    new Vector2(-w * 0.12f, y), new Vector2(w * 0.44f, h * 0.11f),
-                    BoardTheme.ButtonBg, BoardTheme.Text,
-                    () => StartRun(captured)));
+                    new Vector2(0f, y), size, BoardTheme.ButtonBg, BoardTheme.Text, () => StartRun(captured)));
 
                 var best = Ui.MakeText($"best:{difficulty}", Root.transform,
-                    Queries.FormatBestTime(profile.BestTimesMs[n]), h * 0.04f, BoardTheme.Accent, 2);
-                Ui.SetPos(best.gameObject, w * 0.26f, y);
+                    Queries.FormatBestTime(profile.BestTimesMs[n]), L.LabelText, BoardTheme.Accent, 2);
+                Ui.SetPos(best.gameObject, L.ContentWidth / 2f - L.Gap * 2.5f, y);
             }
         }
 

@@ -201,6 +201,23 @@ namespace GridInfect.Core.Tests
         }
 
         [Test]
+        public void EveryScreenMeasuresFromTheSharedLayout()
+        {
+            // Each screen used to invent its own fractions of screen height,
+            // which is how they all drifted into a landscape-only shape. A new
+            // screen that does the same should fail here rather than at the
+            // first person to hold a phone upright.
+            string dir = GamePath("Screens");
+            foreach (string file in Directory.GetFiles(dir, "*.cs"))
+            {
+                string text = File.ReadAllText(file);
+                if (!text.Contains(": AppScreen")) continue;   // ScreenManager defines the base
+                Assert.That(text, Does.Contain("PresentationConfig.Layout"),
+                    $"{Path.GetFileName(file)} does not measure from the shared layout metrics");
+            }
+        }
+
+        [Test]
         public void JuiceLayersAreIndependentSwitchesOnTheBoard()
         {
             string view = File.ReadAllText(GamePath("View", "BoardView.cs"));

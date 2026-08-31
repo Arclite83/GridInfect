@@ -183,6 +183,13 @@ and the min spec supports it everywhere we ship. Colours authored in sRGB are
 converted where Unity does not do it for us — `Material.SetColor` is the one
 such path in the adapter.
 
+Chrome measures from one place, `PresentationConfig.Layout`: anything
+square-ish — button boxes, glyphs, type — comes off the short edge so a control
+keeps its shape when the screen turns, and positions stay fractions of the axis
+they belong to. Screens each inventing their own fractions of screen height is
+what let all four drift into a landscape-only shape, so a gate test
+(`EveryScreenMeasuresFromTheSharedLayout`) fails a screen that stops using it.
+
 The board itself is `docs/infection-vfx-spec.md`, built the same way — one
 quad, one material, zero imported art. Cell state goes into a point-filtered
 `RGBAFloat` texture (value, transition start time, packed entry direction,

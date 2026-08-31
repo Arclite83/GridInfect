@@ -30,6 +30,46 @@ namespace GridInfect.Game
         public static float ShortEdge =>
             UnityEngine.Mathf.Min(UnityEngine.Screen.width, UnityEngine.Screen.height);
 
+        // The chrome's shared metrics. Every screen measures from these rather
+        // than inventing its own fractions, which is what let each of them
+        // drift into a landscape-only shape in the first place.
+        public static class Layout
+        {
+            static float H => UnityEngine.Screen.height;
+            static float W => UnityEngine.Screen.width;
+
+            public const float ContentWidthPct = 0.88f;   // full-width controls
+            public const float TopBarPct = 0.44f;         // title row, from centre
+
+            public static float ShortEdgeUnit => ShortEdge;
+            public static float ContentWidth => W * ContentWidthPct;
+            public static float TopBarY => H * TopBarPct;
+
+            public static float ButtonHeight => ShortEdge * 0.11f;
+            public static float BarHeight => ShortEdge * 0.075f;
+            public static float Gap => ShortEdge * 0.035f;
+
+            public static float TitleText => ShortEdge * 0.095f;
+            public static float HeadingText => ShortEdge * 0.05f;
+            public static float LabelText => ShortEdge * 0.04f;
+            public static float BodyText => ShortEdge * 0.035f;
+
+            // A back button lives in the top-left corner on every screen that
+            // has one, sized so a thumb can reach it on the tallest phone.
+            public static UnityEngine.Vector2 BackSize =>
+                new UnityEngine.Vector2(ShortEdge * 0.20f, BarHeight);
+            public static UnityEngine.Vector2 BackPos =>
+                new UnityEngine.Vector2(-ContentWidth / 2f + ShortEdge * 0.10f, TopBarY);
+
+            // n stacked rows of `rowHeight`, centred on `centreY`; row 0 on top.
+            public static float StackRowY(int n, int count, float rowHeight, float centreY)
+            {
+                float pitch = rowHeight + Gap;
+                float top = centreY + (count - 1) * pitch / 2f;
+                return top - n * pitch;
+            }
+        }
+
         public const int TargetFrameRate = 60;      // R-1104
 
         // Infection VFX (docs/infection-vfx-spec.md "Locked parameters").
