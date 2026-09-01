@@ -38,8 +38,13 @@ namespace GridInfect.Core
 
     public static class Grid
     {
-        public const int Width = 11;
-        public const int Height = 6;
+        // Portrait (R-1103). The original shipped 11 wide by 6 tall; the board
+        // was transposed by (i, j) -> (j, i) with piece arms remapped L<->U and
+        // R<->D, which is an exact conjugate of the original rules — the
+        // recorded solutions in docs/test_vectors.json still replay step for
+        // step. Applied once by tools/transpose_board_to_portrait.py.
+        public const int Width = 6;
+        public const int Height = 11;
         public const int Cells = Width * Height;
         public const int SpreadRange = 10; // >= max(Width, Height) - 1: an unobstructed arm reaches the edge
 
@@ -63,6 +68,13 @@ namespace GridInfect.Core
             while (a != 0) { n += a & 1; a >>= 1; }
             return n;
         }
+
+        // Game.cpp visits a piece's arms L,R,U,D. The board is transposed from
+        // the original's landscape shape (Grid), and under that map the order
+        // is U,D,L,R. It travels with the board because it is observable: the
+        // repel queue is built in this order and RULES §4.1 resolves it in
+        // queue order, and the generator spends one RNG draw per step.
+        public static readonly Dir[] SpreadOrder = { Dir.U, Dir.D, Dir.L, Dir.R };
 
         public static Dir Opposite(Dir dir)
         {

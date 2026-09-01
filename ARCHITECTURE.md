@@ -46,7 +46,7 @@ files, touches) into these types at the boundary.
 
 | Type | Shape | Invariants |
 |---|---|---|
-| `Grid` | 6 rows × 11 columns, row-major `loc = i*11 + j` | fixed forever for this game (RULES §1) |
+| `Grid` | 11 rows × 6 columns, row-major `loc = i*6 + j` | fixed for this game. Transposed once from the original's 6×11 when the game went portrait (R-1103) by `(i, j) -> (j, i)` with arms remapped `L<->U`, `R<->D` — an exact conjugate, so `docs/test_vectors.json` still replays step for step (`tools/transpose_board_to_portrait.py`) |
 | `Cell` | byte values `0` void, `1` active, `2` wall, `3` switch, `4` infected, `5` trap, `99` undo mark | 2/3/5 immutable during play; 99 never visible between moves |
 | `Tile` | enum, the 15 L/R/U/D arm combinations | **ordinal order is contract** (rand-domain + original enum order); never reorder |
 | `Difficulty` | enum Beginner…Challenging | ordinal indexes the save arrays; never reorder |
@@ -141,6 +141,21 @@ ossifying or eroding:
   no `UnityEngine` in Engine/Core sources, no `GridInfect` in Engine sources,
   no direct `Rules` mutation from the adapter, and registry ⇔ constants ⇔
   this document kept in sync.
+- **`InfectionVfxSpecTests`** do the same for the art and layout contract.
+  The presentation layer is Unity-only, so these are source gates, not
+  behaviour tests:
+  - the locked parameter table and the palette in
+    `docs/infection-vfx-spec.md` ⇔ `PresentationConfig.Infection` ⇔
+    `BoardPalette` ⇔ the board shader's properties;
+  - no literal colour anywhere in the shader body, so a palette swap really
+    is the only way to restyle a board;
+  - every juice layer is an independent, correctly-defaulted switch;
+  - the project's colour space and orientation match the baseline
+    `docs/DEPENDENCIES.md` declares, because gamma or landscape would keep
+    drawing — just wrong, and quietly;
+  - the board's cell size takes the smallest of its three fits, and every
+    screen measures from `PresentationConfig.Layout`, which is the drift that
+    made all four screens landscape-only in the first place.
 - **CI** (`.github/workflows/ci.yml`) runs the full suite on every push.
 
 ## 7. Performance posture
@@ -148,10 +163,12 @@ ossifying or eroding:
 The hot path is spread propagation: flat `byte[66]`, struct pieces and
 repels, stackalloc direction flags, no LINQ, no allocation per placement
 beyond log entries (human-rate). JSON exists only at boundaries (save, log
-serialization, test fixtures). The renderer redraws cells only on
-`CellChanged`, never per frame; text and sprites come from one shared
-texture/font. Frame budget target is 60 fps (R-1104) with a turn-based load
-that rounds to zero — the discipline is the point, the next game inherits it.
+serialization, test fixtures). The board is one quad with one material, and a
+`CellChanged` writes texels in a `6x11` data texture — no GameObjects, no
+mesh rebuild, no allocation per placement; text and tray pieces come from one
+shared texture/font. Frame budget target is 60 fps (R-1104) with a turn-based
+load that rounds to zero — the discipline is the point, the next game inherits
+it.
 
 ## 8. Presentation contract
 
@@ -169,6 +186,31 @@ replaces looks without touching structure. Timing table:
 `PresentationConfig` (from ASSETS §6, linear everywhere). Accessibility is
 structural from day one: every special cell state carries a shape glyph,
 never color alone (R-1001).
+
+Rendering is **linear** (`docs/DEPENDENCIES.md`): correct blending under URP,
+and the min spec supports it everywhere we ship. Colours authored in sRGB are
+converted where Unity does not do it for us — `Material.SetColor` is the one
+such path in the adapter.
+
+Chrome measures from one place, `PresentationConfig.Layout`: anything
+square-ish — button boxes, glyphs, type — comes off the short edge so a control
+keeps its shape when the screen turns, and positions stay fractions of the axis
+they belong to. Screens each inventing their own fractions of screen height is
+what let all four drift into a landscape-only shape, so a gate test
+(`EveryScreenMeasuresFromTheSharedLayout`) fails a screen that stops using it.
+
+The board itself is `docs/infection-vfx-spec.md`, built the same way — one
+quad, one material, zero imported art. Cell state goes into a point-filtered
+`RGBAFloat` texture (value, transition start time, packed entry direction,
+transition kind) and `GridInfect/Board` reads it; the shader never writes back
+and never gates input, so a placement landing mid-bleed just changes texels
+while the cells already in flight keep running off their own start times.
+`BoardView` derives a cell's place in the wave from the seed of the placement
+it brackets — depth is the Manhattan distance, entry direction is the sign of
+the offset — so the view learns the spread from `CellChanged` and never
+duplicates a rule. Every colour, including the board background behind the
+chrome, comes from one `BoardPalette` asset; the juice layers are plain bools
+on `BoardView`.
 
 ## 9. Change policy
 

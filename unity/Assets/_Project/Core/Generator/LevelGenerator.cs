@@ -4,11 +4,17 @@ using Bloodhound.Engine;
 namespace GridInfect.Core
 {
     // Exact port of LevelBuilder.cpp (docs/GENERATOR.md) with libc rand()
-    // replaced by seeded Pcg32. Draw order is contract: every rejected sample
-    // still consumes its three draws, carving one draw per in-bounds cell —
-    // golden tests lock the sequences. Original quirks kept: the UD window
-    // shrink is missing its bottom margin, carving never stops early, and
-    // the rejection loop is unbounded.
+    // replaced by seeded Pcg32, conjugated by the board transpose (Grid): the
+    // sampling windows swap axes, the carve walks TileArms.SpreadOrder, and
+    // the missing-margin quirk travels from UD to LR. Generated boards
+    // therefore differ from the landscape build for the same seed — Free Play
+    // is procedural, so that is a reshape, not a regression.
+    //
+    // Draw order is contract: every rejected sample still consumes its three
+    // draws, carving one draw per in-bounds cell — golden tests lock the
+    // sequences. Original quirks kept: the LR window shrink is missing its
+    // right margin, carving never stops early, and the rejection loop is
+    // unbounded.
     public static class LevelGenerator
     {
         struct Config
@@ -16,14 +22,17 @@ namespace GridInfect.Core
             public int Pieces, XOffset, XCount, YOffset, YCount;
         }
 
+        // LevelBuilder.cpp's sampling windows, with x and y swapped: the board
+        // is transposed from the original's 11x6 (Grid), so the original's
+        // column window is now the row window and vice versa.
         static readonly Config[] Configs =
         {
             // Difficulty ordinal order
-            new Config { Pieces = 2, XOffset = 3, XCount = 5, YOffset = 1, YCount = 5 },
-            new Config { Pieces = 3, XOffset = 3, XCount = 6, YOffset = 1, YCount = 5 },
-            new Config { Pieces = 4, XOffset = 2, XCount = 7, YOffset = 0, YCount = 6 },
-            new Config { Pieces = 4, XOffset = 0, XCount = 11, YOffset = 0, YCount = 6 },
-            new Config { Pieces = 5, XOffset = 0, XCount = 11, YOffset = 0, YCount = 6 },
+            new Config { Pieces = 2, XOffset = 1, XCount = 5, YOffset = 3, YCount = 5 },
+            new Config { Pieces = 3, XOffset = 1, XCount = 5, YOffset = 3, YCount = 6 },
+            new Config { Pieces = 4, XOffset = 0, XCount = 6, YOffset = 2, YCount = 7 },
+            new Config { Pieces = 4, XOffset = 0, XCount = 6, YOffset = 0, YCount = 11 },
+            new Config { Pieces = 5, XOffset = 0, XCount = 6, YOffset = 0, YCount = 11 },
         };
 
         public static LevelDef Generate(Difficulty difficulty, ref Pcg32 rng)
@@ -37,8 +46,10 @@ namespace GridInfect.Core
         public static LevelDef Generate(Difficulty difficulty, ref Pcg32 rng, out (int i, int j)[] solution)
         {
             Config config = Configs[(int)difficulty];
-            if (config.Pieces > Grid.Height)
-                throw new InvalidOperationException("more pieces than rows makes the rejection loop infinite (GENERATOR §7)");
+            // Row *and* column exclusivity, so the short edge is what binds —
+            // the original guarded on rows because 6 was its short edge.
+            if (config.Pieces > Math.Min(Grid.Width, Grid.Height))
+                throw new InvalidOperationException("more pieces than the short edge makes the rejection loop infinite (GENERATOR §7)");
 
             var board = new byte[Grid.Cells];
             var tiles = new Tile[config.Pieces];
@@ -95,12 +106,12 @@ namespace GridInfect.Core
                 case Tile.R: xCount -= 2; break;
                 case Tile.U: yOffset += 2; yCount -= 2; break;
                 case Tile.D: yCount -= 2; break;
-                case Tile.LR: xOffset += 2; xCount -= 4; break;
+                case Tile.LR: xOffset += 2; xCount -= 2; break; // original bug kept: no right margin (was UD)
                 case Tile.LU: xOffset += 2; xCount -= 2; yOffset += 2; yCount -= 2; break;
                 case Tile.LD: xOffset += 2; xCount -= 2; yCount -= 2; break;
                 case Tile.RU: xCount -= 2; yOffset += 2; yCount -= 2; break;
                 case Tile.RD: xCount -= 2; yCount -= 2; break;
-                case Tile.UD: yOffset += 2; yCount -= 2; break; // original bug kept: no bottom margin
+                case Tile.UD: yOffset += 2; yCount -= 4; break;
                 case Tile.LRU: xOffset += 2; xCount -= 4; yOffset += 2; yCount -= 2; break;
                 case Tile.LRD: xOffset += 2; xCount -= 4; yCount -= 2; break;
                 case Tile.LUD: xOffset += 2; xCount -= 2; yOffset += 2; yCount -= 4; break;
@@ -120,9 +131,9 @@ namespace GridInfect.Core
 
             for (int offset = 1; offset <= Grid.SpreadRange; offset++)
             {
-                for (int d = 0; d < 4; d++)
+                for (int n = 0; n < TileArms.SpreadOrder.Length; n++)
                 {
-                    var dir = (Dir)d;
+                    Dir dir = TileArms.SpreadOrder[n];
                     if (!TileArms.Has(tile, dir)) continue;
 
                     int i = pieceI + TileArms.Di(dir) * offset;

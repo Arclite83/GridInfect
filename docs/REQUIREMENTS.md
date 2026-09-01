@@ -37,7 +37,7 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 
 | ID | Pri | Requirement | Trace |
 |---|---|---|---|
-| R-101 | MVP | Fixed 6×11 board, row-major `int[66]` (`loc = i*11 + j`), cell values 0 void / 1 active / 2 wall / 3 repel switch / 4 infected / 5 reset trap, plus transient 99 used only inside undo. Values 2/3/5 immutable during play. | RULES §1, §1.1 |
+| R-101 | MVP | Fixed 11×6 board (11 rows, 6 columns — transposed from the original's 6×11 for portrait, R-1103), row-major `int[66]` (`loc = i*6 + j`), cell values 0 void / 1 active / 2 wall / 3 repel switch / 4 infected / 5 reset trap, plus transient 99 used only inside undo. Values 2/3/5 immutable during play. | RULES §1, §1.1 |
 | R-102 | MVP | The 128 classic boards and piece lists load from data derived from `docs/test_vectors.json` (single source of truth; an editor importer bakes it into a runtime asset — no hand-transcribed C arrays). | RULES §1; test_vectors.json |
 | R-103 | MVP | Pieces: the 15 L/R/U/D arm-combination tile types, ordered per-level list (2–6 shipped; duplicates legal), no rotation, tray capacity 8. `Tile` and `Difficulty` enum ordinal orders preserved. | RULES §2; PORT_NOTES §5 |
 | R-104 | MVP | Placement per RULES §3: drop legal iff cell value ∈ {1,4} and no other placed piece occupies it; any illegal drop returns the piece to its tray slot (clearing it if it was placed); touching a piece unplaces it instantly; `setPiece` is clear-then-place. | RULES §3 |
@@ -141,7 +141,7 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 |---|---|---|---|
 | R-1101 | MVP | Model state changes are legible the same frame they occur; any added cosmetic animation must not obscure board state. The 0.3 s resolution beat is presentation only — input during it fast-forwards resolution (R-107), it is never an input-cancellation window. | ASSETS §6; RULES §4.1 (corrected) |
 | R-1102 | LATER | The ASSETS §6 timing table (0.10 s drop snap, 0.15 s tray return, 0.5 s scene fades, etc., all linear) is the starting values for the new presentation — free to change, but changes are deliberate, not accidental. | ASSETS §6 |
-| R-1103 | MVP | Landscape-only; the 6×11 board plus 8-slot tray fits every supported aspect ratio via resolution-relative layout. | ASSETS §3, §6; PORT_NOTES §4 |
+| R-1103 | MVP | **Portrait-only** (revised — the original shipped landscape-locked). The board is transposed to 11 rows × 6 columns so it stands up on a phone, and is sized by whichever of three limits binds — height cap, width budget, or the band left between tray and HUD. The tray centres on the pieces a level actually has (six at most) rather than a fixed eight-slot rack. Every screen measures from `PresentationConfig.Layout`: boxes and type off the short edge, positions as fractions of their own axis. Level select racks 4 across × 8 down (same 32 a page, same 4 pages) with paging on a bottom bar. | ASSETS §3, §6; PORT_NOTES §4 |
 | R-1104 | MVP | Target frame rate 60 (the original targeted 90; nothing in a turn-based puzzle needs it, and battery + thermals on an ad-supported title argue down). | **NEW — needs approval** |
 
 ## 12. Platform & compliance

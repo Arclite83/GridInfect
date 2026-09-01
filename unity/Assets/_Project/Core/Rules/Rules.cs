@@ -125,8 +125,8 @@ namespace GridInfect.Core
         }
 
         // Game::propagatePiece — offset-major rings 1..10, inner order
-        // L,R,U,D; 2/3/5 stop a direction, 99 skips without stopping, voids
-        // and edges are passed over (infection jumps gaps)
+        // TileArms.SpreadOrder; 2/3/5 stop a direction, 99 skips without stopping,
+        // voids and edges are passed over (infection jumps gaps)
         public static void PropagatePiece(LevelSession s, int pieceIndex, bool fireEvents)
         {
             ref PieceState piece = ref s.Pieces[pieceIndex];
@@ -136,9 +136,10 @@ namespace GridInfect.Core
 
             for (int offset = 1; offset <= Grid.SpreadRange; offset++)
             {
-                for (int d = 0; d < 4; d++)
+                for (int n = 0; n < TileArms.SpreadOrder.Length; n++)
                 {
-                    Dir dir = (Dir)d;
+                    Dir dir = TileArms.SpreadOrder[n];
+                    int d = (int)dir;
                     if (stopped[d] || !TileArms.Has(piece.Tile, dir)) continue;
 
                     int i = piece.I + TileArms.Di(dir) * offset;

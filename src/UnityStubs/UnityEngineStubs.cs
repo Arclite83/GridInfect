@@ -14,6 +14,12 @@ namespace UnityEngine
         public static implicit operator Vector3(Vector2 v) => new Vector3(v.x, v.y, 0f);
     }
 
+    public struct Vector4
+    {
+        public float x, y, z, w;
+        public Vector4(float x, float y, float z, float w) { this.x = x; this.y = y; this.z = z; this.w = w; }
+    }
+
     public struct Vector3
     {
         public float x, y, z;
@@ -22,6 +28,9 @@ namespace UnityEngine
         public static Vector3 Lerp(Vector3 a, Vector3 b, float t) =>
             new Vector3(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t);
         public static implicit operator Vector2(Vector3 v) => new Vector2(v.x, v.y);
+        public static Vector3 operator +(Vector3 a, Vector3 b) => new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
+        public static Vector3 operator -(Vector3 a, Vector3 b) => new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
+        public static Vector3 operator *(Vector3 a, float f) => new Vector3(a.x * f, a.y * f, a.z * f);
     }
 
     public struct Color
@@ -29,6 +38,8 @@ namespace UnityEngine
         public float r, g, b, a;
         public Color(float r, float g, float b, float a = 1f) { this.r = r; this.g = g; this.b = b; this.a = a; }
         public static Color white => new Color(1f, 1f, 1f);
+        public Color linear => this;
+        public Color gamma => this;
     }
 
     public struct Rect
@@ -39,13 +50,26 @@ namespace UnityEngine
 
     public static class Mathf
     {
+        public const float PI = 3.14159274f;
         public static float Clamp01(float v) => v < 0f ? 0f : v > 1f ? 1f : v;
         public static int Clamp(int v, int min, int max) => v < min ? min : v > max ? max : v;
         public static float Abs(float v) => v < 0f ? -v : v;
+        public static int Abs(int v) => v < 0 ? -v : v;
+        public static float Max(float a, float b) => a > b ? a : b;
+        public static float Min(float a, float b) => a < b ? a : b;
+        public static float Lerp(float a, float b, float t) => a + (b - a) * Clamp01(t);
+        public static int RoundToInt(float v) => (int)System.Math.Round(v);
+        public static float Sin(float v) => (float)System.Math.Sin(v);
+        public static float Cos(float v) => (float)System.Math.Cos(v);
+        public static float Exp(float v) => (float)System.Math.Exp(v);
+        public static float Pow(float a, float b) => (float)System.Math.Pow(a, b);
     }
 
     public enum HideFlags { None, HideAndDontSave }
-    public enum TextureFormat { RGBA32 }
+    public enum ColorSpace { Gamma, Linear }
+    public enum TextureFormat { RGBA32, RGBAFloat }
+    public enum FilterMode { Point, Bilinear, Trilinear }
+    public enum TextureWrapMode { Repeat, Clamp }
     public enum TextAnchor { MiddleCenter }
     public enum TextAlignment { Center }
     public enum CameraClearFlags { SolidColor }
@@ -55,6 +79,26 @@ namespace UnityEngine
     public sealed class RuntimeInitializeOnLoadMethodAttribute : Attribute
     {
         public RuntimeInitializeOnLoadMethodAttribute(RuntimeInitializeLoadType loadType) { }
+    }
+
+    [AttributeUsage(AttributeTargets.Field)]
+    public sealed class MinAttribute : Attribute
+    {
+        public MinAttribute(float min) { }
+    }
+
+    [AttributeUsage(AttributeTargets.Field)]
+    public sealed class RangeAttribute : Attribute
+    {
+        public RangeAttribute(float min, float max) { }
+    }
+
+    [AttributeUsage(AttributeTargets.Class)]
+    public sealed class CreateAssetMenuAttribute : Attribute
+    {
+        public string menuName { get; set; }
+        public string fileName { get; set; }
+        public int order { get; set; }
     }
 
     public class Object
@@ -114,13 +158,72 @@ namespace UnityEngine
 
     public sealed class MeshRenderer : Renderer { }
 
-    public sealed class Material : Object { }
+    public sealed class Mesh : Object
+    {
+        public Vector3[] vertices { get; set; }
+        public Vector2[] uv { get; set; }
+        public int[] triangles { get; set; }
+        public void RecalculateBounds() { }
+    }
 
-    public sealed class Texture2D : Object
+    public sealed class MeshFilter : Component
+    {
+        public Mesh sharedMesh { get; set; }
+        public Mesh mesh { get; set; }
+    }
+
+    public class Shader : Object
+    {
+        public static Shader Find(string name) => null;
+        public static int PropertyToID(string name) => 0;
+    }
+
+    public sealed class Material : Object
+    {
+        public Material(Shader shader) { }
+        public void SetFloat(string name, float value) { }
+        public void SetFloat(int nameID, float value) { }
+        public void SetColor(string name, Color value) { }
+        public void SetColor(int nameID, Color value) { }
+        public void SetVector(string name, Vector4 value) { }
+        public void SetTexture(string name, Texture value) { }
+    }
+
+    public class Texture : Object
+    {
+        public FilterMode filterMode { get; set; }
+        public TextureWrapMode wrapMode { get; set; }
+    }
+
+    public sealed class Texture2D : Texture
     {
         public Texture2D(int width, int height, TextureFormat format, bool mipChain) { }
+        public Texture2D(int width, int height, TextureFormat format, bool mipChain, bool linear) { }
         public void SetPixel(int x, int y, Color color) { }
+        public void SetPixels(Color[] colors) { }
         public void Apply() { }
+        public void Apply(bool updateMipmaps) { }
+    }
+
+    public class ScriptableObject : Object
+    {
+        public static T CreateInstance<T>() where T : ScriptableObject, new() => new T();
+    }
+
+    public sealed class AudioClip : Object
+    {
+        public static AudioClip Create(string name, int lengthSamples, int channels, int frequency, bool stream) => null;
+        public bool SetData(float[] data, int offsetSamples) => true;
+    }
+
+    public sealed class AudioSource : Behaviour
+    {
+        public AudioClip clip { get; set; }
+        public bool playOnAwake { get; set; }
+        public float spatialBlend { get; set; }
+        public float volume { get; set; }
+        public float pitch { get; set; }
+        public void Play() { }
     }
 
     public sealed class Sprite : Object
@@ -162,6 +265,11 @@ namespace UnityEngine
         public static int height => 720;
     }
 
+    public static class QualitySettings
+    {
+        public static ColorSpace activeColorSpace => ColorSpace.Linear;
+    }
+
     public static class Application
     {
         public static int targetFrameRate { get; set; }
@@ -185,11 +293,73 @@ namespace UnityEngine
     public static class Resources
     {
         public static T GetBuiltinResource<T>(string path) where T : Object => null;
+        public static T Load<T>(string path) where T : Object => null;
     }
 
     public static class Debug
     {
         public static void Log(object message) { }
         public static void LogWarning(object message) { }
+    }
+}
+
+namespace UnityEngine.Rendering
+{
+    public abstract class VolumeParameter<T>
+    {
+        public T value;
+        public bool overrideState;
+        public void Override(T newValue) { value = newValue; overrideState = true; }
+    }
+
+    public sealed class ClampedFloatParameter : VolumeParameter<float> { }
+
+    public sealed class MinFloatParameter : VolumeParameter<float> { }
+
+    public class VolumeComponent : ScriptableObject
+    {
+        public bool active = true;
+    }
+
+    public sealed class VolumeProfile : ScriptableObject
+    {
+        public T Add<T>(bool overrides) where T : VolumeComponent, new() => new T();
+    }
+
+    public sealed class Volume : Behaviour
+    {
+        public bool isGlobal { get; set; }
+        public float priority { get; set; }
+        public VolumeProfile profile { get; set; }
+        public VolumeProfile sharedProfile { get; set; }
+    }
+}
+
+namespace UnityEngine.Rendering.Universal
+{
+    public sealed class Bloom : VolumeComponent
+    {
+        public MinFloatParameter threshold = new MinFloatParameter();
+        public MinFloatParameter intensity = new MinFloatParameter();
+        public ClampedFloatParameter scatter = new ClampedFloatParameter();
+    }
+
+    public enum TonemappingMode { None, Neutral, ACES }
+
+    public sealed class TonemappingModeParameter : VolumeParameter<TonemappingMode> { }
+
+    public sealed class Tonemapping : VolumeComponent
+    {
+        public TonemappingModeParameter mode = new TonemappingModeParameter();
+    }
+
+    public sealed class UniversalAdditionalCameraData : MonoBehaviour
+    {
+        public bool renderPostProcessing { get; set; }
+    }
+
+    public static class CameraExtensions
+    {
+        public static UniversalAdditionalCameraData GetUniversalAdditionalCameraData(this Camera camera) => null;
     }
 }

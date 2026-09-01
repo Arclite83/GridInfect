@@ -19,14 +19,15 @@ namespace GridInfect.Core.Tests
         public void BoardActionsAreBlockedWhilePendingAndResolveIsRequired()
         {
             var d = NewDispatcher(
-                "..........." + "..........." + ".1235111111" + "..........." + "11111111111" + "...........",
-                "R,D");
+                "....1." + "..1.1." + "..2.1." + "..3.1." + "..5.1." + "..1.1." +
+                "..1.1." + "..1.1." + "..1.1." + "..1.1." + "..1.1.",
+                "D,R");
             Assert.That(d.Dispatch(GridInfectActions.BoardResolve).Applied, Is.False, "resolve without pending");
 
-            Assert.That(d.Dispatch(GridInfectActions.PiecePlace, Inputs.PiecePlace(0, 2, 5)).Applied);
+            Assert.That(d.Dispatch(GridInfectActions.PiecePlace, Inputs.PiecePlace(0, 5, 2)).Applied);
             Assert.That(d.State.Session.ResolutionPending, Is.True);
 
-            Assert.That(d.Dispatch(GridInfectActions.PiecePlace, Inputs.PiecePlace(1, 4, 0)).Applied, Is.False);
+            Assert.That(d.Dispatch(GridInfectActions.PiecePlace, Inputs.PiecePlace(1, 0, 4)).Applied, Is.False);
             Assert.That(d.Dispatch(GridInfectActions.PieceClear, Inputs.PieceClear(0)).Applied, Is.False);
             Assert.That(d.Dispatch(GridInfectActions.LevelReset).Applied, Is.False);
 
@@ -38,13 +39,14 @@ namespace GridInfect.Core.Tests
         public void WinningPlacementIgnoresTrippedTrapAndQueuedRepels()
         {
             var d = NewDispatcher(
-                "..........." + "..........." + "51111111113" + "..........." + "..........." + "...........",
-                "LR");
+                "..5..." + "..1..." + "..1..." + "..1..." + "..1..." + "..1..." +
+                "..1..." + "..1..." + "..1..." + "..1..." + "..3...",
+                "UD");
             var session = d.State.Session;
             bool unbound = false;
             session.PiecesUnbound += () => unbound = true;
 
-            Assert.That(d.Dispatch(GridInfectActions.PiecePlace, Inputs.PiecePlace(0, 2, 5)).Applied);
+            Assert.That(d.Dispatch(GridInfectActions.PiecePlace, Inputs.PiecePlace(0, 5, 2)).Applied);
             Assert.That(d.Dispatch(GridInfectActions.BoardResolve).Applied);
 
             Assert.That(session.Solved, Is.True);
@@ -56,18 +58,19 @@ namespace GridInfect.Core.Tests
         public void NonWinningTrapTripFullResetsAndReturnsPieces()
         {
             var d = NewDispatcher(
-                "..........." + "..........." + "51111111111" + "..........." + "11111111111" + "...........",
-                "LR");
+                "..5.1." + "..1.1." + "..1.1." + "..1.1." + "..1.1." + "..1.1." +
+                "..1.1." + "..1.1." + "..1.1." + "..1.1." + "..1.1.",
+                "UD");
             var session = d.State.Session;
 
-            d.Dispatch(GridInfectActions.PiecePlace, Inputs.PiecePlace(0, 2, 5));
+            d.Dispatch(GridInfectActions.PiecePlace, Inputs.PiecePlace(0, 5, 2));
             d.Dispatch(GridInfectActions.BoardResolve);
 
             Assert.That(session.Solved, Is.False);
             Assert.That(session.Pieces[0].Placed, Is.False);
-            for (int j = 1; j <= 10; j++)
+            for (int i = 1; i <= 10; i++)
             {
-                Assert.That(session.Board[Grid.Loc(2, j)], Is.EqualTo(Cell.Active), $"col {j} reverted");
+                Assert.That(session.Board[Grid.Loc(i, 2)], Is.EqualTo(Cell.Active), $"row {i} reverted");
             }
         }
     }

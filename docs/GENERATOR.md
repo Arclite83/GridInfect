@@ -53,6 +53,13 @@ initial_yOffset, initial_yCount)` with these constants:
 | Hard | 4 | 0 | 11 | 0 | 6 | none |
 | Challenging | 5 | 0 | 11 | 0 | 6 | `LR` and `UD` rejected |
 
+> These are the original's constants on its 6-row × 11-column board. The port
+> runs on the transposed 11 × 6 board (ARCHITECTURE §2), so `LevelGenerator`
+> swaps x and y throughout, walks `TileArms.SpreadOrder`, and carries the §3
+> missing-margin quirk on `LR` instead of `UD`. Same generator, conjugated;
+> the same seed therefore yields a different level than the landscape build,
+> which is a reshape rather than a regression — Free Play is procedural.
+
 `(xOffset, xCount, yOffset, yCount)` define the sampling window for piece
 positions: `x ∈ [xOffset, xOffset + xCount)`, `y ∈ [yOffset,
 yOffset + yCount)` — before the per-tile shrink in §3. `x` is the column

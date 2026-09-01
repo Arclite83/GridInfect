@@ -23,6 +23,7 @@ Neon circuit on near-black. Flat fills, hard edges, no gradients in the base art
 | Element | Colour | Notes |
 |---|---|---|
 | Board background | `#0B1020` | Near-black, never pure black |
+| Cell plate | `#141C33` | Every cell that exists; a hole shows the background |
 | Grid lines | `#1B2A48` | Hairline, always visible |
 | Cell border (empty) | `#2B3F63` | 1 px |
 | Infected fill | `#00D9FF` | HDR emissive, cools on fade |
@@ -144,3 +145,134 @@ Each is an independent bool on the board controller, default on unless noted.
 7. Placement input during an active wave is accepted on the frame it occurs and starts a new wave.
 8. Changing a `BoardPalette` asset restyles the whole board with no code or shader edits.
 9. Bloom threshold rejects the resting board. A screenshot with no active infection has no bloom.
+
+---
+
+## As built
+
+Implemented in `unity/Assets/_Project/Game/`: `Shaders/GridInfectBoard.shader`
+(everything the board draws), `View/BoardPalette.cs` + `Resources/BoardPalette.asset`
+(the palette), `View/BoardStateTexture.cs` (the data texture), `View/BoardNoise.cs`
+(the blot), `View/BoardView.cs` (quad, clock, juice switches, wave scheduling),
+`View/BoardBloom.cs`, `Audio/HopClickAudio.cs`. The locked parameters live in
+`PresentationConfig.Infection`; `InfectionVfxSpecTests` fails if this document
+and that table stop agreeing.
+
+Where the build deviates from the spec above, and why.
+
+### Board size
+
+Grid Infect's board is 11 x 6, not 8 wide (`Grid`, fixed by RULES §1). The
+timeline is unchanged; the totals move: the longest ray is 10 hops, so 400 ms
+of travel, 750 ms to settle, 1200 ms to fully cool.
+
+### Cell state ids
+
+The R channel carries the game's own wire vocabulary — `0` void, `1` active,
+`2` wall, `3` repel switch, `4` infected, `5` reset trap — rather than the
+spec's four-state table. Grid Infect ships two states the table does not name,
+and a lossy remap would mean a second enum to keep in sync with `Rules`. The
+wire value is already a superset, so it goes across unchanged. "Immune" is the
+wall; "empty" is active; void is a hole in the board and draws neither border
+nor fill.
+
+The reserved A channel carries the transition kind: `0` none, `1` infecting,
+`2` receding, `3` conflict flash. It is what lets one texel describe both what
+a cell is and what is happening to it.
+
+### Spread rule
+
+Already data, not code, and already a straight-ray walk: `Rules.PropagatePiece`
+steps offset-major rings 1..`Grid.SpreadRange` over the arms of a `Tile`, which
+is exactly `BugType { directions, range }` under a different name. No spread
+code was added.
+
+Nothing in the view re-derives it either. `BoardView` brackets a placement,
+watches `CellChanged`, and reads depth off the Manhattan distance from the seed
+and the entry direction off the sign of the offset — correct precisely because
+the spread is rays. One place mirrors a rule: finding which trap stopped a ray,
+so the conflict overprint can light when the beam reaches it instead of when
+the reset lands 300 ms later.
+
+### Conflict
+
+Grid Infect has no per-cell conflict state. The reset trap is the conflict
+event: the trap overprints red on the ray that hit it (it already carries the X
+glyph), and the board shakes when the reset lands. The replay button also full-
+resets and deliberately does not shake.
+
+### Recession
+
+Not in the spec, needed by the game: repels walk infection back off a ray and
+undo lifts a piece. Receding cells run the same blot in reverse, staggered by
+hop for a repel (it walks) and simultaneous for an undo or a reset (they do
+not).
+
+### Edge sparks
+
+Confined to the cell's own pitch tile so each fragment tests eight sparks and
+never its neighbours'. They read as thrown off the band; they do not cross into
+the next cell.
+
+### Glitch band
+
+Read as straddling the front — `p - 0.12 < t <= p + 0.15` — rather than
+`t <= p + 0.15` alone, which would flicker the entire filled area rather than a
+band. Band and ghost both fade out over the last of the dissolve, because a
+cell must be hard-edged and static within 350 ms.
+
+### Bloom and colour space
+
+The project now renders in **linear** colour space, which is what
+`docs/DEPENDENCIES.md` always specified and what the emission and cooling
+maths here assume — the setting had simply never been flipped. `lerp(hot,
+cooled, k)` is a real interpolation now, and the bloom falloff is physical.
+
+Threshold 1.0: only what the board pushes into HDR blooms, which is the hot
+fill, the edge band, the active trace and the seed marker. Everything at rest
+sits well under it — cooled fill 0.32 linear, immune hatch 0.25, cell border
+0.13 — and so does the UI chrome, which peaks at 0.83 for white text and
+exactly 1.0 for pure white. A luminance-tuned threshold would have caught the
+text; "above LDR" does not.
+
+One conversion is manual. `Material.SetColor` hands its value straight to the
+GPU, unlike a sprite tint or a camera clear colour, which Unity converts for
+you. The palette is authored in sRGB hex, so `BoardView.SetPaletteColor`
+converts when the active colour space is linear — and only then, so flipping
+the project setting back cannot silently double-darken the board.
+
+The volume also carries **Neutral** tonemapping. Without a curve, the hot fill
+— palette colour times 2.2 — hard-clips per channel, and `#00D9FF` lands on
+pure `#00FFFF`: the authored hue is gone exactly where the eye is looking.
+Neutral rolls the highlights off instead and lets the bloom do the work of
+reading as bright. It slightly compresses LDR highlights too, so white UI text
+sits a shade lower than before.
+
+### The blot has to be a flat histogram
+
+Summed value noise is bell-shaped. With the field normalised min-to-max, nearly
+every block sits near 0.5, so `p` sweeping 0 to 1 does almost nothing until it
+reaches the middle, where the whole cell flips at once — and the bleed reads as
+static rather than ink. `BoardNoise` rank-normalises instead, which leaves the
+spatial structure alone and re-spreads the values, so the filled fraction
+tracks `p` directly and the 0.12 edge band is 12% of a cell rather than most of
+it.
+
+### Open: bias 0.3 does not give the edge band an edge
+
+`t = lerp(noise, entryDistance, _Bias)`, and at bias 0.3 that field is
+noise-dominant — so a *threshold* band in `t` is a scattered set of blocks, not
+a spatial band. The bleed edge therefore reads as sparkle across the whole
+transition zone rather than as a front, and step 7's "edge band" is not an
+edge. Past roughly 0.6, with the band nearer 0.05, it becomes the ink the spec
+describes.
+
+Bias is a locked parameter and this is an art call, so nothing has been
+changed. Both knobs are live in the WebGL bench if you want to see it.
+
+### Not verified here
+
+Acceptance criteria 2, 5 and 6 are runtime judgements — frame rate on device,
+legibility at 5 cm, the bleed reading as ink across hop values — and need the
+editor. What is structural holds by construction: one `MeshRenderer` with one
+material for the whole board, and an infection change that writes texels only.

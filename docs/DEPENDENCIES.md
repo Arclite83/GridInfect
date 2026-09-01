@@ -244,7 +244,7 @@ Edit-mode only, editor on macOS, no device, no player build (R-1302):
 | Android packaging | AAB for Play (APK for local installs) | Play requires AAB |
 | Android graphics APIs | Vulkan + OpenGL ES 3.0 fallback (default order) | ES2 is below the URP floor; auto fallback covers pre-Vulkan devices |
 | iOS deployment target | **15.0** | Unity 6.3's own iOS floor is 15 (GMA only needs 13) — you cannot ship lower, and 15 covers effectively all live iPhones |
-| Orientation | **Landscape Left + Right** only, auto-rotate between them | The game is spec'd landscape-only (11-wide board, original shipped landscape-locked); portrait would be a redesign, not a setting |
+| Orientation | **Portrait** only (upside-down allowed) | Product direction: mobile play is one-handed and upright. The original shipped landscape-locked; the board was transposed to 6 wide × 11 tall rather than rotated in the view (ARCHITECTURE §2), and every screen measures from `PresentationConfig.Layout`, so portrait is the native shape rather than a fitted one (R-1103) |
 | Color space | **Linear** | Correct blending under URP, and the min spec (GLES3/Metal) supports it everywhere we ship; gamma's only advantage was hardware we don't target |
 | Texture compression | **Android ETC2, iOS ASTC** | The API-23/GLES3 floor guarantees ETC2 decode but not ASTC (Adreno 3xx-era), so ASTC-for-Android would silently decompress on the oldest devices; on iOS every supported device decodes ASTC |
 | Frame rate | `Application.targetFrameRate = 60` | R-1104 — the original's 90 buys nothing in a turn-based puzzle and costs battery |

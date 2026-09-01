@@ -21,9 +21,17 @@ import json
 import os
 import sys
 
-W, H = 11, 6
+# The board is transposed from the original's 11x6 to 6x11 (portrait, R-1103)
+# by (i, j) -> (j, i), arms remapped L<->U and R<->D — see
+# tools/transpose_board_to_portrait.py. The rules below are the same rules
+# conjugated by that map, which is why the recorded solutions still replay.
+W, H = 6, 11
 DIRS = {"L": (0, -1), "R": (0, 1), "U": (-1, 0), "D": (1, 0)}
 OPP = {"L": "R", "R": "L", "U": "D", "D": "U"}
+
+# Game::propagatePiece visits L,R,U,D; under the transpose that order is
+# U,D,L,R. It has to travel, because the repel queue is built in it.
+SPREAD_ORDER = "UDLR"
 
 
 def arms(tile):
@@ -34,7 +42,7 @@ class Game:
     """Exact port of Game.cpp state relevant to board resolution."""
 
     def __init__(self, board, tiles):
-        self.board = list(board)      # int[66], row-major i*11+j
+        self.board = list(board)      # int[66], row-major i*6+j
         self.tiles = list(tiles)      # tile name per piece index
         self.placed = {}              # piece index -> (i, j)
         self.repels = []              # queued (i, j, direction)
@@ -66,14 +74,15 @@ class Game:
         return self.bp(i, j) in (1, 4)
 
     def propagate_piece(self, index):
-        """Game::propagatePiece — offset-major, directions L,R,U,D.
-        Stops on 2/3/5; skips 99; passes voids, edges, and infected cells."""
+        """Game::propagatePiece — offset-major; the original's L,R,U,D under
+        the transpose. Stops on 2/3/5; skips 99; passes voids, edges, and
+        infected cells."""
         i0, j0 = self.placed[index]
         self.change(i0, j0, 4)
         stopped = {d: False for d in "LRUD"}
         tile_arms = arms(self.tiles[index])
         for offset in range(1, 11):
-            for d in "LRUD":
+            for d in SPREAD_ORDER:
                 if stopped[d] or d not in tile_arms:
                     continue
                 di, dj = DIRS[d]
