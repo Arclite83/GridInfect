@@ -179,10 +179,10 @@ namespace GridInfect.Core.Tests
         [Test]
         public void BoardFitsEitherAxis()
         {
-            // An 11-wide board driven off screen height alone runs off the side
-            // of a portrait phone. The cell size has to be the smaller of the
-            // two fits, and the tray has to follow the board rather than
-            // measuring itself.
+            // A board driven off screen height alone runs off the side of a
+            // portrait phone — which is what the 11-wide original did. The cell
+            // size has to be the smallest of the three fits, and the tray has
+            // to follow the board rather than measuring itself.
             string config = File.ReadAllText(ConfigPath);
             Assert.That(config, Does.Contain("BoardWidthPct"), "no width budget for the board");
 

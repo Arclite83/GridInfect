@@ -93,7 +93,7 @@ unity/
       Scenes/            #   Main.unity
       Art/  Audio/       #   future committed runtime assets — small exports only
     Settings/            # URP assets, created by RenderPipelineSetup — committed
-    _Local/              # git-ignored per-machine staging (see §6); create if needed
+    _Local/              # git-ignored per-machine staging (see §7); create if needed
   Packages/              # manifest + lock — committed
   ProjectSettings/       # committed
   Library/ Temp/ Logs/ UserSettings/   # generated — ignored
@@ -104,7 +104,40 @@ under `_Project/`); the `_Project` prefix keeps our tree sorted above any
 imported third-party folders; module boundaries (what may reference what)
 are enforced by `ArchitectureGateTests` and documented in `ARCHITECTURE.md`.
 
-## 6. Asset policy — no heavy files, no LFS
+## 6. First run: what to check, in order
+
+Nothing in this repo has been through the Unity editor. The C# is
+compile-checked against API stubs and the board shader has never been
+compiled by Unity at all. This list is ordered by what is most likely to bite,
+so work down it rather than judging the whole thing at once.
+
+| # | Check | If it's wrong |
+|---|---|---|
+| 1 | **Console is clean on Play.** | `[board] shader 'GridInfect/Board' not found` means the shader failed to compile — Unity logs the real error separately. The board draws nothing; everything else still works. |
+| 2 | **The board draws at all.** Six columns, eleven rows, empty cells as plates and holes as bare background. | If cells and holes look the same, `CellPlate` isn't reaching the material. If the whole quad is black, suspect the state texture (`RGBAFloat`, point-filtered) or `_BoardRect`. |
+| 3 | **Drop a piece — traces, then ink.** A beam races out, the blot dissolves in behind it, the cell settles hard-edged. | If the dissolve looks like static rather than ink, the blot histogram is the suspect (`BoardNoise` rank-normalises for exactly this reason). |
+| 4 | **The hot fill blooms and the cooled fill does not.** | Post-processing has to be on for the camera — `BoardBloom.Ensure` sets `renderPostProcessing`, and the Volume is created at runtime on the Default layer, so check the camera's Volume Mask if nothing glows. Threshold is 1.0 by design: only HDR output blooms. |
+| 5 | **Colour space is Linear and HDR is on.** Already set in `ProjectSettings`; `ProjectRendersLinear` gates it. | If the board looks washed out or double-dark, check `BoardView.SetPaletteColor` — `Material.SetColor` is the one path Unity does not convert for you. |
+| 6 | **Portrait, 1080×2340 game view.** All four screens should compose without anything off-screen or overlapping. | Every screen measures from `PresentationConfig.Layout`; fix the metric, not the screen. |
+| 7 | **Audio.** One click per hop, pitched up per ray depth. Synthesised at runtime. | Level is a guess (`volume = 0.35`); it has never been heard. |
+| 8 | **On device.** `RGBAFloat` sampling, HDR buffer cost, and the fragment loop (8 sparks + 5 state taps) are the three things a phone will judge differently from an editor. | |
+
+Three acceptance criteria in `docs/infection-vfx-spec.md` are runtime
+judgements and are still open by definition: **60 fps on the minimum device
+with every juice layer on** (§2), **every state identifiable at 5 cm board
+width** (§5), and **the bleed reading as ink from 20 ms to 200 ms hop** (§6).
+
+Two things are deliberately left for you rather than guessed:
+
+- **Trace and bleed durations** are the spec's only unfixed numbers (90 ms and
+  260 ms today).
+- **Direction bias is locked at 0.3, and at 0.3 the bleed edge does not read
+  as an edge** — a threshold band in a noise-dominant field is a scattered
+  set, not a spatial one. Past roughly 0.6 with the band nearer 0.05 it
+  becomes the ink the spec describes. Written up under "As built"; unchanged
+  because it is an art call.
+
+## 7. Asset policy — no heavy files, no LFS
 
 The repo stays clone-fast: **no binary source art, no audio masters, no
 LFS**. Enforced by `.gitignore` and by review.

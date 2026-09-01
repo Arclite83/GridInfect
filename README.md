@@ -1,7 +1,7 @@
 # Grid Infect
 
 A Unity/C# rebuild of Grid Infect (Bloodhound Studios, 2014 — originally
-cocos2d-x). Drag pieces onto an 11×6 grid; each piece infects along its arms;
+cocos2d-x). Drag pieces onto a 6-wide, 11-tall grid; each piece infects along its arms;
 infect every cell to win. 128 shipped classic levels plus a timed Free Play
 mode with generated boards.
 
@@ -21,6 +21,7 @@ board states extracted from the 2014 code.
 | [`unity/Assets/_Project/Tests/EditMode/`](unity/Assets/_Project/Tests/EditMode/) | NUnit suites (vector replay, undo fixtures, generator goldens, gates) |
 | [`src/`](src/) | dotnet mirror solution: builds and tests the same sources headless, no Unity needed |
 | [`docs/`](docs/) | The port specification extracted from the original (rules, generator, modes, assets, requirements, dependencies) + `test_vectors.json` |
+| [`docs/infection-vfx-spec.md`](docs/infection-vfx-spec.md) | The board's art direction and infection animation, plus an "As built" section recording every deviation and what is still open |
 | [`tools/`](tools/) | Mechanical derivations: level baking, undo-fixture generation |
 | [`grid-infect-cocos2dx/`](grid-infect-cocos2dx/) | The original 2014 source, kept as reference. Not built |
 
@@ -55,10 +56,12 @@ Full first-open walkthrough (what to commit, folder layout, asset policy):
    undo cross-check, generator goldens, gates) — mirror-run by CI on every
    push.
 
-The baseline presentation is deliberately placeholder (one white texture,
-built-in font, everything procedural under URP): the mechanics, architecture,
-and tests are the deliverable; the art/feel overhaul lands on top without
-touching structure.
+Presentation is still 100% procedural — no imported art, no serialized scene
+content — but it is no longer placeholder. The board is the infection VFX
+(`docs/infection-vfx-spec.md`): one quad, one material, one draw call, with
+cell state in a data texture the shader reads. Colour lives in a single
+`BoardPalette` asset. The chrome around it (menus, tray, popups) is still
+plain rectangles and a system font, sized from `PresentationConfig.Layout`.
 
 ## Regenerating derived files
 
@@ -71,8 +74,12 @@ python3 docs/tools/verify_test_vectors.py   # sanity: vectors self-verify
 ## Status
 
 - Core rules, generator, save model, action log: done, fully tested.
-- Unity adapter: written and compile-checked against API stubs (`src/`);
-  first in-editor run happens on a machine with Unity installed.
-- Later waves (ads, IAP, consent, services, art): specified in
+- Board VFX, portrait layout across every screen: written, and verified by
+  numbers and by a WebGL port of the shader — see `docs/infection-vfx-spec.md`.
+- **Nothing has been through the Unity editor yet.** The adapter is
+  compile-checked against API stubs (`src/`) and the shader has never been
+  compiled by Unity. `docs/UNITY_SETUP.md` §6 is the first-run checklist,
+  ordered by what is most likely to bite.
+- Later waves (ads, IAP, consent, services): specified in
   `docs/REQUIREMENTS.md` / `docs/DEPENDENCIES.md`, deliberately not in this
   baseline.

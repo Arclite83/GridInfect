@@ -125,6 +125,13 @@ game code**. All durations from `Classes/Renderers/*.cpp`.
 - Piece tray: pieces at 7.5% of screen height from the bottom, scale =
   11% of screen height, slot pitch = piece width × 1.1 × 1.1, 8 slots
   centered on slot index 3.
+
+> These are the original's landscape metrics, kept as the record of what it
+> did. The port ships portrait on a transposed board, so its live numbers are
+> `PresentationConfig` and `PresentationConfig.Layout`: the cell takes the
+> smallest of three fits, the tray centres on the pieces a level actually has,
+> and every screen sizes boxes and type off the short edge. R-1102 still
+> applies — these were the starting values, and changes are deliberate.
 - Cells render at opacity 0 (voids) or 255 — no intermediate fades.
 
 ### Input-to-feedback

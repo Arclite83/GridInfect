@@ -141,12 +141,21 @@ ossifying or eroding:
   no `UnityEngine` in Engine/Core sources, no `GridInfect` in Engine sources,
   no direct `Rules` mutation from the adapter, and registry ⇔ constants ⇔
   this document kept in sync.
-- **`InfectionVfxSpecTests`** do the same for the art contract: the locked
-  parameter table and the palette in `docs/infection-vfx-spec.md` ⇔
-  `PresentationConfig.Infection` ⇔ `BoardPalette` ⇔ the board shader's
-  properties, plus "no literal colour in the shader" and "every juice layer is
-  an independent switch". The presentation layer is Unity-only, so these are
-  source gates, not behaviour tests.
+- **`InfectionVfxSpecTests`** do the same for the art and layout contract.
+  The presentation layer is Unity-only, so these are source gates, not
+  behaviour tests:
+  - the locked parameter table and the palette in
+    `docs/infection-vfx-spec.md` ⇔ `PresentationConfig.Infection` ⇔
+    `BoardPalette` ⇔ the board shader's properties;
+  - no literal colour anywhere in the shader body, so a palette swap really
+    is the only way to restyle a board;
+  - every juice layer is an independent, correctly-defaulted switch;
+  - the project's colour space and orientation match the baseline
+    `docs/DEPENDENCIES.md` declares, because gamma or landscape would keep
+    drawing — just wrong, and quietly;
+  - the board's cell size takes the smallest of its three fits, and every
+    screen measures from `PresentationConfig.Layout`, which is the drift that
+    made all four screens landscape-only in the first place.
 - **CI** (`.github/workflows/ci.yml`) runs the full suite on every push.
 
 ## 7. Performance posture
