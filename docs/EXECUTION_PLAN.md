@@ -10,7 +10,7 @@ table below in the same PR.
 | Stage | Name | Status | PR |
 |---|---|---|---|
 | 0 | Assessment, decisions, metrics tool | Done | game-mechanics-monetization |
-| 1 | Deduction solver and grader | Not started | |
+| 1 | Deduction solver and grader | Done | claude/execution-plan |
 | 2 | Generator v2 | Not started | |
 | 3 | Level bake, worlds, Legacy mode | Not started | |
 | 4 | Daily and Endless | Not started | |

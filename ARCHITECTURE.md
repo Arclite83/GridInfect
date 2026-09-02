@@ -25,7 +25,7 @@ GridInfect.Game (Unity adapter)     GridInfect.Core.Tests (edit-mode / dotnet)
 | Assembly | Contents | May reference |
 |---|---|---|
 | `Bloodhound.Engine` | Action dispatch/registry/log, `MiniJson`, `Pcg32`. Game-agnostic — the piece that moves to the next game (the logic game) unchanged. | nothing (`noEngineReferences`) |
-| `GridInfect.Core` | Schema types, `Rules` (the mechanics), the actions, `LevelGenerator`, baked classic levels, `SaveCodec`, `Queries`. | `Bloodhound.Engine` only (`noEngineReferences`) |
+| `GridInfect.Core` | Schema types, `Rules` (the mechanics), the actions, `LevelGenerator`, baked classic levels, `SaveCodec`, `Queries`, and `Solving` (the deduction solver, exact solution counter and grader — `docs/GENERATOR_V2.md`). | `Bloodhound.Engine` only (`noEngineReferences`) |
 | `GridInfect.Game` | Everything Unity: boot, camera, screens, board/piece views, input, tweens, the 0.3 s beat, save file IO. Parses input, dispatches one action or reads one query, renders the result. | Core, Engine, UnityEngine |
 | `GridInfect.Core.Tests` | NUnit suites; run identically in Unity edit mode and under `dotnet test` via the mirror projects in `src/`. | Core, Engine |
 
@@ -115,6 +115,11 @@ specified in `docs/RULES.md`. Proof of equivalence is layered:
    outcomes into `UndoFixtures.g.cs`.
 3. **Generator**: the GENERATOR §5 solvability proof replayed through the
    real rules, and golden seed lock-ins.
+4. **Solver**: `SolutionCounter` mirrors the `tools/level_metrics.py` search step for
+   step and is pinned to its output on all 128 levels
+   (`docs/level_metrics_classic.json`); `Deducer` may only report a solve on
+   a level that counter finds unique. The solver reads `Rules` on scratch
+   sessions to check placement order; it never touches game state.
 
 The suite is deliberately a limited, load-bearing subset — integration and
 rule-based tests on the verticals above plus the save round-trip and the

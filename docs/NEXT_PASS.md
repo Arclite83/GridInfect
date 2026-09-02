@@ -1,4 +1,4 @@
-# Next pass — decisions (2026-09-02, rev 4)
+# Next pass — decisions (2026-09-02, rev 5)
 
 Outcome of the level-design and business assessment. Numbers come from
 `tools/level_metrics.py` (exact solution counts over the 128 classic levels
@@ -22,8 +22,12 @@ and 120 generated boards per difficulty). The full write-up with charts is the
   0/600): any piece placed on a cell covers it. Deduction is about **lines**
   (row and column segments an arm can own). A human-rules solver must be
   written in those terms.
-- Static coverage and order-aware solution counts agree on all 128: switches
-  and traps never invalidate a covering set; they cut alternatives.
+- ~~Static coverage and order-aware solution counts agree on all 128.~~
+  **Corrected in stage 1 (rev 5):** the oracle's order check was dead code
+  (`not hit_cap` tested a list). With it live, 53 of the 128 lose covering
+  sets to order (a second trap trip, a switch repel) and the unique-solution
+  count is **31**, not 27 (ids 42, 50, 58, 117 join). The table above keeps
+  the rev-4 numbers; `docs/level_metrics_classic.json` is the current truth.
 
 ## Decisions
 

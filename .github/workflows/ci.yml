@@ -22,8 +22,10 @@ jobs:
         run: |
           python3 tools/bake_levels.py
           python3 tools/gen_undo_fixtures.py
+          python3 tools/gen_level_metrics_golden.py
           git diff --exit-code -- unity/Assets/_Project/Core/Levels/ClassicLevelData.g.cs \
-                                  unity/Assets/_Project/Tests/EditMode/UndoFixtures.g.cs
+                                  unity/Assets/_Project/Tests/EditMode/UndoFixtures.g.cs \
+                                  docs/level_metrics_classic.json
 
       - name: Build and test (mirror of Unity edit-mode suite)
         run: dotnet test src/Tests.Mirror/GridInfect.Core.Tests.Mirror.csproj --nologo
