@@ -3,7 +3,9 @@
     "rootNamespace": "GridInfect.Game",
     "references": [
         "Bloodhound.Engine",
-        "GridInfect.Core"
+        "GridInfect.Core",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
