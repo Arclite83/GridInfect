@@ -1,4 +1,4 @@
-# Next pass — decisions (2026-09-02, rev 3)
+# Next pass — decisions (2026-09-02, rev 4)
 
 Outcome of the level-design and business assessment. Numbers come from
 `tools/level_metrics.py` (exact solution counts over the 128 classic levels
@@ -36,8 +36,9 @@ and 120 generated boards per difficulty). The full write-up with charts is the
    grade → canonicalise under flips and dedupe. Walls are the primary
    pruning tool; wall density and shape are per-world tunables.
 3. **New elements** (see the table below). In order: short arms, the
-   area piece, forbidden cells, diagonal arms, then mirrors and relays.
-   Walls used deliberately throughout. Fixed pieces as world spice. Cut:
+   area piece, forbidden cells, diagonal arms, then relays. Mirrors are a
+   maybe, decided after relays ship. Walls used deliberately throughout.
+   Fixed pieces as world spice. Cut: decoy pieces, one-way walls,
    pre-infected cells, rotation, knight jumps, multi-strain infection.
 4. **Content.** ~1000 levels as worlds of 20–25, one element per world, batch
    generated and graded, edges of each world hand-reviewed. The 128 classic
@@ -92,10 +93,10 @@ vectors; new content runs on V2. That refactor is paid once.
 | Area piece ("blot") | Infects its 3×3 neighbourhood; walls/switches/traps inside are inert | High: a blob family alongside lines; pairs with diagonals | Low rules; medium VFX | Build second, needs V2 |
 | Forbidden cells | Must stay clean; a placement whose spread would hit one is illegal and bounces | High: prunes options instead of truncating coverage (the trap without punishment) | Low | Build third |
 | Diagonal arms | Four more directions, curated tile set | High | Medium (Dir, generator, shader, solver family) | Committed, after the above |
-| Mirror tile | Turns an incoming arm 90° | Medium-high, laser-puzzle paths; reads well in VFX | Medium, needs V2 | After diagonals |
-| Relay cell | When infected, emits its own arm(s) | High, chain reactions | Medium, needs V2 | After mirrors |
-| One-way wall | Blocks from one side only | Medium | Low | Filler, any time |
-| Decoy piece | One tray piece is not needed | Medium (breaks the exact-count tell) | Zero | World spice |
+| Relay cell | When infected, emits its own arm(s) | High, chain reactions | Medium, needs V2 | After diagonals |
+| Mirror tile | Turns an incoming arm 90° | Medium-high, laser-puzzle paths; reads well in VFX | Medium, needs V2 | Maybe; decide after relays |
+| One-way wall | Blocks from one side only | Medium | Low | No |
+| Decoy piece | One tray piece is not needed | Medium (breaks the exact-count tell) | Zero | No |
 | Fixed piece | Pre-placed, immovable | Medium | Low | World spice |
 | Blot with arms | 3×3 core plus arms | Combinatorial; hold until blot is proven | Low once blot exists | Later |
 | Multi-strain | Two infection colours, cells demand one | Large but doubles art and rules | High | Shelved |
@@ -112,8 +113,8 @@ vectors; new content runs on V2. That refactor is paid once.
 4. Daily + Endless replace timed Free Play.
 5. Lock tool (Core + view), then AdMob + UMP + Unity IAP. First Android
    store build.
-6. RulesV2, then short arms, blot, forbidden cells, diagonals, mirrors,
-   relays — each as new worlds through the same pipeline. iOS follow lands
-   alongside whichever of these is current.
+6. RulesV2, then short arms, blot, forbidden cells, diagonals, relays —
+   each as new worlds through the same pipeline. Mirrors only if relays
+   leave room for them. iOS follow lands alongside whichever is current.
 
 Fixed date ⇒ step 6 flexes first, then level count. Step 1 cannot be cut.
