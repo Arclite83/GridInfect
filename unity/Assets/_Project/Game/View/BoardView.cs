@@ -415,13 +415,16 @@ namespace GridInfect.Game
             SetPaletteColor("_ColGlyph", _palette.Glyph);
         }
 
-        // Material.SetColor hands the value straight to the GPU — unlike a
-        // sprite tint or a camera clear colour, nothing converts it for us. The
-        // palette is authored in sRGB, so in linear rendering it converts here.
+        // The palette is authored in sRGB and handed over as-is. Every _Col*
+        // property is declared as a Color in the shader's Properties block,
+        // and for those Unity does the sRGB-to-linear conversion itself on
+        // SetColor when the project renders linear — the same treatment a
+        // sprite tint or the camera clear colour gets. Converting here as well
+        // squares the values: the first real run drew the board near black,
+        // with the cell plates gone (#141C33 came out around #050609).
         void SetPaletteColor(string property, Color color)
         {
-            _material.SetColor(property,
-                QualitySettings.activeColorSpace == ColorSpace.Linear ? color.linear : color);
+            _material.SetColor(property, color);
         }
 
         static Mesh BuildQuad(float width, float height)

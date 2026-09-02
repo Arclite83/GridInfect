@@ -235,11 +235,14 @@ sits well under it — cooled fill 0.32 linear, immune hatch 0.25, cell border
 exactly 1.0 for pure white. A luminance-tuned threshold would have caught the
 text; "above LDR" does not.
 
-One conversion is manual. `Material.SetColor` hands its value straight to the
-GPU, unlike a sprite tint or a camera clear colour, which Unity converts for
-you. The palette is authored in sRGB hex, so `BoardView.SetPaletteColor`
-converts when the active colour space is linear — and only then, so flipping
-the project setting back cannot silently double-darken the board.
+No conversion is manual. Every `_Col*` property is declared as a `Color` in
+the shader's Properties block, and Unity converts those from sRGB to linear on
+`Material.SetColor` when the project renders linear — the same treatment a
+sprite tint or a camera clear colour gets. `BoardView.SetPaletteColor` hands
+the authored sRGB hex over untouched. The first real editor run had it
+converting a second time, which squared every value: the board drew near
+black and the cell plates vanished. If the board ever reads double-dark
+again, that is the first place to look.
 
 The volume also carries **Neutral** tonemapping. Without a curve, the hot fill
 — palette colour times 2.2 — hard-clips per channel, and `#00D9FF` lands on
