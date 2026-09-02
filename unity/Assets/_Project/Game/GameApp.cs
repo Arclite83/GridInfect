@@ -10,7 +10,7 @@ namespace GridInfect.Game
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Start()
         {
-            if (Object.FindFirstObjectByType<GameApp>() != null) return;
+            if (Object.FindAnyObjectByType<GameApp>() != null) return;
             var go = new GameObject("GridInfect");
             Object.DontDestroyOnLoad(go);
             go.AddComponent<GameApp>();
