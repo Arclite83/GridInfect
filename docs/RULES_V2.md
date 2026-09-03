@@ -84,3 +84,12 @@ every vector solution through both and compares boards, queues and flags
 after each placement. The 128 vectors themselves stay on V1
 (`VectorReplayTests`); the generated worlds, the daily and endless boards
 run on V2 (`WorldTests`, `DailyTests` go through the action pipeline).
+
+## 8. Short arms (stage 8)
+
+A `PieceSpec` arm with reach *n* (1 or 2 in shipped content) infects at
+most *n* rings out from the piece and stops there; walls, switches, traps
+and forbidden cells inside those rings act as for a long arm, voids and
+the edge are passed over and still count as rings. Text form `L2`, `U1`.
+The classic order of arms and repels is unchanged. Everything else (undo,
+reset, locks) sees a short arm as an ordinary arm.

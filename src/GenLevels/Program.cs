@@ -10,6 +10,7 @@ using GridInfect.Core.Solving;
 namespace GridInfect.GenLevels
 {
     // gen_levels --grade G2 --count 25 --seed 1000 --pieces 3-5 --out file.jsonl
+    //            [--grades G2-G3] [--elements walls,shortarms] [--short-arm-chance 10]
     //            [--min-active 6] [--max-active 40] [--min-run 1] [--max-run 5]
     //            [--end-wall 14] [--gaps] [--base-chance 15] [--falloff 1] [--shape-bias 0]
     //            [--distance 2] [--shared-lines] [--symmetric-tiles] [--dup-tiles]
@@ -36,6 +37,23 @@ namespace GridInfect.GenLevels
                 switch (args[a])
                 {
                     case "--grade": grade = (Grade)Enum.Parse(typeof(Grade), next()); break;
+                    case "--grades":
+                    {
+                        string[] range = next().Split('-');
+                        spec.MinGrade = (Grade)Enum.Parse(typeof(Grade), range[0]);
+                        spec.MaxGrade = (Grade)Enum.Parse(typeof(Grade), range[range.Length - 1]);
+                        break;
+                    }
+                    case "--elements":
+                    {
+                        spec.Elements = Element.None;
+                        foreach (string name in next().Split(','))
+                        {
+                            spec.Elements |= (Element)Enum.Parse(typeof(Element), name, ignoreCase: true);
+                        }
+                        break;
+                    }
+                    case "--short-arm-chance": spec.ShortArmChance = int.Parse(next()); break;
                     case "--count": count = int.Parse(next()); break;
                     case "--seed": seed = ulong.Parse(next()); break;
                     case "--max-seeds": maxSeeds = long.Parse(next()); break;

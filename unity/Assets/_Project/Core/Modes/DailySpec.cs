@@ -21,12 +21,21 @@ namespace GridInfect.Core
         // Stable across platforms: FNV-1a 64 of the date text.
         public static ulong Seed(string dateUtc) => Canonical.Fnv1a64("daily:" + dateUtc);
 
+        // The element set rotates with the weekday (one element per day as
+        // the stages land): Monday is plain, the weekend stacks them.
+        public static Element ElementsFor(DayOfWeek day)
+        {
+            switch (day)
+            {
+                case DayOfWeek.Tuesday: return Element.Walls | Element.ShortArms;
+                default: return Element.Walls;
+            }
+        }
+
         // The week ramps: Monday is a warm-up, the weekend is the hard one.
-        // Cardinal arms and walls only at launch; later stages rotate the
-        // element set here per weekday.
         public static GenSpec For(DateTime date)
         {
-            var spec = new GenSpec { Elements = Element.Walls };
+            var spec = new GenSpec { Elements = ElementsFor(date.DayOfWeek) };
             switch (date.DayOfWeek)
             {
                 case DayOfWeek.Monday: spec.MinPieces = 3; spec.MaxPieces = 3; spec.MinGrade = Grade.G1; spec.MaxGrade = Grade.G2; break;

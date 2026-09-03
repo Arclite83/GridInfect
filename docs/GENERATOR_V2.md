@@ -271,3 +271,19 @@ consumes them in seed order, so the output is independent of N.
 
 Acceptance rates (default carve, `--threads 3`, seeds from 100000) are
 recorded in the stage 2 PR.
+
+## Elements (stages 8–12)
+
+Each element is a flag in `GenSpec.Elements`. Its draws come from the
+same `Pcg32` but only when the flag is on, so classic specs keep their
+seeds. Per element: how the sample and the carve change, what the solver
+does with it, and the shipped world and daily slot.
+
+### Short arms (`Element.ShortArms`, stage 8)
+
+Sample: after the tile, each arm rolls `ShortArmChance`/20 to become a
+short arm of reach 1 or 2 (one more draw). Carve: a short arm's run is
+capped at its reach (Runs mode) or its cells beyond the reach are skipped
+(Gaps mode). Prune: the arm-useful check uses the reach. Solver: static
+coverage already honours reach; no new rule. World `w13 Short Arms`
+(pieces 3–5, G2–G4, chance 12/20); daily: Tuesdays.

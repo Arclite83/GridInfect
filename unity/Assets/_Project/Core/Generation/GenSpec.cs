@@ -14,6 +14,11 @@ namespace GridInfect.Core.Generation
         Walls = 1,
         Switches = 2,
         Traps = 4,
+        ShortArms = 8,     // stage 8: an arm reaches 1 or 2 cells
+        Area = 16,         // stage 9: the 3x3 blot piece
+        Forbidden = 32,    // stage 10: cells that must stay clean
+        Diagonals = 64,    // stage 11: diagonal arms
+        Relays = 128,      // stage 12: cells that emit arms when infected
     }
 
     public enum CarveMode
@@ -69,6 +74,9 @@ namespace GridInfect.Core.Generation
         public bool RequireAllPieces = true;   // no decoy pieces (NEXT_PASS: cut)
         public int SolutionCap = 4000;         // above this a sample is rejected as hopeless
 
+        // Element tunables (each only draws from the RNG when its element is on).
+        public int ShortArmChance = 10;        // out of 20, per arm: reach 1 or 2 instead of the edge
+
         // The spec as data (docs/worlds headers, the daily spec): every
         // field, so a spec round-trips and a world regenerates from its header.
         public string ToJson()
@@ -93,6 +101,7 @@ namespace GridInfect.Core.Generation
                 ["distance"] = MinPieceDistance,
                 ["allPieces"] = RequireAllPieces,
                 ["cap"] = SolutionCap,
+                ["shortArmChance"] = ShortArmChance,
             });
         }
 
@@ -137,6 +146,7 @@ namespace GridInfect.Core.Generation
             spec.MinPieceDistance = input.IntOr("distance", spec.MinPieceDistance);
             if (raw.TryGetValue("allPieces", out object ap) && ap is bool all) spec.RequireAllPieces = all;
             spec.SolutionCap = input.IntOr("cap", spec.SolutionCap);
+            spec.ShortArmChance = input.IntOr("shortArmChance", spec.ShortArmChance);
             return spec;
         }
 
@@ -148,7 +158,7 @@ namespace GridInfect.Core.Generation
                 MinGrade = MinGrade, MaxGrade = MaxGrade, MaxPruneSteps = MaxPruneSteps,
                 MaxWalls = MaxWalls, AllowDuplicateTiles = AllowDuplicateTiles, AllowSymmetricTiles = AllowSymmetricTiles,
                 ExclusiveLines = ExclusiveLines, MinPieceDistance = MinPieceDistance,
-                RequireAllPieces = RequireAllPieces, SolutionCap = SolutionCap,
+                RequireAllPieces = RequireAllPieces, SolutionCap = SolutionCap, ShortArmChance = ShortArmChance,
                 Carve = new CarveParams
                 {
                     Mode = Carve.Mode, BaseChance = Carve.BaseChance, Falloff = Carve.Falloff,

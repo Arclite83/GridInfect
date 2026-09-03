@@ -29,10 +29,12 @@ namespace GridInfect.Core.Tests
                         $"{w.Id}: grades must not fall within a world");
                 }
             }
-            for (int n = 1; n < Worlds.Count; n++)
+            // The twelve launch worlds ramp; the element worlds after them
+            // (one per element, stages 8-12) each start their own ramp.
+            for (int n = 1; n < 12 && n < Worlds.Count; n++)
             {
                 Assert.That(Worlds.Grade(Worlds.All[n].Id, 0), Is.GreaterThanOrEqualTo(Worlds.Grade(Worlds.All[n - 1].Id, 0)),
-                    "grades ramp across worlds");
+                    "grades ramp across the launch worlds");
             }
         }
 

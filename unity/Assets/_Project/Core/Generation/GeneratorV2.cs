@@ -49,7 +49,13 @@ namespace GridInfect.Core.Generation
                         if (spec.ExclusiveLines && (ki == ci || kj == cj)) clash = true;
                         if (Math.Abs(ki - ci) + Math.Abs(kj - cj) < spec.MinPieceDistance) clash = true;
                     }
-                    if (!clash) { tiles[n] = tile; specs[n] = PieceSpec.FromTile(tile); cells[n] = cell; break; }
+                    if (!clash)
+                    {
+                        tiles[n] = tile;
+                        specs[n] = Decorate(PieceSpec.FromTile(tile), spec, ref rng);
+                        cells[n] = cell;
+                        break;
+                    }
                     if (++tries > 200) { rejection = Rejection.Tiles; return null; }
                 }
             }
@@ -141,6 +147,22 @@ namespace GridInfect.Core.Generation
             };
         }
 
+        // Element decoration of a sampled tile. Draws happen only for the
+        // elements the spec turns on, so classic specs keep their goldens.
+        static PieceSpec Decorate(PieceSpec piece, GenSpec spec, ref Pcg32 rng)
+        {
+            if ((spec.Elements & Element.ShortArms) != 0)
+            {
+                for (int d = 0; d < 8; d++)
+                {
+                    var dir = (Dir)d;
+                    if (!piece.Has(dir)) continue;
+                    if (rng.Next(20) < spec.ShortArmChance) piece = piece.WithReach(dir, 1 + rng.Next(2));
+                }
+            }
+            return piece;
+        }
+
         // Gaps: as LevelGenerator does — walk each arm outward, one draw per
         // in-bounds cell, gaps allowed — with the chance curve from CarveParams.
         // Runs: each arm draws a length and activates that many in-bounds
@@ -160,6 +182,7 @@ namespace GridInfect.Core.Generation
                         int i = pi + TileArms.Di(dir) * offset;
                         int j = pj + TileArms.Dj(dir) * offset;
                         if (!Grid.InBounds(i, j)) continue;
+                        if (spec.ReachOf(dir) != 0 && offset > spec.ReachOf(dir)) continue;
                         if (rng.Next(20) < carve.ChanceAt(offset)) board[Grid.Loc(i, j)] = Cell.Active;
                     }
                 }
@@ -170,6 +193,7 @@ namespace GridInfect.Core.Generation
                 Dir dir = TileArms.SpreadOrderV2[n];
                 if (!spec.Has(dir)) continue;
                 int run = carve.MinRun + (carve.MaxRun > carve.MinRun ? rng.Next(carve.MaxRun - carve.MinRun + 1) : 0);
+                if (spec.ReachOf(dir) != 0 && run > spec.ReachOf(dir)) run = spec.ReachOf(dir);   // a short arm carves no further than it reaches
                 int offset = 1;
                 for (; offset <= run; offset++)
                 {
@@ -247,26 +271,8 @@ namespace GridInfect.Core.Generation
                 {
                     var dir = (Dir)d;
                     if (!spec.Has(dir)) continue;
-                    int f = map.Families.Length;
-                    bool reaches = false;
-                    for (int fam = 0; fam < f && !reaches; fam++)
-                    {
-                        var family = map.Families[fam];
-                        if (family.Pos != dir && family.Neg != dir) continue;
-                        int id = map.LineOf[fam][cell];
-                        if (id < 0) break;
-                        var line = map.Lines[fam][id];
-                        int at = map.IndexIn[fam][cell];
-                        if (family.Pos == dir)
-                        {
-                            for (int n = at + 1; n < line.Cells.Length; n++) if (map.Def.BoardAt(line.Cells[n]) == Cell.Active) { reaches = true; break; }
-                        }
-                        else
-                        {
-                            for (int n = at - 1; n >= 0; n--) if (map.Def.BoardAt(line.Cells[n]) == Cell.Active) { reaches = true; break; }
-                        }
-                    }
-                    if (!reaches) return false;
+                    var arm = new PieceSpec(0).WithArm(dir).WithReach(dir, spec.ReachOf(dir));
+                    if (map.Coverage(arm, cell).Count < 2) return false;
                 }
             }
             return true;

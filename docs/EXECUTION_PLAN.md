@@ -17,7 +17,7 @@ table below in the same PR.
 | 5 | Lock tool | Done | claude/execution-plan |
 | 6 | Ads, consent, remove-ads (Android) | Blocked: the Google Mobile Ads / UMP and Unity IAP packages and an Android device build are not available in the authoring environment; the Services boundary, interfaces, Null services, cadence config, gate test and adapter wiring are in | claude/execution-plan |
 | 7 | RulesV2 | Done | claude/execution-plan |
-| 8 | Short arms | Not started | |
+| 8 | Short arms | Done | claude/execution-plan |
 | 9 | Area piece | Not started | |
 | 10 | Forbidden cells | Not started | |
 | 11 | Diagonal arms | Not started | |
