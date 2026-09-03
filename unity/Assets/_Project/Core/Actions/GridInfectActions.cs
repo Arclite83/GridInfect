@@ -22,6 +22,11 @@ namespace GridInfect.Core
         public const string WorldLoad = "world.load";
         public const string ProgressUnlockWorld = "progress.unlockWorld";
         public const string ProgressUnlockWorldLevel = "progress.unlockWorldLevel";
+        public const string DailyBegin = "daily.begin";
+        public const string DailyComplete = "daily.complete";
+        public const string EndlessBegin = "endless.begin";
+        public const string EndlessAdvance = "endless.advance";
+        public const string EndlessAbort = "endless.abort";
 
         public static void RegisterAll(ActionRegistry<GameState> registry)
         {
@@ -40,6 +45,11 @@ namespace GridInfect.Core
             registry.Register(new LoadWorldLevelAction());
             registry.Register(new UnlockWorldAction());
             registry.Register(new UnlockWorldLevelAction());
+            registry.Register(new BeginDailyAction());
+            registry.Register(new CompleteDailyAction());
+            registry.Register(new BeginEndlessAction());
+            registry.Register(new AdvanceEndlessAction());
+            registry.Register(new AbortEndlessAction());
         }
 
         public static Dispatcher<GameState> CreateDispatcher()
@@ -81,5 +91,11 @@ namespace GridInfect.Core
 
         public static Dictionary<string, object> UnlockWorldLevel(string worldId, int index) =>
             new Dictionary<string, object> { ["worldId"] = worldId, ["index"] = index };
+
+        public static Dictionary<string, object> DailyBegin(string dateUtc, long nowMs) =>
+            new Dictionary<string, object> { ["dateUtc"] = dateUtc, ["nowMs"] = nowMs };
+
+        public static Dictionary<string, object> EndlessBegin(Solving.Grade grade, long seed) =>
+            new Dictionary<string, object> { ["grade"] = (int)grade, ["seed"] = seed };
     }
 }

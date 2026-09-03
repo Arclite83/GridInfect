@@ -13,6 +13,9 @@ namespace GridInfect.Core
         public string WorldId;      // GameMode.World: the world and level in play
         public int WorldIndex = -1;
 
+        public DailyRun DailyRun;       // GameMode.Daily
+        public EndlessRun EndlessRun;   // GameMode.Endless
+
         public LevelDef[] FreePlayDefs;
 
         public int FreePlayIndex;
@@ -52,6 +55,14 @@ namespace GridInfect.Core
             new System.Collections.Generic.Dictionary<string, int>(System.StringComparer.Ordinal);
 
         public readonly int[] FreePlayCounts = new int[5];
+
+        // Daily: personal best per UTC date, streak of consecutive dates,
+        // the last date completed. Endless: best streak per grade (index = grade - 1).
+        public readonly System.Collections.Generic.Dictionary<string, long> DailyBestMs =
+            new System.Collections.Generic.Dictionary<string, long>(System.StringComparer.Ordinal);
+        public int DailyStreak;
+        public string DailyLastDate = "";
+        public readonly int[] EndlessBest = new int[5];
 
         public bool Muted;
 

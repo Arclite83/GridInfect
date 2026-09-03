@@ -16,7 +16,7 @@ namespace GridInfect.Core
 
     public enum GameMode : byte
     {
-        Classic, FreePlay, World
+        Classic, FreePlay, World, Daily, Endless
     }
 
     public enum Dir : byte

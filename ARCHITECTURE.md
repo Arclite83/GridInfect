@@ -53,8 +53,9 @@ files, touches) into these types at the boundary.
 | `LevelDef` | immutable board (66 bytes) + ordered `Tile[]` (1–8) | cell values ∈ {0,1,2,3,5}; validated at construction |
 | `LevelSession` | working board, `PieceState[]`, repel queue, `ResetTripped`, `ResolutionPending`, `Solved` | mutated only by `Rules`, called only by actions |
 | `World` | id, name, element set, ordered levels (board, pieces, stored solution, grade, seed, canonical hash) | baked from `docs/worlds/*.jsonl` into `WorldData.g.cs` by `tools/bake_worlds.py`; every level has exactly one solution and solves by deduction (`WorldTests`) |
-| `Profile` | unlocked set, best times ms[5], run counts[5], muted, world progress {id → levels open} | pure data; serialization only via `SaveCodec` (versioned JSON, expand/contract; v2 added `worlds`) |
-| `GameState` | mode (Classic / FreePlay / World) + classic id / free-play run / world id and index + `Session` + `Profile` | wall-clock time enters **only** through action inputs |
+| `Profile` | unlocked set, best times ms[5], run counts[5], muted, world progress {id → levels open}, daily bests {date → ms}, daily streak and last date, endless best streak[5] | pure data; serialization only via `SaveCodec` (versioned JSON, expand/contract; v2 added `worlds`, v3 the daily/endless fields) |
+| `DailyRun` / `EndlessRun` | daily: UTC date, accepted seed, start/complete ms, par; endless: grade, run seed, index, streak, level seed | boards are pure functions of the logged inputs (`DailySpec`); the daily clock is a stat, never a rule |
+| `GameState` | mode (Classic / FreePlay / World / Daily / Endless) + classic id / free-play run / world id and index / daily run / endless run + `Session` + `Profile` | wall-clock time enters **only** through action inputs |
 
 `ResolutionPending` is the model's name for the original's 0.3 s presentation
 beat: a placement leaves consequences pending; `board.resolve` lands them.
@@ -86,6 +87,11 @@ live in `Queries` and carry zero rules.
 | `world.load` | `worldId, index` | WorldActions | enter a baked world level (unlock gating is presentation policy) |
 | `progress.unlockWorld` | `worldId` | WorldActions | a world opens at its first level; dispatched by the adapter when the previous world's last level is solved |
 | `progress.unlockWorldLevel` | `worldId, index` | WorldActions | level `index` opens (`index == Count` marks the world finished); dispatched by the adapter on solve for `index + 1` |
+| `daily.begin` | `dateUtc, nowMs` | DailyActions | the board for that UTC date (seed = hash of the date, `DailySpec` per weekday); clock starts |
+| `daily.complete` | `nowMs` | DailyActions | solved: elapsed, personal best per date, streak of consecutive dates (`StreakGrantDue` every 7th); rejects a backward clock |
+| `endless.begin` | `grade, seed` | DailyActions | start an Endless run: no clock, boards from the logged seed |
+| `endless.advance` | — | DailyActions | solved: streak +1 (or 1 after a reset), best per grade, next board |
+| `endless.abort` | — | DailyActions | leave a run |
 
 Adding a capability = a new action (or a new version of one); never an
 in-place break of a logged contract. Rejections are answers, not errors: a

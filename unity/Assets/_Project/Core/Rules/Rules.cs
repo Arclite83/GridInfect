@@ -223,6 +223,7 @@ namespace GridInfect.Core
         // Game::fullReset — 4 -> 1 everywhere, all pieces to the tray
         public static void FullReset(LevelSession s)
         {
+            s.Resets++;
             for (int i = 0; i < Grid.Height; i++)
             {
                 for (int j = 0; j < Grid.Width; j++)

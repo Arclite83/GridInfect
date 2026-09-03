@@ -18,6 +18,10 @@ namespace GridInfect.Core
 
         public bool Solved;
 
+        // Full resets this session has seen (level.reset or a trap trip);
+        // Endless reads it to score a streak. Statistics only, never rules.
+        public int Resets;
+
         public event Action<int, int, byte> CellChanged;   // onChangeBoardIndex(i, j, value)
         public event Action LevelSolved;                    // onLevelSolved
         public event Action PiecesUnbound;                  // onUnbindPieces

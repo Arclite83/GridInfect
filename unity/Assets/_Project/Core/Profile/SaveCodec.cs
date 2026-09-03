@@ -5,9 +5,10 @@ namespace GridInfect.Core
 {
     // Expand/contract: new fields are additive with read defaults; unknown keys are ignored.
     // v1: unlocked, bestMs, counts, muted. v2 (stage 3): + worlds {id: levels unlocked}.
+    // v3 (stage 4): + dailyBest {date: ms}, dailyStreak, dailyLast, endlessBest[5].
     public static class SaveCodec
     {
-        public const int Version = 2;
+        public const int Version = 3;
 
         public static string Save(Profile profile)
         {
@@ -29,6 +30,13 @@ namespace GridInfect.Core
             worldIds.Sort(System.StringComparer.Ordinal);
             foreach (string id in worldIds) worlds[id] = profile.WorldUnlocked[id];
 
+            var dailyBest = new Dictionary<string, object>();
+            var dates = new List<string>(profile.DailyBestMs.Keys);
+            dates.Sort(System.StringComparer.Ordinal);
+            foreach (string date in dates) dailyBest[date] = profile.DailyBestMs[date];
+            var endless = new List<object>(5);
+            for (int g = 0; g < 5; g++) endless.Add(profile.EndlessBest[g]);
+
             return MiniJson.Write(new Dictionary<string, object>
             {
                 ["v"] = Version,
@@ -37,6 +45,10 @@ namespace GridInfect.Core
                 ["counts"] = counts,
                 ["muted"] = profile.Muted,
                 ["worlds"] = worlds,
+                ["dailyBest"] = dailyBest,
+                ["dailyStreak"] = profile.DailyStreak,
+                ["dailyLast"] = profile.DailyLastDate ?? "",
+                ["endlessBest"] = endless,
             });
         }
 
@@ -81,6 +93,22 @@ namespace GridInfect.Core
                 foreach (var kv in worlds)
                 {
                     if (kv.Value is long n && n > 0 && Worlds.Get(kv.Key) != null) profile.WorldUnlocked[kv.Key] = (int)n;
+                }
+            }
+            if (root.TryGetValue("dailyBest", out object db) && db is Dictionary<string, object> dailyBest)
+            {
+                foreach (var kv in dailyBest)
+                {
+                    if (kv.Value is long ms && ms > 0 && DailySpec.TryParseDate(kv.Key, out _)) profile.DailyBestMs[kv.Key] = ms;
+                }
+            }
+            if (root.TryGetValue("dailyStreak", out object ds) && ds is long streak && streak >= 0) profile.DailyStreak = (int)streak;
+            if (root.TryGetValue("dailyLast", out object dl) && dl is string last && DailySpec.TryParseDate(last, out _)) profile.DailyLastDate = last;
+            if (root.TryGetValue("endlessBest", out object eb) && eb is List<object> endlessList)
+            {
+                for (int g = 0; g < 5 && g < endlessList.Count; g++)
+                {
+                    if (endlessList[g] is long n && n >= 0) profile.EndlessBest[g] = (int)n;
                 }
             }
             return profile;

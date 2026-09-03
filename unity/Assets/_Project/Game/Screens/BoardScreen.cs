@@ -84,6 +84,8 @@ namespace GridInfect.Game
 
             _title.text = App.State.Mode == GameMode.Classic ? $"LEVEL {App.State.ClassicLevelId + 1}"
                 : App.State.Mode == GameMode.World ? $"{Worlds.Get(App.State.WorldId).Name.ToUpperInvariant()}  {App.State.WorldIndex + 1}"
+                : App.State.Mode == GameMode.Daily ? $"DAILY  {App.State.DailyRun.DateUtc}"
+                : App.State.Mode == GameMode.Endless ? $"ENDLESS  GRADE {(int)App.State.EndlessRun.Grade}"
                 : $"{App.State.Difficulty}".ToUpperInvariant();
             _hud.text = "";
         }
@@ -246,6 +248,24 @@ namespace GridInfect.Game
                 }
                 ShowSolvedPopup(next, () => App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(worldId, index)));
             }
+            else if (App.State.Mode == GameMode.Daily)
+            {
+                var run = App.State.DailyRun;
+                if (!run.Completed)
+                {
+                    App.Do(GridInfectActions.DailyComplete, Inputs.Now(GameApp.NowMs()));
+                    App.DailyScores.Submit(run.DateUtc, Queries.ElapsedMs(run, GameApp.NowMs()), run.ParMs);
+                }
+                long elapsed = Queries.ElapsedMs(run, GameApp.NowMs());
+                long best = Queries.DailyBestMs(App.State.Profile, run.DateUtc);
+                OpenPopup($"SOLVED IN {Queries.FormatDuration(elapsed)}\nPAR {Queries.FormatDuration(run.ParMs)}   BEST {Queries.FormatDuration(best)}\nSTREAK {App.State.Profile.DailyStreak}");
+                AddPopupButton("MENU", new Vector2(0f, -Short * 0.06f),
+                    new Vector2(L.ContentWidth / 3f, L.BarHeight), () => App.Screens.Show(new DailyScreen()));
+            }
+            else if (App.State.Mode == GameMode.Endless)
+            {
+                App.Do(GridInfectActions.EndlessAdvance); // no pause between levels; the streak is in the HUD
+            }
             else
             {
                 if (App.State.FreePlayIndex < App.State.FreePlayDefs.Length - 1)
@@ -289,6 +309,21 @@ namespace GridInfect.Game
                 _board.Tick(dt);
             }
 
+            if (App.State.Mode == GameMode.Daily)
+            {
+                var daily = App.State.DailyRun;
+                if (daily == null || daily.Completed) return;
+                long elapsedDaily = Queries.ElapsedMs(daily, GameApp.NowMs());
+                if (elapsedDaily < 0) elapsedDaily = 0; // a backward clock is refused at daily.complete
+                _hud.text = $"{Queries.FormatDuration(elapsedDaily)}   PAR {Queries.FormatDuration(daily.ParMs)}";
+                return;
+            }
+            if (App.State.Mode == GameMode.Endless)
+            {
+                var endless = App.State.EndlessRun;
+                if (endless != null) _hud.text = $"SOLVED {endless.Index}   STREAK {endless.Streak}   BEST {App.State.Profile.EndlessBest[(int)endless.Grade - 1]}";
+                return;
+            }
             if (App.State.Mode != GameMode.FreePlay) return;
             var run = App.State.FreePlayRun;
             if (run == null || run.Completed) return;
@@ -385,6 +420,15 @@ namespace GridInfect.Game
             else if (App.State.Mode == GameMode.World)
             {
                 App.Screens.Show(new WorldLevelSelectScreen(App.State.WorldId));
+            }
+            else if (App.State.Mode == GameMode.Daily)
+            {
+                App.Screens.Show(new DailyScreen());
+            }
+            else if (App.State.Mode == GameMode.Endless)
+            {
+                App.Do(GridInfectActions.EndlessAbort);
+                App.Screens.Show(new EndlessScreen());
             }
             else
             {

@@ -13,7 +13,7 @@ table below in the same PR.
 | 1 | Deduction solver and grader | Done | claude/execution-plan |
 | 2 | Generator v2 | Done | claude/execution-plan |
 | 3 | Level bake, worlds, Legacy mode | Done | claude/execution-plan |
-| 4 | Daily and Endless | Not started | |
+| 4 | Daily and Endless | Done | claude/execution-plan |
 | 5 | Lock tool | Not started | |
 | 6 | Ads, consent, remove-ads (Android) | Not started | |
 | 7 | RulesV2 | Not started | |

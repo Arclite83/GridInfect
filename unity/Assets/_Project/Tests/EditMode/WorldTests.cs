@@ -142,7 +142,7 @@ namespace GridInfect.Core.Tests
             migrated.WorldUnlocked[Worlds.First.Id] = 7;
             migrated.WorldUnlocked[Worlds.All[1].Id] = 1;
             string json = SaveCodec.Save(migrated);
-            Assert.That(json, Does.Contain("\"v\":2"));
+            Assert.That(json, Does.Contain("\"v\":" + SaveCodec.Version));
             var loaded = SaveCodec.Load(json);
             Assert.That(loaded.WorldUnlocked, Is.EqualTo(migrated.WorldUnlocked));
             Assert.That(SaveCodec.Save(loaded), Is.EqualTo(json), "stable bytes");

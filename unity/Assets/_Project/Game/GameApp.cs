@@ -30,6 +30,12 @@ namespace GridInfect.Game
 
         public static long NowMs() => System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
+        // The Daily's date: UTC, so every device gets the same board.
+        public static string TodayUtc() => DailySpec.Format(System.DateTime.UtcNow);
+
+        // Local until a friends board lands (stage 4 leaves the hook).
+        public IDailyScoreSink DailyScores { get; set; } = new LocalDailyScoreSink();
+
         void Awake()
         {
             Application.targetFrameRate = PresentationConfig.TargetFrameRate;

@@ -34,6 +34,21 @@ namespace GridInfect.Core
         public static long ElapsedMs(FreePlayRun run, long nowMs) =>
             run == null ? 0 : (run.Completed ? run.CompletedMs : nowMs) - run.StartedMs;
 
+        public static long ElapsedMs(DailyRun run, long nowMs) =>
+            run == null ? 0 : (run.Completed ? run.CompletedMs : nowMs) - run.StartedMs;
+
+        public static long DailyBestMs(Profile profile, string dateUtc) =>
+            profile.DailyBestMs.TryGetValue(dateUtc ?? "", out long ms) ? ms : 0;
+
+        // The streak as of `dateUtc`: intact if the last completed date is
+        // today or yesterday, otherwise broken (shown as 0 until today's solve).
+        public static int DailyStreakOn(Profile profile, string dateUtc)
+        {
+            if (!DailySpec.TryParseDate(dateUtc, out System.DateTime today)) return 0;
+            if (!DailySpec.TryParseDate(profile.DailyLastDate, out System.DateTime last)) return 0;
+            return last == today || last.AddDays(1) == today ? profile.DailyStreak : 0;
+        }
+
         public static string FormatDuration(long ms)
         {
             if (ms < 0) ms = 0;
