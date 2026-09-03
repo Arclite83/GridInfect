@@ -72,8 +72,10 @@ locked ones placed and re-propagated, as in V1 with locks.
 
 Value 6. Never infected. `CanPlace` simulates the spread (arms, area,
 relays) on a scratch board and refuses a placement that would touch one;
-the adapter bounces the piece to the tray. The solver treats them as
-blockers for lines and excludes such placements (tier 2, ArmExclusion).
+the adapter bounces the piece to the tray (the same tray-return as any
+illegal drop). The solver treats them as blockers for lines and excludes
+such placements (tier 2, ArmExclusion). Drawn amber with a ring glyph
+(`BoardPalette.Forbidden`, `_ColForbidden`).
 
 ## 7. Equivalence with the classic rules
 

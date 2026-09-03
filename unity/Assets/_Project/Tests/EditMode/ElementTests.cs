@@ -108,6 +108,36 @@ namespace GridInfect.Core.Tests
             AssertAccepted(spec, 12, "area");
         }
 
+        // ---- stage 10: forbidden cells ----
+
+        [Test]
+        public void PlacementWhoseSpreadWouldTouchAForbiddenCellIsIllegal()
+        {
+            // Row 3: forbidden at (3,0), actives (3,1)..(3,4); column 1 actives (1,1),(2,1).
+            var def = V2("......" + ".1...." + ".1...." + "61111." + "......" + "......" +
+                         "......" + "......" + "......" + "......" + "......", "LU,R");
+            var s = new LevelSession(def);
+            Assert.That(s.Rules.CanPlace(s, 0, 3, 1), Is.False, "LU at (3,1): the left arm would hit the forbidden cell");
+            Assert.That(s.Rules.CanPlace(s, 1, 3, 1), Is.True, "R at (3,1) never looks left");
+            Assert.That(s.Rules.CanPlace(s, 0, 3, 4), Is.False, "LU at (3,4): the left arm runs into it too");
+            var map = new LineMap(def);
+            Assert.That(map.IsIllegal(def.Specs[0], Grid.Loc(3, 1)), Is.True, "solver agrees");
+            Assert.That(map.IsIllegal(def.Specs[1], Grid.Loc(3, 1)), Is.False);
+            // The area piece is refused when a forbidden cell sits inside its neighbourhood.
+            var blot = V2("......" + ".11..." + ".16..." + "......" + "......" + "......" +
+                          "......" + "......" + "......" + "......" + "......", "A");
+            var b = new LevelSession(blot);
+            Assert.That(b.Rules.CanPlace(b, 0, 1, 1), Is.False);
+            Assert.That(s.Board[Grid.Loc(3, 0)], Is.EqualTo(Cell.Forbidden), "the board is untouched by a refused placement");
+        }
+
+        [Test]
+        public void ForbiddenBoardsGenerateUniqueAndDeducible()
+        {
+            var spec = new GenSpec { Elements = Element.Walls | Element.Forbidden, MinPieces = 3, MaxPieces = 4 };
+            AssertAccepted(spec, 12, "forbidden");
+        }
+
         [Test]
         public void ShortArmBoardsGenerateUniqueAndDeducible()
         {

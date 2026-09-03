@@ -55,6 +55,7 @@ namespace GridInfect.GenLevels
                     }
                     case "--short-arm-chance": spec.ShortArmChance = int.Parse(next()); break;
                     case "--area-chance": spec.AreaChance = int.Parse(next()); break;
+                    case "--max-forbidden": spec.MaxForbidden = int.Parse(next()); break;
                     case "--count": count = int.Parse(next()); break;
                     case "--seed": seed = ulong.Parse(next()); break;
                     case "--max-seeds": maxSeeds = long.Parse(next()); break;
@@ -183,6 +184,7 @@ namespace GridInfect.GenLevels
             }
             sb.Append("],\"hash\":\"").Append(level.Hash).Append('"');
             sb.Append(",\"walls\":").Append(level.Walls);
+            if (level.ForbiddenCells > 0) sb.Append(",\"forbidden\":").Append(level.ForbiddenCells);
             if (level.Def.HasRelays)
             {
                 sb.Append(",\"relays\":[");

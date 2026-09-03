@@ -30,6 +30,7 @@ namespace GridInfect.Game
         // than a literal in the shader.
         public Color RepelSwitch = Hex("#8A5CFF");    // violet, diamond glyph
         public Color ResetTrap = Hex("#0D0D12");      // near-black, X glyph
+        public Color Forbidden = Hex("#FFB300");      // amber, ring glyph (RulesV2 stage 10: must stay clean)
         public Color Conflict = Hex("#FF3B30");       // red overprint + the X glyph
         public Color Glyph = Hex("#0B1020");          // shape glyphs read as holes in the fill
 

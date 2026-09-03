@@ -77,6 +77,7 @@ namespace GridInfect.Core.Generation
         // Element tunables (each only draws from the RNG when its element is on).
         public int ShortArmChance = 10;        // out of 20, per arm: reach 1 or 2 instead of the edge
         public int AreaChance = 6;             // out of 20, per piece: a 3x3 blot instead of a tile
+        public int MaxForbidden = 4;           // forbidden cells the pruner may place (Element.Forbidden)
 
         // The spec as data (docs/worlds headers, the daily spec): every
         // field, so a spec round-trips and a world regenerates from its header.
@@ -104,6 +105,7 @@ namespace GridInfect.Core.Generation
                 ["cap"] = SolutionCap,
                 ["shortArmChance"] = ShortArmChance,
                 ["areaChance"] = AreaChance,
+                ["maxForbidden"] = MaxForbidden,
             });
         }
 
@@ -150,6 +152,7 @@ namespace GridInfect.Core.Generation
             spec.SolutionCap = input.IntOr("cap", spec.SolutionCap);
             spec.ShortArmChance = input.IntOr("shortArmChance", spec.ShortArmChance);
             spec.AreaChance = input.IntOr("areaChance", spec.AreaChance);
+            spec.MaxForbidden = input.IntOr("maxForbidden", spec.MaxForbidden);
             return spec;
         }
 
@@ -162,7 +165,7 @@ namespace GridInfect.Core.Generation
                 MaxWalls = MaxWalls, AllowDuplicateTiles = AllowDuplicateTiles, AllowSymmetricTiles = AllowSymmetricTiles,
                 ExclusiveLines = ExclusiveLines, MinPieceDistance = MinPieceDistance,
                 RequireAllPieces = RequireAllPieces, SolutionCap = SolutionCap, ShortArmChance = ShortArmChance,
-                AreaChance = AreaChance,
+                AreaChance = AreaChance, MaxForbidden = MaxForbidden,
                 Carve = new CarveParams
                 {
                     Mode = Carve.Mode, BaseChance = Carve.BaseChance, Falloff = Carve.Falloff,
@@ -183,6 +186,7 @@ namespace GridInfect.Core.Generation
         public ulong Seed;
         public string Hash;                        // canonical under the board's symmetry group
         public int Walls;
+        public int ForbiddenCells;
         public int PruneSteps;
     }
 

@@ -413,6 +413,7 @@ namespace GridInfect.Game
             SetPaletteColor("_ColImmuneHatch", _palette.ImmuneHatch);
             SetPaletteColor("_ColSwitch", _palette.RepelSwitch);
             SetPaletteColor("_ColTrap", _palette.ResetTrap);
+            SetPaletteColor("_ColForbidden", _palette.Forbidden);
             SetPaletteColor("_ColConflict", _palette.Conflict);
             SetPaletteColor("_ColGlyph", _palette.Glyph);
         }

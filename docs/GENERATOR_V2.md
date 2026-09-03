@@ -296,3 +296,15 @@ allowed. Carve: the blot's eight neighbours each roll the ring-1 chance.
 Prune: a blot must cover at least one neighbour. Solver: the area is part
 of static coverage; no new rule. World `w14 Blots` (pieces 3–5, G2–G4,
 chance 8/20); daily: Wednesdays.
+
+### Forbidden cells (`Element.Forbidden`, stage 10)
+
+A second pruner beside walls. A forbidden cell goes on a void cell the
+sampled solution never crosses (so the solution stays legal); every cover
+with a placement whose spread would cross it dies, which prunes harder
+than a wall on the same cell. The pruner ranks both kinds per cell and
+takes the strictly best; a tie goes to the forbidden cell; `MaxForbidden`
+caps them. Solver: illegal placements never enter the candidate set, and
+their exclusion counts as one arm-exclusion round in the grade. World
+`w15 Keep Clean` (pieces 3–5, G2–G4, up to 4 forbidden cells); daily:
+Thursdays.

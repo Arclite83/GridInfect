@@ -93,8 +93,8 @@ namespace GridInfect.Core.Generation
 
             var def = new LevelDef(board, specs);
 
-            // 2. Prune with walls until unique.
-            int steps = 0;
+            // 2. Prune with walls (and forbidden cells, stage 10) until unique.
+            int steps = 0, forbidden = 0;
             var watch = log != null ? System.Diagnostics.Stopwatch.StartNew() : null;
             var analysis = SolutionCounter.Analyse(def, spec.SolutionCap);
             log?.Add($"seed {seed}: {count} pieces, {active} active, {analysis.Solutions} solutions{(analysis.Capped ? " (capped)" : "")} [{watch.ElapsedMilliseconds} ms]");
@@ -111,19 +111,21 @@ namespace GridInfect.Core.Generation
                     if (analysis.Solutions <= 1) break;
                     fast = analysis.Solutions;
                 }
-                if (steps >= spec.MaxPruneSteps || walls >= spec.MaxWalls || (spec.Elements & Element.Walls) == 0)
+                bool wallsLeft = (spec.Elements & Element.Walls) != 0 && walls < spec.MaxWalls;
+                bool forbiddenLeft = (spec.Elements & Element.Forbidden) != 0 && forbidden < spec.MaxForbidden;
+                if (steps >= spec.MaxPruneSteps || (!wallsLeft && !forbiddenLeft))
                 {
                     rejection = Rejection.NotUnique;
                     return null;
                 }
-                int wall = ChooseWall(def, sampled, fast, out int after);
-                if (wall < 0) { log?.Add("  no wall reduces the count"); rejection = Rejection.NotUnique; return null; }
-                board[wall] = Cell.Wall;
+                int wall = ChooseWall(def, sampled, fast, wallsLeft, forbiddenLeft, out int after, out byte kind);
+                if (wall < 0) { log?.Add("  no pruner reduces the count"); rejection = Rejection.NotUnique; return null; }
+                board[wall] = kind;
                 def = new LevelDef(board, specs);
-                walls++;
+                if (kind == Cell.Wall) walls++; else forbidden++;
                 steps++;
                 fast = after;
-                log?.Add($"  wall {steps} at ({wall / Grid.Width},{wall % Grid.Width}) -> {fast} covers [{watch.ElapsedMilliseconds} ms]");
+                log?.Add($"  {(kind == Cell.Wall ? "wall" : "forbidden")} {steps} at ({wall / Grid.Width},{wall % Grid.Width}) -> {fast} covers [{watch.ElapsedMilliseconds} ms]");
             }
             if (analysis.Solutions != 1) { rejection = Rejection.NotUnique; return null; }
 
@@ -150,6 +152,7 @@ namespace GridInfect.Core.Generation
                 Seed = seed,
                 Hash = Canonical.Hash(def),
                 Walls = walls,
+                ForbiddenCells = forbidden,
                 PruneSteps = steps,
             };
         }
@@ -242,13 +245,18 @@ namespace GridInfect.Core.Generation
         const int ExactCandidates = 2;   // ranked walls counted exactly per step
         const int EstimateSets = 400;    // covers enumerated for the ranking estimate
 
-        static int ChooseWall(LevelDef def, int[] sampled, int current, out int best)
+        // A forbidden cell (stage 10) goes on a void cell the sampled
+        // solution never crosses: every placement whose spread would cross
+        // it becomes illegal, which prunes harder than a wall there. Ties
+        // between the two kinds go to the forbidden cell (it is the world's
+        // element); a wall may also sit on an active cell.
+        static int ChooseWall(LevelDef def, int[] sampled, int current, bool wallsLeft, bool forbiddenLeft, out int best, out byte kind)
         {
             var sets = SolutionCounter.Sets(def, Math.Min(current, EstimateSets) + 1, out _);
             var board = new byte[Grid.Cells];
             def.CopyBoardTo(board);
 
-            var ranked = new List<(int estimate, int order, int wall, LevelDef walled)>();
+            var ranked = new List<(int estimate, int order, int wall, byte kind, LevelDef walled)>();
             for (int w = 0; w < Grid.Cells; w++)
             {
                 byte v = board[w];
@@ -257,30 +265,53 @@ namespace GridInfect.Core.Generation
                 foreach (int p in sampled) if (p % Grid.Cells == w) onPiece = true;
                 if (onPiece) continue;
 
-                board[w] = Cell.Wall;
-                var walled = new LevelDef(board, def.Specs);
-                board[w] = v;
-                var walledMap = new LineMap(walled);
-                if (!Covers(walledMap, sampled, w) || !ArmsUseful(walledMap, sampled)) continue;
+                for (int variant = 0; variant < 2; variant++)
+                {
+                    byte value = variant == 0 ? Cell.Forbidden : Cell.Wall;
+                    if (value == Cell.Forbidden && (!forbiddenLeft || v != Cell.Void)) continue;
+                    if (value == Cell.Wall && !wallsLeft) continue;
 
-                int survivors = 0;
-                foreach (int[] set in sets) if (Covers(walledMap, set, w)) survivors++;
-                if (survivors >= current) continue;
-                ranked.Add((survivors, (v == Cell.Void ? 0 : Grid.Cells) + w, w, walled));
+                    board[w] = value;
+                    var walled = new LevelDef(board, def.Specs);
+                    board[w] = v;
+                    var walledMap = new LineMap(walled);
+                    if (!Covers(walledMap, sampled, w) || !ArmsUseful(walledMap, sampled)) continue;
+                    if (value == Cell.Forbidden && Illegal(walledMap, sampled)) continue;
+
+                    int survivors = 0;
+                    foreach (int[] set in sets)
+                    {
+                        if (Covers(walledMap, set, w) && !(value == Cell.Forbidden && Illegal(walledMap, set))) survivors++;
+                    }
+                    if (survivors >= current) continue;
+                    ranked.Add((survivors, (v == Cell.Void ? 0 : Grid.Cells) + w, w, value, walled));
+                }
             }
-            ranked.Sort((x, y) => x.estimate != y.estimate ? x.estimate.CompareTo(y.estimate) : x.order.CompareTo(y.order));
+            ranked.Sort((x, y) => x.estimate != y.estimate ? x.estimate.CompareTo(y.estimate)
+                : x.order != y.order ? x.order.CompareTo(y.order) : y.kind.CompareTo(x.kind));
 
             int bestWall = -1;
             best = current;
+            kind = Cell.Wall;
             for (int n = 0; n < ranked.Count && n < ExactCandidates; n++)
             {
                 int count = SolutionCounter.CountFast(ranked[n].walled, best);
                 if (count >= best) continue;
                 bestWall = ranked[n].wall;
+                kind = ranked[n].kind;
                 best = count;
                 if (best == 1) break;
             }
             return bestWall;
+        }
+
+        static bool Illegal(LineMap map, int[] set)
+        {
+            foreach (int p in set)
+            {
+                if (map.IsIllegal(map.Def.Specs[p / Grid.Cells], p % Grid.Cells)) return true;
+            }
+            return false;
         }
 
         // Every arm of every sampled piece still reaches at least one active

@@ -65,6 +65,9 @@ namespace GridInfect.Core.Solving
             var result = new SolveResult { TierCounts = new int[5], Trace = Array.Empty<Deduction>() };
             var trace = new List<Deduction>();
             int guesses = 0;
+            // Placements a forbidden cell rules out are read off the board
+            // before anything else: one arm-exclusion round (stage 10).
+            if (state.ForbiddenExclusions > 0) result.TierCounts[(int)Tier.ArmExclusion]++;
             var final = SolveFrom(state, trace, result.TierCounts, ref guesses);
 
             result.Guesses = guesses;
@@ -134,7 +137,7 @@ namespace GridInfect.Core.Solving
         // Tiers 1–3 to a fixpoint, then tier 4 once, repeat. False on contradiction.
         static bool Propagate(State s, List<Deduction> trace, int[] tierCounts)
         {
-            var pending = Tier.LineOwnership;
+            var pending = s.ForbiddenExclusions > 0 && s.Remaining == s.N ? Tier.ArmExclusion : Tier.LineOwnership;
             while (!s.Done)
             {
                 if (!Fixpoint(s, trace, tierCounts, ref pending)) return false;
@@ -248,6 +251,7 @@ namespace GridInfect.Core.Solving
             public int Remaining;
             public bool TripperPlaced;
             public bool CountChanged;
+            public int ForbiddenExclusions;         // placements a forbidden cell rules out
             public (int piece, int cell)[] Order;   // set once Done and order-feasible
 
             public enum Outcome { Nothing, Pruned, Contradiction }
@@ -280,7 +284,7 @@ namespace GridInfect.Core.Solving
                     {
                         if (map.Def.BoardAt(loc) != Cell.Active) continue;
                         var spread = map.Spread(Specs[k], loc);
-                        if (spread.Forbidden) continue;   // not a legal placement (stage 10)
+                        if (spread.Forbidden) { ForbiddenExclusions++; continue; }   // not a legal placement (stage 10)
                         Cov[k][loc] = spread.Covered;
                         Trips[k][loc] = spread.Trips;
                         Cand[k] |= CellMask.Bit(loc);
@@ -303,6 +307,7 @@ namespace GridInfect.Core.Solving
                 Occupied = o.Occupied;
                 Remaining = o.Remaining;
                 TripperPlaced = o.TripperPlaced;
+                ForbiddenExclusions = o.ForbiddenExclusions;
             }
 
             public State Clone() => new State(this);

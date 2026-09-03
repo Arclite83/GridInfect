@@ -53,3 +53,5 @@ ELEMENTS='["walls","shortarms"]'
 world w13 "Short Arms"   22 220000 --pieces 3-5 --grades G2-G4 --elements walls,shortarms --short-arm-chance 12
 ELEMENTS='["walls","area"]'
 world w14 "Blots"        22 230000 --pieces 3-5 --grades G2-G4 --elements walls,area --area-chance 8
+ELEMENTS='["walls","forbidden"]'
+world w15 "Keep Clean"   22 240000 --pieces 3-5 --grades G2-G4 --elements walls,forbidden --max-forbidden 4

@@ -56,7 +56,7 @@ def main():
         levels.sort(key=lambda r: (int(r["grade"][1]), len(r["trace"]), r["effort"], r["seed"]))
         hashes = set()
         for r in levels:
-            if len(r["board"]) != 66 or any(c not in "01235" for c in r["board"]):
+            if len(r["board"]) != 66 or any(c not in "012356" for c in r["board"]):
                 sys.exit(f"{path}: bad board for seed {r['seed']}")
             if r["hash"] in hashes:
                 sys.exit(f"{path}: duplicate level hash {r['hash']}")

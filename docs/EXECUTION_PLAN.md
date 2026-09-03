@@ -19,7 +19,7 @@ table below in the same PR.
 | 7 | RulesV2 | Done | claude/execution-plan |
 | 8 | Short arms | Done | claude/execution-plan |
 | 9 | Area piece | Done | claude/execution-plan |
-| 10 | Forbidden cells | Not started | |
+| 10 | Forbidden cells | Done | claude/execution-plan |
 | 11 | Diagonal arms | Not started | |
 | 12 | Relay cells | Not started | |
 
