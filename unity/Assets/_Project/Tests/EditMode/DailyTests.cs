@@ -1,18 +1,83 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Bloodhound.Engine;
 using GridInfect.Core.Generation;
 using GridInfect.Core.Solving;
 using NUnit.Framework;
 
 namespace GridInfect.Core.Tests
 {
-    // Stage 4 acceptance: two fresh states given the same date build the
-    // same board (same LevelDef hash); a full daily run replays from its
-    // log; a backward clock is refused; the streak counts consecutive
-    // dates; Endless runs replay from their seed and score streaks; the
-    // save schema bump migrates.
+    // Stage 4 acceptance: two fresh states given the same date open the
+    // same board (same LevelDef hash) from the weekday's baked pool; a full
+    // daily run replays from its log; a backward clock is refused; the
+    // streak counts consecutive dates; Endless runs replay from their seed
+    // and score streaks; the save schema bump migrates. The pools: every
+    // level loads, is unique, wins with its stored solution, and a sample
+    // regenerates from the recorded seed and spec.
     [TestFixture]
     public class DailyTests
     {
         const string Monday = "2026-09-07";
+
+        [Test]
+        public void EveryPoolLevelLoadsUniqueAndSolvesWithItsStoredSolution()
+        {
+            var hashes = new HashSet<string>();
+            foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek)))
+            {
+                Assert.That(DailyPool.Count(day), Is.GreaterThanOrEqualTo(20), day.ToString());
+                var expected = new List<string>();
+                foreach (Element e in Enum.GetValues(typeof(Element)))
+                {
+                    if (e != Element.None && (DailySpec.ElementsFor(day) & e) != 0) expected.Add(e.ToString().ToLowerInvariant());
+                }
+                Assert.That(DailyPool.Elements(day), Is.EquivalentTo(expected), $"{day}: pool elements follow DailySpec.ElementsFor");
+                var spec = DailySpec.For(day);
+                for (int n = 0; n < DailyPool.Count(day); n++)
+                {
+                    var level = DailyPool.Get(day, n);
+                    Assert.That(hashes.Add(level.Hash), Is.True, $"{day}/{n}: duplicate across pools");
+                    Assert.That(level.Grade, Is.InRange(spec.MinGrade, spec.MaxGrade), $"{day}/{n}: grade band");
+                    Assert.That(SolutionCounter.Count(level.Def, Locked.Placed(level.Def, level.Locks)), Is.EqualTo(1), $"{day}/{n}: unique");
+                    Assert.That(SolutionCounter.Wins(level.Def, level.Solution), Is.True, $"{day}/{n}: stored solution wins");
+                }
+            }
+        }
+
+        [Test]
+        public void PoolsRegenerateFromTheirRecordedSeeds()
+        {
+            foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek)))
+            {
+                string path = Path.Combine(TestPaths.RepoRoot, "docs", "daily", DailyPool.PoolId(day) + ".jsonl");
+                string header;
+                using (var reader = new StreamReader(path)) header = reader.ReadLine();
+                var root = (Dictionary<string, object>)MiniJson.Parse(header);
+                var world = (Dictionary<string, object>)root["world"];
+                var spec = GenSpec.FromJson((Dictionary<string, object>)world["spec"]);
+                Assert.That(spec.ToJson(), Is.EqualTo(DailySpec.For(day).ToJson()), $"{day}: pool spec is the weekday spec");
+                for (int n = 0; n < 2; n++)
+                {
+                    var baked = DailyPool.Get(day, n);
+                    var level = GeneratorV2.Generate(spec, baked.Seed);
+                    Assert.That(level, Is.Not.Null, $"{day}/{n}: seed {baked.Seed} no longer accepted");
+                    Assert.That(level.Hash, Is.EqualTo(baked.Hash), $"{day}/{n}: board changed");
+                }
+            }
+        }
+
+        [Test]
+        public void DatesWalkTheirWeekdayPool()
+        {
+            Assert.That(DailyPool.IndexFor(DailyPool.Epoch), Is.EqualTo(0));
+            Assert.That(DailyPool.IndexFor(DailyPool.Epoch.AddDays(6)), Is.EqualTo(0), "same week");
+            Assert.That(DailyPool.IndexFor(DailyPool.Epoch.AddDays(7)), Is.EqualTo(1));
+            int count = DailyPool.Count(DayOfWeek.Monday);
+            Assert.That(DailyPool.IndexFor(DailyPool.Epoch.AddDays(7 * count)), Is.EqualTo(0), "wraps");
+            Assert.That(DailyPool.IndexFor(DailyPool.Epoch.AddDays(-7)), Is.EqualTo(count - 1), "before the epoch wraps backward");
+            Assert.That(DailyPool.For(DailyPool.Epoch.AddDays(1)).Def, Is.Not.Null);
+        }
 
         [Test]
         public void SameDateSameBoardOnTwoDevices()
@@ -130,14 +195,15 @@ namespace GridInfect.Core.Tests
             Assert.That(SaveCodec.Save(loaded), Is.EqualTo(json));
         }
 
-        // Every generated board carries its solution; play it through the actions.
-        static void Solve(Bloodhound.Engine.Dispatcher<GameState> d)
+        // Every board carries its solution (locked pieces first, already
+        // placed by the loader); play the rest through the actions.
+        static void Solve(Dispatcher<GameState> d)
         {
-            var def = d.State.Session.Def;
-            var order = SolutionCounter.FirstSolution(def);
+            var order = d.State.Solution;
             Assert.That(order, Is.Not.Null);
             foreach (var (piece, cell) in order)
             {
+                if (d.State.Session.Pieces[piece].Locked) continue;
                 var place = d.Dispatch(GridInfectActions.PiecePlace, Inputs.PiecePlace(piece, cell / Grid.Width, cell % Grid.Width));
                 Assert.That(place.Applied, Is.True, place.Rejection);
                 Assert.That(d.Dispatch(GridInfectActions.BoardResolve).Applied);

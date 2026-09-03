@@ -68,18 +68,16 @@ namespace GridInfect.Core
             return def;
         }
 
-        // The stored solution (the generator's sampled one) in a winning order.
-        public static (int piece, int cell)[] Solution(string worldId, int index)
-        {
-            string[] parts = WorldData.Solutions[Flat(worldId, index)].Split(' ');
-            var result = new (int, int)[parts.Length];
-            for (int n = 0; n < parts.Length; n++)
-            {
-                string[] pc = parts[n].Split('@');
-                result[n] = (int.Parse(pc[0]), int.Parse(pc[1]));
-            }
-            return result;
-        }
+        // The stored solution (the generator's sampled one) in a winning
+        // order, locked pieces first.
+        public static (int piece, int cell)[] Solution(string worldId, int index) => LevelPools.Pairs(WorldData.Solutions[Flat(worldId, index)]);
+
+        // The pieces the loader places locked before play (a given of the
+        // level, docs/GENERATOR_V2.md §Pipeline); empty for most levels.
+        public static (int piece, int cell)[] Locks(string worldId, int index) => LevelPools.Pairs(WorldData.Locks[Flat(worldId, index)]);
+
+        // The locked pieces as the solver sees them, or null when none.
+        public static PieceState[] Placed(string worldId, int index) => Locked.Placed(Level(worldId, index), Locks(worldId, index));
 
         public static int Grade(string worldId, int index) => WorldData.Grades[Flat(worldId, index)];
         public static ulong Seed(string worldId, int index) => WorldData.Seeds[Flat(worldId, index)];
@@ -108,28 +106,6 @@ namespace GridInfect.Core
             _byId = byId;
         }
 
-        static LevelDef Decode(int flat)
-        {
-            string text = WorldData.Boards[flat];
-            if (text.Length != Grid.Cells) throw new InvalidOperationException($"world level {flat}: baked board has {text.Length} cells");
-            var board = new byte[Grid.Cells];
-            for (int loc = 0; loc < Grid.Cells; loc++) board[loc] = (byte)(text[loc] - '0');
-            // New content runs on RulesV2 (stage 7); Legacy stays on the classic rules.
-            string[] names = WorldData.Pieces[flat].Split(',');
-            var specs = new PieceSpec[names.Length];
-            for (int k = 0; k < names.Length; k++) specs[k] = PieceSpec.Parse(names[k]);
-            byte[] cellData = null;
-            string relays = WorldData.Relays[flat];
-            if (relays.Length > 0)
-            {
-                cellData = new byte[Grid.Cells];
-                foreach (string entry in relays.Split(' '))
-                {
-                    string[] parts = entry.Split(':');
-                    cellData[int.Parse(parts[0])] = (byte)int.Parse(parts[1]);
-                }
-            }
-            return new LevelDef(board, specs, cellData);
-        }
+        static LevelDef Decode(int flat) => LevelPools.Decode(WorldData.Boards[flat], WorldData.Pieces[flat], WorldData.Relays[flat]);
     }
 }

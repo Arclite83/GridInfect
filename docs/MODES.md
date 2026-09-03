@@ -228,11 +228,14 @@ actions and tests stay so old logs replay. Two modes replace it.
 ### 5.1 Daily
 
 - `daily.begin { dateUtc, nowMs }`: `dateUtc` is `yyyy-MM-dd` in UTC, so
-  every device gets the same board. Seed = FNV-1a 64 of `"daily:" + date`;
-  the board is the first seed at or after it that `GeneratorV2` accepts
-  under the weekday's spec (`DailySpec.For`): Monday 3 pieces G1–G2 up to
-  Sunday 5 pieces G4–G5, cardinal arms and walls only at launch (later
-  stages rotate the element set here).
+  every device gets the same board. The board comes from the weekday's
+  baked pool (`docs/daily/d1..d7.jsonl`, generated offline by
+  `tools/gen_daily.sh` from the weekday specs in `DailySpec.For` — Monday
+  3 pieces G1–G2 up to Sunday 5 pieces G4–G5, one element per weekday —
+  and baked into `DailyData.g.cs`): pool index = weeks since
+  `DailyPool.Epoch` (Monday 2026-01-05) modulo the pool size, so 52 levels
+  a pool is a year without a repeat and nothing is generated on the
+  device. A level's locked pieces are placed at load.
 - The clock is a stat, not a rule: elapsed is shown in the HUD; par =
   `10 s + 15 s × trace length × (3 + grade) / 4`; the personal best per
   date is kept in the profile.

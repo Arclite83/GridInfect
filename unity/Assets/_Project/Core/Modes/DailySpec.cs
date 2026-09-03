@@ -5,8 +5,12 @@ using GridInfect.Core.Solving;
 
 namespace GridInfect.Core
 {
-    // The Daily's generator settings and seed, both pure functions of the
-    // UTC date, so every device builds the same board (MODES.md §5).
+    // The Daily's board is a pure function of the UTC date: the weekday's
+    // baked pool (DailyPool) indexed by the week. The weekday specs here are
+    // what tools/gen_daily.sh generated those pools from (gen_levels
+    // --daily), so they stay the single source of truth for the ramp
+    // (MODES.md §5). Endless still generates on the device from the same
+    // library.
     public static class DailySpec
     {
         public const string DateFormat = "yyyy-MM-dd";
@@ -18,8 +22,9 @@ namespace GridInfect.Core
 
         public static string Format(DateTime date) => date.ToString(DateFormat, CultureInfo.InvariantCulture);
 
-        // Stable across platforms: FNV-1a 64 of the date text.
-        public static ulong Seed(string dateUtc) => Canonical.Fnv1a64("daily:" + dateUtc);
+        // The seed range each weekday's pool was generated from (recorded in
+        // the pool header as well).
+        public static ulong PoolSeed(DayOfWeek day) => 1_000_000ul + 100_000ul * (ulong)(day == DayOfWeek.Sunday ? 7 : (int)day);
 
         // The element set rotates with the weekday (one element per day as
         // the stages land): Monday is plain, the weekend stacks them.
@@ -37,11 +42,13 @@ namespace GridInfect.Core
             }
         }
 
+        public static GenSpec For(DateTime date) => For(date.DayOfWeek);
+
         // The week ramps: Monday is a warm-up, the weekend is the hard one.
-        public static GenSpec For(DateTime date)
+        public static GenSpec For(DayOfWeek day)
         {
-            var spec = new GenSpec { Elements = ElementsFor(date.DayOfWeek) };
-            switch (date.DayOfWeek)
+            var spec = new GenSpec { Elements = ElementsFor(day) };
+            switch (day)
             {
                 case DayOfWeek.Monday: spec.MinPieces = 3; spec.MaxPieces = 3; spec.MinGrade = Grade.G1; spec.MaxGrade = Grade.G2; break;
                 case DayOfWeek.Tuesday: spec.MinPieces = 3; spec.MaxPieces = 4; spec.MinGrade = Grade.G2; spec.MaxGrade = Grade.G2; break;
@@ -54,12 +61,11 @@ namespace GridInfect.Core
             return spec;
         }
 
-        // The board for a date: the first accepted seed at or after the
-        // date's seed. Null only if MaxSeedTries seeds all reject.
-        public static GeneratedLevel Build(string dateUtc)
+        // The board for a date, from the weekday's baked pool.
+        public static PoolLevel Build(string dateUtc)
         {
             if (!TryParseDate(dateUtc, out DateTime date)) return null;
-            return FirstAccepted(For(date), Seed(dateUtc));
+            return DailyPool.For(date);
         }
 
         public static GeneratedLevel FirstAccepted(GenSpec spec, ulong seed)
@@ -96,7 +102,8 @@ namespace GridInfect.Core
     public sealed class DailyRun
     {
         public string DateUtc;
-        public ulong Seed;             // the accepted seed (date seed + tries)
+        public ulong Seed;             // the pool level's generator seed
+        public int PoolIndex;          // its position in the weekday's pool
         public long StartedMs;
         public long CompletedMs;       // 0 while running
         public int TraceLength;

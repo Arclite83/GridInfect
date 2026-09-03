@@ -9,12 +9,12 @@ using GridInfect.Core.Solving;
 
 namespace GridInfect.GenLevels
 {
-    // gen_levels --grade G2 --count 25 --seed 1000 --pieces 3-5 --out file.jsonl
+    // gen_levels --grade G2 --count 25 --seed 1000 --pieces 3-5 --out file.jsonl [--daily Monday]
     //            [--grades G2-G3] [--elements walls,shortarms,area] [--short-arm-chance 10] [--area-chance 6]
     //            [--min-active 6] [--max-active 40] [--min-run 1] [--max-run 5]
-    //            [--end-wall 14] [--gaps] [--base-chance 15] [--falloff 1] [--shape-bias 0]
+    //            [--gaps] [--base-chance 15] [--falloff 1] [--shape-bias 0]
     //            [--distance 2] [--shared-lines] [--symmetric-tiles] [--dup-tiles]
-    //            [--max-walls 12] [--max-prune 12] [--cap 4000] [--max-seeds N] [--max-seconds S] [--threads 1] [--quiet] [--spec-json]
+    //            [--max-givens 12] [--max-locks 1] [--max-forbidden 4] [--max-traps 2] [--cap 4000] [--max-seeds N] [--max-seconds S] [--threads 1] [--quiet] [--spec-json]
     // Writes one JSON object per accepted level and prints the acceptance
     // report (per rejection reason, seeds tried, wall clock) to stderr.
     public static class Program
@@ -38,6 +38,7 @@ namespace GridInfect.GenLevels
                 switch (args[a])
                 {
                     case "--grade": grade = (Grade)Enum.Parse(typeof(Grade), next()); break;
+                    case "--daily": spec = DailySpec.For((DayOfWeek)Enum.Parse(typeof(DayOfWeek), next(), ignoreCase: true)); break;
                     case "--grades":
                     {
                         string[] range = next().Split('-');
@@ -78,13 +79,13 @@ namespace GridInfect.GenLevels
                     case "--shape-bias": spec.Carve.ShapeBias = int.Parse(next()); break;
                     case "--min-run": spec.Carve.MinRun = int.Parse(next()); break;
                     case "--max-run": spec.Carve.MaxRun = int.Parse(next()); break;
-                    case "--end-wall": spec.Carve.EndWallChance = int.Parse(next()); break;
                     case "--gaps": spec.Carve.Mode = CarveMode.Gaps; break;
                     case "--distance": spec.MinPieceDistance = int.Parse(next()); break;
                     case "--shared-lines": spec.ExclusiveLines = false; break;
                     case "--symmetric-tiles": spec.AllowSymmetricTiles = true; break;
-                    case "--max-walls": spec.MaxWalls = int.Parse(next()); break;
-                    case "--max-prune": spec.MaxPruneSteps = int.Parse(next()); break;
+                    case "--max-givens": spec.MaxGivens = int.Parse(next()); break;
+                    case "--max-locks": spec.MaxLocks = int.Parse(next()); break;
+                    case "--max-traps": spec.MaxTraps = int.Parse(next()); break;
                     case "--cap": spec.SolutionCap = int.Parse(next()); break;
                     case "--dup-tiles": spec.AllowDuplicateTiles = true; break;
                     case "--quiet": quiet = true; break;
@@ -161,14 +162,16 @@ namespace GridInfect.GenLevels
             return accepted < count ? 1 : 0;
         }
 
-        // {"seed":..,"grade":"G2","effort":9,"board":"66 chars","pieces":"L,RD",
-        //  "solution":[[piece,cell],...],"trace":[[tier,piece,cell],...],"hash":"..","walls":n}
+        // {"seed":..,"grade":"G2","effort":9,"depth":0,"peak":2,"board":"66 chars","pieces":"L,RD",
+        //  "solution":[[piece,cell],...],"trace":[[tier,piece,cell],...],"hash":"..","givens":n,"walls":n[,"gaps":n][,"forbidden":n][,"traps":n][,"locks":[[piece,cell],...]]}
         public static string Encode(GeneratedLevel level)
         {
             var sb = new StringBuilder();
             sb.Append("{\"seed\":").Append(level.Seed);
             sb.Append(",\"grade\":\"").Append(level.Grade).Append('"');
             sb.Append(",\"effort\":").Append(level.Effort);
+            sb.Append(",\"depth\":").Append(level.Depth);
+            sb.Append(",\"peak\":").Append(level.PeakOpen);
             sb.Append(",\"board\":\"");
             for (int loc = 0; loc < Grid.Cells; loc++) sb.Append((char)('0' + level.Def.BoardAt(loc)));
             var specs = new string[level.Def.Specs.Length];
@@ -187,8 +190,21 @@ namespace GridInfect.GenLevels
                 sb.Append('[').Append((int)level.Trace[n].Tier).Append(',').Append(level.Trace[n].Piece).Append(',').Append(level.Trace[n].Cell).Append(']');
             }
             sb.Append("],\"hash\":\"").Append(level.Hash).Append('"');
+            sb.Append(",\"givens\":").Append(level.Givens);
             sb.Append(",\"walls\":").Append(level.Walls);
+            if (level.Gaps > 0) sb.Append(",\"gaps\":").Append(level.Gaps);
             if (level.ForbiddenCells > 0) sb.Append(",\"forbidden\":").Append(level.ForbiddenCells);
+            if (level.Traps > 0) sb.Append(",\"traps\":").Append(level.Traps);
+            if (level.Locks.Length > 0)
+            {
+                sb.Append(",\"locks\":[");
+                for (int n = 0; n < level.Locks.Length; n++)
+                {
+                    if (n > 0) sb.Append(',');
+                    sb.Append('[').Append(level.Locks[n].piece).Append(',').Append(level.Locks[n].cell).Append(']');
+                }
+                sb.Append(']');
+            }
             if (level.Def.HasRelays)
             {
                 sb.Append(",\"relays\":[");

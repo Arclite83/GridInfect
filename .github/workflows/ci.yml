@@ -26,6 +26,7 @@ jobs:
           python3 tools/bake_worlds.py
           git diff --exit-code -- unity/Assets/_Project/Core/Levels/ClassicLevelData.g.cs \
                                   unity/Assets/_Project/Core/Levels/WorldData.g.cs \
+                                  unity/Assets/_Project/Core/Levels/DailyData.g.cs \
                                   unity/Assets/_Project/Tests/EditMode/UndoFixtures.g.cs \
                                   docs/level_metrics_classic.json
 

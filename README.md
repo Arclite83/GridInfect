@@ -23,9 +23,9 @@ board states extracted from the 2014 code.
 | [`src/`](src/) | dotnet mirror solution: builds and tests the same sources headless, no Unity needed |
 | [`docs/`](docs/) | The port specification extracted from the original (rules, generator, modes, assets, requirements, dependencies) + `test_vectors.json` |
 | [`docs/NEXT_PASS.md`](docs/NEXT_PASS.md), [`docs/EXECUTION_PLAN.md`](docs/EXECUTION_PLAN.md) | The next-pass decisions and the staged plan with its status table |
-| [`docs/GENERATOR_V2.md`](docs/GENERATOR_V2.md), [`docs/RULES_V2.md`](docs/RULES_V2.md) | The deduction solver, grader and generator v2; the rules every generated level runs on |
-| [`docs/worlds/`](docs/worlds/) | The shipped worlds as JSONL (one header line with the generator spec, one level per line), baked into `WorldData.g.cs` |
-| [`src/GenLevels/`](src/GenLevels/) | The batch level generator behind `tools/gen_levels` and `tools/gen_worlds.sh` |
+| [`docs/GENERATOR_V2.md`](docs/GENERATOR_V2.md), [`docs/RULES_V2.md`](docs/RULES_V2.md) | The deduction solver, trace grader, sampler and constructor (solution-first, subtractive, minimal); the rules every generated level runs on |
+| [`docs/worlds/`](docs/worlds/), [`docs/daily/`](docs/daily/) | The shipped worlds and the seven Daily pools as JSONL (one header line with the generator spec, one level per line), baked into `WorldData.g.cs` / `DailyData.g.cs` |
+| [`src/GenLevels/`](src/GenLevels/) | The offline level generator behind `tools/gen_levels`, `tools/gen_worlds.sh` and `tools/gen_daily.sh` |
 | [`docs/infection-vfx-spec.md`](docs/infection-vfx-spec.md) | The board's art direction and infection animation, plus an "As built" section recording every deviation and what is still open |
 | [`tools/`](tools/) | Mechanical derivations: level and world baking, undo fixtures, the solver oracle and its golden, world generation |
 | [`grid-infect-cocos2dx/`](grid-infect-cocos2dx/) | The original 2014 source, kept as reference. Not built |

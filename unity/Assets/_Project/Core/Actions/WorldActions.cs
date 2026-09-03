@@ -30,6 +30,7 @@ namespace GridInfect.Core
             state.WorldIndex = index;
             state.Solution = Worlds.Solution(worldId, index);
             state.SetSession(new LevelSession(Worlds.Level(worldId, index)));
+            Locked.Apply(state.Session, Worlds.Locks(worldId, index));
         }
     }
 

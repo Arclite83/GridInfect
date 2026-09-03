@@ -38,7 +38,6 @@ namespace GridInfect.Core.Generation
         public int Falloff = 1;        // Gaps: chance lost per cell of offset
         public int MinRun = 1;         // Runs: arm length band
         public int MaxRun = 5;
-        public int EndWallChance = 14; // Runs: out of 20, a wall right past the run's end (void cells only)
         public int MinActive = 6;
         public int MaxActive = 40;
         // Shape bias: > 0 favours long arms (slower falloff past offset 3),
@@ -63,8 +62,8 @@ namespace GridInfect.Core.Generation
         public Grade MinGrade = Grade.G1;
         public Grade MaxGrade = Grade.G5;
         public CarveParams Carve = new CarveParams();
-        public int MaxPruneSteps = 12;
-        public int MaxWalls = 12;
+        public int MaxGivens = 12;             // discriminating givens the constructor may add
+        public int MaxLocks = 1;               // pieces the constructor may pre-place, when no cell breaks the ambiguity
         public bool AllowDuplicateTiles = false;
         // UD and LR cover their whole line from any cell of it, so nothing
         // but other pieces' cells can pin them; excluded unless asked for.
@@ -72,12 +71,14 @@ namespace GridInfect.Core.Generation
         public bool ExclusiveLines = true;     // no two piece cells share a row or a column (v1 did this too)
         public int MinPieceDistance = 2;       // Manhattan distance between piece cells
         public bool RequireAllPieces = true;   // no decoy pieces (NEXT_PASS: cut)
+        public bool RequireUsefulArms = true;  // every arm reaches a cell (off for boards sampled elsewhere, e.g. the classics)
         public int SolutionCap = 4000;         // above this a sample is rejected as hopeless
 
         // Element tunables (each only draws from the RNG when its element is on).
         public int ShortArmChance = 10;        // out of 20, per arm: reach 1 or 2 instead of the edge
         public int AreaChance = 6;             // out of 20, per piece: a 3x3 blot instead of a tile
-        public int MaxForbidden = 4;           // forbidden cells the pruner may place (Element.Forbidden)
+        public int MaxForbidden = 4;           // forbidden cells the constructor may add (Element.Forbidden)
+        public int MaxTraps = 2;               // reset traps the constructor may add (Element.Traps)
         public int DiagonalChance = 10;        // out of 20, per piece: one or two diagonal arms join its tile
         public int RelayChance = 10;           // out of 20, per piece with arms: one carved cell on an arm becomes a relay
 
@@ -94,20 +95,21 @@ namespace GridInfect.Core.Generation
                 ["baseChance"] = Carve.BaseChance,
                 ["falloff"] = Carve.Falloff,
                 ["runs"] = new List<object> { Carve.MinRun, Carve.MaxRun },
-                ["endWall"] = Carve.EndWallChance,
                 ["active"] = new List<object> { Carve.MinActive, Carve.MaxActive },
                 ["shapeBias"] = Carve.ShapeBias,
-                ["maxPrune"] = MaxPruneSteps,
-                ["maxWalls"] = MaxWalls,
+                ["maxGivens"] = MaxGivens,
+                ["maxLocks"] = MaxLocks,
                 ["dupTiles"] = AllowDuplicateTiles,
                 ["symmetricTiles"] = AllowSymmetricTiles,
                 ["exclusiveLines"] = ExclusiveLines,
                 ["distance"] = MinPieceDistance,
                 ["allPieces"] = RequireAllPieces,
+                ["usefulArms"] = RequireUsefulArms,
                 ["cap"] = SolutionCap,
                 ["shortArmChance"] = ShortArmChance,
                 ["areaChance"] = AreaChance,
                 ["maxForbidden"] = MaxForbidden,
+                ["maxTraps"] = MaxTraps,
                 ["diagonalChance"] = DiagonalChance,
                 ["relayChance"] = RelayChance,
             });
@@ -139,24 +141,25 @@ namespace GridInfect.Core.Generation
                 spec.Carve.MinRun = (int)(long)runs[0];
                 spec.Carve.MaxRun = (int)(long)runs[1];
             }
-            spec.Carve.EndWallChance = input.IntOr("endWall", spec.Carve.EndWallChance);
             if (raw.TryGetValue("active", out object a) && a is List<object> active && active.Count == 2)
             {
                 spec.Carve.MinActive = (int)(long)active[0];
                 spec.Carve.MaxActive = (int)(long)active[1];
             }
             spec.Carve.ShapeBias = input.IntOr("shapeBias", spec.Carve.ShapeBias);
-            spec.MaxPruneSteps = input.IntOr("maxPrune", spec.MaxPruneSteps);
-            spec.MaxWalls = input.IntOr("maxWalls", spec.MaxWalls);
+            spec.MaxGivens = input.IntOr("maxGivens", spec.MaxGivens);
+            spec.MaxLocks = input.IntOr("maxLocks", spec.MaxLocks);
             if (raw.TryGetValue("dupTiles", out object d) && d is bool dup) spec.AllowDuplicateTiles = dup;
             if (raw.TryGetValue("symmetricTiles", out object st) && st is bool sym) spec.AllowSymmetricTiles = sym;
             if (raw.TryGetValue("exclusiveLines", out object el) && el is bool ex) spec.ExclusiveLines = ex;
             spec.MinPieceDistance = input.IntOr("distance", spec.MinPieceDistance);
             if (raw.TryGetValue("allPieces", out object ap) && ap is bool all) spec.RequireAllPieces = all;
+            if (raw.TryGetValue("usefulArms", out object ua) && ua is bool useful) spec.RequireUsefulArms = useful;
             spec.SolutionCap = input.IntOr("cap", spec.SolutionCap);
             spec.ShortArmChance = input.IntOr("shortArmChance", spec.ShortArmChance);
             spec.AreaChance = input.IntOr("areaChance", spec.AreaChance);
             spec.MaxForbidden = input.IntOr("maxForbidden", spec.MaxForbidden);
+            spec.MaxTraps = input.IntOr("maxTraps", spec.MaxTraps);
             spec.DiagonalChance = input.IntOr("diagonalChance", spec.DiagonalChance);
             spec.RelayChance = input.IntOr("relayChance", spec.RelayChance);
             return spec;
@@ -167,15 +170,15 @@ namespace GridInfect.Core.Generation
             return new GenSpec
             {
                 Elements = Elements, MinPieces = MinPieces, MaxPieces = MaxPieces,
-                MinGrade = MinGrade, MaxGrade = MaxGrade, MaxPruneSteps = MaxPruneSteps,
-                MaxWalls = MaxWalls, AllowDuplicateTiles = AllowDuplicateTiles, AllowSymmetricTiles = AllowSymmetricTiles,
+                MinGrade = MinGrade, MaxGrade = MaxGrade, MaxGivens = MaxGivens, MaxLocks = MaxLocks,
+                AllowDuplicateTiles = AllowDuplicateTiles, AllowSymmetricTiles = AllowSymmetricTiles,
                 ExclusiveLines = ExclusiveLines, MinPieceDistance = MinPieceDistance,
-                RequireAllPieces = RequireAllPieces, SolutionCap = SolutionCap, ShortArmChance = ShortArmChance,
-                AreaChance = AreaChance, MaxForbidden = MaxForbidden, DiagonalChance = DiagonalChance, RelayChance = RelayChance,
+                RequireAllPieces = RequireAllPieces, RequireUsefulArms = RequireUsefulArms, SolutionCap = SolutionCap, ShortArmChance = ShortArmChance,
+                AreaChance = AreaChance, MaxForbidden = MaxForbidden, MaxTraps = MaxTraps, DiagonalChance = DiagonalChance, RelayChance = RelayChance,
                 Carve = new CarveParams
                 {
                     Mode = Carve.Mode, BaseChance = Carve.BaseChance, Falloff = Carve.Falloff,
-                    MinRun = Carve.MinRun, MaxRun = Carve.MaxRun, EndWallChance = Carve.EndWallChance,
+                    MinRun = Carve.MinRun, MaxRun = Carve.MaxRun,
                     MinActive = Carve.MinActive, MaxActive = Carve.MaxActive, ShapeBias = Carve.ShapeBias,
                 },
             };
@@ -185,16 +188,22 @@ namespace GridInfect.Core.Generation
     public sealed class GeneratedLevel
     {
         public LevelDef Def;
-        public (int piece, int cell)[] Solution;   // the sampled solution, in a winning order
+        public (int piece, int cell)[] Solution;   // the sampled solution, in a winning order, locked pieces first
+        public (int piece, int cell)[] Locks;      // pieces the loader places locked before play (empty when none)
         public Deduction[] Trace;
         public Grade Grade;
-        public int Effort;
+        public int Effort;                         // rule firings, weighted: orders levels within a band
+        public int Depth;                          // lookahead the solve needed plus the board's translation layers
+        public int PeakOpen;                       // most undecided pieces held at once
         public ulong Seed;
         public string Hash;                        // canonical under the board's symmetry group
-        public int Walls;
+        public int Walls;                          // givens left after minimization, by kind
+        public int Gaps;
         public int ForbiddenCells;
+        public int Traps;
+        public int LockCount;
         public int Relays;
-        public int PruneSteps;
+        public int Givens;                         // all givens left after minimization
     }
 
     // Why a seed was rejected; the batch CLI reports the distribution.
@@ -203,10 +212,12 @@ namespace GridInfect.Core.Generation
         None,
         Tiles,          // could not sample distinct tiles
         Size,           // active cell count outside the carve band
-        TooMany,        // solution count above the cap before pruning
-        NotUnique,      // still ambiguous after MaxPruneSteps walls
+        TooMany,        // covering sets above the cap
+        NotUnique,      // still ambiguous after MaxGivens givens, or no given kills an alternative
         NotDeducible,   // solver needed a guess
         Decoy,          // a piece is not needed
         Grade,          // outside the grade band
+        Unwinnable,     // the sample's own solution does not win (an arm blinded, a relay loop)
+        TooDeep,        // solvable, but past the lookahead cap once translation layers count
     }
 }
