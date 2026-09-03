@@ -327,6 +327,11 @@ namespace GridInfect.Core
         }
 
         public void CopyBoardTo(byte[] target) => Array.Copy(_board, target, Grid.Cells);
+
+        public void CopyCellDataTo(byte[] target) => Array.Copy(_cellData, target, Grid.Cells);
+
+        // The same pieces and cell data on another board (the generator's pruners).
+        public LevelDef WithBoard(byte[] board) => new LevelDef(board, Specs, _cellData);
     }
 
     public readonly struct Repel

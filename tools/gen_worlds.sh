@@ -57,3 +57,5 @@ ELEMENTS='["walls","forbidden"]'
 world w15 "Keep Clean"   22 240000 --pieces 3-5 --grades G2-G4 --elements walls,forbidden --max-forbidden 4
 ELEMENTS='["walls","diagonals"]'
 world w16 "Diagonals"    22 250000 --pieces 3-5 --grades G2-G4 --elements walls,diagonals --diagonal-chance 14
+ELEMENTS='["walls","relays"]'
+world w17 "Relays"       22 260000 --pieces 3-5 --grades G2-G4 --elements walls,relays --relay-chance 14

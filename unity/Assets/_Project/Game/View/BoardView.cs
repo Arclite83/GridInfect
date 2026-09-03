@@ -119,6 +119,38 @@ namespace GridInfect.Game
             session.CellChanged += OnCellChanged;
             session.PiecesUnbound += OnPiecesUnbound;
             Flush();
+            DrawRelayGlyphs(parent);
+        }
+
+        // Relay cells (RULES_V2 §12): a hub with one stub per arm, drawn as
+        // sprites over the board so the shader stays a pure cell-value
+        // reader. Shape, not colour (R-1001).
+        readonly System.Collections.Generic.List<GameObject> _relayGlyphs = new System.Collections.Generic.List<GameObject>();
+
+        void DrawRelayGlyphs(Transform parent)
+        {
+            for (int loc = 0; loc < Grid.Cells; loc++)
+            {
+                byte arms = _session.Def.CellDataAt(loc);
+                if (arms == 0) continue;
+                Vector2 c = CellCenter(loc / Grid.Width, loc % Grid.Width);
+                var hub = Ui.MakeRect("relay", parent, new Vector2(CellSize * 0.22f, CellSize * 0.22f), _palette.Glyph, 3);
+                hub.transform.localPosition = new Vector3(c.x, c.y, 0f);
+                _relayGlyphs.Add(hub);
+                for (int d = 0; d < 8; d++)
+                {
+                    if ((arms & (1 << d)) == 0) continue;
+                    var dir = (Dir)d;
+                    float dx = TileArms.Dj(dir), dy = -TileArms.Di(dir);
+                    bool horizontal = dir == Dir.L || dir == Dir.R;
+                    var stub = Ui.MakeRect("relayArm", parent,
+                        horizontal || TileArms.IsDiagonal(dir) ? new Vector2(CellSize * 0.22f, CellSize * 0.08f) : new Vector2(CellSize * 0.08f, CellSize * 0.22f),
+                        _palette.Glyph, 3);
+                    if (TileArms.IsDiagonal(dir)) stub.transform.localEulerAngles = new Vector3(0f, 0f, dx * dy > 0 ? 45f : -45f);
+                    stub.transform.localPosition = new Vector3(c.x + dx * CellSize * 0.2f, c.y + dy * CellSize * 0.2f, 0f);
+                    _relayGlyphs.Add(stub);
+                }
+            }
         }
 
         public void Dispose()
@@ -130,6 +162,8 @@ namespace GridInfect.Game
             if (_material != null) Object.Destroy(_material);
             if (_quad != null) Object.Destroy(_quad);
             if (_root != null) Object.Destroy(_root);
+            foreach (var glyph in _relayGlyphs) if (glyph != null) Object.Destroy(glyph);
+            _relayGlyphs.Clear();
         }
 
         // ---- layout ----

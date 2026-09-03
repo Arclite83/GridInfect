@@ -76,10 +76,33 @@ namespace GridInfect.Core.Generation
                 }
             }
             var board = new byte[Grid.Cells];
+            var cellData = new byte[Grid.Cells];
             var sampled = new int[count];
             for (int n = 0; n < count; n++) sampled[n] = n * Grid.Cells + cells[n];
             var endWalls = new List<int>();
-            for (int n = 0; n < count; n++) Carve(board, specs[n], cells[n], spec.Carve, ref rng, endWalls);
+            var carved = new List<int>();
+            int relays = 0;
+            for (int n = 0; n < count; n++)
+            {
+                carved.Clear();
+                Carve(board, specs[n], cells[n], spec.Carve, ref rng, endWalls, carved);
+                // A relay (stage 12): one carved cell on this piece's arms
+                // gets arms of its own, carved as runs like a piece's.
+                if ((spec.Elements & Element.Relays) != 0 && carved.Count > 0 && rng.Next(20) < spec.RelayChance)
+                {
+                    int at = carved[rng.Next(carved.Count)];
+                    if (cellData[at] == 0)
+                    {
+                        int arms = 0, armCount = rng.Next(3) == 0 ? 2 : 1;
+                        int dirs = (spec.Elements & Element.Diagonals) != 0 ? 8 : 4;
+                        for (int a = 0; a < armCount; a++) arms |= 1 << rng.Next(dirs);
+                        var relaySpec = new PieceSpec((byte)arms);
+                        cellData[at] = (byte)arms;
+                        Carve(board, relaySpec, at, spec.Carve, ref rng, endWalls, null);
+                        relays++;
+                    }
+                }
+            }
 
             int active = 0;
             for (int loc = 0; loc < Grid.Cells; loc++) if (board[loc] == Cell.Active) active++;
@@ -94,13 +117,14 @@ namespace GridInfect.Core.Generation
                 {
                     if (board[w] != Cell.Void || walls >= spec.MaxWalls) continue;
                     board[w] = Cell.Wall;
-                    var map = new LineMap(new LevelDef(board, specs));
+                    var map = new LineMap(new LevelDef(board, specs, cellData));
                     if (Covers(map, sampled, w) && ArmsUseful(map, sampled)) walls++;
                     else board[w] = Cell.Void;
                 }
             }
 
-            var def = new LevelDef(board, specs);
+            var def = new LevelDef(board, specs, cellData);
+            if (!ArmsUseful(new LineMap(def), sampled)) { rejection = Rejection.Size; return null; }
 
             // 2. Prune with walls (and forbidden cells, stage 10) until unique.
             int steps = 0, forbidden = 0;
@@ -130,7 +154,7 @@ namespace GridInfect.Core.Generation
                 int wall = ChooseWall(def, sampled, fast, wallsLeft, forbiddenLeft, out int after, out byte kind);
                 if (wall < 0) { log?.Add("  no pruner reduces the count"); rejection = Rejection.NotUnique; return null; }
                 board[wall] = kind;
-                def = new LevelDef(board, specs);
+                def = def.WithBoard(board);
                 if (kind == Cell.Wall) walls++; else forbidden++;
                 steps++;
                 fast = after;
@@ -162,6 +186,7 @@ namespace GridInfect.Core.Generation
                 Hash = Canonical.Hash(def),
                 Walls = walls,
                 ForbiddenCells = forbidden,
+                Relays = relays,
                 PruneSteps = steps,
             };
         }
@@ -207,7 +232,7 @@ namespace GridInfect.Core.Generation
         // in-bounds cell, gaps allowed — with the chance curve from CarveParams.
         // Runs: each arm draws a length and activates that many in-bounds
         // cells; one more draw decides an end wall (recorded, applied later).
-        static void Carve(byte[] board, PieceSpec spec, int cell, CarveParams carve, ref Pcg32 rng, List<int> endWalls)
+        static void Carve(byte[] board, PieceSpec spec, int cell, CarveParams carve, ref Pcg32 rng, List<int> endWalls, List<int> carved)
         {
             board[cell] = Cell.Active;
             int pi = cell / Grid.Width, pj = cell % Grid.Width;
@@ -237,7 +262,11 @@ namespace GridInfect.Core.Generation
                         int j = pj + TileArms.Dj(dir) * offset;
                         if (!Grid.InBounds(i, j)) continue;
                         if (spec.ReachOf(dir) != 0 && offset > spec.ReachOf(dir)) continue;
-                        if (rng.Next(20) < carve.ChanceAt(offset)) board[Grid.Loc(i, j)] = Cell.Active;
+                        if (rng.Next(20) < carve.ChanceAt(offset))
+                        {
+                            board[Grid.Loc(i, j)] = Cell.Active;
+                            carved?.Add(Grid.Loc(i, j));
+                        }
                     }
                 }
                 return;
@@ -255,6 +284,7 @@ namespace GridInfect.Core.Generation
                     int j = pj + TileArms.Dj(dir) * offset;
                     if (!Grid.InBounds(i, j)) break;
                     board[Grid.Loc(i, j)] = Cell.Active;
+                    carved?.Add(Grid.Loc(i, j));
                 }
                 int ei = pi + TileArms.Di(dir) * offset, ej = pj + TileArms.Dj(dir) * offset;
                 if (rng.Next(20) < carve.EndWallChance && Grid.InBounds(ei, ej)) endWalls.Add(Grid.Loc(ei, ej));
@@ -287,6 +317,7 @@ namespace GridInfect.Core.Generation
             {
                 byte v = board[w];
                 if (v != Cell.Void && v != Cell.Active) continue;
+                if (def.CellDataAt(w) != 0) continue;   // never wall a relay
                 bool onPiece = false;
                 foreach (int p in sampled) if (p % Grid.Cells == w) onPiece = true;
                 if (onPiece) continue;
@@ -298,7 +329,7 @@ namespace GridInfect.Core.Generation
                     if (value == Cell.Wall && !wallsLeft) continue;
 
                     board[w] = value;
-                    var walled = new LevelDef(board, def.Specs);
+                    var walled = def.WithBoard(board);
                     board[w] = v;
                     var walledMap = new LineMap(walled);
                     if (!Covers(walledMap, sampled, w) || !ArmsUseful(walledMap, sampled)) continue;
@@ -345,6 +376,19 @@ namespace GridInfect.Core.Generation
         // and hands the level a swap ambiguity nothing can prune.
         static bool ArmsUseful(LineMap map, int[] set)
         {
+            // Every relay's arms reach something beyond the relay itself.
+            for (int loc = 0; loc < Grid.Cells; loc++)
+            {
+                byte relay = map.Def.CellDataAt(loc);
+                if (relay == 0) continue;
+                if (map.Def.BoardAt(loc) != Cell.Active) return false;
+                for (int d = 0; d < 8; d++)
+                {
+                    if ((relay & (1 << d)) == 0) continue;
+                    var arm = new PieceSpec(0).WithArm((Dir)d);
+                    if (map.Coverage(arm, loc).Count < 2) return false;
+                }
+            }
             foreach (int p in set)
             {
                 var spec = map.Def.Specs[p / Grid.Cells];

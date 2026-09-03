@@ -182,6 +182,72 @@ namespace GridInfect.Core.Tests
             AssertAccepted(spec, 12, "diagonals");
         }
 
+        // ---- stage 12: relay cells ----
+
+        [Test]
+        public void RelayFiresOnceWhenLitAndChainsIntoTheNextRelay()
+        {
+            // R at (2,0) lights the relay at (2,3) (arms D); its down arm lights
+            // the relay at (5,3) (arms R), which reaches (5,5); a trap at (5,4)? no — clean chain.
+            var cellData = new byte[Grid.Cells];
+            cellData[Grid.Loc(2, 3)] = (byte)(1 << (int)Dir.D);
+            cellData[Grid.Loc(5, 3)] = (byte)(1 << (int)Dir.R);
+            var def = V2("......" + "......" + "1111.." + "...1.." + "...1.." + "...111" +
+                         "......" + "......" + "......" + "......" + "......", "R", cellData);
+            var s = new LevelSession(def);
+            s.Rules.SetPiece(s, 0, 2, 0);
+            s.Rules.Resolve(s);
+            Assert.That(s.Board[Grid.Loc(4, 3)], Is.EqualTo(Cell.Infected), "the first relay's down arm");
+            Assert.That(s.Board[Grid.Loc(5, 5)], Is.EqualTo(Cell.Infected), "the second relay's right arm");
+            Assert.That(s.Solved, Is.True);
+            Assert.That(new LineMap(def).Coverage(def.Specs[0], Grid.Loc(2, 0)).Count, Is.EqualTo(9), "solver follows the chain");
+
+            // Undo rebuilds the chain from the initial board.
+            s.Rules.ClearPiece(s, 0);
+            for (int loc = 0; loc < Grid.Cells; loc++) Assert.That(s.Board[loc], Is.EqualTo(def.BoardAt(loc)));
+
+            // A relay arm into a trap trips at placement time, so a non-winning
+            // placement that lights it resets.
+            var trapData = new byte[Grid.Cells];
+            trapData[Grid.Loc(2, 2)] = (byte)(1 << (int)Dir.D);
+            var trapDef = V2("......" + "......" + "111..." + "..5..." + "......" + "1....." +
+                             "......" + "......" + "......" + "......" + "......", "R,D", trapData);
+            var t = new LevelSession(trapDef);
+            t.Rules.SetPiece(t, 0, 2, 0);
+            Assert.That(t.ResetTripped, Is.True);
+            t.Rules.Resolve(t);
+            Assert.That(t.Pieces[0].Placed, Is.False, "reset");
+        }
+
+        [Test]
+        public void RelayBoardsGenerateUniqueAndDeducibleAndRoundTripTheirData()
+        {
+            var spec = new GenSpec { Elements = Element.Walls | Element.Relays, MinPieces = 3, MaxPieces = 4, RelayChance = 14 };
+            AssertAccepted(spec, 12, "relays");
+            for (ulong seed = 1; seed < 500; seed++)
+            {
+                var level = GeneratorV2.Generate(spec, seed);
+                if (level == null || !level.Def.HasRelays) continue;
+                // The canonical hash covers relay arms, flipped with the board.
+                var board = new byte[Grid.Cells];
+                var data = new byte[Grid.Cells];
+                for (int i = 0; i < Grid.Height; i++)
+                {
+                    for (int j = 0; j < Grid.Width; j++)
+                    {
+                        int from = Grid.Loc(i, Grid.Width - 1 - j);
+                        board[Grid.Loc(i, j)] = level.Def.BoardAt(from);
+                        data[Grid.Loc(i, j)] = (byte)Canonical.FlipArms(level.Def.CellDataAt(from), true, false);
+                    }
+                }
+                var specs = new PieceSpec[level.Def.Specs.Length];
+                for (int k = 0; k < specs.Length; k++) specs[k] = Canonical.Flip(level.Def.Specs[k], true, false);
+                Assert.That(Canonical.Hash(new LevelDef(board, specs, data)), Is.EqualTo(level.Hash));
+                return;
+            }
+            Assert.Fail("no accepted board with a relay in the seed range");
+        }
+
         [Test]
         public void ShortArmBoardsGenerateUniqueAndDeducible()
         {

@@ -79,6 +79,7 @@ namespace GridInfect.Core.Generation
         public int AreaChance = 6;             // out of 20, per piece: a 3x3 blot instead of a tile
         public int MaxForbidden = 4;           // forbidden cells the pruner may place (Element.Forbidden)
         public int DiagonalChance = 10;        // out of 20, per piece: one or two diagonal arms join its tile
+        public int RelayChance = 10;           // out of 20, per piece with arms: one carved cell on an arm becomes a relay
 
         // The spec as data (docs/worlds headers, the daily spec): every
         // field, so a spec round-trips and a world regenerates from its header.
@@ -108,6 +109,7 @@ namespace GridInfect.Core.Generation
                 ["areaChance"] = AreaChance,
                 ["maxForbidden"] = MaxForbidden,
                 ["diagonalChance"] = DiagonalChance,
+                ["relayChance"] = RelayChance,
             });
         }
 
@@ -156,6 +158,7 @@ namespace GridInfect.Core.Generation
             spec.AreaChance = input.IntOr("areaChance", spec.AreaChance);
             spec.MaxForbidden = input.IntOr("maxForbidden", spec.MaxForbidden);
             spec.DiagonalChance = input.IntOr("diagonalChance", spec.DiagonalChance);
+            spec.RelayChance = input.IntOr("relayChance", spec.RelayChance);
             return spec;
         }
 
@@ -168,7 +171,7 @@ namespace GridInfect.Core.Generation
                 MaxWalls = MaxWalls, AllowDuplicateTiles = AllowDuplicateTiles, AllowSymmetricTiles = AllowSymmetricTiles,
                 ExclusiveLines = ExclusiveLines, MinPieceDistance = MinPieceDistance,
                 RequireAllPieces = RequireAllPieces, SolutionCap = SolutionCap, ShortArmChance = ShortArmChance,
-                AreaChance = AreaChance, MaxForbidden = MaxForbidden, DiagonalChance = DiagonalChance,
+                AreaChance = AreaChance, MaxForbidden = MaxForbidden, DiagonalChance = DiagonalChance, RelayChance = RelayChance,
                 Carve = new CarveParams
                 {
                     Mode = Carve.Mode, BaseChance = Carve.BaseChance, Falloff = Carve.Falloff,
@@ -190,6 +193,7 @@ namespace GridInfect.Core.Generation
         public string Hash;                        // canonical under the board's symmetry group
         public int Walls;
         public int ForbiddenCells;
+        public int Relays;
         public int PruneSteps;
     }
 

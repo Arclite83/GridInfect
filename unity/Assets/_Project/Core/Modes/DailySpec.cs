@@ -31,6 +31,8 @@ namespace GridInfect.Core
                 case DayOfWeek.Wednesday: return Element.Walls | Element.Area;
                 case DayOfWeek.Thursday: return Element.Walls | Element.Forbidden;
                 case DayOfWeek.Friday: return Element.Walls | Element.Diagonals;
+                case DayOfWeek.Saturday: return Element.Walls | Element.Relays;
+                case DayOfWeek.Sunday: return Element.Walls | Element.ShortArms | Element.Forbidden | Element.Diagonals;
                 default: return Element.Walls;
             }
         }

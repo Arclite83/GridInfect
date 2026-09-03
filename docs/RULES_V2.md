@@ -117,3 +117,16 @@ line families (the diagonal and the antidiagonal) when a level has a
 diagonal arm anywhere; every rule is written over families, so nothing
 else changes. Text form `ul`, `dr2`; the shipped set is a tile plus one
 diagonal arm, or two diagonal arms that are not an opposite pair.
+
+## 12. Relay cells (stage 12)
+
+A relay is an active cell carrying an arm mask (`LevelDef.CellDataAt`,
+text `loc:arms` in the world files). It must be infected like any active
+cell. The moment it turns from 1 to 4 — by a piece's arm, an area, or
+another relay — it spreads its own arms from itself with the rules of §3
+(unlimited reach; walls stop, switches repel, traps trip, forbidden cells
+make the originating placement illegal, voids are jumped), at most once
+per propagation. Chains are allowed and end on their own because a relay
+only fires on its 1 → 4 transition. Undo rebuilds them (§5) since it
+re-propagates from the initial board. Drawn as a small hub with a stub per
+arm over the cell (`BoardView`), a shape and not a colour (R-1001).

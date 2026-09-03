@@ -316,3 +316,16 @@ one time in three), redrawn if that leaves only an opposite pair. Carve
 and prune are direction-agnostic. Solver: the two diagonal families join
 the line map. World `w16 Diagonals` (pieces 3–5, G2–G4, chance 14/20);
 daily: Fridays.
+
+### Relay cells (`Element.Relays`, stage 12)
+
+Sample and carve: after a piece's arms are carved, the piece rolls
+`RelayChance`/20; one of its carved cells (uniform draw) becomes a relay
+with one arm (two, one time in three; diagonals only with
+`Element.Diagonals`), and the relay's arms are carved as runs, so the
+sampled solution lights the relay and covers what it spreads to. Prune:
+every relay arm must reach a cell; a wall on the relay would uncover its
+cells, so `Covers` rejects it. Solver: static coverage follows relay
+chains, and forbidden legality does too. World `w17 Relays` (pieces 3–5,
+G2–G4, chance 14/20); daily: Saturdays; Sundays mix short arms, forbidden
+cells and diagonals.
