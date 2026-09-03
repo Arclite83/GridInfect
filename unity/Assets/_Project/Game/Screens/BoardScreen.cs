@@ -230,12 +230,25 @@ namespace GridInfect.Game
             App.ScheduleResolve();
         }
 
+        // With an empty wallet the button becomes the rewarded placement
+        // (NEXT_PASS decision 8): watch an ad, earn one lock.
         void RefreshLockLabel()
         {
             if (_lockLabel == null) return;
             int locks = App.State.Profile.Locks;
-            _lockLabel.text = $"LOCK {locks}";
-            _lockButton.Enabled = locks > 0 && !_popupOpen;
+            bool rewarded = locks == 0 && App.Ads.RewardedAvailable;
+            _lockLabel.text = rewarded ? "+1 LOCK" : $"LOCK {locks}";
+            _lockButton.OnClick = rewarded ? EarnLock : (System.Action)LockPiece;
+            _lockButton.Enabled = (locks > 0 || rewarded) && !_popupOpen;
+        }
+
+        void EarnLock()
+        {
+            App.Ads.ShowRewarded(earned =>
+            {
+                if (earned) App.Do(GridInfectActions.LocksGrant, Inputs.LocksGrant(1, GrantLocksAction.Rewarded));
+                RefreshLockLabel();
+            });
         }
 
         // ---- session reactions ----
@@ -255,6 +268,7 @@ namespace GridInfect.Game
         void OnSolved()
         {
             if (_popupOpen) return;
+            App.Ads.CountSolve();
             if (App.State.Mode == GameMode.Classic)
             {
                 int levelId = App.State.ClassicLevelId;
@@ -437,10 +451,13 @@ namespace GridInfect.Game
 
         GameObject _popupPanel;
 
+        // R-602: dismissing the solved popup is the interstitial's moment;
+        // the button's own action runs when the ad closes (or at once).
         void AddPopupButton(string label, Vector2 center, Vector2 size, System.Action onClick)
         {
             var button = UiButton.Make(_popupPanel.transform, label, center, size,
-                BoardTheme.Accent, BoardTheme.GlyphDark, onClick, 43);
+                BoardTheme.Accent, BoardTheme.GlyphDark,
+                () => { if (!App.Ads.MaybeShowInterstitial(onClick)) onClick?.Invoke(); }, 43);
             Buttons.Add(button);
         }
 

@@ -32,5 +32,5 @@ jobs:
       - name: Build and test (mirror of Unity edit-mode suite)
         run: dotnet test src/Tests.Mirror/GridInfect.Core.Tests.Mirror.csproj --nologo
 
-      - name: Adapter compile check against Unity API stubs
+      - name: Adapter and services compile check against Unity API stubs
         run: dotnet build src/Game.Mirror/GridInfect.Game.Mirror.csproj --nologo

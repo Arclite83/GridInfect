@@ -4,6 +4,7 @@
     "references": [
         "Bloodhound.Engine",
         "GridInfect.Core",
+        "GridInfect.Services",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.Universal.Runtime"
     ],

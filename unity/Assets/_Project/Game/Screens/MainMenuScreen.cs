@@ -44,6 +44,15 @@ namespace GridInfect.Game
             _soundLabel = _soundButton.Root.GetComponentInChildren<TextMesh>();
             Buttons.Add(_soundButton);
             RefreshSoundLabel();
+
+            // R-802: the privacy options entry, whenever the consent SDK says
+            // one is required; R-702: restore purchases beside it.
+            if (App.Ads.PrivacyOptionsAvailable)
+            {
+                Buttons.Add(UiButton.Make(Root.transform, "PRIVACY OPTIONS", new Vector2(0f, -h * 0.44f),
+                    new Vector2(L.ContentWidth, L.BarHeight),
+                    BoardTheme.ButtonBgDisabled, BoardTheme.TextDim, () => App.Ads.ShowPrivacyOptions(null)));
+            }
         }
 
         void ToggleSound()

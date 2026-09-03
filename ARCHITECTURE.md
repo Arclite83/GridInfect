@@ -27,6 +27,7 @@ GridInfect.Game (Unity adapter)     GridInfect.Core.Tests (edit-mode / dotnet)
 | `Bloodhound.Engine` | Action dispatch/registry/log, `MiniJson`, `Pcg32`. Game-agnostic — the piece that moves to the next game (the logic game) unchanged. | nothing (`noEngineReferences`) |
 | `GridInfect.Core` | Schema types, `Rules` (the mechanics), the actions, `LevelGenerator`, baked classic levels, `SaveCodec`, `Queries`, `Solving` (the deduction solver, exact solution counter and grader) and `Generation` (generator v2: sample, carve, prune with walls, deduce, grade, canonicalise — `docs/GENERATOR_V2.md`). | `Bloodhound.Engine` only (`noEngineReferences`) |
 | `GridInfect.Game` | Everything Unity: boot, camera, screens, board/piece views, input, tweens, the 0.3 s beat, save file IO. Parses input, dispatches one action or reads one query, renders the result. | Core, Engine, UnityEngine |
+| `GridInfect.Services` | The SDK boundary: ads, consent, purchasing interfaces, cadence config, Null services, `Bootstrap`. SDK-backed implementations only here. | UnityEngine (+ the SDK packages) |
 | `GridInfect.Core.Tests` | NUnit suites; run identically in Unity edit mode and under `dotnet test` via the mirror projects in `src/`. | Core, Engine |
 
 Source lives once, under `unity/Assets/_Project/`; the `src/` solution
@@ -34,9 +35,13 @@ compiles the same files headless (`src/Core.Mirror`, `src/Tests.Mirror`) and
 type-checks the adapter against API stubs (`src/Game.Mirror` +
 `src/UnityStubs` — compile-only, never shipped).
 
-A future `GridInfect.Services` assembly (ads/consent/IAP, per
-`docs/REQUIREMENTS.md` §6–8) sits beside `GridInfect.Game`: SDK types stay
-there and never leak into Core (R-1303).
+`GridInfect.Services` (ads/consent/IAP, per `docs/REQUIREMENTS.md` §6–8)
+sits beside `GridInfect.Game`: the interfaces (`IAdService`,
+`IConsentService`, `IPurchaseService`), the cadence config and the Null
+implementations are in (stage 6); the SDK-backed implementations land with
+the Google Mobile Ads and Unity IAP packages. SDK types stay there and never
+leak into Core or Game (R-1303, gate test `SdkTypesNeverLeaveTheServicesAssembly`);
+`Game` reaches them only through `AdGate`.
 
 ## 2. Schema (the first artifact)
 

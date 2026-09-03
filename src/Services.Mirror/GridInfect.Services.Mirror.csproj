@@ -1,0 +1,21 @@
+<!--
+  Compile-check project for the SDK boundary assembly (unity/Assets/_Project/
+  Services) against the UnityEngine stubs. The SDK-backed implementations
+  need the Google Mobile Ads and Unity IAP packages and are not compiled
+  here; the interfaces and Null services are.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>GridInfect.Services.Mirror</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../unity/Assets/_Project/Services/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../UnityStubs/UnityEngine.Stubs.csproj" />
+  </ItemGroup>
+</Project>

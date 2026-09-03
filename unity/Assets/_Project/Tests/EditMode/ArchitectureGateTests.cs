@@ -14,6 +14,7 @@ namespace GridInfect.Core.Tests
         static string EngineDir => Path.Combine(TestPaths.RepoRoot, "unity", "Assets", "_Project", "Engine");
         static string CoreDir => Path.Combine(TestPaths.RepoRoot, "unity", "Assets", "_Project", "Core");
         static string GameDir => Path.Combine(TestPaths.RepoRoot, "unity", "Assets", "_Project", "Game");
+        static string ServicesDir => Path.Combine(TestPaths.RepoRoot, "unity", "Assets", "_Project", "Services");
 
         [Test]
         public void EngineAndCoreNeverTouchUnity()
@@ -44,6 +45,34 @@ namespace GridInfect.Core.Tests
                 Assert.That(mutators.IsMatch(File.ReadAllText(file)), Is.False,
                     $"{Relative(file)} mutates rules state directly; dispatch an action instead");
             }
+        }
+
+        // R-1303 (stage 6): SDK types stay in GridInfect.Services. Core and
+        // Game never name an ads, consent or purchasing SDK; Core never names
+        // the Services assembly; Services never reaches into the game.
+        [Test]
+        public void SdkTypesNeverLeaveTheServicesAssembly()
+        {
+            string[] sdk = { "GoogleMobileAds", "UnityEngine.Purchasing", "Unity.Services", "UnityEngine.Advertisements" };
+            foreach (string file in Sources(EngineDir, CoreDir, GameDir))
+            {
+                string text = File.ReadAllText(file);
+                foreach (string ns in sdk) Assert.That(text, Does.Not.Contain(ns), Relative(file));
+            }
+            foreach (string file in Sources(EngineDir, CoreDir))
+            {
+                Assert.That(File.ReadAllText(file), Does.Not.Contain("GridInfect.Services"), Relative(file));
+            }
+            foreach (string file in Sources(ServicesDir))
+            {
+                string text = File.ReadAllText(file);
+                Assert.That(text, Does.Not.Contain("GridInfect.Core"), Relative(file));
+                Assert.That(text, Does.Not.Contain("GridInfect.Game"), Relative(file));
+            }
+            string coreAsmdef = File.ReadAllText(Path.Combine(CoreDir, "GridInfect.Core.asmdef"));
+            Assert.That(coreAsmdef, Does.Not.Contain("Services"));
+            string servicesAsmdef = File.ReadAllText(Path.Combine(ServicesDir, "GridInfect.Services.asmdef"));
+            Assert.That(servicesAsmdef, Does.Not.Contain("GridInfect.Core"));
         }
 
         [Test]
