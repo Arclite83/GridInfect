@@ -37,12 +37,12 @@ namespace GridInfect.Core
             {
                 if (s.Pieces[k].Placed && !s.Pieces[k].Locked && s.Pieces[k].I == i && s.Pieces[k].J == j)
                 {
-                    Rules.ClearPiece(s, k);
+                    s.Rules.ClearPiece(s, k);
                 }
             }
-            if (s.Pieces[target.piece].Placed) Rules.ClearPiece(s, target.piece);
+            if (s.Pieces[target.piece].Placed) s.Rules.ClearPiece(s, target.piece);
 
-            Rules.SetPiece(s, target.piece, i, j);
+            s.Rules.SetPiece(s, target.piece, i, j);
             s.Pieces[target.piece].Locked = true;
             state.Profile.Locks--;
             state.Profile.Dirty = true;
@@ -101,7 +101,7 @@ namespace GridInfect.Core
                 for (int n = 0; n < state.Solution.Length; n++)
                 {
                     var (piece, solCell) = state.Solution[n];
-                    if (claimed[n] || solCell != cell || s.Def.Pieces[piece] != s.Pieces[k].Tile) continue;
+                    if (claimed[n] || solCell != cell || s.Def.Specs[piece] != s.Def.Specs[k]) continue;
                     claimed[n] = true;
                     result[k] = s.Pieces[k];
                     break;
@@ -128,7 +128,7 @@ namespace GridInfect.Core
                 foreach (var d in solve.Trace) candidates.Add((d.Piece, d.Cell));
                 foreach (var c in candidates)
                 {
-                    if (!map.TripsTrap(s.Def.Pieces[c.piece], c.cell)) return Resolve(state, correct, c);
+                    if (!map.TripsTrap(s.Def.Specs[c.piece], c.cell)) return Resolve(state, correct, c);
                 }
                 return Resolve(state, correct, candidates[0]);
             }
@@ -140,8 +140,8 @@ namespace GridInfect.Core
             {
                 if (claimed[n]) continue;
                 var (piece, cell) = state.Solution[n];
-                int coverage = map.Coverage(s.Def.Pieces[piece], cell).Count;
-                bool trips = map.TripsTrap(s.Def.Pieces[piece], cell);
+                int coverage = map.Coverage(s.Def.Specs[piece], cell).Count;
+                bool trips = map.TripsTrap(s.Def.Specs[piece], cell);
                 int score = coverage - (trips ? 1000 : 0);
                 if (score > bestCoverage) { best = n; bestCoverage = score; }
             }
@@ -154,11 +154,11 @@ namespace GridInfect.Core
         static (int piece, int cell)? Resolve(GameState state, PieceState[] correct, (int piece, int cell) target)
         {
             var s = state.Session;
-            Tile tile = s.Def.Pieces[target.piece];
+            PieceSpec spec = s.Def.Specs[target.piece];
             if (!correct[target.piece].Placed) return (target.piece, target.cell);
             for (int k = 0; k < s.Pieces.Length; k++)
             {
-                if (s.Pieces[k].Tile == tile && !correct[k].Placed) return (k, target.cell);
+                if (s.Def.Specs[k] == spec && !correct[k].Placed) return (k, target.cell);
             }
             return null;
         }

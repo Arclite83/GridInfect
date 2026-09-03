@@ -87,7 +87,7 @@ namespace GridInfect.Game
             _pieces = new PieceView[session.Pieces.Length];
             for (int k = 0; k < session.Pieces.Length; k++)
             {
-                _pieces[k] = new PieceView(Root.transform, k, session.Pieces[k].Tile,
+                _pieces[k] = new PieceView(Root.transform, k, session.Def.Specs[k],
                     TrayTileSize(session.Pieces.Length), TraySlot(k));
             }
             session.LevelSolved += OnSolved;

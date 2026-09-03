@@ -13,28 +13,58 @@ namespace GridInfect.Game
         GameObject _lockGlyph;
 
         public PieceView(Transform parent, int index, Tile tile, float cellSize, Vector2 traySlot)
+            : this(parent, index, PieceSpec.FromTile(tile), cellSize, traySlot)
+        {
+        }
+
+        // Drawn from the spec (RULES_V2 §1): an arm per direction, diagonal
+        // arms turned 45°, a short arm drawn short with its reach as a
+        // notch count, the area as a wide frame — each a shape, never a
+        // colour alone (R-1001).
+        public PieceView(Transform parent, int index, PieceSpec spec, float cellSize, Vector2 traySlot)
         {
             Index = index;
             TraySlot = traySlot;
             _size = cellSize;
 
-            Root = new GameObject($"piece:{index}:{tile}");
+            Root = new GameObject($"piece:{index}:{spec.Encode()}");
             Root.transform.SetParent(parent, false);
             Root.transform.localPosition = new Vector3(traySlot.x, traySlot.y, 0f);
 
+            if (spec.Area)
+            {
+                Ui.MakeRect("area", Root.transform, new Vector2(cellSize * 0.9f, cellSize * 0.9f), BoardTheme.PieceArm, 4);
+                Ui.MakeRect("areaHole", Root.transform, new Vector2(cellSize * 0.74f, cellSize * 0.74f), BoardTheme.Background, 5);
+            }
             Ui.MakeRect("body", Root.transform, new Vector2(cellSize * 0.56f, cellSize * 0.56f), BoardTheme.PieceBody, 6);
-            for (int d = 0; d < 4; d++)
+            for (int d = 0; d < 8; d++)
             {
                 var dir = (Dir)d;
-                if (!TileArms.Has(tile, dir)) continue;
-                float len = cellSize * 0.44f, thick = cellSize * 0.2f;
+                if (!spec.Has(dir)) continue;
+                int reach = spec.ReachOf(dir);
+                float len = cellSize * (reach == 0 ? 0.44f : reach == 1 ? 0.22f : 0.33f);
+                float thick = cellSize * 0.2f;
+                bool diagonal = TileArms.IsDiagonal(dir);
                 bool horizontal = dir == Dir.L || dir == Dir.R;
                 var arm = Ui.MakeRect("arm:" + dir, Root.transform,
-                    horizontal ? new Vector2(len, thick) : new Vector2(thick, len),
+                    horizontal || diagonal ? new Vector2(len, thick) : new Vector2(thick, len),
                     BoardTheme.PieceArm, 5);
-                float offset = cellSize * 0.28f;
-                arm.transform.localPosition = new Vector3(
-                    TileArms.Dj(dir) * offset, -TileArms.Di(dir) * offset, 0f);
+                float offset = cellSize * (reach == 0 ? 0.28f : reach == 1 ? 0.2f : 0.24f);
+                float dx = TileArms.Dj(dir), dy = -TileArms.Di(dir);
+                if (diagonal)
+                {
+                    // The arm's long axis runs along the diagonal.
+                    arm.transform.localEulerAngles = new Vector3(0f, 0f, dx * dy > 0 ? 45f : -45f);
+                    offset *= 0.9f;
+                }
+                arm.transform.localPosition = new Vector3(dx * offset, dy * offset, 0f);
+                for (int n = 0; n < reach; n++)
+                {
+                    // Reach notches: one small block per cell the arm reaches.
+                    var notch = Ui.MakeRect("reach", Root.transform, new Vector2(thick * 0.35f, thick * 0.35f), BoardTheme.GlyphDark, 6);
+                    float along = offset + (n + 1) * cellSize * 0.07f;
+                    notch.transform.localPosition = new Vector3(dx * along, dy * along, 0f);
+                }
             }
         }
 

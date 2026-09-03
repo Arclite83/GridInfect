@@ -98,6 +98,7 @@ def main():
     array("Seeds", "ulong", [f'{r["seed"]}ul' for _, r in rows])
     array("Hashes", "string", [f'"{r["hash"]}"' for _, r in rows])
     array("Reviewed", "bool", ["true" if r.get("reviewed") else "false" for _, r in rows])
+    array("Relays", "string", ['"' + " ".join(f"{loc}:{arms}" for loc, arms in r.get("relays", [])) + '"' for _, r in rows])
     out.append(FOOTER)
     with open(OUTPUT, "w") as f:
         f.write("".join(out))

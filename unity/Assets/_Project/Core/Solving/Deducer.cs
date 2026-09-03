@@ -180,7 +180,7 @@ namespace GridInfect.Core.Solving
                     for (int loc = 0; loc < Grid.Cells; loc++)
                     {
                         if (!s.Cand[k].Has(loc) || !s.Cov[k][loc].Has(c)) continue;
-                        int key = (int)s.Tiles[k] * Grid.Cells + loc;
+                        int key = s.Kind[k] * Grid.Cells + loc;
                         if (only < 0) only = key;
                         else if (only != key) { many = true; break; }
                     }
@@ -191,9 +191,9 @@ namespace GridInfect.Core.Solving
                 tierCounts[(int)Tier.LineOwnership]++;
                 var tier = pending > Tier.LineOwnership ? pending : Tier.LineOwnership;
                 pending = Tier.LineOwnership;
-                var tile = (Tile)(only / Grid.Cells);
+                int kind = only / Grid.Cells;
                 int cell = only % Grid.Cells;
-                int piece = s.FirstUnused(tile, cell);
+                int piece = s.FirstUnused(kind, cell);
                 trace?.Add(new Deduction(tier, piece, cell, s.Map.LinesThrough(c)));
                 s.Place(piece, cell);
                 return Step.Placed;
@@ -236,7 +236,8 @@ namespace GridInfect.Core.Solving
         {
             public readonly LineMap Map;
             public readonly int N;
-            public readonly Tile[] Tiles;
+            public readonly PieceSpec[] Specs;
+            public readonly int[] Kind;        // per piece: index of the first piece with an equal spec
             public readonly CellMask[][] Cov;  // [piece][loc] static coverage
             public readonly bool[][] Trips;    // [piece][loc] arm ends on a trap
             public CellMask[] Cand;            // per piece: cells it may still go to
@@ -257,7 +258,13 @@ namespace GridInfect.Core.Solving
             {
                 Map = map;
                 N = map.Def.Pieces.Length;
-                Tiles = map.Def.Pieces;
+                Specs = map.Def.Specs;
+                Kind = new int[N];
+                for (int k = 0; k < N; k++)
+                {
+                    Kind[k] = k;
+                    for (int p = 0; p < k; p++) if (Specs[p] == Specs[k]) { Kind[k] = Kind[p]; break; }
+                }
                 Cov = new CellMask[N][];
                 Trips = new bool[N][];
                 Cand = new CellMask[N];
@@ -272,8 +279,10 @@ namespace GridInfect.Core.Solving
                     for (int loc = 0; loc < Grid.Cells; loc++)
                     {
                         if (map.Def.BoardAt(loc) != Cell.Active) continue;
-                        Cov[k][loc] = map.Coverage(Tiles[k], loc);
-                        Trips[k][loc] = map.TripsTrap(Tiles[k], loc);
+                        var spread = map.Spread(Specs[k], loc);
+                        if (spread.Forbidden) continue;   // not a legal placement (stage 10)
+                        Cov[k][loc] = spread.Covered;
+                        Trips[k][loc] = spread.Trips;
                         Cand[k] |= CellMask.Bit(loc);
                     }
                 }
@@ -283,7 +292,8 @@ namespace GridInfect.Core.Solving
             {
                 Map = o.Map;
                 N = o.N;
-                Tiles = o.Tiles;
+                Specs = o.Specs;
+                Kind = o.Kind;
                 Cov = o.Cov;
                 Trips = o.Trips;
                 Cand = (CellMask[])o.Cand.Clone();
@@ -311,11 +321,11 @@ namespace GridInfect.Core.Solving
                 for (int p = 0; p < N; p++) Cand[p] = Cand[p] & free;
             }
 
-            public int FirstUnused(Tile tile, int loc)
+            public int FirstUnused(int kind, int loc)
             {
                 for (int k = 0; k < N; k++)
                 {
-                    if (!Used[k] && Tiles[k] == tile && Cand[k].Has(loc)) return k;
+                    if (!Used[k] && Kind[k] == kind && Cand[k].Has(loc)) return k;
                 }
                 throw new InvalidOperationException("no unused piece for a forced placement");
             }
@@ -543,7 +553,7 @@ namespace GridInfect.Core.Solving
                     for (int loc = 0; loc < Grid.Cells; loc++)
                     {
                         if (!Cand[k].Has(loc) || !Cov[k][loc].Has(c)) continue;
-                        if (distinctTiles && !seen.Add((int)Tiles[k] * Grid.Cells + loc)) continue;
+                        if (distinctTiles && !seen.Add(Kind[k] * Grid.Cells + loc)) continue;
                         list.Add(k * Grid.Cells + loc);
                     }
                 }

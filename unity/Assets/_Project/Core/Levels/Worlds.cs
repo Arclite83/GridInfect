@@ -114,10 +114,22 @@ namespace GridInfect.Core
             if (text.Length != Grid.Cells) throw new InvalidOperationException($"world level {flat}: baked board has {text.Length} cells");
             var board = new byte[Grid.Cells];
             for (int loc = 0; loc < Grid.Cells; loc++) board[loc] = (byte)(text[loc] - '0');
+            // New content runs on RulesV2 (stage 7); Legacy stays on the classic rules.
             string[] names = WorldData.Pieces[flat].Split(',');
-            var tiles = new Tile[names.Length];
-            for (int k = 0; k < names.Length; k++) tiles[k] = ClassicLevels.ParseTile(names[k]);
-            return new LevelDef(board, tiles);
+            var specs = new PieceSpec[names.Length];
+            for (int k = 0; k < names.Length; k++) specs[k] = PieceSpec.Parse(names[k]);
+            byte[] cellData = null;
+            string relays = WorldData.Relays[flat];
+            if (relays.Length > 0)
+            {
+                cellData = new byte[Grid.Cells];
+                foreach (string entry in relays.Split(' '))
+                {
+                    string[] parts = entry.Split(':');
+                    cellData[int.Parse(parts[0])] = (byte)int.Parse(parts[1]);
+                }
+            }
+            return new LevelDef(board, specs, cellData);
         }
     }
 }

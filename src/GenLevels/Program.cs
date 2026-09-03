@@ -147,7 +147,9 @@ namespace GridInfect.GenLevels
             sb.Append(",\"effort\":").Append(level.Effort);
             sb.Append(",\"board\":\"");
             for (int loc = 0; loc < Grid.Cells; loc++) sb.Append((char)('0' + level.Def.BoardAt(loc)));
-            sb.Append("\",\"pieces\":\"").Append(string.Join(",", level.Def.Pieces)).Append('"');
+            var specs = new string[level.Def.Specs.Length];
+            for (int k = 0; k < specs.Length; k++) specs[k] = level.Def.Specs[k].Encode();
+            sb.Append("\",\"pieces\":\"").Append(string.Join(",", specs)).Append('"');
             sb.Append(",\"solution\":[");
             for (int n = 0; n < level.Solution.Length; n++)
             {
@@ -162,6 +164,19 @@ namespace GridInfect.GenLevels
             }
             sb.Append("],\"hash\":\"").Append(level.Hash).Append('"');
             sb.Append(",\"walls\":").Append(level.Walls);
+            if (level.Def.HasRelays)
+            {
+                sb.Append(",\"relays\":[");
+                bool first = true;
+                for (int loc = 0; loc < Grid.Cells; loc++)
+                {
+                    if (level.Def.CellDataAt(loc) == 0) continue;
+                    if (!first) sb.Append(',');
+                    first = false;
+                    sb.Append('[').Append(loc).Append(',').Append(level.Def.CellDataAt(loc)).Append(']');
+                }
+                sb.Append(']');
+            }
             sb.Append('}');
             return sb.ToString();
         }

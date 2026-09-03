@@ -123,7 +123,7 @@ namespace GridInfect.Core.Solving
                 for (int i = 0; i < set.Length; i++)
                 {
                     var p = (set[i] / Grid.Cells, set[i] % Grid.Cells);
-                    if (map.TripsTrap(def.Pieces[p.Item1], p.Item2)) trippers.Add(p);
+                    if (map.TripsTrap(def.Specs[p.Item1], p.Item2)) trippers.Add(p);
                 }
                 for (int t = 0; t < Math.Max(1, trippers.Count); t++)
                 {
@@ -169,9 +169,9 @@ namespace GridInfect.Core.Solving
             {
                 var (piece, cell) = order[n];
                 int i = cell / Grid.Width, j = cell % Grid.Width;
-                if (!Rules.CanPlace(s, piece, i, j)) return Outcome.Dead;
-                Rules.SetPiece(s, piece, i, j);
-                Rules.Resolve(s);
+                if (!s.Rules.CanPlace(s, piece, i, j)) return Outcome.Dead;
+                s.Rules.SetPiece(s, piece, i, j);
+                s.Rules.Resolve(s);
                 if (s.Solved) return Outcome.Won;
                 bool any = false;
                 for (int k = 0; k < s.Pieces.Length; k++) any |= s.Pieces[k].Placed;
@@ -188,9 +188,9 @@ namespace GridInfect.Core.Solving
             foreach (var (piece, cell) in order)
             {
                 int i = cell / Grid.Width, j = cell % Grid.Width;
-                if (!Rules.CanPlace(s, piece, i, j)) return false;
-                Rules.SetPiece(s, piece, i, j);
-                Rules.Resolve(s);
+                if (!s.Rules.CanPlace(s, piece, i, j)) return false;
+                s.Rules.SetPiece(s, piece, i, j);
+                s.Rules.Resolve(s);
                 if (s.Solved) return true;
                 bool any = false;
                 for (int k = 0; k < s.Pieces.Length; k++) any |= s.Pieces[k].Placed;
@@ -211,6 +211,7 @@ namespace GridInfect.Core.Solving
             readonly LevelDef _def;
             readonly int _cap;
             readonly int _n;
+            readonly int[] _specId;            // per piece: index of the first piece with an equal spec
             readonly CellMask[] _cov;          // [piece*Cells+loc]
             readonly int[][] _covCells;        // [option] -> cells it covers
             readonly bool[] _removed;          // option no longer available
@@ -227,6 +228,12 @@ namespace GridInfect.Core.Solving
                 _cap = cap;
                 Map = new LineMap(def);
                 _n = def.Pieces.Length;
+                _specId = new int[_n];
+                for (int k = 0; k < _n; k++)
+                {
+                    _specId[k] = k;
+                    for (int p = 0; p < k; p++) if (def.Specs[p] == def.Specs[k]) { _specId[k] = _specId[p]; break; }
+                }
                 int options = _n * Grid.Cells;
                 _cov = new CellMask[options];
                 _covCells = new int[options][];
@@ -239,8 +246,13 @@ namespace GridInfect.Core.Solving
                     for (int loc = 0; loc < Grid.Cells; loc++)
                     {
                         int opt = k * Grid.Cells + loc;
-                        if (def.BoardAt(loc) != Cell.Active) { _removed[opt] = true; _covCells[opt] = Array.Empty<int>(); continue; }
-                        var cov = Map.Coverage(def.Pieces[k], loc);
+                        if (def.BoardAt(loc) != Cell.Active || Map.IsIllegal(def.Specs[k], loc))
+                        {
+                            _removed[opt] = true;
+                            _covCells[opt] = Array.Empty<int>();
+                            continue;
+                        }
+                        var cov = Map.Coverage(def.Specs[k], loc);
                         _cov[opt] = cov;
                         var cells = new List<int>();
                         for (int c = 0; c < Grid.Cells; c++)
@@ -338,13 +350,13 @@ namespace GridInfect.Core.Solving
 
             void Found(int depth)
             {
-                // Key: the set of (tile, cell) pairs, so duplicate tiles at
-                // swapped cells count once (as the oracle's frozenset does).
+                // Key: the set of (piece kind, cell) pairs, so identical pieces
+                // at swapped cells count once (as the oracle's frozenset does).
                 var key = new int[depth];
                 for (int n = 0; n < depth; n++)
                 {
                     int k = _chosen[n] / Grid.Cells, loc = _chosen[n] % Grid.Cells;
-                    key[n] = (int)_def.Pieces[k] * Grid.Cells + loc;
+                    key[n] = _specId[k] * Grid.Cells + loc;
                 }
                 Array.Sort(key);
                 string text = string.Join(",", key);

@@ -24,6 +24,7 @@ namespace GridInfect.Core.Generation
             // 1. Sample tiles and cells, carve.
             int count = spec.MinPieces + (spec.MaxPieces > spec.MinPieces ? rng.Next(spec.MaxPieces - spec.MinPieces + 1) : 0);
             var tiles = new Tile[count];
+            var specs = new PieceSpec[count];
             var cells = new int[count];
             for (int n = 0; n < count; n++)
             {
@@ -48,7 +49,7 @@ namespace GridInfect.Core.Generation
                         if (spec.ExclusiveLines && (ki == ci || kj == cj)) clash = true;
                         if (Math.Abs(ki - ci) + Math.Abs(kj - cj) < spec.MinPieceDistance) clash = true;
                     }
-                    if (!clash) { tiles[n] = tile; cells[n] = cell; break; }
+                    if (!clash) { tiles[n] = tile; specs[n] = PieceSpec.FromTile(tile); cells[n] = cell; break; }
                     if (++tries > 200) { rejection = Rejection.Tiles; return null; }
                 }
             }
@@ -56,7 +57,7 @@ namespace GridInfect.Core.Generation
             var sampled = new int[count];
             for (int n = 0; n < count; n++) sampled[n] = n * Grid.Cells + cells[n];
             var endWalls = new List<int>();
-            for (int n = 0; n < count; n++) Carve(board, tiles[n], cells[n], spec.Carve, ref rng, endWalls);
+            for (int n = 0; n < count; n++) Carve(board, specs[n], cells[n], spec.Carve, ref rng, endWalls);
 
             int active = 0;
             for (int loc = 0; loc < Grid.Cells; loc++) if (board[loc] == Cell.Active) active++;
@@ -71,13 +72,13 @@ namespace GridInfect.Core.Generation
                 {
                     if (board[w] != Cell.Void || walls >= spec.MaxWalls) continue;
                     board[w] = Cell.Wall;
-                    var map = new LineMap(new LevelDef(board, tiles));
+                    var map = new LineMap(new LevelDef(board, specs));
                     if (Covers(map, sampled, w) && ArmsUseful(map, sampled)) walls++;
                     else board[w] = Cell.Void;
                 }
             }
 
-            var def = new LevelDef(board, tiles);
+            var def = new LevelDef(board, specs);
 
             // 2. Prune with walls until unique.
             int steps = 0;
@@ -105,7 +106,7 @@ namespace GridInfect.Core.Generation
                 int wall = ChooseWall(def, sampled, fast, out int after);
                 if (wall < 0) { log?.Add("  no wall reduces the count"); rejection = Rejection.NotUnique; return null; }
                 board[wall] = Cell.Wall;
-                def = new LevelDef(board, tiles);
+                def = new LevelDef(board, specs);
                 walls++;
                 steps++;
                 fast = after;
@@ -144,7 +145,7 @@ namespace GridInfect.Core.Generation
         // in-bounds cell, gaps allowed — with the chance curve from CarveParams.
         // Runs: each arm draws a length and activates that many in-bounds
         // cells; one more draw decides an end wall (recorded, applied later).
-        static void Carve(byte[] board, Tile tile, int cell, CarveParams carve, ref Pcg32 rng, List<int> endWalls)
+        static void Carve(byte[] board, PieceSpec spec, int cell, CarveParams carve, ref Pcg32 rng, List<int> endWalls)
         {
             board[cell] = Cell.Active;
             int pi = cell / Grid.Width, pj = cell % Grid.Width;
@@ -152,10 +153,10 @@ namespace GridInfect.Core.Generation
             {
                 for (int offset = 1; offset <= Grid.SpreadRange; offset++)
                 {
-                    for (int n = 0; n < TileArms.SpreadOrder.Length; n++)
+                    for (int n = 0; n < TileArms.SpreadOrderV2.Length; n++)
                     {
-                        Dir dir = TileArms.SpreadOrder[n];
-                        if (!TileArms.Has(tile, dir)) continue;
+                        Dir dir = TileArms.SpreadOrderV2[n];
+                        if (!spec.Has(dir)) continue;
                         int i = pi + TileArms.Di(dir) * offset;
                         int j = pj + TileArms.Dj(dir) * offset;
                         if (!Grid.InBounds(i, j)) continue;
@@ -164,10 +165,10 @@ namespace GridInfect.Core.Generation
                 }
                 return;
             }
-            for (int n = 0; n < TileArms.SpreadOrder.Length; n++)
+            for (int n = 0; n < TileArms.SpreadOrderV2.Length; n++)
             {
-                Dir dir = TileArms.SpreadOrder[n];
-                if (!TileArms.Has(tile, dir)) continue;
+                Dir dir = TileArms.SpreadOrderV2[n];
+                if (!spec.Has(dir)) continue;
                 int run = carve.MinRun + (carve.MaxRun > carve.MinRun ? rng.Next(carve.MaxRun - carve.MinRun + 1) : 0);
                 int offset = 1;
                 for (; offset <= run; offset++)
@@ -208,7 +209,7 @@ namespace GridInfect.Core.Generation
                 if (onPiece) continue;
 
                 board[w] = Cell.Wall;
-                var walled = new LevelDef(board, def.Pieces);
+                var walled = new LevelDef(board, def.Specs);
                 board[w] = v;
                 var walledMap = new LineMap(walled);
                 if (!Covers(walledMap, sampled, w) || !ArmsUseful(walledMap, sampled)) continue;
@@ -240,12 +241,12 @@ namespace GridInfect.Core.Generation
         {
             foreach (int p in set)
             {
-                var tile = map.Def.Pieces[p / Grid.Cells];
+                var spec = map.Def.Specs[p / Grid.Cells];
                 int cell = p % Grid.Cells;
-                for (int d = 0; d < 4; d++)
+                for (int d = 0; d < 8; d++)
                 {
                     var dir = (Dir)d;
-                    if (!TileArms.Has(tile, dir)) continue;
+                    if (!spec.Has(dir)) continue;
                     int f = map.Families.Length;
                     bool reaches = false;
                     for (int fam = 0; fam < f && !reaches; fam++)
@@ -278,7 +279,7 @@ namespace GridInfect.Core.Generation
             {
                 int piece = p / Grid.Cells, cell = p % Grid.Cells;
                 if (cell == wall) return false;
-                covered |= map.Coverage(map.Def.Pieces[piece], cell);
+                covered |= map.Coverage(map.Def.Specs[piece], cell);
             }
             return covered.Contains(map.ActiveMask);
         }

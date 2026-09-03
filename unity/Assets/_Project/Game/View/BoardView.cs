@@ -307,18 +307,20 @@ namespace GridInfect.Game
             }
             if (piece < 0) return;
 
-            Tile tile = _session.Pieces[piece].Tile;
-            for (int d = 0; d < 4; d++)
+            PieceSpec spec = _session.Def.Specs[piece];
+            for (int d = 0; d < 8; d++)
             {
                 var dir = (Dir)d;
-                if (!TileArms.Has(tile, dir)) continue;
+                if (!spec.Has(dir)) continue;
+                int reach = spec.ReachOf(dir);
                 for (int offset = 1; offset <= Grid.SpreadRange; offset++)
                 {
+                    if (reach != 0 && offset > reach) break;
                     int i = _waveI + TileArms.Di(dir) * offset;
                     int j = _waveJ + TileArms.Dj(dir) * offset;
                     if (!Grid.InBounds(i, j)) break;
                     byte value = _session.Board[Grid.Loc(i, j)];
-                    if (value == Cell.Wall || value == Cell.RepelSwitch) break;
+                    if (value == Cell.Wall || value == Cell.RepelSwitch || value == Cell.Forbidden) break;
                     if (value == Cell.ResetTrap)
                     {
                         _state.Set(i, j, value, _waveTime + offset * Vfx.Hop,

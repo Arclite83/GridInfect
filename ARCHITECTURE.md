@@ -55,8 +55,9 @@ files, touches) into these types at the boundary.
 | `Cell` | byte values `0` void, `1` active, `2` wall, `3` switch, `4` infected, `5` trap, `99` undo mark | 2/3/5 immutable during play; 99 never visible between moves |
 | `Tile` | enum, the 15 L/R/U/D arm combinations | **ordinal order is contract** (rand-domain + original enum order); never reorder |
 | `Difficulty` | enum Beginner…Challenging | ordinal indexes the save arrays; never reorder |
-| `LevelDef` | immutable board (66 bytes) + ordered `Tile[]` (1–8) | cell values ∈ {0,1,2,3,5}; validated at construction |
-| `LevelSession` | working board, `PieceState[]` (tile, placed, cell, `Locked`), repel queue, `ResetTripped`, `ResolutionPending`, `Solved`, `Resets` (stat) | mutated only by `Rules`, called only by actions; a locked piece cannot be lifted and survives a full reset (re-propagated in index order) |
+| `LevelDef` | immutable board (66 bytes) + ordered pieces (1–8) as `Tile[]` and `PieceSpec[]` + `Version` (1 classic, 2 RulesV2) + per-cell relay arms | V1: cell values ∈ {0,1,2,3,5}; V2 also 6 (forbidden) and relay data on active cells; validated at construction |
+| `PieceSpec` | up to eight arms (cardinal + diagonal), a reach per arm (0 = edge), optional 3×3 area | text form `LR+U1+dr`, `A`; a classic tile is the unlimited-cardinal special case (`docs/RULES_V2.md` §1) |
+| `LevelSession` | working board, `PieceState[]` (tile, placed, cell, `Locked`), repel queue, `ResetTripped`, `ResolutionPending`, `Solved`, `Resets` (stat), and its `Rules` (`IRules`: the frozen classic `Rules` via `RulesV1` for V1 definitions, `RulesV2` for V2) | mutated only through `Rules`, called only by actions; a locked piece cannot be lifted and survives a full reset (re-propagated in index order) |
 | `World` | id, name, element set, ordered levels (board, pieces, stored solution, grade, seed, canonical hash) | baked from `docs/worlds/*.jsonl` into `WorldData.g.cs` by `tools/bake_worlds.py`; every level has exactly one solution and solves by deduction (`WorldTests`) |
 | `Profile` | unlocked set, best times ms[5], run counts[5], muted, world progress {id → levels open}, daily bests {date → ms}, daily streak and last date, endless best streak[5], lock wallet (start 5, free grants capped at 10) | pure data; serialization only via `SaveCodec` (versioned JSON, expand/contract; v2 added `worlds`, v3 the daily/endless fields, v4 `locks`) |
 | `DailyRun` / `EndlessRun` | daily: UTC date, accepted seed, start/complete ms, par; endless: grade, run seed, index, streak, level seed | boards are pure functions of the logged inputs (`DailySpec`); the daily clock is a stat, never a rule |
@@ -122,7 +123,11 @@ idempotency key. Everything falls out of the one structure:
 ## 5. The rules, and where the truth comes from
 
 `GridInfect.Core.Rules` is a line-faithful port of the 2014 `Game.cpp`,
-specified in `docs/RULES.md`. Proof of equivalence is layered:
+specified in `docs/RULES.md`; it is frozen and serves Legacy. `RulesV2`
+(`docs/RULES_V2.md`) serves every generated level: the same placement
+path generalised to `PieceSpec`, a clean undo, no queue accumulation. A
+session picks its rules from `LevelDef.Version`. Proof of equivalence is
+layered:
 
 1. **Placement path**: all 128 shipped levels replay their recorded solutions
    with every per-step golden board (`docs/test_vectors.json`, R-114).

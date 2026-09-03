@@ -84,7 +84,7 @@ namespace GridInfect.Core
 
         public override void Execute(GameState state, ActionInput input)
         {
-            Rules.FullReset(state.Session);
+            state.Session.Rules.FullReset(state.Session);
         }
     }
 }
