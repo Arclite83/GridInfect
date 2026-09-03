@@ -13,7 +13,7 @@ namespace GridInfect.GenLevels
     //            [--min-active 6] [--max-active 40] [--min-run 1] [--max-run 5]
     //            [--end-wall 14] [--gaps] [--base-chance 15] [--falloff 1] [--shape-bias 0]
     //            [--distance 2] [--shared-lines] [--symmetric-tiles] [--dup-tiles]
-    //            [--max-walls 12] [--max-prune 12] [--cap 4000] [--max-seeds N] [--threads 1] [--quiet]
+    //            [--max-walls 12] [--max-prune 12] [--cap 4000] [--max-seeds N] [--threads 1] [--quiet] [--spec-json]
     // Writes one JSON object per accepted level and prints the acceptance
     // report (per rejection reason, seeds tried, wall clock) to stderr.
     public static class Program
@@ -26,6 +26,7 @@ namespace GridInfect.GenLevels
             long maxSeeds = long.MaxValue;
             string outPath = null;
             bool quiet = false;
+            bool specOnly = false;
             int threads = 1;
             Grade? grade = null;
 
@@ -64,12 +65,18 @@ namespace GridInfect.GenLevels
                     case "--dup-tiles": spec.AllowDuplicateTiles = true; break;
                     case "--quiet": quiet = true; break;
                     case "--threads": threads = Math.Max(1, int.Parse(next())); break;
+                    case "--spec-json": specOnly = true; break;
                     default:
                         Console.Error.WriteLine($"unknown argument {args[a]}");
                         return 2;
                 }
             }
             if (grade.HasValue) { spec.MinGrade = grade.Value; spec.MaxGrade = grade.Value; }
+            if (specOnly)
+            {
+                Console.WriteLine(spec.ToJson());
+                return 0;
+            }
 
             var rejections = new int[Enum.GetValues(typeof(Rejection)).Length];
             var seen = new HashSet<string>(StringComparer.Ordinal);

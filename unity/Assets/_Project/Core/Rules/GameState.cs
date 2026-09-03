@@ -10,6 +10,9 @@ namespace GridInfect.Core
 
         public int ClassicLevelId = -1;
 
+        public string WorldId;      // GameMode.World: the world and level in play
+        public int WorldIndex = -1;
+
         public LevelDef[] FreePlayDefs;
 
         public int FreePlayIndex;
@@ -42,6 +45,11 @@ namespace GridInfect.Core
             new System.Collections.Generic.HashSet<int>();
 
         public readonly long[] BestTimesMs = new long[5];
+
+        // World progression: levels playable per world id (0 or absent =
+        // locked, except the first world, which is always open at level 0).
+        public readonly System.Collections.Generic.Dictionary<string, int> WorldUnlocked =
+            new System.Collections.Generic.Dictionary<string, int>(System.StringComparer.Ordinal);
 
         public readonly int[] FreePlayCounts = new int[5];
 

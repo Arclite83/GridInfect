@@ -52,8 +52,9 @@ files, touches) into these types at the boundary.
 | `Difficulty` | enum Beginner…Challenging | ordinal indexes the save arrays; never reorder |
 | `LevelDef` | immutable board (66 bytes) + ordered `Tile[]` (1–8) | cell values ∈ {0,1,2,3,5}; validated at construction |
 | `LevelSession` | working board, `PieceState[]`, repel queue, `ResetTripped`, `ResolutionPending`, `Solved` | mutated only by `Rules`, called only by actions |
-| `Profile` | unlocked set, best times ms[5], run counts[5], muted | pure data; serialization only via `SaveCodec` (versioned JSON, expand/contract) |
-| `GameState` | mode + classic id / free-play run + `Session` + `Profile` | wall-clock time enters **only** through action inputs |
+| `World` | id, name, element set, ordered levels (board, pieces, stored solution, grade, seed, canonical hash) | baked from `docs/worlds/*.jsonl` into `WorldData.g.cs` by `tools/bake_worlds.py`; every level has exactly one solution and solves by deduction (`WorldTests`) |
+| `Profile` | unlocked set, best times ms[5], run counts[5], muted, world progress {id → levels open} | pure data; serialization only via `SaveCodec` (versioned JSON, expand/contract; v2 added `worlds`) |
+| `GameState` | mode (Classic / FreePlay / World) + classic id / free-play run / world id and index + `Session` + `Profile` | wall-clock time enters **only** through action inputs |
 
 `ResolutionPending` is the model's name for the original's 0.3 s presentation
 beat: a placement leaves consequences pending; `board.resolve` lands them.
@@ -82,6 +83,9 @@ live in `Queries` and carry zero rules.
 | `freeplay.advance` | — | FreePlayActions | next generated level, clock keeps running |
 | `freeplay.complete` | `nowMs` | FreePlayActions | 5th solve: best time iff lower, count++, rejects a backward clock |
 | `freeplay.abort` | — | FreePlayActions | leave a run; nothing recorded |
+| `world.load` | `worldId, index` | WorldActions | enter a baked world level (unlock gating is presentation policy) |
+| `progress.unlockWorld` | `worldId` | WorldActions | a world opens at its first level; dispatched by the adapter when the previous world's last level is solved |
+| `progress.unlockWorldLevel` | `worldId, index` | WorldActions | level `index` opens (`index == Count` marks the world finished); dispatched by the adapter on solve for `index + 1` |
 
 Adding a capability = a new action (or a new version of one); never an
 in-place break of a logged contract. Rejections are answers, not errors: a

@@ -69,6 +69,9 @@ plain rectangles and a system font, sized from `PresentationConfig.Layout`.
 python3 tools/bake_levels.py          # docs/test_vectors.json -> ClassicLevelData.g.cs
 python3 tools/gen_undo_fixtures.py    # Python reference -> UndoFixtures.g.cs
 python3 tools/gen_level_metrics_golden.py   # Python solver oracle -> docs/level_metrics_classic.json
+python3 tools/bake_worlds.py          # docs/worlds/*.jsonl -> WorldData.g.cs
+tools/gen_worlds.sh                   # regenerate docs/worlds/*.jsonl from their recorded seeds (needs .NET)
+tools/gen_levels --grade G3 --count 25 --seed 1 --pieces 4-5   # ad-hoc batch generation (JSONL)
 python3 docs/tools/verify_test_vectors.py   # sanity: vectors self-verify
 ```
 

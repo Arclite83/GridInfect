@@ -4,9 +4,10 @@ using Bloodhound.Engine;
 namespace GridInfect.Core
 {
     // Expand/contract: new fields are additive with read defaults; unknown keys are ignored.
+    // v1: unlocked, bestMs, counts, muted. v2 (stage 3): + worlds {id: levels unlocked}.
     public static class SaveCodec
     {
-        public const int Version = 1;
+        public const int Version = 2;
 
         public static string Save(Profile profile)
         {
@@ -23,6 +24,11 @@ namespace GridInfect.Core
                 counts.Add(profile.FreePlayCounts[d]);
             }
 
+            var worlds = new Dictionary<string, object>();
+            var worldIds = new List<string>(profile.WorldUnlocked.Keys);
+            worldIds.Sort(System.StringComparer.Ordinal);
+            foreach (string id in worldIds) worlds[id] = profile.WorldUnlocked[id];
+
             return MiniJson.Write(new Dictionary<string, object>
             {
                 ["v"] = Version,
@@ -30,6 +36,7 @@ namespace GridInfect.Core
                 ["bestMs"] = best,
                 ["counts"] = counts,
                 ["muted"] = profile.Muted,
+                ["worlds"] = worlds,
             });
         }
 
@@ -68,6 +75,13 @@ namespace GridInfect.Core
             if (root.TryGetValue("muted", out object m) && m is bool muted)
             {
                 profile.Muted = muted;
+            }
+            if (root.TryGetValue("worlds", out object w) && w is Dictionary<string, object> worlds)
+            {
+                foreach (var kv in worlds)
+                {
+                    if (kv.Value is long n && n > 0 && Worlds.Get(kv.Key) != null) profile.WorldUnlocked[kv.Key] = (int)n;
+                }
             }
             return profile;
         }

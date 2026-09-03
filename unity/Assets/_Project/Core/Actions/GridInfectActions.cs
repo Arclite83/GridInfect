@@ -19,6 +19,9 @@ namespace GridInfect.Core
         public const string FreePlayAdvance = "freeplay.advance";
         public const string FreePlayComplete = "freeplay.complete";
         public const string FreePlayAbort = "freeplay.abort";
+        public const string WorldLoad = "world.load";
+        public const string ProgressUnlockWorld = "progress.unlockWorld";
+        public const string ProgressUnlockWorldLevel = "progress.unlockWorldLevel";
 
         public static void RegisterAll(ActionRegistry<GameState> registry)
         {
@@ -34,6 +37,9 @@ namespace GridInfect.Core
             registry.Register(new AdvanceFreePlayAction());
             registry.Register(new CompleteFreePlayAction());
             registry.Register(new AbortFreePlayAction());
+            registry.Register(new LoadWorldLevelAction());
+            registry.Register(new UnlockWorldAction());
+            registry.Register(new UnlockWorldLevelAction());
         }
 
         public static Dispatcher<GameState> CreateDispatcher()
@@ -66,5 +72,14 @@ namespace GridInfect.Core
 
         public static Dictionary<string, object> Now(long nowMs) =>
             new Dictionary<string, object> { ["nowMs"] = nowMs };
+
+        public static Dictionary<string, object> WorldLoad(string worldId, int index) =>
+            new Dictionary<string, object> { ["worldId"] = worldId, ["index"] = index };
+
+        public static Dictionary<string, object> UnlockWorld(string worldId) =>
+            new Dictionary<string, object> { ["worldId"] = worldId };
+
+        public static Dictionary<string, object> UnlockWorldLevel(string worldId, int index) =>
+            new Dictionary<string, object> { ["worldId"] = worldId, ["index"] = index };
     }
 }

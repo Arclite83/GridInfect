@@ -82,8 +82,8 @@ namespace GridInfect.Game
             session.LevelSolved += OnSolved;
             session.PiecesUnbound += OnPiecesUnbound;
 
-            _title.text = App.State.Mode == GameMode.Classic
-                ? $"LEVEL {App.State.ClassicLevelId + 1}"
+            _title.text = App.State.Mode == GameMode.Classic ? $"LEVEL {App.State.ClassicLevelId + 1}"
+                : App.State.Mode == GameMode.World ? $"{Worlds.Get(App.State.WorldId).Name.ToUpperInvariant()}  {App.State.WorldIndex + 1}"
                 : $"{App.State.Difficulty}".ToUpperInvariant();
             _hud.text = "";
         }
@@ -217,7 +217,34 @@ namespace GridInfect.Game
                 {
                     App.Do(GridInfectActions.ProgressUnlock, Inputs.Unlock(next));
                 }
-                ShowSolvedPopup(next);
+                ShowSolvedPopup(next >= 0
+                    ? () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(next))
+                    : (System.Action)null,
+                    () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(levelId)));
+            }
+            else if (App.State.Mode == GameMode.World)
+            {
+                // Solving level N unlocks N+1; the last level finishes the
+                // world (index == Count) and opens the next one.
+                string worldId = App.State.WorldId;
+                int index = App.State.WorldIndex;
+                World world = Worlds.Get(worldId);
+                App.Do(GridInfectActions.ProgressUnlockWorldLevel, Inputs.UnlockWorldLevel(worldId, index + 1));
+                System.Action next = null;
+                if (index + 1 < world.Count)
+                {
+                    next = () => App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(worldId, index + 1));
+                }
+                else
+                {
+                    World following = Worlds.Next(worldId);
+                    if (following != null)
+                    {
+                        App.Do(GridInfectActions.ProgressUnlockWorld, Inputs.UnlockWorld(following.Id));
+                        next = () => App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(following.Id, 0));
+                    }
+                }
+                ShowSolvedPopup(next, () => App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(worldId, index)));
             }
             else
             {
@@ -280,19 +307,17 @@ namespace GridInfect.Game
 
         // ---- popups ----
 
-        void ShowSolvedPopup(int nextLevelId)
+        void ShowSolvedPopup(System.Action next, System.Action replay)
         {
             OpenPopup("COMPLETE");
             float y = -Short * 0.06f;
             float step = L.ContentWidth / 3f;
             var size = new Vector2(step * 0.9f, L.BarHeight);
             AddPopupButton("MENU", new Vector2(-step, y), size, GoBack);
-            AddPopupButton("REPLAY", new Vector2(0f, y), size,
-                () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(App.State.ClassicLevelId)));
-            if (nextLevelId >= 0)
+            AddPopupButton("REPLAY", new Vector2(0f, y), size, replay);
+            if (next != null)
             {
-                AddPopupButton("NEXT", new Vector2(step, y), size,
-                    () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(nextLevelId)));
+                AddPopupButton("NEXT", new Vector2(step, y), size, next);
             }
         }
 
@@ -357,6 +382,10 @@ namespace GridInfect.Game
                 App.Do(GridInfectActions.FreePlayAbort);
                 App.Screens.Show(new FreePlayMenuScreen());
             }
+            else if (App.State.Mode == GameMode.World)
+            {
+                App.Screens.Show(new WorldLevelSelectScreen(App.State.WorldId));
+            }
             else
             {
                 App.Screens.Show(new ClassicSelectScreen());
@@ -372,6 +401,10 @@ namespace GridInfect.Game
                 if (App.State.Mode == GameMode.Classic)
                 {
                     App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(App.State.ClassicLevelId));
+                }
+                else if (App.State.Mode == GameMode.World)
+                {
+                    App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(App.State.WorldId, App.State.WorldIndex));
                 }
             }
             else

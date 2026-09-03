@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Bloodhound.Engine;
 using GridInfect.Core.Solving;
 
 namespace GridInfect.Core.Generation
@@ -66,6 +68,77 @@ namespace GridInfect.Core.Generation
         public int MinPieceDistance = 2;       // Manhattan distance between piece cells
         public bool RequireAllPieces = true;   // no decoy pieces (NEXT_PASS: cut)
         public int SolutionCap = 4000;         // above this a sample is rejected as hopeless
+
+        // The spec as data (docs/worlds headers, the daily spec): every
+        // field, so a spec round-trips and a world regenerates from its header.
+        public string ToJson()
+        {
+            return MiniJson.Write(new Dictionary<string, object>
+            {
+                ["elements"] = (int)Elements,
+                ["pieces"] = new List<object> { MinPieces, MaxPieces },
+                ["grades"] = new List<object> { (int)MinGrade, (int)MaxGrade },
+                ["mode"] = Carve.Mode == CarveMode.Runs ? "runs" : "gaps",
+                ["baseChance"] = Carve.BaseChance,
+                ["falloff"] = Carve.Falloff,
+                ["runs"] = new List<object> { Carve.MinRun, Carve.MaxRun },
+                ["endWall"] = Carve.EndWallChance,
+                ["active"] = new List<object> { Carve.MinActive, Carve.MaxActive },
+                ["shapeBias"] = Carve.ShapeBias,
+                ["maxPrune"] = MaxPruneSteps,
+                ["maxWalls"] = MaxWalls,
+                ["dupTiles"] = AllowDuplicateTiles,
+                ["symmetricTiles"] = AllowSymmetricTiles,
+                ["exclusiveLines"] = ExclusiveLines,
+                ["distance"] = MinPieceDistance,
+                ["allPieces"] = RequireAllPieces,
+                ["cap"] = SolutionCap,
+            });
+        }
+
+        public static GenSpec FromJson(string json) => FromJson(MiniJson.Parse(json) as Dictionary<string, object>);
+
+        public static GenSpec FromJson(Dictionary<string, object> raw)
+        {
+            var spec = new GenSpec();
+            if (raw == null) return spec;
+            var input = new ActionInput(raw);
+            spec.Elements = (Element)input.IntOr("elements", (int)spec.Elements);
+            if (raw.TryGetValue("pieces", out object p) && p is List<object> pieces && pieces.Count == 2)
+            {
+                spec.MinPieces = (int)(long)pieces[0];
+                spec.MaxPieces = (int)(long)pieces[1];
+            }
+            if (raw.TryGetValue("grades", out object g) && g is List<object> grades && grades.Count == 2)
+            {
+                spec.MinGrade = (Grade)(int)(long)grades[0];
+                spec.MaxGrade = (Grade)(int)(long)grades[1];
+            }
+            if (raw.TryGetValue("mode", out object m) && m is string mode) spec.Carve.Mode = mode == "gaps" ? CarveMode.Gaps : CarveMode.Runs;
+            spec.Carve.BaseChance = input.IntOr("baseChance", spec.Carve.BaseChance);
+            spec.Carve.Falloff = input.IntOr("falloff", spec.Carve.Falloff);
+            if (raw.TryGetValue("runs", out object r) && r is List<object> runs && runs.Count == 2)
+            {
+                spec.Carve.MinRun = (int)(long)runs[0];
+                spec.Carve.MaxRun = (int)(long)runs[1];
+            }
+            spec.Carve.EndWallChance = input.IntOr("endWall", spec.Carve.EndWallChance);
+            if (raw.TryGetValue("active", out object a) && a is List<object> active && active.Count == 2)
+            {
+                spec.Carve.MinActive = (int)(long)active[0];
+                spec.Carve.MaxActive = (int)(long)active[1];
+            }
+            spec.Carve.ShapeBias = input.IntOr("shapeBias", spec.Carve.ShapeBias);
+            spec.MaxPruneSteps = input.IntOr("maxPrune", spec.MaxPruneSteps);
+            spec.MaxWalls = input.IntOr("maxWalls", spec.MaxWalls);
+            if (raw.TryGetValue("dupTiles", out object d) && d is bool dup) spec.AllowDuplicateTiles = dup;
+            if (raw.TryGetValue("symmetricTiles", out object st) && st is bool sym) spec.AllowSymmetricTiles = sym;
+            if (raw.TryGetValue("exclusiveLines", out object el) && el is bool ex) spec.ExclusiveLines = ex;
+            spec.MinPieceDistance = input.IntOr("distance", spec.MinPieceDistance);
+            if (raw.TryGetValue("allPieces", out object ap) && ap is bool all) spec.RequireAllPieces = all;
+            spec.SolutionCap = input.IntOr("cap", spec.SolutionCap);
+            return spec;
+        }
 
         public GenSpec Clone()
         {

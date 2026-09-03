@@ -26,7 +26,7 @@ namespace GridInfect.Game
         {
             float h = UnityEngine.Screen.height;
 
-            var title = Ui.MakeText("title", Root.transform, "CLASSIC", L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, "LEGACY", L.HeadingText, BoardTheme.Text, 2);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
 
             Buttons.Add(UiButton.Make(Root.transform, "MENU", L.BackPos, L.BackSize,
