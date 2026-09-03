@@ -28,6 +28,7 @@ namespace GridInfect.Core
             switch (day)
             {
                 case DayOfWeek.Tuesday: return Element.Walls | Element.ShortArms;
+                case DayOfWeek.Wednesday: return Element.Walls | Element.Area;
                 default: return Element.Walls;
             }
         }

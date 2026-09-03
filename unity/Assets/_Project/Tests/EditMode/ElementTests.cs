@@ -76,6 +76,38 @@ namespace GridInfect.Core.Tests
             Assert.That(new LineMap(def).Coverage(def.Specs[0], Grid.Loc(5, 2)).Count, Is.EqualTo(3), "solver agrees");
         }
 
+        // ---- stage 9: the area piece ----
+
+        [Test]
+        public void BlotInfectsItsNeighbourhoodAndBlockersInsideAreInert()
+        {
+            // Wall above, switch left, trap right of the blot's cell; all inert.
+            var def = V2("......" + ".121.." + ".315.." + ".111.." + "......" + "......" +
+                         "......" + "......" + "......" + "......" + "......", "A");
+            var s = new LevelSession(def);
+            Assert.That(s.Rules.CanPlace(s, 0, 2, 2), Is.True);
+            s.Rules.SetPiece(s, 0, 2, 2);
+            Assert.That(s.RepelQueue.Count, Is.EqualTo(0), "the switch inside the area queues nothing");
+            Assert.That(s.ResetTripped, Is.False, "the trap inside the area trips nothing");
+            s.Rules.Resolve(s);
+            Assert.That(s.Solved, Is.True);
+            foreach (int loc in new[] { Grid.Loc(1, 1), Grid.Loc(1, 3), Grid.Loc(3, 1), Grid.Loc(3, 2), Grid.Loc(3, 3) })
+            {
+                Assert.That(s.Board[loc], Is.EqualTo(Cell.Infected));
+            }
+            Assert.That(s.Board[Grid.Loc(1, 2)], Is.EqualTo(Cell.Wall));
+            Assert.That(s.Board[Grid.Loc(2, 1)], Is.EqualTo(Cell.RepelSwitch));
+            Assert.That(s.Board[Grid.Loc(2, 3)], Is.EqualTo(Cell.ResetTrap));
+            Assert.That(new LineMap(def).Coverage(def.Specs[0], Grid.Loc(2, 2)).Count, Is.EqualTo(6), "solver agrees");
+        }
+
+        [Test]
+        public void BlotBoardsGenerateUniqueAndDeducible()
+        {
+            var spec = new GenSpec { Elements = Element.Walls | Element.Area, MinPieces = 3, MaxPieces = 4, AreaChance = 10 };
+            AssertAccepted(spec, 12, "area");
+        }
+
         [Test]
         public void ShortArmBoardsGenerateUniqueAndDeducible()
         {

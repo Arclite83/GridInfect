@@ -43,7 +43,7 @@ namespace GridInfect.Core.Generation
                     for (int k = 0; k < n; k++)
                     {
                         if (cells[k] == cell) clash = true;
-                        if (!spec.AllowDuplicateTiles && tiles[k] == tile) clash = true;
+                        if (!spec.AllowDuplicateTiles && tiles[k] == tile && !specs[k].Area) clash = true;
                         int ki = cells[k] / Grid.Width, kj = cells[k] % Grid.Width;
                         int ci = cell / Grid.Width, cj = cell % Grid.Width;
                         if (spec.ExclusiveLines && (ki == ci || kj == cj)) clash = true;
@@ -51,8 +51,15 @@ namespace GridInfect.Core.Generation
                     }
                     if (!clash)
                     {
+                        var decorated = Decorate(PieceSpec.FromTile(tile), spec, ref rng);
+                        if (!spec.AllowDuplicateTiles && decorated.Area)
+                        {
+                            bool secondBlot = false;
+                            for (int k = 0; k < n; k++) secondBlot |= specs[k].Area;
+                            if (secondBlot) decorated = PieceSpec.FromTile(tile);   // one blot per board
+                        }
                         tiles[n] = tile;
-                        specs[n] = Decorate(PieceSpec.FromTile(tile), spec, ref rng);
+                        specs[n] = decorated;
                         cells[n] = cell;
                         break;
                     }
@@ -151,6 +158,10 @@ namespace GridInfect.Core.Generation
         // elements the spec turns on, so classic specs keep their goldens.
         static PieceSpec Decorate(PieceSpec piece, GenSpec spec, ref Pcg32 rng)
         {
+            if ((spec.Elements & Element.Area) != 0 && rng.Next(20) < spec.AreaChance)
+            {
+                return new PieceSpec(0, 0, area: true);   // the blot: 3x3, no arms
+            }
             if ((spec.Elements & Element.ShortArms) != 0)
             {
                 for (int d = 0; d < 8; d++)
@@ -171,6 +182,20 @@ namespace GridInfect.Core.Generation
         {
             board[cell] = Cell.Active;
             int pi = cell / Grid.Width, pj = cell % Grid.Width;
+            if (spec.Area)
+            {
+                // The blot's neighbourhood: each in-bounds neighbour with the
+                // ring-1 chance, so a blot leaves a blob, not always a full square.
+                for (int di = -1; di <= 1; di++)
+                {
+                    for (int dj = -1; dj <= 1; dj++)
+                    {
+                        if (di == 0 && dj == 0) continue;
+                        if (!Grid.InBounds(pi + di, pj + dj)) continue;
+                        if (rng.Next(20) < carve.ChanceAt(1)) board[Grid.Loc(pi + di, pj + dj)] = Cell.Active;
+                    }
+                }
+            }
             if (carve.Mode == CarveMode.Gaps)
             {
                 for (int offset = 1; offset <= Grid.SpreadRange; offset++)
@@ -267,6 +292,7 @@ namespace GridInfect.Core.Generation
             {
                 var spec = map.Def.Specs[p / Grid.Cells];
                 int cell = p % Grid.Cells;
+                if (spec.Area && map.Coverage(new PieceSpec(0, 0, true), cell).Count < 2) return false;
                 for (int d = 0; d < 8; d++)
                 {
                     var dir = (Dir)d;

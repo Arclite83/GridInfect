@@ -51,3 +51,5 @@ world w12 "Mastery"      20 210000 --pieces 5-6 --grade G5
 # One element per world from here (stages 8-12).
 ELEMENTS='["walls","shortarms"]'
 world w13 "Short Arms"   22 220000 --pieces 3-5 --grades G2-G4 --elements walls,shortarms --short-arm-chance 12
+ELEMENTS='["walls","area"]'
+world w14 "Blots"        22 230000 --pieces 3-5 --grades G2-G4 --elements walls,area --area-chance 8

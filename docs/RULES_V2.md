@@ -93,3 +93,13 @@ and forbidden cells inside those rings act as for a long arm, voids and
 the edge are passed over and still count as rings. Text form `L2`, `U1`.
 The classic order of arms and repels is unchanged. Everything else (undo,
 reset, locks) sees a short arm as an ordinary arm.
+
+## 9. The area piece (stage 9)
+
+A `PieceSpec` with `Area` and no arms (text `A`, the "blot") infects its
+cell and every active cell of its 3×3 neighbourhood. Walls, switches and
+traps inside the neighbourhood are inert: nothing stops, nothing is
+queued, nothing trips. A forbidden cell inside it makes the placement
+illegal (§6). A relay cell inside it lights (§3 step 3). Repels walk over
+a blot's cells like any infected cells and stop at the blot itself as at
+any placed piece. Blots with arms are held back (NEXT_PASS: later).

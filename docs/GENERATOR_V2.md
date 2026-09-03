@@ -287,3 +287,12 @@ capped at its reach (Runs mode) or its cells beyond the reach are skipped
 (Gaps mode). Prune: the arm-useful check uses the reach. Solver: static
 coverage already honours reach; no new rule. World `w13 Short Arms`
 (pieces 3–5, G2–G4, chance 12/20); daily: Tuesdays.
+
+### Area piece (`Element.Area`, stage 9)
+
+Sample: each piece rolls `AreaChance`/20 (one draw) to be a blot instead
+of its tile; at most one blot per board unless duplicate tiles are
+allowed. Carve: the blot's eight neighbours each roll the ring-1 chance.
+Prune: a blot must cover at least one neighbour. Solver: the area is part
+of static coverage; no new rule. World `w14 Blots` (pieces 3–5, G2–G4,
+chance 8/20); daily: Wednesdays.

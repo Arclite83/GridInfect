@@ -76,6 +76,7 @@ namespace GridInfect.Core.Generation
 
         // Element tunables (each only draws from the RNG when its element is on).
         public int ShortArmChance = 10;        // out of 20, per arm: reach 1 or 2 instead of the edge
+        public int AreaChance = 6;             // out of 20, per piece: a 3x3 blot instead of a tile
 
         // The spec as data (docs/worlds headers, the daily spec): every
         // field, so a spec round-trips and a world regenerates from its header.
@@ -102,6 +103,7 @@ namespace GridInfect.Core.Generation
                 ["allPieces"] = RequireAllPieces,
                 ["cap"] = SolutionCap,
                 ["shortArmChance"] = ShortArmChance,
+                ["areaChance"] = AreaChance,
             });
         }
 
@@ -147,6 +149,7 @@ namespace GridInfect.Core.Generation
             if (raw.TryGetValue("allPieces", out object ap) && ap is bool all) spec.RequireAllPieces = all;
             spec.SolutionCap = input.IntOr("cap", spec.SolutionCap);
             spec.ShortArmChance = input.IntOr("shortArmChance", spec.ShortArmChance);
+            spec.AreaChance = input.IntOr("areaChance", spec.AreaChance);
             return spec;
         }
 
@@ -159,6 +162,7 @@ namespace GridInfect.Core.Generation
                 MaxWalls = MaxWalls, AllowDuplicateTiles = AllowDuplicateTiles, AllowSymmetricTiles = AllowSymmetricTiles,
                 ExclusiveLines = ExclusiveLines, MinPieceDistance = MinPieceDistance,
                 RequireAllPieces = RequireAllPieces, SolutionCap = SolutionCap, ShortArmChance = ShortArmChance,
+                AreaChance = AreaChance,
                 Carve = new CarveParams
                 {
                     Mode = Carve.Mode, BaseChance = Carve.BaseChance, Falloff = Carve.Falloff,
