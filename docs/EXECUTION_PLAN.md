@@ -20,7 +20,7 @@ table below in the same PR.
 | 8 | Short arms | Done | claude/execution-plan |
 | 9 | Area piece | Done | claude/execution-plan |
 | 10 | Forbidden cells | Done | claude/execution-plan |
-| 11 | Diagonal arms | Not started | |
+| 11 | Diagonal arms | Done | claude/execution-plan |
 | 12 | Relay cells | Not started | |
 
 Stages 1–6 are the Android launch. 7–12 are post-launch worlds; the iOS

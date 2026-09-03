@@ -105,3 +105,15 @@ queued, nothing trips. A forbidden cell inside it makes the placement
 illegal (§6). A relay cell inside it lights (§3 step 3). Repels walk over
 a blot's cells like any infected cells and stop at the blot itself as at
 any placed piece. Blots with arms are held back (NEXT_PASS: later).
+
+## 11. Diagonal arms (stage 11)
+
+`Dir` gains UL, UR, DL, DR; a diagonal arm walks (±1, ±1) per ring with
+exactly the cardinal rules: walls stop it, a switch stops it and queues a
+repel back along the same diagonal, a trap trips, a forbidden cell makes
+the placement illegal, voids and the edge are passed over, reach applies.
+Arms are visited cardinal first, then UL, UR, DL, DR. The solver adds two
+line families (the diagonal and the antidiagonal) when a level has a
+diagonal arm anywhere; every rule is written over families, so nothing
+else changes. Text form `ul`, `dr2`; the shipped set is a tile plus one
+diagonal arm, or two diagonal arms that are not an opposite pair.

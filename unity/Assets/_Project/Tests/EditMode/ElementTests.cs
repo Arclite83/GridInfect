@@ -138,6 +138,50 @@ namespace GridInfect.Core.Tests
             AssertAccepted(spec, 12, "forbidden");
         }
 
+        // ---- stage 11: diagonal arms ----
+
+        [Test]
+        public void DiagonalArmWalksItsDiagonalAndRepelsBackAlongIt()
+        {
+            // Piece at (5,1) with dr: (6,2), (7,3) void, (8,4), then a switch at (9,5).
+            var def = V2("......" + "......" + "......" + "......" + "......" + ".1...." +
+                         "..1..." + "......" + "....1." + ".....3" + "......", "dr");
+            var s = new LevelSession(def);
+            s.Rules.SetPiece(s, 0, 5, 1);
+            Assert.That(s.Board[Grid.Loc(6, 2)], Is.EqualTo(Cell.Infected));
+            Assert.That(s.Board[Grid.Loc(8, 4)], Is.EqualTo(Cell.Infected), "the void at (7,3) is passed over");
+            Assert.That(s.RepelQueue.Count, Is.EqualTo(1));
+            Assert.That(s.RepelQueue[0].Direction, Is.EqualTo(Dir.UL), "the repel walks back along the diagonal");
+            s.Rules.Resolve(s);
+            Assert.That(s.Solved, Is.True, "a winning placement is not repelled");
+
+            var blocked = V2("......" + "......" + "......" + "......" + "......" + ".1...." +
+                             "..2..." + "...1.." + "......" + "......" + "......", "dr,ul");
+            var b = new LevelSession(blocked);
+            b.Rules.SetPiece(b, 0, 5, 1);
+            b.Rules.Resolve(b);
+            Assert.That(b.Board[Grid.Loc(7, 3)], Is.EqualTo(Cell.Active), "the wall at (6,2) stops the diagonal");
+            var map = new LineMap(blocked);
+            Assert.That(map.Families.Length, Is.EqualTo(4), "diagonal families join the line map");
+            Assert.That(map.Coverage(blocked.Specs[1], Grid.Loc(7, 3)).Count, Is.EqualTo(1), "ul from (7,3) hits the wall too");
+        }
+
+        [Test]
+        public void DiagonalSpecsFlipWithTheBoard()
+        {
+            var spec = PieceSpec.Parse("L+ul2");
+            Assert.That(Canonical.Flip(spec, flipH: true, flipV: false).Encode(), Is.EqualTo("R+ur2"));
+            Assert.That(Canonical.Flip(spec, flipH: false, flipV: true).Encode(), Is.EqualTo("L+dl2"));
+            Assert.That(Canonical.Flip(spec, flipH: true, flipV: true).Encode(), Is.EqualTo("R+dr2"));
+        }
+
+        [Test]
+        public void DiagonalBoardsGenerateUniqueAndDeducible()
+        {
+            var spec = new GenSpec { Elements = Element.Walls | Element.Diagonals, MinPieces = 3, MaxPieces = 4, DiagonalChance = 14 };
+            AssertAccepted(spec, 12, "diagonals");
+        }
+
         [Test]
         public void ShortArmBoardsGenerateUniqueAndDeducible()
         {

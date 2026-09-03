@@ -56,6 +56,7 @@ namespace GridInfect.GenLevels
                     case "--short-arm-chance": spec.ShortArmChance = int.Parse(next()); break;
                     case "--area-chance": spec.AreaChance = int.Parse(next()); break;
                     case "--max-forbidden": spec.MaxForbidden = int.Parse(next()); break;
+                    case "--diagonal-chance": spec.DiagonalChance = int.Parse(next()); break;
                     case "--count": count = int.Parse(next()); break;
                     case "--seed": seed = ulong.Parse(next()); break;
                     case "--max-seeds": maxSeeds = long.Parse(next()); break;

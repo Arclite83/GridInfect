@@ -51,7 +51,16 @@ namespace GridInfect.Core.Generation
                     }
                     if (!clash)
                     {
+                        // Decoration draws only after the sample is accepted, so
+                        // element-free specs keep their draw sequence. A diagonal
+                        // arm with no cell to reach from this corner is dropped.
                         var decorated = Decorate(PieceSpec.FromTile(tile), spec, ref rng);
+                        for (int d = 4; d < 8; d++)
+                        {
+                            var dir = (Dir)d;
+                            if (decorated.Has(dir) && !Grid.InBounds(cell / Grid.Width + TileArms.Di(dir), cell % Grid.Width + TileArms.Dj(dir)))
+                                decorated = decorated.WithArm(dir, false);
+                        }
                         if (!spec.AllowDuplicateTiles && decorated.Area)
                         {
                             bool secondBlot = false;
@@ -164,6 +173,23 @@ namespace GridInfect.Core.Generation
             if ((spec.Elements & Element.Area) != 0 && rng.Next(20) < spec.AreaChance)
             {
                 return new PieceSpec(0, 0, area: true);   // the blot: 3x3, no arms
+            }
+            if ((spec.Elements & Element.Diagonals) != 0 && rng.Next(20) < spec.DiagonalChance)
+            {
+                // The curated set: a tile plus one diagonal arm, or two
+                // diagonal arms that are not an opposite pair (an
+                // opposite-only pair slides along its line like UD does).
+                int count = rng.Next(3) == 0 ? 2 : 1;
+                for (int n = 0; n < count; n++)
+                {
+                    var diag = (Dir)(4 + rng.Next(4));
+                    piece = piece.WithArm(diag);
+                }
+                if ((piece.Arms & 0x0F) == 0 && (piece.Arms == 0x90 || piece.Arms == 0x60))
+                {
+                    piece = piece.WithArm(Dir.UL, false).WithArm(Dir.DR, false).WithArm(Dir.UR, false).WithArm(Dir.DL, false)
+                        .WithArm((Dir)(4 + rng.Next(4)));
+                }
             }
             if ((spec.Elements & Element.ShortArms) != 0)
             {

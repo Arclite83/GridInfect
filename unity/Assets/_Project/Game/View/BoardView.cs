@@ -231,9 +231,13 @@ namespace GridInfect.Game
         {
             if (value == Cell.Infected)
             {
-                if (_batch == Batch.Wave && (i == _waveI || j == _waveJ))
+                // A cell on one of the seed's lines (row, column, or — with
+                // diagonal arms — a diagonal) rides the wave; depth is the
+                // ring it sits on, the same for every arm direction.
+                int di = System.Math.Abs(i - _waveI), dj = System.Math.Abs(j - _waveJ);
+                if (_batch == Batch.Wave && (i == _waveI || j == _waveJ || di == dj))
                 {
-                    int depth = Mathf.Abs(i - _waveI) + Mathf.Abs(j - _waveJ);
+                    int depth = System.Math.Max(di, dj);
                     int dr = i == _waveI ? 0 : (i > _waveI ? 1 : -1);
                     int dc = j == _waveJ ? 0 : (j > _waveJ ? 1 : -1);
                     float start = _waveTime + depth * Vfx.Hop;

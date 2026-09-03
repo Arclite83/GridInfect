@@ -308,3 +308,11 @@ caps them. Solver: illegal placements never enter the candidate set, and
 their exclusion counts as one arm-exclusion round in the grade. World
 `w15 Keep Clean` (pieces 3–5, G2–G4, up to 4 forbidden cells); daily:
 Thursdays.
+
+### Diagonal arms (`Element.Diagonals`, stage 11)
+
+Sample: a piece rolls `DiagonalChance`/20 to gain one diagonal arm (two,
+one time in three), redrawn if that leaves only an opposite pair. Carve
+and prune are direction-agnostic. Solver: the two diagonal families join
+the line map. World `w16 Diagonals` (pieces 3–5, G2–G4, chance 14/20);
+daily: Fridays.
