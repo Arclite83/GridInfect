@@ -11,7 +11,7 @@ table below in the same PR.
 |---|---|---|---|
 | 0 | Assessment, decisions, metrics tool | Done | game-mechanics-monetization |
 | 1 | Deduction solver and grader | Done | claude/execution-plan |
-| 2 | Generator v2 | Not started | |
+| 2 | Generator v2 | Done | claude/execution-plan |
 | 3 | Level bake, worlds, Legacy mode | Not started | |
 | 4 | Daily and Endless | Not started | |
 | 5 | Lock tool | Not started | |

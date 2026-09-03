@@ -38,7 +38,7 @@ namespace GridInfect.Core.Solving
         public bool Solved;
         public Deduction[] Trace;
         public Tier MaxTier;
-        public int[] TierCounts;       // rule firings per tier, index = (int)Tier; [0] unused
+        public int[] TierCounts;       // rule firings per tier (tier 4: passes), index = (int)Tier; [0] unused
         public int Guesses;            // branch points the search fallback needed
         public bool Complete;          // a winning assignment exists (with or without guesses)
         public (int piece, int cell)[] Placements;   // the winning order when Complete
@@ -202,6 +202,8 @@ namespace GridInfect.Core.Solving
         }
 
         // Tier 4: suppose candidate p; if tiers 1–3 then contradict, drop p.
+        // One pass over every candidate counts as one firing (a player
+        // refutes the few that matter, not every cell on the board).
         static bool Contradict(State s, int[] tierCounts, ref Tier pending)
         {
             bool any = false;
@@ -219,12 +221,12 @@ namespace GridInfect.Core.Solving
                         || (trial.Done && SolutionCounter.WinningOrder(s.Map.Def, trial.Assignment()) == null))
                     {
                         s.Cand[k] = s.Cand[k] & ~CellMask.Bit(loc);
-                        tierCounts[(int)Tier.Contradiction1]++;
                         if (pending < Tier.Contradiction1) pending = Tier.Contradiction1;
                         any = true;
                     }
                 }
             }
+            if (any) tierCounts[(int)Tier.Contradiction1]++;
             return any;
         }
 

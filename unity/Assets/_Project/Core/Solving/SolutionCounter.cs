@@ -52,6 +52,28 @@ namespace GridInfect.Core.Solving
             return result;
         }
 
+        // Every covering set the search reaches (feasibility not checked),
+        // each as piece*Cells+cell placements. For the generator's pruner.
+        public static List<int[]> Sets(LevelDef def, int cap, out bool capped)
+        {
+            var search = new Search(def, cap);
+            search.Run();
+            capped = search.HitCap;
+            return new List<int[]>(search.Sets.Values);
+        }
+
+        // A cheaper count for ranking (the generator's wall pruner): the
+        // same search, but an option tried at a branch point is excluded from
+        // its later siblings, so each cover is reached once instead of once
+        // per order. Not the oracle's number (some non-minimal covers the
+        // oracle reaches are skipped), so never the final verdict.
+        public static int CountFast(LevelDef def, int cap)
+        {
+            var search = new Search(def, cap) { Distinct = true };
+            search.Run();
+            return search.HitCap ? cap : search.Sets.Count;
+        }
+
         // The first feasible covering set in search order, as (piece, cell)
         // placements in an order that wins through the real rules. Null when
         // the level has no solution.
@@ -169,16 +191,21 @@ namespace GridInfect.Core.Solving
             public readonly LineMap Map;
             public readonly Dictionary<string, int[]> Sets = new Dictionary<string, int[]>(StringComparer.Ordinal);
             public bool HitCap;
+            public bool Distinct;
             public bool StopAtFirstFeasible;
             public (int piece, int cell)[] FirstFeasible;
 
             readonly LevelDef _def;
             readonly int _cap;
             readonly int _n;
-            readonly int[] _cells;
-            readonly CellMask[][] _cov;       // [piece][loc]
-            readonly List<int>[] _opts;        // per loc: piece*Cells+loc options
+            readonly CellMask[] _cov;          // [piece*Cells+loc]
+            readonly int[][] _covCells;        // [option] -> cells it covers
+            readonly bool[] _removed;          // option no longer available
+            readonly int[] _avail;             // per cell: available options covering it
+            readonly int[][] _optsByCell;      // per cell: options covering it (k-major)
             readonly int[] _chosen;
+            readonly int[] _undo;              // stack of removed options
+            int _undoTop;
             bool _stop;
 
             public Search(LevelDef def, int cap)
@@ -187,37 +214,45 @@ namespace GridInfect.Core.Solving
                 _cap = cap;
                 Map = new LineMap(def);
                 _n = def.Pieces.Length;
-                var cells = new List<int>();
-                for (int loc = 0; loc < Grid.Cells; loc++)
-                {
-                    if (def.BoardAt(loc) == Cell.Active) cells.Add(loc);
-                }
-                _cells = cells.ToArray();
-                _cov = new CellMask[_n][];
+                int options = _n * Grid.Cells;
+                _cov = new CellMask[options];
+                _covCells = new int[options][];
+                _removed = new bool[options];
+                _avail = new int[Grid.Cells];
+                var byCell = new List<int>[Grid.Cells];
+                for (int c = 0; c < Grid.Cells; c++) byCell[c] = new List<int>();
                 for (int k = 0; k < _n; k++)
                 {
-                    _cov[k] = new CellMask[Grid.Cells];
-                    foreach (int loc in _cells) _cov[k][loc] = Map.Coverage(def.Pieces[k], loc);
-                }
-                _opts = new List<int>[Grid.Cells];
-                foreach (int c in _cells)
-                {
-                    var o = new List<int>();
-                    for (int k = 0; k < _n; k++)
+                    for (int loc = 0; loc < Grid.Cells; loc++)
                     {
-                        foreach (int loc in _cells)
+                        int opt = k * Grid.Cells + loc;
+                        if (def.BoardAt(loc) != Cell.Active) { _removed[opt] = true; _covCells[opt] = Array.Empty<int>(); continue; }
+                        var cov = Map.Coverage(def.Pieces[k], loc);
+                        _cov[opt] = cov;
+                        var cells = new List<int>();
+                        for (int c = 0; c < Grid.Cells; c++)
                         {
-                            if (_cov[k][loc].Has(c)) o.Add(k * Grid.Cells + loc);
+                            if (!cov.Has(c)) continue;
+                            cells.Add(c);
+                            _avail[c]++;
+                            byCell[c].Add(opt);
                         }
+                        _covCells[opt] = cells.ToArray();
                     }
-                    _opts[c] = o;
                 }
+                _optsByCell = new int[Grid.Cells][];
+                for (int c = 0; c < Grid.Cells; c++) _optsByCell[c] = byCell[c].ToArray();
                 _chosen = new int[_n];
+                _undo = new int[options * (_n + 1)];
             }
 
-            public void Run() => Rec(CellMask.None, 0, CellMask.None, 0);
+            public void Run() => Rec(CellMask.None, 0);
 
-            void Rec(CellMask covered, int used, CellMask occ, int depth)
+            // The oracle's recursion: most-constrained uncovered cell first
+            // (lowest cell on ties, dead end on zero), options in piece-major
+            // order. Option availability is kept incrementally: placing (k,
+            // loc) removes every option of piece k and every option on loc.
+            void Rec(CellMask covered, int depth)
             {
                 if (_stop) return;
                 if (Sets.Count >= _cap) { HitCap = true; return; }
@@ -232,29 +267,47 @@ namespace GridInfect.Core.Solving
                 for (int c = 0; c < Grid.Cells; c++)
                 {
                     if (!rem.Has(c)) continue;
-                    int count = 0;
-                    foreach (int opt in _opts[c])
-                    {
-                        int k = opt / Grid.Cells, loc = opt % Grid.Cells;
-                        if ((used >> k & 1) != 0 || occ.Has(loc)) continue;
-                        count++;
-                    }
-                    if (count < bestCount)
+                    if (_avail[c] < bestCount)
                     {
                         best = c;
-                        bestCount = count;
-                        if (count == 0) return;
+                        bestCount = _avail[c];
+                        if (bestCount == 0) return;
                     }
                 }
 
-                foreach (int opt in _opts[best])
+                int outer = _undoTop;
+                foreach (int opt in _optsByCell[best])
                 {
+                    if (_removed[opt]) continue;
                     int k = opt / Grid.Cells, loc = opt % Grid.Cells;
-                    if ((used >> k & 1) != 0 || occ.Has(loc)) continue;
                     _chosen[depth] = opt;
-                    Rec(covered | _cov[k][loc], used | 1 << k, occ | CellMask.Bit(loc), depth + 1);
+                    int mark = _undoTop;
+                    for (int l = 0; l < Grid.Cells; l++) Remove(k * Grid.Cells + l);
+                    for (int p = 0; p < _n; p++) Remove(p * Grid.Cells + loc);
+                    Rec(covered | _cov[opt], depth + 1);
+                    Undo(mark);
                     if (_stop) return;
+                    if (Distinct) Remove(opt);   // later siblings never re-find a cover with this option
                 }
+                Undo(outer);
+            }
+
+            void Undo(int mark)
+            {
+                while (_undoTop > mark)
+                {
+                    int o = _undo[--_undoTop];
+                    _removed[o] = false;
+                    foreach (int c in _covCells[o]) _avail[c]++;
+                }
+            }
+
+            void Remove(int opt)
+            {
+                if (_removed[opt]) return;
+                _removed[opt] = true;
+                foreach (int c in _covCells[opt]) _avail[c]--;
+                _undo[_undoTop++] = opt;
             }
 
             void Found(int depth)

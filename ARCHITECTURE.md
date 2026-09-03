@@ -25,7 +25,7 @@ GridInfect.Game (Unity adapter)     GridInfect.Core.Tests (edit-mode / dotnet)
 | Assembly | Contents | May reference |
 |---|---|---|
 | `Bloodhound.Engine` | Action dispatch/registry/log, `MiniJson`, `Pcg32`. Game-agnostic — the piece that moves to the next game (the logic game) unchanged. | nothing (`noEngineReferences`) |
-| `GridInfect.Core` | Schema types, `Rules` (the mechanics), the actions, `LevelGenerator`, baked classic levels, `SaveCodec`, `Queries`, and `Solving` (the deduction solver, exact solution counter and grader — `docs/GENERATOR_V2.md`). | `Bloodhound.Engine` only (`noEngineReferences`) |
+| `GridInfect.Core` | Schema types, `Rules` (the mechanics), the actions, `LevelGenerator`, baked classic levels, `SaveCodec`, `Queries`, `Solving` (the deduction solver, exact solution counter and grader) and `Generation` (generator v2: sample, carve, prune with walls, deduce, grade, canonicalise — `docs/GENERATOR_V2.md`). | `Bloodhound.Engine` only (`noEngineReferences`) |
 | `GridInfect.Game` | Everything Unity: boot, camera, screens, board/piece views, input, tweens, the 0.3 s beat, save file IO. Parses input, dispatches one action or reads one query, renders the result. | Core, Engine, UnityEngine |
 | `GridInfect.Core.Tests` | NUnit suites; run identically in Unity edit mode and under `dotnet test` via the mirror projects in `src/`. | Core, Engine |
 

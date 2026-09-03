@@ -62,6 +62,18 @@ namespace GridInfect.Core
 
         public static bool Has(Tile tile, Dir dir) => (Arms[(int)tile] & (1 << (int)dir)) != 0;
 
+        public static int Mask(Tile tile) => Arms[(int)tile];
+
+        // The tile with exactly these arms (bit = (int)Dir); throws on 0.
+        public static Tile FromMask(int mask)
+        {
+            for (int t = 0; t < Arms.Length; t++)
+            {
+                if (Arms[t] == mask) return (Tile)t;
+            }
+            throw new ArgumentException($"no tile has arm mask {mask}");
+        }
+
         public static int Count(Tile tile)
         {
             int a = Arms[(int)tile], n = 0;

@@ -11,13 +11,12 @@ namespace GridInfect.Core.Solving
     {
         // Rule firings weighted by tier: a placement by ownership is the
         // unit, a trap exclusion counts double, a counting round four, and a
-        // "suppose" refutation twelve (capped: past eight the player would
-        // have found the smart one).
+        // round of "suppose" refutations twelve (capped at four rounds).
         public const int OwnershipWeight = 1;
         public const int ArmWeight = 2;
         public const int CountingWeight = 4;
         public const int ContradictionWeight = 12;
-        public const int ContradictionCap = 8;
+        public const int ContradictionCap = 4;
 
         public static int Effort(SolveResult r)
         {
@@ -29,17 +28,20 @@ namespace GridInfect.Core.Solving
                    + t4 * ContradictionWeight;
         }
 
+        public const int G1Max = 7;
+        public const int G2Max = 12;
+        public const int G3Max = 18;
+        public const int G4Max = 26;
+
         public static Grade Grade(SolveResult r)
         {
             if (r == null || !r.Solved) return Solving.Grade.G6;
-            int t4 = r.TierCounts[(int)Tier.Contradiction1];
-            if (t4 >= 3) return Solving.Grade.G5;
-            if (t4 > 0) return Solving.Grade.G4;
             int effort = Effort(r);
-            if (effort <= 7) return Solving.Grade.G1;
-            if (effort <= 12) return Solving.Grade.G2;
-            if (effort <= 20) return Solving.Grade.G3;
-            return Solving.Grade.G4;
+            if (effort <= G1Max) return Solving.Grade.G1;
+            if (effort <= G2Max) return Solving.Grade.G2;
+            if (effort <= G3Max) return Solving.Grade.G3;
+            if (effort <= G4Max) return Solving.Grade.G4;
+            return Solving.Grade.G5;
         }
     }
 }

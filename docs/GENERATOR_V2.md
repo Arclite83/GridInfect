@@ -196,17 +196,18 @@ static count. With the check live there are 31 unique classic levels, not
 
 ### Grades
 
-`Grader.Effort` weights rule firings: ownership 1, arm exclusion 2,
-counting 4, contradiction 12 (capped at 8 firings). Grade:
+`Grader.Effort` weights rule firings: ownership 1 per placement, arm
+exclusion 2 per round, counting 4 per round, contradiction 12 per pass
+(a pass refutes every candidate it can; capped at 4 passes). Grade bands:
 
-| Grade | Condition |
-|---|---|
-| G1 | solved, no contradiction, effort ≤ 7 |
-| G2 | solved, no contradiction, effort ≤ 12 |
-| G3 | solved, no contradiction, effort ≤ 20 |
-| G4 | solved, no contradiction, effort > 20; or 1–2 contradictions |
-| G5 | solved, 3 or more contradictions |
-| G6 | not solved by deduction (guesses, or no solution) |
+| Grade | Effort | Typical board |
+|---|---|---|
+| G1 | ≤ 7 | 2–3 pieces, one counting round |
+| G2 | ≤ 12 | 3–4 pieces, one or two counting rounds |
+| G3 | ≤ 18 | 4–5 pieces, two or three counting rounds |
+| G4 | ≤ 26 | 5 pieces with several rounds, or one contradiction pass |
+| G5 | > 26 | a contradiction pass plus counting, or two passes |
+| G6 | — | not solved by deduction (guesses, or no solution) |
 
 Classic levels that solve by deduction: 31; grades locked in
 `SolverTests.ClassicGradesAreStable`. Levels 51 and 87 (ids 50, 86) are the
@@ -214,4 +215,59 @@ two that need tier 4.
 
 ## Pipeline
 
-Written in stage 2.
+`GeneratorV2.Generate(GenSpec spec, ulong seed)` returns a `GeneratedLevel`
+or null with a `Rejection` reason. Every random draw comes from
+`Pcg32(seed)` in a fixed order and nothing downstream depends on hash
+container order, so the same spec and seed give the same bytes.
+
+1. **Sample.** Piece count uniform in `[MinPieces, MaxPieces]`. For each
+   piece, a tile (`rng.Next(15)`) and a cell (`rng.Next(66)`), redrawn
+   while: the tile repeats (unless `AllowDuplicateTiles`); the tile is `UD`
+   or `LR` (unless `AllowSymmetricTiles` — a piece with only opposite arms
+   covers its whole line from any cell of it, so nothing but other pieces'
+   cells can pin it); an arm has no in-bounds cell to reach; the cell
+   shares a row or column with an earlier piece (`ExclusiveLines`); or it
+   is closer than `MinPieceDistance` (Manhattan) to one. More than 200
+   redraws rejects the seed (`Tiles`).
+2. **Carve.** `CarveMode.Runs` (default): each arm draws a length in
+   `[MinRun, MaxRun]`, activates that many in-bounds cells, and draws once
+   more for an end wall right past the run (`EndWallChance`/20).
+   `CarveMode.Gaps` is the v1 roll (one draw per cell, chance
+   `BaseChance − Falloff·offset`, shape bias past offset 3). Active count
+   outside `[MinActive, MaxActive]` rejects (`Size`). End walls are then
+   applied on void cells, each kept only if the sampled solution still
+   covers the board and every arm of every sampled piece still reaches an
+   active cell.
+3. **Count.** The oracle count with `SolutionCap`; above it rejects
+   (`TooMany`).
+4. **Prune.** While the board is not unique, place one wall: candidate
+   cells are every void or active non-piece cell whose wall keeps the
+   sampled solution covering and every sampled arm useful (a blinded arm
+   turns the tile into a smaller one and hands the level a swap ambiguity
+   no wall can break). Candidates are ranked by how many of the current
+   covers (up to 400) survive the wall, void cells before active ones on
+   ties, then the best two are counted with the fast distinct-cover search
+   and the strictly smallest wins. No strict reduction, `MaxPruneSteps`,
+   or `MaxWalls` rejects (`NotUnique`). The loop runs on the fast count;
+   when it reaches 1 the oracle count confirms (it can still see a
+   non-minimal cover, in which case pruning continues on its number).
+5. **Deduce.** `Deducer.Solve` must return `Solved` with zero guesses
+   (`NotDeducible`), and the deduced set must use every piece
+   (`Decoy`, when `RequireAllPieces`).
+6. **Grade** with `Grader`; outside `[MinGrade, MaxGrade]` rejects.
+7. **Emit** `Def`, the sampled solution in a winning order, the trace, the
+   grade and effort, the seed, wall count, and the canonical hash:
+   FNV-1a 64 over the smallest of the four encodings (identity, horizontal
+   flip with `L<->R`, vertical flip with `U<->D`, both) of board plus
+   sorted tiles. The batch tool dedupes on it.
+
+### Batch tool
+
+`tools/gen_levels` (source `src/GenLevels`) writes accepted levels as JSONL:
+`{seed, grade, effort, board, pieces, solution, trace, hash, walls}` and
+prints the acceptance report per rejection reason. Flags cover every
+`GenSpec` field; `--threads N` generates seed chunks in parallel and
+consumes them in seed order, so the output is independent of N.
+
+Acceptance rates (default carve, `--threads 3`, seeds from 100000) are
+recorded in the stage 2 PR.

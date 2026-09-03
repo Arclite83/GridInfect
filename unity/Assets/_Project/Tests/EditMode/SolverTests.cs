@@ -149,6 +149,6 @@ namespace GridInfect.Core.Tests
     {
         public const string ClassicGrades =
             "0:G1 3:G1 5:G1 6:G1 8:G1 18:G2 19:G2 25:G1 27:G1 34:G1 35:G2 36:G2 38:G3 41:G2 42:G3 46:G3 49:G2 " +
-            "50:G5 57:G3 58:G3 59:G2 61:G2 62:G3 63:G2 65:G3 67:G3 71:G2 80:G3 86:G5 105:G3 117:G3";
+            "50:G5 57:G3 58:G3 59:G2 61:G2 62:G4 63:G2 65:G3 67:G3 71:G2 80:G3 86:G4 105:G3 117:G4";
     }
 }
