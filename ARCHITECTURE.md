@@ -166,8 +166,14 @@ ossifying or eroding:
   Engine and Core).
 - **`ArchitectureGateTests`** enforce the same rules under `dotnet test`:
   no `UnityEngine` in Engine/Core sources, no `GridInfect` in Engine sources,
-  no direct `Rules` mutation from the adapter, and registry ⇔ constants ⇔
-  this document kept in sync.
+  no direct `Rules` mutation from the adapter, registry ⇔ constants ⇔
+  this document kept in sync, and SDK types confined to `GridInfect.Services`.
+- **Oracle and golden tests** pin the derived truth: the solution counter
+  against `tools/level_metrics.py` on all 128 levels, generator v2 golden
+  seeds, the classic grade table, every world level regenerating from its
+  recorded seed, and every generated file's freshness in CI
+  (`ClassicLevelData.g.cs`, `WorldData.g.cs`, `UndoFixtures.g.cs`,
+  `docs/level_metrics_classic.json`).
 - **`InfectionVfxSpecTests`** do the same for the art and layout contract.
   The presentation layer is Unity-only, so these are source gates, not
   behaviour tests:

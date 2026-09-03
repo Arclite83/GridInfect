@@ -14,7 +14,7 @@ namespace GridInfect.GenLevels
     //            [--min-active 6] [--max-active 40] [--min-run 1] [--max-run 5]
     //            [--end-wall 14] [--gaps] [--base-chance 15] [--falloff 1] [--shape-bias 0]
     //            [--distance 2] [--shared-lines] [--symmetric-tiles] [--dup-tiles]
-    //            [--max-walls 12] [--max-prune 12] [--cap 4000] [--max-seeds N] [--threads 1] [--quiet] [--spec-json]
+    //            [--max-walls 12] [--max-prune 12] [--cap 4000] [--max-seeds N] [--max-seconds S] [--threads 1] [--quiet] [--spec-json]
     // Writes one JSON object per accepted level and prints the acceptance
     // report (per rejection reason, seeds tried, wall clock) to stderr.
     public static class Program
@@ -25,6 +25,7 @@ namespace GridInfect.GenLevels
             int count = 25;
             ulong seed = 1;
             long maxSeeds = long.MaxValue;
+            double maxSeconds = double.MaxValue;
             string outPath = null;
             bool quiet = false;
             bool specOnly = false;
@@ -61,6 +62,7 @@ namespace GridInfect.GenLevels
                     case "--count": count = int.Parse(next()); break;
                     case "--seed": seed = ulong.Parse(next()); break;
                     case "--max-seeds": maxSeeds = long.Parse(next()); break;
+                    case "--max-seconds": maxSeconds = double.Parse(next(), System.Globalization.CultureInfo.InvariantCulture); break;
                     case "--pieces":
                     {
                         string[] range = next().Split('-');
@@ -114,7 +116,7 @@ namespace GridInfect.GenLevels
                 int chunk = threads * 8;
                 var levels = new GeneratedLevel[chunk];
                 var whys = new Rejection[chunk];
-                for (ulong s = seed; accepted < count && tried < maxSeeds; s += (ulong)chunk)
+                for (ulong s = seed; accepted < count && tried < maxSeeds && watch.Elapsed.TotalSeconds < maxSeconds; s += (ulong)chunk)
                 {
                     int n = (int)Math.Min(chunk, maxSeeds - tried);
                     if (threads > 1)

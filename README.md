@@ -2,8 +2,9 @@
 
 A Unity/C# rebuild of Grid Infect (Bloodhound Studios, 2014 — originally
 cocos2d-x). Drag pieces onto a 6-wide, 11-tall grid; each piece infects along its arms;
-infect every cell to win. 128 shipped classic levels plus a timed Free Play
-mode with generated boards.
+infect every cell to win. The 128 shipped classic levels
+live on as Legacy; play is 17 generated worlds (unique, deduction-solvable,
+graded), a Daily (same board for everyone) and Endless by grade.
 
 The rebuild is mechanically equivalent to the original by construction: the
 rules engine replays all 128 shipped levels' solutions against per-step golden
@@ -21,8 +22,12 @@ board states extracted from the 2014 code.
 | [`unity/Assets/_Project/Tests/EditMode/`](unity/Assets/_Project/Tests/EditMode/) | NUnit suites (vector replay, undo fixtures, generator goldens, gates) |
 | [`src/`](src/) | dotnet mirror solution: builds and tests the same sources headless, no Unity needed |
 | [`docs/`](docs/) | The port specification extracted from the original (rules, generator, modes, assets, requirements, dependencies) + `test_vectors.json` |
+| [`docs/NEXT_PASS.md`](docs/NEXT_PASS.md), [`docs/EXECUTION_PLAN.md`](docs/EXECUTION_PLAN.md) | The next-pass decisions and the staged plan with its status table |
+| [`docs/GENERATOR_V2.md`](docs/GENERATOR_V2.md), [`docs/RULES_V2.md`](docs/RULES_V2.md) | The deduction solver, grader and generator v2; the rules every generated level runs on |
+| [`docs/worlds/`](docs/worlds/) | The shipped worlds as JSONL (one header line with the generator spec, one level per line), baked into `WorldData.g.cs` |
+| [`src/GenLevels/`](src/GenLevels/) | The batch level generator behind `tools/gen_levels` and `tools/gen_worlds.sh` |
 | [`docs/infection-vfx-spec.md`](docs/infection-vfx-spec.md) | The board's art direction and infection animation, plus an "As built" section recording every deviation and what is still open |
-| [`tools/`](tools/) | Mechanical derivations: level baking, undo-fixture generation |
+| [`tools/`](tools/) | Mechanical derivations: level and world baking, undo fixtures, the solver oracle and its golden, world generation |
 | [`grid-infect-cocos2dx/`](grid-infect-cocos2dx/) | The original 2014 source, kept as reference. Not built |
 
 ## Run the tests (no Unity required)
@@ -78,6 +83,9 @@ python3 docs/tools/verify_test_vectors.py   # sanity: vectors self-verify
 ## Status
 
 - Core rules, generator, save model, action log: done, fully tested.
+- Next pass (`docs/EXECUTION_PLAN.md`): solver, generator v2, worlds,
+  Daily/Endless, Lock, RulesV2 and the five new elements are in; ads,
+  consent and remove-ads wait on the SDK packages and a device build.
 - Board VFX, portrait layout across every screen: written, and verified by
   numbers and by a WebGL port of the shader — see `docs/infection-vfx-spec.md`.
 - **Nothing has been through the Unity editor yet.** The adapter is
