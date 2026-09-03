@@ -220,9 +220,12 @@ namespace GridInfect.Core
             }
         }
 
-        // Game::fullReset — 4 -> 1 everywhere, all pieces to the tray
+        // Game::fullReset — 4 -> 1 everywhere, all pieces to the tray.
+        // Locked pieces (stage 5) stay placed and re-propagate in index
+        // order afterwards; without any, the original control flow is exact.
         public static void FullReset(LevelSession s)
         {
+            s.Resets++;
             for (int i = 0; i < Grid.Height; i++)
             {
                 for (int j = 0; j < Grid.Width; j++)
@@ -235,13 +238,27 @@ namespace GridInfect.Core
                     }
                 }
             }
+            bool anyLocked = false;
             for (int k = 0; k < s.Pieces.Length; k++)
             {
+                if (s.Pieces[k].Locked) { anyLocked = true; continue; }
                 s.Pieces[k].Placed = false;
                 s.Pieces[k].I = -1;
                 s.Pieces[k].J = -1;
             }
             s.RaisePiecesUnbound();
+            if (anyLocked)
+            {
+                // A locked piece's spread is static (its trip or switch hit
+                // already happened at lock time): re-infect, leave nothing queued.
+                s.RepelQueue.Clear();
+                for (int k = 0; k < s.Pieces.Length; k++)
+                {
+                    if (s.Pieces[k].Locked) PropagatePiece(s, k, fireEvents: true);
+                }
+                s.RepelQueue.Clear();
+                s.ResetTripped = false;
+            }
         }
     }
 }

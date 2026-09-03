@@ -25,8 +25,9 @@ GridInfect.Game (Unity adapter)     GridInfect.Core.Tests (edit-mode / dotnet)
 | Assembly | Contents | May reference |
 |---|---|---|
 | `Bloodhound.Engine` | Action dispatch/registry/log, `MiniJson`, `Pcg32`. Game-agnostic — the piece that moves to the next game (the logic game) unchanged. | nothing (`noEngineReferences`) |
-| `GridInfect.Core` | Schema types, `Rules` (the mechanics), the actions, `LevelGenerator`, baked classic levels, `SaveCodec`, `Queries`. | `Bloodhound.Engine` only (`noEngineReferences`) |
+| `GridInfect.Core` | Schema types, `Rules` (the mechanics), the actions, `LevelGenerator`, baked classic levels, `SaveCodec`, `Queries`, `Solving` (the deduction solver, exact solution counter and grader) and `Generation` (generator v2: sample, carve, prune with walls, deduce, grade, canonicalise — `docs/GENERATOR_V2.md`). | `Bloodhound.Engine` only (`noEngineReferences`) |
 | `GridInfect.Game` | Everything Unity: boot, camera, screens, board/piece views, input, tweens, the 0.3 s beat, save file IO. Parses input, dispatches one action or reads one query, renders the result. | Core, Engine, UnityEngine |
+| `GridInfect.Services` | The SDK boundary: ads, consent, purchasing interfaces, cadence config, Null services, `Bootstrap`. SDK-backed implementations only here. | UnityEngine (+ the SDK packages) |
 | `GridInfect.Core.Tests` | NUnit suites; run identically in Unity edit mode and under `dotnet test` via the mirror projects in `src/`. | Core, Engine |
 
 Source lives once, under `unity/Assets/_Project/`; the `src/` solution
@@ -34,9 +35,13 @@ compiles the same files headless (`src/Core.Mirror`, `src/Tests.Mirror`) and
 type-checks the adapter against API stubs (`src/Game.Mirror` +
 `src/UnityStubs` — compile-only, never shipped).
 
-A future `GridInfect.Services` assembly (ads/consent/IAP, per
-`docs/REQUIREMENTS.md` §6–8) sits beside `GridInfect.Game`: SDK types stay
-there and never leak into Core (R-1303).
+`GridInfect.Services` (ads/consent/IAP, per `docs/REQUIREMENTS.md` §6–8)
+sits beside `GridInfect.Game`: the interfaces (`IAdService`,
+`IConsentService`, `IPurchaseService`), the cadence config and the Null
+implementations are in (stage 6); the SDK-backed implementations land with
+the Google Mobile Ads and Unity IAP packages. SDK types stay there and never
+leak into Core or Game (R-1303, gate test `SdkTypesNeverLeaveTheServicesAssembly`);
+`Game` reaches them only through `AdGate`.
 
 ## 2. Schema (the first artifact)
 
@@ -50,10 +55,13 @@ files, touches) into these types at the boundary.
 | `Cell` | byte values `0` void, `1` active, `2` wall, `3` switch, `4` infected, `5` trap, `99` undo mark | 2/3/5 immutable during play; 99 never visible between moves |
 | `Tile` | enum, the 15 L/R/U/D arm combinations | **ordinal order is contract** (rand-domain + original enum order); never reorder |
 | `Difficulty` | enum Beginner…Challenging | ordinal indexes the save arrays; never reorder |
-| `LevelDef` | immutable board (66 bytes) + ordered `Tile[]` (1–8) | cell values ∈ {0,1,2,3,5}; validated at construction |
-| `LevelSession` | working board, `PieceState[]`, repel queue, `ResetTripped`, `ResolutionPending`, `Solved` | mutated only by `Rules`, called only by actions |
-| `Profile` | unlocked set, best times ms[5], run counts[5], muted | pure data; serialization only via `SaveCodec` (versioned JSON, expand/contract) |
-| `GameState` | mode + classic id / free-play run + `Session` + `Profile` | wall-clock time enters **only** through action inputs |
+| `LevelDef` | immutable board (66 bytes) + ordered pieces (1–8) as `Tile[]` and `PieceSpec[]` + `Version` (1 classic, 2 RulesV2) + per-cell relay arms | V1: cell values ∈ {0,1,2,3,5}; V2 also 6 (forbidden) and relay data on active cells; validated at construction |
+| `PieceSpec` | up to eight arms (cardinal + diagonal), a reach per arm (0 = edge), optional 3×3 area | text form `LR+U1+dr`, `A`; a classic tile is the unlimited-cardinal special case (`docs/RULES_V2.md` §1) |
+| `LevelSession` | working board, `PieceState[]` (tile, placed, cell, `Locked`), repel queue, `ResetTripped`, `ResolutionPending`, `Solved`, `Resets` (stat), and its `Rules` (`IRules`: the frozen classic `Rules` via `RulesV1` for V1 definitions, `RulesV2` for V2) | mutated only through `Rules`, called only by actions; a locked piece cannot be lifted and survives a full reset (re-propagated in index order) |
+| `World` | id, name, element set, ordered levels (board, pieces, stored solution, grade, seed, canonical hash) | baked from `docs/worlds/*.jsonl` into `WorldData.g.cs` by `tools/bake_worlds.py`; every level has exactly one solution and solves by deduction (`WorldTests`) |
+| `Profile` | unlocked set, best times ms[5], run counts[5], muted, world progress {id → levels open}, daily bests {date → ms}, daily streak and last date, endless best streak[5], lock wallet (start 5, free grants capped at 10) | pure data; serialization only via `SaveCodec` (versioned JSON, expand/contract; v2 added `worlds`, v3 the daily/endless fields, v4 `locks`) |
+| `DailyRun` / `EndlessRun` | daily: UTC date, accepted seed, start/complete ms, par; endless: grade, run seed, index, streak, level seed | boards are pure functions of the logged inputs (`DailySpec`); the daily clock is a stat, never a rule |
+| `GameState` | mode (Classic / FreePlay / World / Daily / Endless) + classic id / free-play run / world id and index / daily run / endless run + `Session` + `Profile` + the level's stored `Solution` (vector for Legacy, generator's otherwise) | wall-clock time enters **only** through action inputs |
 
 `ResolutionPending` is the model's name for the original's 0.3 s presentation
 beat: a placement leaves consequences pending; `board.resolve` lands them.
@@ -82,6 +90,16 @@ live in `Queries` and carry zero rules.
 | `freeplay.advance` | — | FreePlayActions | next generated level, clock keeps running |
 | `freeplay.complete` | `nowMs` | FreePlayActions | 5th solve: best time iff lower, count++, rejects a backward clock |
 | `freeplay.abort` | — | FreePlayActions | leave a run; nothing recorded |
+| `world.load` | `worldId, index` | WorldActions | enter a baked world level (unlock gating is presentation policy) |
+| `progress.unlockWorld` | `worldId` | WorldActions | a world opens at its first level; dispatched by the adapter when the previous world's last level is solved |
+| `progress.unlockWorldLevel` | `worldId, index` | WorldActions | level `index` opens (`index == Count` marks the world finished); dispatched by the adapter on solve for `index + 1` |
+| `daily.begin` | `dateUtc, nowMs` | DailyActions | the board for that UTC date (seed = hash of the date, `DailySpec` per weekday); clock starts |
+| `daily.complete` | `nowMs` | DailyActions | solved: elapsed, personal best per date, streak of consecutive dates (`StreakGrantDue` every 7th); rejects a backward clock |
+| `endless.begin` | `grade, seed` | DailyActions | start an Endless run: no clock, boards from the logged seed |
+| `endless.advance` | — | DailyActions | solved: streak +1 (or 1 after a reset), best per grade, next board |
+| `endless.abort` | — | DailyActions | leave a run |
+| `piece.lock` | — | LockActions | spend one lock: the deducer's next forced placement from the player's correct pieces (fallback: largest-coverage unplaced piece of the stored solution), evicting a player piece on that cell, placed and locked; rejects at wallet 0 or nothing left |
+| `locks.grant` | `amount, reason` | LockActions | `"rewarded"` (an ad) is uncapped; other reasons (`"streak"`, dispatched by the adapter on every 7th daily) top up to the cap |
 
 Adding a capability = a new action (or a new version of one); never an
 in-place break of a logged contract. Rejections are answers, not errors: a
@@ -105,7 +123,11 @@ idempotency key. Everything falls out of the one structure:
 ## 5. The rules, and where the truth comes from
 
 `GridInfect.Core.Rules` is a line-faithful port of the 2014 `Game.cpp`,
-specified in `docs/RULES.md`. Proof of equivalence is layered:
+specified in `docs/RULES.md`; it is frozen and serves Legacy. `RulesV2`
+(`docs/RULES_V2.md`) serves every generated level: the same placement
+path generalised to `PieceSpec`, a clean undo, no queue accumulation. A
+session picks its rules from `LevelDef.Version`. Proof of equivalence is
+layered:
 
 1. **Placement path**: all 128 shipped levels replay their recorded solutions
    with every per-step golden board (`docs/test_vectors.json`, R-114).
@@ -115,6 +137,11 @@ specified in `docs/RULES.md`. Proof of equivalence is layered:
    outcomes into `UndoFixtures.g.cs`.
 3. **Generator**: the GENERATOR §5 solvability proof replayed through the
    real rules, and golden seed lock-ins.
+4. **Solver**: `SolutionCounter` mirrors the `tools/level_metrics.py` search step for
+   step and is pinned to its output on all 128 levels
+   (`docs/level_metrics_classic.json`); `Deducer` may only report a solve on
+   a level that counter finds unique. The solver reads `Rules` on scratch
+   sessions to check placement order; it never touches game state.
 
 The suite is deliberately a limited, load-bearing subset — integration and
 rule-based tests on the verticals above plus the save round-trip and the
@@ -139,8 +166,14 @@ ossifying or eroding:
   Engine and Core).
 - **`ArchitectureGateTests`** enforce the same rules under `dotnet test`:
   no `UnityEngine` in Engine/Core sources, no `GridInfect` in Engine sources,
-  no direct `Rules` mutation from the adapter, and registry ⇔ constants ⇔
-  this document kept in sync.
+  no direct `Rules` mutation from the adapter, registry ⇔ constants ⇔
+  this document kept in sync, and SDK types confined to `GridInfect.Services`.
+- **Oracle and golden tests** pin the derived truth: the solution counter
+  against `tools/level_metrics.py` on all 128 levels, generator v2 golden
+  seeds, the classic grade table, every world level regenerating from its
+  recorded seed, and every generated file's freshness in CI
+  (`ClassicLevelData.g.cs`, `WorldData.g.cs`, `UndoFixtures.g.cs`,
+  `docs/level_metrics_classic.json`).
 - **`InfectionVfxSpecTests`** do the same for the art and layout contract.
   The presentation layer is Unity-only, so these are source gates, not
   behaviour tests:

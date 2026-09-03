@@ -119,6 +119,38 @@ namespace GridInfect.Game
             session.CellChanged += OnCellChanged;
             session.PiecesUnbound += OnPiecesUnbound;
             Flush();
+            DrawRelayGlyphs(parent);
+        }
+
+        // Relay cells (RULES_V2 §12): a hub with one stub per arm, drawn as
+        // sprites over the board so the shader stays a pure cell-value
+        // reader. Shape, not colour (R-1001).
+        readonly System.Collections.Generic.List<GameObject> _relayGlyphs = new System.Collections.Generic.List<GameObject>();
+
+        void DrawRelayGlyphs(Transform parent)
+        {
+            for (int loc = 0; loc < Grid.Cells; loc++)
+            {
+                byte arms = _session.Def.CellDataAt(loc);
+                if (arms == 0) continue;
+                Vector2 c = CellCenter(loc / Grid.Width, loc % Grid.Width);
+                var hub = Ui.MakeRect("relay", parent, new Vector2(CellSize * 0.22f, CellSize * 0.22f), _palette.Glyph, 3);
+                hub.transform.localPosition = new Vector3(c.x, c.y, 0f);
+                _relayGlyphs.Add(hub);
+                for (int d = 0; d < 8; d++)
+                {
+                    if ((arms & (1 << d)) == 0) continue;
+                    var dir = (Dir)d;
+                    float dx = TileArms.Dj(dir), dy = -TileArms.Di(dir);
+                    bool horizontal = dir == Dir.L || dir == Dir.R;
+                    var stub = Ui.MakeRect("relayArm", parent,
+                        horizontal || TileArms.IsDiagonal(dir) ? new Vector2(CellSize * 0.22f, CellSize * 0.08f) : new Vector2(CellSize * 0.08f, CellSize * 0.22f),
+                        _palette.Glyph, 3);
+                    if (TileArms.IsDiagonal(dir)) stub.transform.localEulerAngles = new Vector3(0f, 0f, dx * dy > 0 ? 45f : -45f);
+                    stub.transform.localPosition = new Vector3(c.x + dx * CellSize * 0.2f, c.y + dy * CellSize * 0.2f, 0f);
+                    _relayGlyphs.Add(stub);
+                }
+            }
         }
 
         public void Dispose()
@@ -130,6 +162,8 @@ namespace GridInfect.Game
             if (_material != null) Object.Destroy(_material);
             if (_quad != null) Object.Destroy(_quad);
             if (_root != null) Object.Destroy(_root);
+            foreach (var glyph in _relayGlyphs) if (glyph != null) Object.Destroy(glyph);
+            _relayGlyphs.Clear();
         }
 
         // ---- layout ----
@@ -231,9 +265,13 @@ namespace GridInfect.Game
         {
             if (value == Cell.Infected)
             {
-                if (_batch == Batch.Wave && (i == _waveI || j == _waveJ))
+                // A cell on one of the seed's lines (row, column, or — with
+                // diagonal arms — a diagonal) rides the wave; depth is the
+                // ring it sits on, the same for every arm direction.
+                int di = System.Math.Abs(i - _waveI), dj = System.Math.Abs(j - _waveJ);
+                if (_batch == Batch.Wave && (i == _waveI || j == _waveJ || di == dj))
                 {
-                    int depth = Mathf.Abs(i - _waveI) + Mathf.Abs(j - _waveJ);
+                    int depth = System.Math.Max(di, dj);
                     int dr = i == _waveI ? 0 : (i > _waveI ? 1 : -1);
                     int dc = j == _waveJ ? 0 : (j > _waveJ ? 1 : -1);
                     float start = _waveTime + depth * Vfx.Hop;
@@ -307,18 +345,20 @@ namespace GridInfect.Game
             }
             if (piece < 0) return;
 
-            Tile tile = _session.Pieces[piece].Tile;
-            for (int d = 0; d < 4; d++)
+            PieceSpec spec = _session.Def.Specs[piece];
+            for (int d = 0; d < 8; d++)
             {
                 var dir = (Dir)d;
-                if (!TileArms.Has(tile, dir)) continue;
+                if (!spec.Has(dir)) continue;
+                int reach = spec.ReachOf(dir);
                 for (int offset = 1; offset <= Grid.SpreadRange; offset++)
                 {
+                    if (reach != 0 && offset > reach) break;
                     int i = _waveI + TileArms.Di(dir) * offset;
                     int j = _waveJ + TileArms.Dj(dir) * offset;
                     if (!Grid.InBounds(i, j)) break;
                     byte value = _session.Board[Grid.Loc(i, j)];
-                    if (value == Cell.Wall || value == Cell.RepelSwitch) break;
+                    if (value == Cell.Wall || value == Cell.RepelSwitch || value == Cell.Forbidden) break;
                     if (value == Cell.ResetTrap)
                     {
                         _state.Set(i, j, value, _waveTime + offset * Vfx.Hop,
@@ -411,6 +451,7 @@ namespace GridInfect.Game
             SetPaletteColor("_ColImmuneHatch", _palette.ImmuneHatch);
             SetPaletteColor("_ColSwitch", _palette.RepelSwitch);
             SetPaletteColor("_ColTrap", _palette.ResetTrap);
+            SetPaletteColor("_ColForbidden", _palette.Forbidden);
             SetPaletteColor("_ColConflict", _palette.Conflict);
             SetPaletteColor("_ColGlyph", _palette.Glyph);
         }

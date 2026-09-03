@@ -10,8 +10,44 @@ namespace GridInfect.Core
         public static int NextClassicId(int levelId) =>
             levelId + 1 < ClassicLevels.Count ? levelId + 1 : -1;
 
+        // Levels playable in a world: the first world always offers its first
+        // level; anything else needs progress.unlockWorld / unlockWorldLevel.
+        public static int WorldLevelsUnlocked(Profile profile, string worldId)
+        {
+            int n = profile.WorldUnlocked.TryGetValue(worldId ?? "", out int v) ? v : 0;
+            if (n == 0 && Worlds.Count > 0 && worldId == Worlds.First.Id) n = 1;
+            World w = Worlds.Get(worldId);
+            return w != null && n > w.Count ? w.Count : n;
+        }
+
+        public static bool IsWorldUnlocked(Profile profile, string worldId) => WorldLevelsUnlocked(profile, worldId) > 0;
+
+        public static bool IsWorldLevelUnlocked(Profile profile, string worldId, int index) =>
+            index >= 0 && index < WorldLevelsUnlocked(profile, worldId);
+
+        public static bool IsWorldFinished(Profile profile, string worldId)
+        {
+            World w = Worlds.Get(worldId);
+            return w != null && profile.WorldUnlocked.TryGetValue(worldId, out int v) && v > w.Count;
+        }
+
         public static long ElapsedMs(FreePlayRun run, long nowMs) =>
             run == null ? 0 : (run.Completed ? run.CompletedMs : nowMs) - run.StartedMs;
+
+        public static long ElapsedMs(DailyRun run, long nowMs) =>
+            run == null ? 0 : (run.Completed ? run.CompletedMs : nowMs) - run.StartedMs;
+
+        public static long DailyBestMs(Profile profile, string dateUtc) =>
+            profile.DailyBestMs.TryGetValue(dateUtc ?? "", out long ms) ? ms : 0;
+
+        // The streak as of `dateUtc`: intact if the last completed date is
+        // today or yesterday, otherwise broken (shown as 0 until today's solve).
+        public static int DailyStreakOn(Profile profile, string dateUtc)
+        {
+            if (!DailySpec.TryParseDate(dateUtc, out System.DateTime today)) return 0;
+            if (!DailySpec.TryParseDate(profile.DailyLastDate, out System.DateTime last)) return 0;
+            return last == today || last.AddDays(1) == today ? profile.DailyStreak : 0;
+        }
 
         public static string FormatDuration(long ms)
         {

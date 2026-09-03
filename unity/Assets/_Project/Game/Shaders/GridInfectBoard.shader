@@ -71,6 +71,7 @@ Shader "GridInfect/Board"
         _ColImmuneHatch ("Immune hatch", Color) = (0, 0, 0, 1)
         _ColSwitch ("Repel switch", Color) = (0, 0, 0, 1)
         _ColTrap ("Reset trap", Color) = (0, 0, 0, 1)
+        _ColForbidden ("Forbidden cell", Color) = (0, 0, 0, 1)
         _ColConflict ("Conflict overprint", Color) = (0, 0, 0, 1)
         _ColGlyph ("Glyph", Color) = (0, 0, 0, 1)
     }
@@ -110,7 +111,7 @@ Shader "GridInfect/Board"
                 float _GhostTrail, _GhostTrailDur;
                 float4 _ColBackground, _ColCellPlate, _ColGridLine, _ColCellBorder, _ColInfected, _ColCooled;
                 float4 _ColBleedEdge, _ColGhost, _ColSeed, _ColImmuneHatch;
-                float4 _ColSwitch, _ColTrap, _ColConflict, _ColGlyph;
+                float4 _ColSwitch, _ColTrap, _ColForbidden, _ColConflict, _ColGlyph;
             CBUFFER_END
 
             #define CELL_VOID    0
@@ -119,6 +120,7 @@ Shader "GridInfect/Board"
             #define CELL_SWITCH  3
             #define CELL_INFECT  4
             #define CELL_TRAP    5
+            #define CELL_FORBIDDEN 6
 
             #define TR_NONE      0
             #define TR_INFECT    1
@@ -309,6 +311,13 @@ Shader "GridInfect/Board"
                         col = _ColTrap.rgb;
                         float2 d = abs(cellUv - 0.5);
                         if (abs(d.x - d.y) < 0.07 && max(d.x, d.y) < 0.28) col = _ColConflict.rgb;
+                    }
+                    else if (value == CELL_FORBIDDEN)
+                    {
+                        // Must stay clean: a ring glyph, never colour alone (R-1001).
+                        col = _ColForbidden.rgb;
+                        float r = length(cellUv - 0.5);
+                        if (r > 0.17 && r < 0.27) col = _ColGlyph.rgb;
                     }
                     else if (value == CELL_INFECT)
                     {

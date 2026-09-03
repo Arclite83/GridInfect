@@ -216,3 +216,39 @@ function today; see `PORT_NOTES.md` §3 for the code-level status
 - **The unused `btn_classic.png` / `btn_free_play.png` / `btn_start.png`
   art** suggests an earlier main-menu layout; no code references remain
   (see `ASSETS.md` §5). Only the author could say what they were for.
+
+
+---
+
+## 5. Daily and Endless (rebuild, stage 4)
+
+Timed Free Play is retired from the menu (`NEXT_PASS.md` decision 5); its
+actions and tests stay so old logs replay. Two modes replace it.
+
+### 5.1 Daily
+
+- `daily.begin { dateUtc, nowMs }`: `dateUtc` is `yyyy-MM-dd` in UTC, so
+  every device gets the same board. Seed = FNV-1a 64 of `"daily:" + date`;
+  the board is the first seed at or after it that `GeneratorV2` accepts
+  under the weekday's spec (`DailySpec.For`): Monday 3 pieces G1–G2 up to
+  Sunday 5 pieces G4–G5, cardinal arms and walls only at launch (later
+  stages rotate the element set here).
+- The clock is a stat, not a rule: elapsed is shown in the HUD; par =
+  `10 s + 15 s × trace length × (3 + grade) / 4`; the personal best per
+  date is kept in the profile.
+- `daily.complete { nowMs }`: rejects a backward clock and an unsolved
+  board. Streak = consecutive completed dates (completing today's board
+  again improves the best, never the streak); every 7th day sets
+  `StreakGrantDue`, which stage 5 turns into `locks.grant { 1, "streak" }`.
+- Friends leaderboard: out of stage 4. `IDailyScoreSink` in
+  `GridInfect.Game` is the hook; the shipped sink is local.
+
+### 5.2 Endless
+
+- `endless.begin { grade, seed }`: a grade G1–G5 and a seed (the adapter
+  picks the wall clock; it enters the log). Level n of the run is the
+  first accepted seed from `seed + n × 100000` under `DailySpec.Endless`.
+- `endless.advance`: the current board is solved; streak +1 if the board
+  saw no full reset (`LevelSession.Resets == 0`), else back to 1; best
+  streak per grade in the profile; next board loads at once.
+- `endless.abort`: leave the run. No clock anywhere in the mode.

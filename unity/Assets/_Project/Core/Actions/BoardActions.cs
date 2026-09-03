@@ -16,13 +16,13 @@ namespace GridInfect.Core
             int j = input.Int("j");
             if (piece < 0 || piece >= s.Pieces.Length) return $"piece index {piece} out of range";
             if (s.Pieces[piece].Placed) return $"piece {piece} is already placed (clear it first)";
-            if (!Rules.CanPlace(s, piece, i, j)) return $"illegal placement at ({i},{j})";
+            if (!s.Rules.CanPlace(s, piece, i, j)) return $"illegal placement at ({i},{j})";
             return null;
         }
 
         public override void Execute(GameState state, ActionInput input)
         {
-            Rules.SetPiece(state.Session, input.Int("piece"), input.Int("i"), input.Int("j"));
+            state.Session.Rules.SetPiece(state.Session, input.Int("piece"), input.Int("i"), input.Int("j"));
         }
     }
 
@@ -40,7 +40,7 @@ namespace GridInfect.Core
 
         public override void Execute(GameState state, ActionInput input)
         {
-            Rules.Resolve(state.Session);
+            state.Session.Rules.Resolve(state.Session);
         }
     }
 
@@ -56,12 +56,13 @@ namespace GridInfect.Core
             int piece = input.Int("piece");
             if (piece < 0 || piece >= s.Pieces.Length) return $"piece index {piece} out of range";
             if (!s.Pieces[piece].Placed) return $"piece {piece} is not placed";
+            if (s.Pieces[piece].Locked) return $"piece {piece} is locked";
             return null;
         }
 
         public override void Execute(GameState state, ActionInput input)
         {
-            Rules.ClearPiece(state.Session, input.Int("piece"));
+            state.Session.Rules.ClearPiece(state.Session, input.Int("piece"));
         }
     }
 }

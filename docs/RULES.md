@@ -323,3 +323,20 @@ cell — there is no animation on infection (see `ASSETS.md` §Timing).
   cocos2d-x 2.2.3 dispatcher internals (engine not vendored in this
   repo). Resolve by testing a build against
   `cocos2d-x-2.2.3/cocos2dx/touch_dispatcher/CCTouchDispatcher.cpp`.
+
+
+---
+
+## 10. Rebuild additions (not in the 2014 original)
+
+- **Locked pieces** (stage 5, `PieceState.Locked`): placed by `piece.lock`
+  at a stored-solution cell. Input refuses to lift them (`piece.clear`
+  rejects). `fullReset` (§6, and the in-level reset button) sends only
+  unlocked pieces to the tray; locked pieces stay placed and re-propagate
+  in index order afterwards with the repel queue cleared and the trip flag
+  down, so the board equals the union of the locked spreads. Undo (§7)
+  treats them as ordinary placed pieces. With no locked piece on the
+  board every path above is the original's, step for step: the 128
+  vectors replay unchanged.
+- `LevelSession.Resets` counts full resets for Endless streaks. Statistic
+  only; nothing reads it inside the rules.

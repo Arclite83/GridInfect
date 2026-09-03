@@ -118,7 +118,7 @@ def solve(board, tiles, cap=200000, tlimit=20.0):
     # order verification for levels with switches/traps
     dynamic = any(v in (3,5) for v in board)
     valid=set()
-    if dynamic and not hit_cap:
+    if dynamic and not hit_cap[0]:  # was `not hit_cap` (a list): the check never ran before 2026-09-02
         for s in sols:
             if time.time()-t0>tlimit*2: timed_out[0]=True; break
             items=list(s)

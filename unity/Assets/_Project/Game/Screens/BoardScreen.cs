@@ -13,6 +13,8 @@ namespace GridInfect.Game
         TextMesh _hud;
         UiButton _backButton;
         UiButton _resetButton;
+        UiButton _lockButton;
+        TextMesh _lockLabel;
         GameObject _popup;
         GameObject _beginCover;
         int _dragIndex = -1;
@@ -42,6 +44,15 @@ namespace GridInfect.Game
 
             _hud = Ui.MakeText("hud", Root.transform, "", L.BodyText, BoardTheme.Accent, 2);
             Ui.SetPos(_hud.gameObject, 0f, L.TopBarY - L.HeadingText - L.Gap);
+
+            // The one tool (stage 5): spends a lock, places one piece at its
+            // solution cell and locks it. Sits under RESET, off the board.
+            _lockButton = UiButton.Make(Root.transform, "",
+                new Vector2(-L.BackPos.x, L.TopBarY - L.HeadingText - L.Gap), L.BackSize,
+                BoardTheme.Accent, BoardTheme.GlyphDark, LockPiece);
+            _lockLabel = _lockButton.Root.GetComponentInChildren<TextMesh>();
+            Buttons.Add(_lockButton);
+            RefreshLockLabel();
 
             App.State.SessionChanged += OnSessionChanged;
             Bind(App.State.Session);
@@ -76,14 +87,16 @@ namespace GridInfect.Game
             _pieces = new PieceView[session.Pieces.Length];
             for (int k = 0; k < session.Pieces.Length; k++)
             {
-                _pieces[k] = new PieceView(Root.transform, k, session.Pieces[k].Tile,
+                _pieces[k] = new PieceView(Root.transform, k, session.Def.Specs[k],
                     TrayTileSize(session.Pieces.Length), TraySlot(k));
             }
             session.LevelSolved += OnSolved;
             session.PiecesUnbound += OnPiecesUnbound;
 
-            _title.text = App.State.Mode == GameMode.Classic
-                ? $"LEVEL {App.State.ClassicLevelId + 1}"
+            _title.text = App.State.Mode == GameMode.Classic ? $"LEVEL {App.State.ClassicLevelId + 1}"
+                : App.State.Mode == GameMode.World ? $"{Worlds.Get(App.State.WorldId).Name.ToUpperInvariant()}  {App.State.WorldIndex + 1}"
+                : App.State.Mode == GameMode.Daily ? $"DAILY  {App.State.DailyRun.DateUtc}"
+                : App.State.Mode == GameMode.Endless ? $"ENDLESS  GRADE {(int)App.State.EndlessRun.Grade}"
                 : $"{App.State.Difficulty}".ToUpperInvariant();
             _hud.text = "";
         }
@@ -140,6 +153,7 @@ namespace GridInfect.Game
             for (int k = _pieces.Length - 1; k >= 0; k--)
             {
                 if (!_pieces[k].HitTest(world)) continue;
+                if (_bound.Pieces[k].Locked) return true; // a locked piece cannot be lifted
 
                 if (_bound.Pieces[k].Placed)
                 {
@@ -193,6 +207,50 @@ namespace GridInfect.Game
                 PresentationConfig.TrayReturn);
         }
 
+        // ---- lock tool ----
+
+        void LockPiece()
+        {
+            if (_bound == null || _popupOpen || _beginCover != null) return;
+            App.FastForwardResolve();
+            _board.BeginWave(0, 0);
+            var result = App.Do(GridInfectActions.PieceLock);
+            _board.EndBatch(result.Applied);
+            if (!result.Applied) return;
+            for (int k = 0; k < _pieces.Length; k++)
+            {
+                var piece = _bound.Pieces[k];
+                _pieces[k].SetLocked(piece.Locked);
+                Vector2 to = piece.Placed ? _board.CellCenter(piece.I, piece.J) : _pieces[k].TraySlot;
+                // Snap: the locked piece lands on its cell, evicted ones return to the tray.
+                App.Tweens.MoveTo(_pieces[k].Root.transform, new Vector3(to.x, to.y, 0f),
+                    piece.Locked ? PresentationConfig.DropSnap : PresentationConfig.TrayReturn);
+            }
+            RefreshLockLabel();
+            App.ScheduleResolve();
+        }
+
+        // With an empty wallet the button becomes the rewarded placement
+        // (NEXT_PASS decision 8): watch an ad, earn one lock.
+        void RefreshLockLabel()
+        {
+            if (_lockLabel == null) return;
+            int locks = App.State.Profile.Locks;
+            bool rewarded = locks == 0 && App.Ads.RewardedAvailable;
+            _lockLabel.text = rewarded ? "+1 LOCK" : $"LOCK {locks}";
+            _lockButton.OnClick = rewarded ? EarnLock : (System.Action)LockPiece;
+            _lockButton.Enabled = (locks > 0 || rewarded) && !_popupOpen;
+        }
+
+        void EarnLock()
+        {
+            App.Ads.ShowRewarded(earned =>
+            {
+                if (earned) App.Do(GridInfectActions.LocksGrant, Inputs.LocksGrant(1, GrantLocksAction.Rewarded));
+                RefreshLockLabel();
+            });
+        }
+
         // ---- session reactions ----
 
         void OnPiecesUnbound()
@@ -200,6 +258,7 @@ namespace GridInfect.Game
             if (_pieces == null) return;
             for (int k = 0; k < _pieces.Length; k++)
             {
+                if (_bound != null && _bound.Pieces[k].Locked) continue; // locked pieces stay put
                 App.Tweens.MoveTo(_pieces[k].Root.transform,
                     new Vector3(_pieces[k].TraySlot.x, _pieces[k].TraySlot.y, 0f),
                     PresentationConfig.TrayReturn);
@@ -209,6 +268,7 @@ namespace GridInfect.Game
         void OnSolved()
         {
             if (_popupOpen) return;
+            App.Ads.CountSolve();
             if (App.State.Mode == GameMode.Classic)
             {
                 int levelId = App.State.ClassicLevelId;
@@ -217,7 +277,56 @@ namespace GridInfect.Game
                 {
                     App.Do(GridInfectActions.ProgressUnlock, Inputs.Unlock(next));
                 }
-                ShowSolvedPopup(next);
+                ShowSolvedPopup(next >= 0
+                    ? () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(next))
+                    : (System.Action)null,
+                    () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(levelId)));
+            }
+            else if (App.State.Mode == GameMode.World)
+            {
+                // Solving level N unlocks N+1; the last level finishes the
+                // world (index == Count) and opens the next one.
+                string worldId = App.State.WorldId;
+                int index = App.State.WorldIndex;
+                World world = Worlds.Get(worldId);
+                App.Do(GridInfectActions.ProgressUnlockWorldLevel, Inputs.UnlockWorldLevel(worldId, index + 1));
+                System.Action next = null;
+                if (index + 1 < world.Count)
+                {
+                    next = () => App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(worldId, index + 1));
+                }
+                else
+                {
+                    World following = Worlds.Next(worldId);
+                    if (following != null)
+                    {
+                        App.Do(GridInfectActions.ProgressUnlockWorld, Inputs.UnlockWorld(following.Id));
+                        next = () => App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(following.Id, 0));
+                    }
+                }
+                ShowSolvedPopup(next, () => App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(worldId, index)));
+            }
+            else if (App.State.Mode == GameMode.Daily)
+            {
+                var run = App.State.DailyRun;
+                if (!run.Completed)
+                {
+                    App.Do(GridInfectActions.DailyComplete, Inputs.Now(GameApp.NowMs()));
+                    App.DailyScores.Submit(run.DateUtc, Queries.ElapsedMs(run, GameApp.NowMs()), run.ParMs);
+                    if (run.StreakGrantDue)
+                    {
+                        App.Do(GridInfectActions.LocksGrant, Inputs.LocksGrant(1, "streak")); // +1 lock every 7-day streak
+                    }
+                }
+                long elapsed = Queries.ElapsedMs(run, GameApp.NowMs());
+                long best = Queries.DailyBestMs(App.State.Profile, run.DateUtc);
+                OpenPopup($"SOLVED IN {Queries.FormatDuration(elapsed)}\nPAR {Queries.FormatDuration(run.ParMs)}   BEST {Queries.FormatDuration(best)}\nSTREAK {App.State.Profile.DailyStreak}");
+                AddPopupButton("MENU", new Vector2(0f, -Short * 0.06f),
+                    new Vector2(L.ContentWidth / 3f, L.BarHeight), () => App.Screens.Show(new DailyScreen()));
+            }
+            else if (App.State.Mode == GameMode.Endless)
+            {
+                App.Do(GridInfectActions.EndlessAdvance); // no pause between levels; the streak is in the HUD
             }
             else
             {
@@ -262,6 +371,21 @@ namespace GridInfect.Game
                 _board.Tick(dt);
             }
 
+            if (App.State.Mode == GameMode.Daily)
+            {
+                var daily = App.State.DailyRun;
+                if (daily == null || daily.Completed) return;
+                long elapsedDaily = Queries.ElapsedMs(daily, GameApp.NowMs());
+                if (elapsedDaily < 0) elapsedDaily = 0; // a backward clock is refused at daily.complete
+                _hud.text = $"{Queries.FormatDuration(elapsedDaily)}   PAR {Queries.FormatDuration(daily.ParMs)}";
+                return;
+            }
+            if (App.State.Mode == GameMode.Endless)
+            {
+                var endless = App.State.EndlessRun;
+                if (endless != null) _hud.text = $"SOLVED {endless.Index}   STREAK {endless.Streak}   BEST {App.State.Profile.EndlessBest[(int)endless.Grade - 1]}";
+                return;
+            }
             if (App.State.Mode != GameMode.FreePlay) return;
             var run = App.State.FreePlayRun;
             if (run == null || run.Completed) return;
@@ -280,19 +404,17 @@ namespace GridInfect.Game
 
         // ---- popups ----
 
-        void ShowSolvedPopup(int nextLevelId)
+        void ShowSolvedPopup(System.Action next, System.Action replay)
         {
             OpenPopup("COMPLETE");
             float y = -Short * 0.06f;
             float step = L.ContentWidth / 3f;
             var size = new Vector2(step * 0.9f, L.BarHeight);
             AddPopupButton("MENU", new Vector2(-step, y), size, GoBack);
-            AddPopupButton("REPLAY", new Vector2(0f, y), size,
-                () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(App.State.ClassicLevelId)));
-            if (nextLevelId >= 0)
+            AddPopupButton("REPLAY", new Vector2(0f, y), size, replay);
+            if (next != null)
             {
-                AddPopupButton("NEXT", new Vector2(step, y), size,
-                    () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(nextLevelId)));
+                AddPopupButton("NEXT", new Vector2(step, y), size, next);
             }
         }
 
@@ -309,6 +431,7 @@ namespace GridInfect.Game
             _popupOpen = true;
             _backButton.Enabled = false;
             _resetButton.Enabled = false;
+            _lockButton.Enabled = false;
 
             _popup = new GameObject("popup");
             _popup.transform.SetParent(Root.transform, false);
@@ -328,10 +451,13 @@ namespace GridInfect.Game
 
         GameObject _popupPanel;
 
+        // R-602: dismissing the solved popup is the interstitial's moment;
+        // the button's own action runs when the ad closes (or at once).
         void AddPopupButton(string label, Vector2 center, Vector2 size, System.Action onClick)
         {
             var button = UiButton.Make(_popupPanel.transform, label, center, size,
-                BoardTheme.Accent, BoardTheme.GlyphDark, onClick, 43);
+                BoardTheme.Accent, BoardTheme.GlyphDark,
+                () => { if (!App.Ads.MaybeShowInterstitial(onClick)) onClick?.Invoke(); }, 43);
             Buttons.Add(button);
         }
 
@@ -341,8 +467,9 @@ namespace GridInfect.Game
             _popupOpen = false;
             _backButton.Enabled = true;
             _resetButton.Enabled = true;
+            RefreshLockLabel();
             Buttons.RemoveAll(b => b.Root == null ||
-                (b != _backButton && b != _resetButton));
+                (b != _backButton && b != _resetButton && b != _lockButton));
             if (_popup != null) Object.Destroy(_popup);
             _popup = null;
             _popupPanel = null;
@@ -356,6 +483,19 @@ namespace GridInfect.Game
             {
                 App.Do(GridInfectActions.FreePlayAbort);
                 App.Screens.Show(new FreePlayMenuScreen());
+            }
+            else if (App.State.Mode == GameMode.World)
+            {
+                App.Screens.Show(new WorldLevelSelectScreen(App.State.WorldId));
+            }
+            else if (App.State.Mode == GameMode.Daily)
+            {
+                App.Screens.Show(new DailyScreen());
+            }
+            else if (App.State.Mode == GameMode.Endless)
+            {
+                App.Do(GridInfectActions.EndlessAbort);
+                App.Screens.Show(new EndlessScreen());
             }
             else
             {
@@ -372,6 +512,10 @@ namespace GridInfect.Game
                 if (App.State.Mode == GameMode.Classic)
                 {
                     App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(App.State.ClassicLevelId));
+                }
+                else if (App.State.Mode == GameMode.World)
+                {
+                    App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(App.State.WorldId, App.State.WorldIndex));
                 }
             }
             else

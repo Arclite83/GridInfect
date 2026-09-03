@@ -6,6 +6,9 @@ namespace GridInfect.Core
     public sealed class LevelSession
     {
         public readonly LevelDef Def;
+        // The mechanics for this level: the frozen classic rules for V1
+        // definitions, RulesV2 for everything generated after stage 7.
+        public readonly IRules Rules;
         public readonly byte[] Board = new byte[Grid.Cells];
         public readonly PieceState[] Pieces;
         public readonly List<Repel> RepelQueue = new List<Repel>(8);
@@ -18,6 +21,10 @@ namespace GridInfect.Core
 
         public bool Solved;
 
+        // Full resets this session has seen (level.reset or a trap trip);
+        // Endless reads it to score a streak. Statistics only, never rules.
+        public int Resets;
+
         public event Action<int, int, byte> CellChanged;   // onChangeBoardIndex(i, j, value)
         public event Action LevelSolved;                    // onLevelSolved
         public event Action PiecesUnbound;                  // onUnbindPieces
@@ -25,6 +32,7 @@ namespace GridInfect.Core
         public LevelSession(LevelDef def)
         {
             Def = def ?? throw new ArgumentNullException(nameof(def));
+            Rules = def.Version == 2 ? (IRules)RulesV2.Instance : RulesV1.Instance;
             def.CopyBoardTo(Board);
             Pieces = new PieceState[def.Pieces.Length];
             for (int k = 0; k < Pieces.Length; k++)

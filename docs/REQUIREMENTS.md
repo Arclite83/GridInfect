@@ -97,16 +97,17 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 |---|---|---|---|
 | R-601 | MVP | AdMob via the Google Mobile Ads Unity plugin; the SDK initializes only after the consent gate (R-801) reports ads may be requested. | **NEW — needs approval** |
 | R-602 | MVP | One format at MVP: interstitial on dismissal of the solved popup — first ad no earlier than the 3rd solve of a session, minimum 90 s between ads; cadence values live in a designer-editable config asset, not code. | **NEW — needs approval** |
-| R-603 | LATER | Rewarded ad as an opt-in "skip this level" on the pause/reset surface (the game's only natural reward sink; it adds a mechanic the original lacked). | **NEW — needs approval** |
+| R-603 | DROPPED | ~~Rewarded ad as an opt-in "skip this level".~~ Replaced by R-607 (NEXT_PASS decision 8). | superseded |
 | R-604 | MVP | Development builds use Google's demo ad unit IDs plus registered test-device IDs; production unit IDs exist only in the release config asset (see DEPENDENCIES §5). | **NEW — needs approval** |
 | R-605 | MVP | Play compliance for ads: `AD_ID` permission declared (the plugin adds it), Data safety form covers ads/device identifiers, app is declared not child-directed. | **NEW — needs approval** |
 | R-606 | LATER | Minimal analytics event set (level start/solve/fail-reset, ad shown/clicked, session) to tune the ad cadence in R-602. | **NEW — needs approval** |
+| R-607 | MVP | Rewarded ad = one Lock (`locks.grant { 1, "rewarded" }`), offered from the board's LOCK button when the wallet is empty; uncapped. | NEXT_PASS decision 8; stage 5–6 |
 
 ## 7. Remove-ads IAP (all NEW)
 
 | ID | Pri | Requirement | Trace |
 |---|---|---|---|
-| R-701 | LATER | Single non-consumable `remove_ads` product via Unity IAP on both stores; owning it suppresses interstitials permanently (rewarded skip stays available — it is user-initiated). Price point is the user's call. | **NEW — needs approval** |
+| R-701 | MVP | Single non-consumable `remove_ads` product via Unity IAP on both stores; owning it suppresses interstitials only (the rewarded Lock stays available — it is user-initiated; the wallet is unchanged). One price point, the user's call. | NEXT_PASS decision 8 |
 | R-702 | LATER | Restore-purchases flow (App Store review requirement; free on Play via receipt query). | **NEW — needs approval** |
 
 ## 8. Consent & privacy

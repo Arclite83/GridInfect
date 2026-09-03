@@ -10,6 +10,18 @@ namespace GridInfect.Core
 
         public int ClassicLevelId = -1;
 
+        public string WorldId;      // GameMode.World: the world and level in play
+        public int WorldIndex = -1;
+
+        public DailyRun DailyRun;       // GameMode.Daily
+        public EndlessRun EndlessRun;   // GameMode.Endless
+
+        // The current level's stored solution in a winning order: the
+        // vector for Legacy, the generator's for everything else. The Lock
+        // tool's fallback source; set by every loader.
+        public (int piece, int cell)[] Solution;
+        public (int piece, int cell)[][] FreePlaySolutions;
+
         public LevelDef[] FreePlayDefs;
 
         public int FreePlayIndex;
@@ -43,7 +55,26 @@ namespace GridInfect.Core
 
         public readonly long[] BestTimesMs = new long[5];
 
+        // World progression: levels playable per world id (0 or absent =
+        // locked, except the first world, which is always open at level 0).
+        public readonly System.Collections.Generic.Dictionary<string, int> WorldUnlocked =
+            new System.Collections.Generic.Dictionary<string, int>(System.StringComparer.Ordinal);
+
         public readonly int[] FreePlayCounts = new int[5];
+
+        // Daily: personal best per UTC date, streak of consecutive dates,
+        // the last date completed. Endless: best streak per grade (index = grade - 1).
+        public readonly System.Collections.Generic.Dictionary<string, long> DailyBestMs =
+            new System.Collections.Generic.Dictionary<string, long>(System.StringComparer.Ordinal);
+        public int DailyStreak;
+        public string DailyLastDate = "";
+        public readonly int[] EndlessBest = new int[5];
+
+        // Lock wallet (stage 5): start 5, free grants capped at LocksCap,
+        // rewarded-ad grants uncapped (NEXT_PASS: they are revenue).
+        public const int LocksStart = 5;
+        public const int LocksCap = 10;
+        public int Locks = LocksStart;
 
         public bool Muted;
 

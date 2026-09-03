@@ -1,0 +1,5 @@
+#!/bin/sh
+# Batch level generator (EXECUTION_PLAN stage 2). Headless; needs the .NET 8 SDK.
+#   tools/gen_levels --grade G2 --count 25 --seed 1000 --pieces 3-5 --out docs/worlds/w01.jsonl
+# See src/GenLevels/Program.cs for every flag.
+exec dotnet run --project "$(dirname "$0")/../src/GenLevels/GridInfect.GenLevels.csproj" -c Release -- "$@"

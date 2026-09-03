@@ -1,0 +1,776 @@
+{
+ "_meta": {
+  "source": "tools/gen_level_metrics_golden.py over docs/test_vectors.json",
+  "semantics": "solutions = order-feasible covering sets found by level_metrics.solve; static = before the order check"
+ },
+ "levels": [
+  {
+   "id": 0,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 2
+  },
+  {
+   "id": 1,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 2
+  },
+  {
+   "id": 2,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 3
+  },
+  {
+   "id": 3,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 2
+  },
+  {
+   "id": 4,
+   "solutions": 5,
+   "static": 5,
+   "min_pieces": 3
+  },
+  {
+   "id": 5,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 2
+  },
+  {
+   "id": 6,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 3
+  },
+  {
+   "id": 7,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 3
+  },
+  {
+   "id": 8,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 2
+  },
+  {
+   "id": 9,
+   "solutions": 3,
+   "static": 3,
+   "min_pieces": 3
+  },
+  {
+   "id": 10,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 3
+  },
+  {
+   "id": 11,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 3
+  },
+  {
+   "id": 12,
+   "solutions": 4,
+   "static": 4,
+   "min_pieces": 3
+  },
+  {
+   "id": 13,
+   "solutions": 12,
+   "static": 12,
+   "min_pieces": 4
+  },
+  {
+   "id": 14,
+   "solutions": 48,
+   "static": 66,
+   "min_pieces": 4
+  },
+  {
+   "id": 15,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 3
+  },
+  {
+   "id": 16,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 3
+  },
+  {
+   "id": 17,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 4
+  },
+  {
+   "id": 18,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 3
+  },
+  {
+   "id": 19,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 4
+  },
+  {
+   "id": 20,
+   "solutions": 13,
+   "static": 13,
+   "min_pieces": 4
+  },
+  {
+   "id": 21,
+   "solutions": 7,
+   "static": 7,
+   "min_pieces": 4
+  },
+  {
+   "id": 22,
+   "solutions": 20,
+   "static": 20,
+   "min_pieces": 4
+  },
+  {
+   "id": 23,
+   "solutions": 10,
+   "static": 10,
+   "min_pieces": 4
+  },
+  {
+   "id": 24,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 3
+  },
+  {
+   "id": 25,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 2
+  },
+  {
+   "id": 26,
+   "solutions": 3,
+   "static": 12,
+   "min_pieces": 3
+  },
+  {
+   "id": 27,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 3
+  },
+  {
+   "id": 28,
+   "solutions": 7,
+   "static": 27,
+   "min_pieces": 3
+  },
+  {
+   "id": 29,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 4
+  },
+  {
+   "id": 30,
+   "solutions": 2,
+   "static": 5,
+   "min_pieces": 5
+  },
+  {
+   "id": 31,
+   "solutions": 11,
+   "static": 14,
+   "min_pieces": 6
+  },
+  {
+   "id": 32,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 4
+  },
+  {
+   "id": 33,
+   "solutions": 11,
+   "static": 19,
+   "min_pieces": 4
+  },
+  {
+   "id": 34,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 3
+  },
+  {
+   "id": 35,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 3
+  },
+  {
+   "id": 36,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 3
+  },
+  {
+   "id": 37,
+   "solutions": 8,
+   "static": 8,
+   "min_pieces": 4
+  },
+  {
+   "id": 38,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 4
+  },
+  {
+   "id": 39,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 3
+  },
+  {
+   "id": 40,
+   "solutions": 4,
+   "static": 8,
+   "min_pieces": 5
+  },
+  {
+   "id": 41,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 4
+  },
+  {
+   "id": 42,
+   "solutions": 1,
+   "static": 4,
+   "min_pieces": 4
+  },
+  {
+   "id": 43,
+   "solutions": 12,
+   "static": 48,
+   "min_pieces": 4
+  },
+  {
+   "id": 44,
+   "solutions": 6,
+   "static": 6,
+   "min_pieces": 4
+  },
+  {
+   "id": 45,
+   "solutions": 5,
+   "static": 10,
+   "min_pieces": 4
+  },
+  {
+   "id": 46,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 4
+  },
+  {
+   "id": 47,
+   "solutions": 47,
+   "static": 47,
+   "min_pieces": 4
+  },
+  {
+   "id": 48,
+   "solutions": 10,
+   "static": 10,
+   "min_pieces": 4
+  },
+  {
+   "id": 49,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 4
+  },
+  {
+   "id": 50,
+   "solutions": 1,
+   "static": 3,
+   "min_pieces": 4
+  },
+  {
+   "id": 51,
+   "solutions": 7,
+   "static": 8,
+   "min_pieces": 4
+  },
+  {
+   "id": 52,
+   "solutions": 12,
+   "static": 12,
+   "min_pieces": 4
+  },
+  {
+   "id": 53,
+   "solutions": 7,
+   "static": 7,
+   "min_pieces": 4
+  },
+  {
+   "id": 54,
+   "solutions": 3,
+   "static": 7,
+   "min_pieces": 4
+  },
+  {
+   "id": 55,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 4
+  },
+  {
+   "id": 56,
+   "solutions": 9,
+   "static": 9,
+   "min_pieces": 4
+  },
+  {
+   "id": 57,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 4
+  },
+  {
+   "id": 58,
+   "solutions": 1,
+   "static": 5,
+   "min_pieces": 4
+  },
+  {
+   "id": 59,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 4
+  },
+  {
+   "id": 60,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 4
+  },
+  {
+   "id": 61,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 4
+  },
+  {
+   "id": 62,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 4
+  },
+  {
+   "id": 63,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 4
+  },
+  {
+   "id": 64,
+   "solutions": 10,
+   "static": 10,
+   "min_pieces": 4
+  },
+  {
+   "id": 65,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 4
+  },
+  {
+   "id": 66,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 4
+  },
+  {
+   "id": 67,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 4
+  },
+  {
+   "id": 68,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 4
+  },
+  {
+   "id": 69,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 4
+  },
+  {
+   "id": 70,
+   "solutions": 9,
+   "static": 9,
+   "min_pieces": 4
+  },
+  {
+   "id": 71,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 4
+  },
+  {
+   "id": 72,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 4
+  },
+  {
+   "id": 73,
+   "solutions": 7,
+   "static": 7,
+   "min_pieces": 4
+  },
+  {
+   "id": 74,
+   "solutions": 2,
+   "static": 6,
+   "min_pieces": 4
+  },
+  {
+   "id": 75,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 4
+  },
+  {
+   "id": 76,
+   "solutions": 2,
+   "static": 2,
+   "min_pieces": 5
+  },
+  {
+   "id": 77,
+   "solutions": 929,
+   "static": 3103,
+   "min_pieces": 5
+  },
+  {
+   "id": 78,
+   "solutions": 2,
+   "static": 3,
+   "min_pieces": 5
+  },
+  {
+   "id": 79,
+   "solutions": 6,
+   "static": 12,
+   "min_pieces": 5
+  },
+  {
+   "id": 80,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 5
+  },
+  {
+   "id": 81,
+   "solutions": 12,
+   "static": 17,
+   "min_pieces": 5
+  },
+  {
+   "id": 82,
+   "solutions": 30,
+   "static": 34,
+   "min_pieces": 5
+  },
+  {
+   "id": 83,
+   "solutions": 30,
+   "static": 30,
+   "min_pieces": 5
+  },
+  {
+   "id": 84,
+   "solutions": 16,
+   "static": 16,
+   "min_pieces": 5
+  },
+  {
+   "id": 85,
+   "solutions": 2,
+   "static": 10,
+   "min_pieces": 5
+  },
+  {
+   "id": 86,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 5
+  },
+  {
+   "id": 87,
+   "solutions": 26,
+   "static": 28,
+   "min_pieces": 5
+  },
+  {
+   "id": 88,
+   "solutions": 53,
+   "static": 78,
+   "min_pieces": 5
+  },
+  {
+   "id": 89,
+   "solutions": 114,
+   "static": 168,
+   "min_pieces": 4
+  },
+  {
+   "id": 90,
+   "solutions": 44,
+   "static": 92,
+   "min_pieces": 5
+  },
+  {
+   "id": 91,
+   "solutions": 32,
+   "static": 32,
+   "min_pieces": 5
+  },
+  {
+   "id": 92,
+   "solutions": 4,
+   "static": 12,
+   "min_pieces": 5
+  },
+  {
+   "id": 93,
+   "solutions": 4,
+   "static": 42,
+   "min_pieces": 5
+  },
+  {
+   "id": 94,
+   "solutions": 4,
+   "static": 8,
+   "min_pieces": 5
+  },
+  {
+   "id": 95,
+   "solutions": 113,
+   "static": 418,
+   "min_pieces": 5
+  },
+  {
+   "id": 96,
+   "solutions": 4,
+   "static": 8,
+   "min_pieces": 5
+  },
+  {
+   "id": 97,
+   "solutions": 3,
+   "static": 14,
+   "min_pieces": 5
+  },
+  {
+   "id": 98,
+   "solutions": 20,
+   "static": 20,
+   "min_pieces": 5
+  },
+  {
+   "id": 99,
+   "solutions": 7,
+   "static": 10,
+   "min_pieces": 5
+  },
+  {
+   "id": 100,
+   "solutions": 2,
+   "static": 4,
+   "min_pieces": 5
+  },
+  {
+   "id": 101,
+   "solutions": 18,
+   "static": 42,
+   "min_pieces": 5
+  },
+  {
+   "id": 102,
+   "solutions": 50,
+   "static": 66,
+   "min_pieces": 5
+  },
+  {
+   "id": 103,
+   "solutions": 4,
+   "static": 8,
+   "min_pieces": 5
+  },
+  {
+   "id": 104,
+   "solutions": 5,
+   "static": 12,
+   "min_pieces": 5
+  },
+  {
+   "id": 105,
+   "solutions": 1,
+   "static": 1,
+   "min_pieces": 5
+  },
+  {
+   "id": 106,
+   "solutions": 6,
+   "static": 6,
+   "min_pieces": 5
+  },
+  {
+   "id": 107,
+   "solutions": 57,
+   "static": 57,
+   "min_pieces": 5
+  },
+  {
+   "id": 108,
+   "solutions": 55,
+   "static": 67,
+   "min_pieces": 5
+  },
+  {
+   "id": 109,
+   "solutions": 8,
+   "static": 39,
+   "min_pieces": 5
+  },
+  {
+   "id": 110,
+   "solutions": 20,
+   "static": 38,
+   "min_pieces": 5
+  },
+  {
+   "id": 111,
+   "solutions": 6,
+   "static": 6,
+   "min_pieces": 5
+  },
+  {
+   "id": 112,
+   "solutions": 12,
+   "static": 23,
+   "min_pieces": 5
+  },
+  {
+   "id": 113,
+   "solutions": 10,
+   "static": 58,
+   "min_pieces": 5
+  },
+  {
+   "id": 114,
+   "solutions": 14,
+   "static": 77,
+   "min_pieces": 5
+  },
+  {
+   "id": 115,
+   "solutions": 6,
+   "static": 8,
+   "min_pieces": 5
+  },
+  {
+   "id": 116,
+   "solutions": 43,
+   "static": 105,
+   "min_pieces": 5
+  },
+  {
+   "id": 117,
+   "solutions": 1,
+   "static": 4,
+   "min_pieces": 5
+  },
+  {
+   "id": 118,
+   "solutions": 11,
+   "static": 11,
+   "min_pieces": 5
+  },
+  {
+   "id": 119,
+   "solutions": 6,
+   "static": 9,
+   "min_pieces": 5
+  },
+  {
+   "id": 120,
+   "solutions": 6,
+   "static": 6,
+   "min_pieces": 5
+  },
+  {
+   "id": 121,
+   "solutions": 43,
+   "static": 45,
+   "min_pieces": 5
+  },
+  {
+   "id": 122,
+   "solutions": 135,
+   "static": 179,
+   "min_pieces": 5
+  },
+  {
+   "id": 123,
+   "solutions": 36,
+   "static": 36,
+   "min_pieces": 5
+  },
+  {
+   "id": 124,
+   "solutions": 13,
+   "static": 18,
+   "min_pieces": 5
+  },
+  {
+   "id": 125,
+   "solutions": 8,
+   "static": 12,
+   "min_pieces": 5
+  },
+  {
+   "id": 126,
+   "solutions": 5,
+   "static": 5,
+   "min_pieces": 5
+  },
+  {
+   "id": 127,
+   "solutions": 4,
+   "static": 18,
+   "min_pieces": 5
+  }
+ ]
+}

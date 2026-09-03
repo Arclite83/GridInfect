@@ -17,6 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Core.Mirror/GridInfect.Core.Mirror.csproj" />
+    <ProjectReference Include="../Services.Mirror/GridInfect.Services.Mirror.csproj" />
     <ProjectReference Include="../UnityStubs/UnityEngine.Stubs.csproj" />
   </ItemGroup>
 </Project>

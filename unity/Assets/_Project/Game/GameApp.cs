@@ -30,6 +30,15 @@ namespace GridInfect.Game
 
         public static long NowMs() => System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
+        // The Daily's date: UTC, so every device gets the same board.
+        public static string TodayUtc() => DailySpec.Format(System.DateTime.UtcNow);
+
+        // Local until a friends board lands (stage 4 leaves the hook).
+        public IDailyScoreSink DailyScores { get; set; } = new LocalDailyScoreSink();
+
+        // Ads, consent and remove-ads behind the Services boundary (stage 6).
+        public AdGate Ads { get; private set; }
+
         void Awake()
         {
             Application.targetFrameRate = PresentationConfig.TargetFrameRate;
@@ -51,6 +60,9 @@ namespace GridInfect.Game
             _save = new SavePort(Application.persistentDataPath);
             State.Profile = _save.Load();
             Dispatcher.Applied += _ => _save.SaveIfDirty(State.Profile);
+
+            Ads = AdGate.Create();
+            Ads.Start();
 
             Screens = new ScreenManager(this);
             Screens.Show(new MainMenuScreen(), instant: true);
