@@ -37,6 +37,7 @@ namespace GridInfect.Core
                 Grade = level.Grade,
                 ParMs = DailySpec.ParMs(level.Trace.Length, level.Grade),
             };
+            state.Solution = level.Solution;
             state.SetSession(new LevelSession(level.Def));
         }
     }
@@ -111,6 +112,7 @@ namespace GridInfect.Core
             state.FreePlayRun = null;
             state.DailyRun = null;
             state.EndlessRun = new EndlessRun { Grade = grade, Seed = seed, Index = 0, Streak = 0, LevelSeed = level.Seed };
+            state.Solution = level.Solution;
             state.SetSession(new LevelSession(level.Def));
         }
     }
@@ -142,6 +144,7 @@ namespace GridInfect.Core
             var level = DailySpec.FirstAccepted(DailySpec.Endless(run.Grade), run.Seed + (ulong)run.Index * BeginEndlessAction.Stride)
                         ?? throw new InvalidOperationException("no endless board from this seed");
             run.LevelSeed = level.Seed;
+            state.Solution = level.Solution;
             state.SetSession(new LevelSession(level.Def));
         }
     }

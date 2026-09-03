@@ -160,5 +160,6 @@ namespace GridInfect.Core
         public bool Placed;
         public sbyte I;
         public sbyte J;
+        public bool Locked;   // placed by the Lock tool: cannot be lifted, survives a full reset
     }
 }

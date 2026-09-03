@@ -25,6 +25,8 @@ HEADER = """\
 // Do not edit; re-run the script instead.
 // Boards: 66 chars, row-major, digits = cell values (RULES.md §1.1).
 // Pieces: ordered tile names, comma-joined.
+// Solutions: the recorded solution as "piece@cell" pairs in vector order
+// (stage 5: the Lock tool's fallback source in Legacy mode).
 // </auto-generated>
 
 namespace GridInfect.Core
@@ -47,7 +49,7 @@ def main():
     if ids != list(range(128)):
         sys.exit(f"expected level ids 0..127, got {len(ids)} ids")
 
-    boards, pieces = [], []
+    boards, pieces, solutions = [], [], []
     for lid in ids:
         level = levels[str(lid)]
         board = level["board"]
@@ -59,6 +61,7 @@ def main():
         if not 1 <= len(level["pieces"]) <= 8:
             sys.exit(f"level {lid}: {len(level['pieces'])} pieces")
         pieces.append(",".join(level["pieces"]))
+        solutions.append(" ".join(f"{s['piece_index']}@{s['i'] * 6 + s['j']}" for s in level["solution"]))
 
     lines = [HEADER]
     lines.append("        internal static readonly string[] Boards =\n        {\n")
@@ -68,6 +71,10 @@ def main():
     lines.append("        internal static readonly string[] Pieces =\n        {\n")
     for lid, p in zip(ids, pieces):
         lines.append(f'            "{p}", // {lid}\n')
+    lines.append("        };\n\n")
+    lines.append("        internal static readonly string[] Solutions =\n        {\n")
+    for lid, sol in zip(ids, solutions):
+        lines.append(f'            "{sol}", // {lid}\n')
     lines.append("        };\n")
     lines.append(FOOTER)
 

@@ -40,6 +40,20 @@ namespace GridInfect.Core
             return new LevelDef(board, tiles, id);
         }
 
+        // The recorded solution (docs/test_vectors.json) in its winning order.
+        public static (int piece, int cell)[] Solution(int id)
+        {
+            if (id < 0 || id >= Count) throw new ArgumentOutOfRangeException(nameof(id));
+            string[] parts = ClassicLevelData.Solutions[id].Split(' ');
+            var result = new (int, int)[parts.Length];
+            for (int n = 0; n < parts.Length; n++)
+            {
+                string[] pc = parts[n].Split('@');
+                result[n] = (int.Parse(pc[0]), int.Parse(pc[1]));
+            }
+            return result;
+        }
+
         public static Tile ParseTile(string name)
         {
             switch (name)

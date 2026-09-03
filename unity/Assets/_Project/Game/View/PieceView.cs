@@ -10,6 +10,7 @@ namespace GridInfect.Game
         public Vector2 TraySlot;
 
         readonly float _size;
+        GameObject _lockGlyph;
 
         public PieceView(Transform parent, int index, Tile tile, float cellSize, Vector2 traySlot)
         {
@@ -34,6 +35,22 @@ namespace GridInfect.Game
                 float offset = cellSize * 0.28f;
                 arm.transform.localPosition = new Vector3(
                     TileArms.Dj(dir) * offset, -TileArms.Di(dir) * offset, 0f);
+            }
+        }
+
+        // The lock icon (R-1001: a shape, never colour alone): a small dark
+        // block on the piece body, shown while the piece is locked.
+        public void SetLocked(bool locked)
+        {
+            if (locked && _lockGlyph == null)
+            {
+                _lockGlyph = Ui.MakeRect("lock", Root.transform, new Vector2(_size * 0.22f, _size * 0.16f), BoardTheme.GlyphDark, 7);
+                _lockGlyph.transform.localPosition = new Vector3(0f, -_size * 0.06f, 0f);
+            }
+            else if (!locked && _lockGlyph != null)
+            {
+                Object.Destroy(_lockGlyph);
+                _lockGlyph = null;
             }
         }
 

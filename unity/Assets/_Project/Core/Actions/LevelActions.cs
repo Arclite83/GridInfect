@@ -21,6 +21,7 @@ namespace GridInfect.Core
             state.ClassicLevelId = id;
             state.FreePlayDefs = null;
             state.FreePlayRun = null;
+            state.Solution = ClassicLevels.Solution(id);
             state.SetSession(new LevelSession(ClassicLevels.Get(id)));
         }
     }
@@ -49,17 +50,22 @@ namespace GridInfect.Core
             var rng = new Pcg32((ulong)input.Long("seed"));
 
             var defs = new LevelDef[count];
+            var solutions = new (int piece, int cell)[count][];
             for (int n = 0; n < count; n++)
             {
-                defs[n] = LevelGenerator.Generate(difficulty, ref rng);
+                defs[n] = LevelGenerator.Generate(difficulty, ref rng, out var sampled);
+                solutions[n] = new (int, int)[sampled.Length];
+                for (int k = 0; k < sampled.Length; k++) solutions[n][k] = (k, Grid.Loc(sampled[k].i, sampled[k].j));
             }
 
             state.Mode = GameMode.FreePlay;
             state.Difficulty = difficulty;
             state.ClassicLevelId = -1;
             state.FreePlayDefs = defs;
+            state.FreePlaySolutions = solutions;
             state.FreePlayIndex = 0;
             state.FreePlayRun = null; // timer starts at freeplay.begin (BEGIN button)
+            state.Solution = solutions[0];
             state.SetSession(new LevelSession(defs[0]));
         }
     }

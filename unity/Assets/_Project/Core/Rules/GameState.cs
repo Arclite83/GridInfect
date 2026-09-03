@@ -16,6 +16,12 @@ namespace GridInfect.Core
         public DailyRun DailyRun;       // GameMode.Daily
         public EndlessRun EndlessRun;   // GameMode.Endless
 
+        // The current level's stored solution in a winning order: the
+        // vector for Legacy, the generator's for everything else. The Lock
+        // tool's fallback source; set by every loader.
+        public (int piece, int cell)[] Solution;
+        public (int piece, int cell)[][] FreePlaySolutions;
+
         public LevelDef[] FreePlayDefs;
 
         public int FreePlayIndex;
@@ -63,6 +69,12 @@ namespace GridInfect.Core
         public int DailyStreak;
         public string DailyLastDate = "";
         public readonly int[] EndlessBest = new int[5];
+
+        // Lock wallet (stage 5): start 5, free grants capped at LocksCap,
+        // rewarded-ad grants uncapped (NEXT_PASS: they are revenue).
+        public const int LocksStart = 5;
+        public const int LocksCap = 10;
+        public int Locks = LocksStart;
 
         public bool Muted;
 

@@ -121,7 +121,7 @@ namespace GridInfect.Core.Tests
             migrated.DailyLastDate = "2026-09-07";
             migrated.EndlessBest[2] = 9;
             string json = SaveCodec.Save(migrated);
-            Assert.That(json, Does.Contain("\"v\":3"));
+            Assert.That(json, Does.Contain("\"v\":" + SaveCodec.Version));
             var loaded = SaveCodec.Load(json);
             Assert.That(loaded.DailyBestMs, Is.EqualTo(migrated.DailyBestMs));
             Assert.That(loaded.DailyStreak, Is.EqualTo(3));

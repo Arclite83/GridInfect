@@ -56,6 +56,7 @@ namespace GridInfect.Core
             int piece = input.Int("piece");
             if (piece < 0 || piece >= s.Pieces.Length) return $"piece index {piece} out of range";
             if (!s.Pieces[piece].Placed) return $"piece {piece} is not placed";
+            if (s.Pieces[piece].Locked) return $"piece {piece} is locked";
             return null;
         }
 

@@ -28,6 +28,7 @@ namespace GridInfect.Core
             state.FreePlayRun = null;
             state.WorldId = worldId;
             state.WorldIndex = index;
+            state.Solution = Worlds.Solution(worldId, index);
             state.SetSession(new LevelSession(Worlds.Level(worldId, index)));
         }
     }

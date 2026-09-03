@@ -13,6 +13,8 @@ namespace GridInfect.Game
         TextMesh _hud;
         UiButton _backButton;
         UiButton _resetButton;
+        UiButton _lockButton;
+        TextMesh _lockLabel;
         GameObject _popup;
         GameObject _beginCover;
         int _dragIndex = -1;
@@ -42,6 +44,15 @@ namespace GridInfect.Game
 
             _hud = Ui.MakeText("hud", Root.transform, "", L.BodyText, BoardTheme.Accent, 2);
             Ui.SetPos(_hud.gameObject, 0f, L.TopBarY - L.HeadingText - L.Gap);
+
+            // The one tool (stage 5): spends a lock, places one piece at its
+            // solution cell and locks it. Sits under RESET, off the board.
+            _lockButton = UiButton.Make(Root.transform, "",
+                new Vector2(-L.BackPos.x, L.TopBarY - L.HeadingText - L.Gap), L.BackSize,
+                BoardTheme.Accent, BoardTheme.GlyphDark, LockPiece);
+            _lockLabel = _lockButton.Root.GetComponentInChildren<TextMesh>();
+            Buttons.Add(_lockButton);
+            RefreshLockLabel();
 
             App.State.SessionChanged += OnSessionChanged;
             Bind(App.State.Session);
@@ -142,6 +153,7 @@ namespace GridInfect.Game
             for (int k = _pieces.Length - 1; k >= 0; k--)
             {
                 if (!_pieces[k].HitTest(world)) continue;
+                if (_bound.Pieces[k].Locked) return true; // a locked piece cannot be lifted
 
                 if (_bound.Pieces[k].Placed)
                 {
@@ -195,6 +207,37 @@ namespace GridInfect.Game
                 PresentationConfig.TrayReturn);
         }
 
+        // ---- lock tool ----
+
+        void LockPiece()
+        {
+            if (_bound == null || _popupOpen || _beginCover != null) return;
+            App.FastForwardResolve();
+            _board.BeginWave(0, 0);
+            var result = App.Do(GridInfectActions.PieceLock);
+            _board.EndBatch(result.Applied);
+            if (!result.Applied) return;
+            for (int k = 0; k < _pieces.Length; k++)
+            {
+                var piece = _bound.Pieces[k];
+                _pieces[k].SetLocked(piece.Locked);
+                Vector2 to = piece.Placed ? _board.CellCenter(piece.I, piece.J) : _pieces[k].TraySlot;
+                // Snap: the locked piece lands on its cell, evicted ones return to the tray.
+                App.Tweens.MoveTo(_pieces[k].Root.transform, new Vector3(to.x, to.y, 0f),
+                    piece.Locked ? PresentationConfig.DropSnap : PresentationConfig.TrayReturn);
+            }
+            RefreshLockLabel();
+            App.ScheduleResolve();
+        }
+
+        void RefreshLockLabel()
+        {
+            if (_lockLabel == null) return;
+            int locks = App.State.Profile.Locks;
+            _lockLabel.text = $"LOCK {locks}";
+            _lockButton.Enabled = locks > 0 && !_popupOpen;
+        }
+
         // ---- session reactions ----
 
         void OnPiecesUnbound()
@@ -202,6 +245,7 @@ namespace GridInfect.Game
             if (_pieces == null) return;
             for (int k = 0; k < _pieces.Length; k++)
             {
+                if (_bound != null && _bound.Pieces[k].Locked) continue; // locked pieces stay put
                 App.Tweens.MoveTo(_pieces[k].Root.transform,
                     new Vector3(_pieces[k].TraySlot.x, _pieces[k].TraySlot.y, 0f),
                     PresentationConfig.TrayReturn);
@@ -255,6 +299,10 @@ namespace GridInfect.Game
                 {
                     App.Do(GridInfectActions.DailyComplete, Inputs.Now(GameApp.NowMs()));
                     App.DailyScores.Submit(run.DateUtc, Queries.ElapsedMs(run, GameApp.NowMs()), run.ParMs);
+                    if (run.StreakGrantDue)
+                    {
+                        App.Do(GridInfectActions.LocksGrant, Inputs.LocksGrant(1, "streak")); // +1 lock every 7-day streak
+                    }
                 }
                 long elapsed = Queries.ElapsedMs(run, GameApp.NowMs());
                 long best = Queries.DailyBestMs(App.State.Profile, run.DateUtc);
@@ -369,6 +417,7 @@ namespace GridInfect.Game
             _popupOpen = true;
             _backButton.Enabled = false;
             _resetButton.Enabled = false;
+            _lockButton.Enabled = false;
 
             _popup = new GameObject("popup");
             _popup.transform.SetParent(Root.transform, false);
@@ -401,8 +450,9 @@ namespace GridInfect.Game
             _popupOpen = false;
             _backButton.Enabled = true;
             _resetButton.Enabled = true;
+            RefreshLockLabel();
             Buttons.RemoveAll(b => b.Root == null ||
-                (b != _backButton && b != _resetButton));
+                (b != _backButton && b != _resetButton && b != _lockButton));
             if (_popup != null) Object.Destroy(_popup);
             _popup = null;
             _popupPanel = null;

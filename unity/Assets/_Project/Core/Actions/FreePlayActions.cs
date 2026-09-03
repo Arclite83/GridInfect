@@ -36,6 +36,7 @@ namespace GridInfect.Core
         public override void Execute(GameState state, ActionInput input)
         {
             state.FreePlayIndex++;
+            state.Solution = state.FreePlaySolutions != null ? state.FreePlaySolutions[state.FreePlayIndex] : null;
             state.SetSession(new LevelSession(state.FreePlayDefs[state.FreePlayIndex]));
         }
     }

@@ -51,11 +51,11 @@ files, touches) into these types at the boundary.
 | `Tile` | enum, the 15 L/R/U/D arm combinations | **ordinal order is contract** (rand-domain + original enum order); never reorder |
 | `Difficulty` | enum Beginner…Challenging | ordinal indexes the save arrays; never reorder |
 | `LevelDef` | immutable board (66 bytes) + ordered `Tile[]` (1–8) | cell values ∈ {0,1,2,3,5}; validated at construction |
-| `LevelSession` | working board, `PieceState[]`, repel queue, `ResetTripped`, `ResolutionPending`, `Solved` | mutated only by `Rules`, called only by actions |
+| `LevelSession` | working board, `PieceState[]` (tile, placed, cell, `Locked`), repel queue, `ResetTripped`, `ResolutionPending`, `Solved`, `Resets` (stat) | mutated only by `Rules`, called only by actions; a locked piece cannot be lifted and survives a full reset (re-propagated in index order) |
 | `World` | id, name, element set, ordered levels (board, pieces, stored solution, grade, seed, canonical hash) | baked from `docs/worlds/*.jsonl` into `WorldData.g.cs` by `tools/bake_worlds.py`; every level has exactly one solution and solves by deduction (`WorldTests`) |
-| `Profile` | unlocked set, best times ms[5], run counts[5], muted, world progress {id → levels open}, daily bests {date → ms}, daily streak and last date, endless best streak[5] | pure data; serialization only via `SaveCodec` (versioned JSON, expand/contract; v2 added `worlds`, v3 the daily/endless fields) |
+| `Profile` | unlocked set, best times ms[5], run counts[5], muted, world progress {id → levels open}, daily bests {date → ms}, daily streak and last date, endless best streak[5], lock wallet (start 5, free grants capped at 10) | pure data; serialization only via `SaveCodec` (versioned JSON, expand/contract; v2 added `worlds`, v3 the daily/endless fields, v4 `locks`) |
 | `DailyRun` / `EndlessRun` | daily: UTC date, accepted seed, start/complete ms, par; endless: grade, run seed, index, streak, level seed | boards are pure functions of the logged inputs (`DailySpec`); the daily clock is a stat, never a rule |
-| `GameState` | mode (Classic / FreePlay / World / Daily / Endless) + classic id / free-play run / world id and index / daily run / endless run + `Session` + `Profile` | wall-clock time enters **only** through action inputs |
+| `GameState` | mode (Classic / FreePlay / World / Daily / Endless) + classic id / free-play run / world id and index / daily run / endless run + `Session` + `Profile` + the level's stored `Solution` (vector for Legacy, generator's otherwise) | wall-clock time enters **only** through action inputs |
 
 `ResolutionPending` is the model's name for the original's 0.3 s presentation
 beat: a placement leaves consequences pending; `board.resolve` lands them.
@@ -92,6 +92,8 @@ live in `Queries` and carry zero rules.
 | `endless.begin` | `grade, seed` | DailyActions | start an Endless run: no clock, boards from the logged seed |
 | `endless.advance` | — | DailyActions | solved: streak +1 (or 1 after a reset), best per grade, next board |
 | `endless.abort` | — | DailyActions | leave a run |
+| `piece.lock` | — | LockActions | spend one lock: the deducer's next forced placement from the player's correct pieces (fallback: largest-coverage unplaced piece of the stored solution), evicting a player piece on that cell, placed and locked; rejects at wallet 0 or nothing left |
+| `locks.grant` | `amount, reason` | LockActions | `"rewarded"` (an ad) is uncapped; other reasons (`"streak"`, dispatched by the adapter on every 7th daily) top up to the cap |
 
 Adding a capability = a new action (or a new version of one); never an
 in-place break of a logged contract. Rejections are answers, not errors: a

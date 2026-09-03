@@ -25,9 +25,22 @@ namespace GridInfect.Core.Solving
 
         public static int Count(LevelDef def, int cap = DefaultCap) => Analyse(def, cap).Solutions;
 
-        public static Result Analyse(LevelDef def, int cap = DefaultCap)
+        public static Result Analyse(LevelDef def, int cap = DefaultCap) => Analyse(def, null, cap);
+
+        // Count with some pieces already fixed on the board (the Lock tool's
+        // safety check): fixed placements are part of every set.
+        public static int Count(LevelDef def, PieceState[] placed, int cap = DefaultCap) => Analyse(def, placed, cap).Solutions;
+
+        public static Result Analyse(LevelDef def, PieceState[] placed, int cap)
         {
             var search = new Search(def, cap);
+            if (placed != null)
+            {
+                for (int k = 0; k < placed.Length && k < def.Pieces.Length; k++)
+                {
+                    if (placed[k].Placed) search.Fix(k, Grid.Loc(placed[k].I, placed[k].J));
+                }
+            }
             search.Run();
             var result = new Result { Static = search.Sets.Count, Capped = search.HitCap };
             int min = 0;
@@ -246,7 +259,20 @@ namespace GridInfect.Core.Solving
                 _undo = new int[options * (_n + 1)];
             }
 
-            public void Run() => Rec(CellMask.None, 0);
+            CellMask _fixedCovered;
+            int _fixedDepth;
+
+            // Pre-place a piece: it is in every set the search reaches.
+            public void Fix(int k, int loc)
+            {
+                int opt = k * Grid.Cells + loc;
+                _chosen[_fixedDepth++] = opt;
+                _fixedCovered |= _cov[opt];
+                for (int l = 0; l < Grid.Cells; l++) Remove(k * Grid.Cells + l);
+                for (int p = 0; p < _n; p++) Remove(p * Grid.Cells + loc);
+            }
+
+            public void Run() => Rec(_fixedCovered, _fixedDepth);
 
             // The oracle's recursion: most-constrained uncovered cell first
             // (lowest cell on ties, dead end on zero), options in piece-major
