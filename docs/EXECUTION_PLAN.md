@@ -10,18 +10,18 @@ table below in the same PR.
 | Stage | Name | Status | PR |
 |---|---|---|---|
 | 0 | Assessment, decisions, metrics tool | Done | game-mechanics-monetization |
-| 1 | Deduction solver and grader | Done | claude/execution-plan |
-| 2 | Generator v2 | Done | claude/execution-plan |
-| 3 | Level bake, worlds, Legacy mode | Done | claude/execution-plan |
-| 4 | Daily and Endless | Done | claude/execution-plan |
-| 5 | Lock tool | Done | claude/execution-plan |
-| 6 | Ads, consent, remove-ads (Android) | Blocked: the Google Mobile Ads / UMP and Unity IAP packages and an Android device build are not available in the authoring environment; the Services boundary, interfaces, Null services, cadence config, gate test and adapter wiring are in | claude/execution-plan |
-| 7 | RulesV2 | Done | claude/execution-plan |
-| 8 | Short arms | Done | claude/execution-plan |
-| 9 | Area piece | Done | claude/execution-plan |
-| 10 | Forbidden cells | Done | claude/execution-plan |
-| 11 | Diagonal arms | Done | claude/execution-plan |
-| 12 | Relay cells | Done | claude/execution-plan |
+| 1 | Deduction solver and grader | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
+| 2 | Generator v2 | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
+| 3 | Level bake, worlds, Legacy mode | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
+| 4 | Daily and Endless | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
+| 5 | Lock tool | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
+| 6 | Ads, consent, remove-ads (Android) | Blocked: the Google Mobile Ads / UMP and Unity IAP packages and an Android device build are not available in the authoring environment; the Services boundary, interfaces, Null services, cadence config, gate test and adapter wiring are in | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
+| 7 | RulesV2 | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
+| 8 | Short arms | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
+| 9 | Area piece | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
+| 10 | Forbidden cells | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
+| 11 | Diagonal arms | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
+| 12 | Relay cells | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
 
 Stages 1–6 are the Android launch. 7–12 are post-launch worlds; the iOS
 follow slots in wherever it is ready.
