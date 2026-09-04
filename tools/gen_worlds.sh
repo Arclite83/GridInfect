@@ -35,7 +35,10 @@ world() {
 }
 
 ELEMENTS='["walls"]'
-world w01 "First Steps"  20 100000 --pieces 2-2 --grade G1 --max-run 4
+# No locks in the opening world: a level that ships a piece already placed
+# and locked is the constructor's last resort for uniqueness, and the very
+# first board a player sees should not hand them a piece they cannot move.
+world w01 "First Steps"  20 100000 --pieces 2-2 --grade G1 --max-run 4 --max-locks 0
 world w02 "Two Lines"    22 110000 --pieces 2-3 --grade G1
 world w03 "Corners"      22 120000 --pieces 3-3 --grade G1
 world w04 "Crossings"    22 130000 --pieces 3-4 --grade G2

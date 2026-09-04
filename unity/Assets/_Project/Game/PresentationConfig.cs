@@ -13,6 +13,11 @@ namespace GridInfect.Game
         public const float PopupSlide = 0.15f;      // COMPLETE popup / BEGIN dismiss
         public const float PageSlide = 0.20f;       // classic level-select paging
 
+        // Touching a locked given: it leans this far off its cell and back,
+        // so a piece that cannot be lifted still answers the finger.
+        public const float LockedNudge = 0.06f;
+        public const float LockedNudgePct = 0.12f;  // of a cell
+
         // Touch gating (see GameApp.Update). The block runs from the end of a
         // transition so a press made during the blackout cannot act on the
         // screen that replaced the one it was aimed at; the debounce is one

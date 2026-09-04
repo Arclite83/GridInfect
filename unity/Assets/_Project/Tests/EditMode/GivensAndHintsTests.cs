@@ -69,21 +69,24 @@ namespace GridInfect.Core.Tests
         }
 
         [Test]
-        public void TheFirstLevelOfTheFirstWorldShipsAGiven()
+        public void TheOpeningWorldNeverShipsALockedGiven()
         {
-            // The one a player meets first, and the one the tray bug showed up
-            // on: piece 0 is already on the board, so only the rest can move.
-            var d = GridInfectActions.CreateDispatcher();
-            Assert.That(d.Dispatch(GridInfectActions.WorldLoad, Inputs.WorldLoad(Worlds.First.Id, 0)).Applied);
-            var s = d.State.Session;
-            int placed = 0;
-            for (int k = 0; k < s.Pieces.Length; k++)
+            // A lock is the constructor's last resort for uniqueness and the
+            // one thing a player cannot move; the first world a player sees is
+            // generated with --max-locks 0 (tools/gen_worlds.sh) so nobody's
+            // opening board hands them a piece they cannot pick up.
+            World first = Worlds.First;
+            for (int n = 0; n < first.Count; n++)
             {
-                if (!s.Pieces[k].Placed) continue;
-                placed++;
-                Assert.That(s.Pieces[k].Locked, Is.True, "a piece placed before play is a locked given");
+                Assert.That(Worlds.Locks(first.Id, n), Is.Empty, $"{first.Id}/{n}");
             }
-            Assert.That(placed, Is.EqualTo(1));
+
+            var d = GridInfectActions.CreateDispatcher();
+            Assert.That(d.Dispatch(GridInfectActions.WorldLoad, Inputs.WorldLoad(first.Id, 0)).Applied);
+            foreach (PieceState piece in d.State.Session.Pieces)
+            {
+                Assert.That(piece.Placed, Is.False, "every piece of the opening board starts in the tray");
+            }
         }
 
         [Test]

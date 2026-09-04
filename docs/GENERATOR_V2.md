@@ -353,7 +353,14 @@ through the rules before play (`Locked.Apply`, from `world.load`,
 `daily.begin`, `endless.begin` and `endless.advance`): the piece sits on
 the board locked, cannot be lifted, and survives a full reset, exactly as
 a Lock-tool placement does. Stored solutions list locked pieces first;
-solvers and counters take them as `placed` (`Locked.Placed`).
+solvers and counters take them as `placed` (`Locked.Placed`). Touching one
+nudges it and puts it back, so a piece that cannot be lifted still answers.
+
+The opening world opts out: `w01` is generated with `--max-locks 0`
+(`tools/gen_worlds.sh`), because the first board a player ever sees should
+not hand them a piece they cannot pick up. It costs nothing — 19 of its 20
+levels are the same seeds either way, and acceptance stays at 83%.
+`GivensAndHintsTests.TheOpeningWorldNeverShipsALockedGiven` holds it.
 
 ### Batch tool
 

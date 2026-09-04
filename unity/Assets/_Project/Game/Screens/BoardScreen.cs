@@ -190,7 +190,14 @@ namespace GridInfect.Game
             for (int k = _pieces.Length - 1; k >= 0; k--)
             {
                 if (!_pieces[k].HitTest(world)) continue;
-                if (_bound.Pieces[k].Locked) return true; // a locked piece cannot be lifted
+                if (_bound.Pieces[k].Locked)
+                {
+                    // A locked given cannot be lifted (GENERATOR_V2 "Locks at
+                    // load"). Swallowing the touch outright reads as a dead
+                    // piece rather than a fixed one, so it leans and settles.
+                    NudgeLocked(k);
+                    return true;
+                }
 
                 if (_bound.Pieces[k].Placed)
                 {
@@ -206,6 +213,19 @@ namespace GridInfect.Game
                 return true;
             }
             return false;
+        }
+
+        void NudgeLocked(int k)
+        {
+            PieceState piece = _bound.Pieces[k];
+            if (!piece.Placed || _board == null) return;
+            Vector2 home = _board.CellCenter(piece.I, piece.J);
+            Transform t = _pieces[k].Root.transform;
+            // From the cell, not from wherever a previous nudge left it.
+            t.localPosition = new Vector3(home.x, home.y, 0f);
+            float lift = _board.CellSize * PresentationConfig.LockedNudgePct;
+            App.Tweens.MoveTo(t, new Vector3(home.x, home.y + lift, 0f), PresentationConfig.LockedNudge,
+                () => App.Tweens.MoveTo(t, new Vector3(home.x, home.y, 0f), PresentationConfig.LockedNudge));
         }
 
         public override void OnDrag(Vector2 world)

@@ -98,7 +98,6 @@ namespace GridInfect.Core
 
         internal static readonly string[] Boards =
         {
-            "000000000000000000000000000000000000000000001000001000101000111111",
             "000100000111001110000110000110000010000000000000000000000000000000",
             "000000000000000000000000001000001100111100001000001000000000000000",
             "000000000000000000000000100000100000100000100001110001100001100001",
@@ -118,6 +117,7 @@ namespace GridInfect.Core
             "001000001000001000002000000000100000111100100000000000000000000000",
             "000000000000000000000100000110000110011111000010000011000010000010",
             "000000000000000000000000000000000000000000001111000000001000001111",
+            "001000001000001000001000011110000000000000000000000000000000000000",
             "000000000000000000000000000000000001000001000001000001000111000011",
             "000000000000010000010000010000010000010000110000100000100000100000",
             "000000000000000000000000000000000111000001000001000110000000000000",
@@ -470,7 +470,6 @@ namespace GridInfect.Core
 
         internal static readonly string[] Pieces =
         {
-            "D,LRU",
             "RUD,LD",
             "U,LU",
             "D,RUD",
@@ -490,6 +489,7 @@ namespace GridInfect.Core
             "U,RUD",
             "RUD,LRU",
             "RU,L",
+            "L,D",
             "LUD,U",
             "U,LU",
             "L,LD",
@@ -842,7 +842,6 @@ namespace GridInfect.Core
 
         internal static readonly string[] Solutions =
         {
-            "0@54 1@62",
             "0@9 1@16",
             "0@50 1@39",
             "0@47 1@48",
@@ -862,6 +861,7 @@ namespace GridInfect.Core
             "0@14 1@36",
             "0@52 1@39",
             "0@62 1@47",
+            "0@28 1@2",
             "0@59 1@64",
             "0@60 1@43",
             "0@52 1@35",
@@ -1586,7 +1586,7 @@ namespace GridInfect.Core
 
         internal static readonly int[] Efforts =
         {
-            5,
+            6,
             6,
             6,
             6,
@@ -1958,7 +1958,7 @@ namespace GridInfect.Core
 
         internal static readonly int[] TraceLengths =
         {
-            1,
+            2,
             2,
             2,
             2,
@@ -2330,7 +2330,6 @@ namespace GridInfect.Core
 
         internal static readonly ulong[] Seeds =
         {
-            100021ul,
             100000ul,
             100001ul,
             100002ul,
@@ -2350,6 +2349,7 @@ namespace GridInfect.Core
             100017ul,
             100018ul,
             100020ul,
+            100023ul,
             110002ul,
             110027ul,
             110000ul,
@@ -2702,7 +2702,6 @@ namespace GridInfect.Core
 
         internal static readonly string[] Hashes =
         {
-            "181b99f5fc79cdae",
             "2bb1db14739fbba6",
             "9707d6f0d42d65eb",
             "c94fc9aad5f55375",
@@ -2722,6 +2721,7 @@ namespace GridInfect.Core
             "214234145267e414",
             "6698b47aca4f69a5",
             "8e033df38f896361",
+            "c50f79f07ed92350",
             "6dbe1d8d8f62aabd",
             "c920a35aed629a91",
             "112176714b97e1a8",
@@ -3818,7 +3818,7 @@ namespace GridInfect.Core
 
         internal static readonly string[] Locks =
         {
-            "0@54",
+            "",
             "",
             "",
             "",
