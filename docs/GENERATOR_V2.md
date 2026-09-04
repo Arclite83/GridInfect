@@ -1,9 +1,15 @@
-# Generator v2 — solver, grader, pipeline
+# Generator v2 — solver, grader, constructor
 
 Companion to `NEXT_PASS.md` decisions 1–2 and `EXECUTION_PLAN.md` stages 1–2.
 Code: `GridInfect.Core.Solving` (solver, counter, grader) and
-`GridInfect.Core.Generation` (pipeline). Oracle: `tools/level_metrics.py`,
-pinned by `docs/level_metrics_classic.json`.
+`GridInfect.Core.Generation` (sampler and constructor). Oracle:
+`tools/level_metrics.py`, pinned by `docs/level_metrics_classic.json`.
+
+The method in one sentence: never generate a puzzle; generate a solution,
+then subtract information from it until exactly one path leads back, then
+take away every piece of information the proof does not need, then read
+the difficulty off the solver's trace. The sampler is the V1 algorithm's
+steps 1–5; the constructor is what V1 and the stage-2 pruner lacked.
 
 ## Solver
 
@@ -27,10 +33,10 @@ as a candidate on every active, unoccupied cell. The candidates that can
 cover a cell are exactly the placements in its row line and its column line
 (on it, or an arm pointing along the line at it). Rules either **place** (a
 placement every solution must contain) or **exclude** (a placement no
-solution contains). The solver runs tiers 1–3 to a fixpoint, then tier 4
-once, and repeats; when nothing fires it branches (a **guess**) so the
-answer is always found, but only a run with zero guesses counts as
-`Solved`. `Solved` implies a unique solution: every placed piece is forced,
+solution contains). The solver runs tiers 1–3 to a fixpoint, then one tier
+4 pass, then (only when that finds nothing) one tier 5 pass, and repeats;
+when nothing fires it branches (a **guess**) so the answer is always found,
+but only a run with zero guesses counts as `Solved`. `Solved` implies a unique solution: every placed piece is forced,
 the placed set covers the board, and any other minimal cover would have to
 contain the same forced placements.
 
@@ -129,7 +135,15 @@ placed, tier 3. Then tier 1 finishes the level.
 
 Suppose candidate *p*; run tiers 1–3 to a fixpoint from there; if they
 contradict (a cell with no candidate, the count bound broken, or a complete
-cover no placement order wins) exclude *p*. One level deep, never nested.
+cover no placement order wins) exclude *p*. One level deep.
+
+### Tier 5 — Contradiction2
+
+Suppose candidate *p*; from there run tiers 1–3 and tier 4 passes to a
+fixpoint; if that contradicts, exclude *p*. A suppose inside a suppose:
+the lookahead cap (`Depth.Max` = 2). Tried only when a tier 4 pass over
+every candidate found nothing, and counted once per pass like tier 4.
+Anything past it is the search fallback, which no shipped level may need.
 
 Worked example, classic level 51 (id 50), pieces `R`,`LUD`,`RD`,`U`,
 switch at (2,3), traps at (2,0) and (7,0), wall at (5,1):
@@ -161,7 +175,7 @@ candidate for (0,4) (tier 1), then `U` on (6,0) and `RD` on (3,3).
 
 ### Search fallback and `Guesses`
 
-When tier 4 changes nothing, the solver picks the uncovered cell with the
+When tier 5 changes nothing, the solver picks the uncovered cell with the
 fewest (tile, cell) candidates and tries each in turn, recursing. Each
 branch point is one guess. A result with guesses is `Complete` (an order
 that wins is returned) but never `Solved`.
@@ -170,10 +184,16 @@ that wins is returned) but never `Solved`.
 
 `SolveResult`: `Solved`, `Trace` (placements in order, each with the
 highest tier that fed it and the cells the rule reasoned about), `MaxTier`,
-`TierCounts` (rule firings per tier), `Guesses`, plus `Complete` and
-`Placements` (a winning order). `Deducer.Candidates` exposes the surviving
-candidate cells per piece after tiers 1–3, which is what the Lock tool
-reads for "the next forced placement".
+`TierCounts` (rule firings per tier; passes for tiers 4–5), `Guesses`,
+`Depth` (0 = tiers 1–3 only, 1 = a tier 4 pass was needed, 2 = a tier 5
+pass, 3 = guessed), `PeakOpen` (the most **open** pieces at any forced
+placement or stuck point: an open piece is unplaced with more than one
+candidate cell, a decision the player still holds), plus `Complete` and
+`Placements` (a winning order). `Deducer.Solve(def, placed)` starts from
+pre-placed pieces (a level's locks, the Lock tool's state).
+`Deducer.Candidates` exposes the surviving candidate cells per piece after
+tiers 1–3, which is what the Lock tool reads for "the next forced
+placement".
 
 ### Counter
 
@@ -196,29 +216,47 @@ static count. With the check live there are 31 unique classic levels, not
 
 ### Grades
 
-`Grader.Effort` weights rule firings: ownership 1 per placement, arm
-exclusion 2 per round, counting 4 per round, contradiction 12 per pass
-(a pass refutes every candidate it can; capped at 4 passes). Grade bands:
+The grade is read off the trace on two axes, the model from the
+escape-room and logic-grid generators: **depth** is the lookahead the
+solve needed, **peak open** is how many undecided pieces the player held
+at once. Piece types the player must translate before the line rules
+apply count as depth (`Grader.Translation`: diagonal arms +1, the area
+blot +1, relays +1; short arms are read off the piece and cost nothing);
+`Grader.EffectiveDepth` is solver depth plus translation, and the
+constructor rejects anything past `Depth.Max` (`TooDeep`).
 
-| Grade | Effort | Typical board |
-|---|---|---|
-| G1 | ≤ 7 | 2–3 pieces, one counting round |
-| G2 | ≤ 12 | 3–4 pieces, one or two counting rounds |
-| G3 | ≤ 18 | 4–5 pieces, two or three counting rounds |
-| G4 | ≤ 26 | 5 pieces with several rounds, or one contradiction pass |
-| G5 | > 26 | a contradiction pass plus counting, or two passes |
-| G6 | — | not solved by deduction (guesses, or no solution) |
+| Depth \ peak open | 0–1 | 2–3 | 4+ |
+|---|---|---|---|
+| 0 (tiers 1–3) | G1 | G2 | G3 |
+| 1 (one suppose) | G3 | G3 | G4 |
+| 2 (a suppose inside a suppose) | G5 | G5 | G5 |
+| guessed, or no solution | G6 | G6 | G6 |
 
-Classic levels that solve by deduction: 31; grades locked in
-`SolverTests.ClassicGradesAreStable`. Levels 51 and 87 (ids 50, 86) are the
-two that need tier 4.
+Read: G1 is read off the board; G2 holds two or three pieces in mind; G3
+holds four or more, or supposes once with little open; G4 supposes with
+four or more open; G5 needs the nested suppose. `Grader.Effort` (rule
+firings weighted 1/2/4/12/24 by tier) orders levels within a band; the
+bake sorts on grade, trace length, effort.
+
+Calibration (`SolverTests.ClassicGradesAreStable`, the 31 unique classic
+levels): 12 G1, 12 G2, 5 G3, 2 G4 (ids 50 and 86, the two that need a
+suppose), no G5. The stage-2 worlds under the old effort bands contained
+no level needing a nested suppose; G5 content now comes from the
+constructor at 5–6 pieces at under one percent of seeds.
 
 ## Pipeline
 
-`GeneratorV2.Generate(GenSpec spec, ulong seed)` returns a `GeneratedLevel`
-or null with a `Rejection` reason. Every random draw comes from
-`Pcg32(seed)` in a fixed order and nothing downstream depends on hash
-container order, so the same spec and seed give the same bytes.
+`GeneratorV2.Generate(GenSpec spec, ulong seed)` = `GeneratorV2.Sample`
+then `Constructor.Build`; it returns a `GeneratedLevel` or null with a
+`Rejection` reason. Every random draw comes from `Pcg32(seed)` in the
+sampler, in a fixed order; the constructor draws nothing (every choice is
+a strict order over cells and kinds) and nothing downstream depends on
+hash container order, so the same spec and seed give the same bytes.
+
+### Sampler (`GeneratorV2.Sample`)
+
+The solution comes first. Pairing rules are the sampler's rejection
+conditions; the fill is derived by carving the solution's own spread.
 
 1. **Sample.** Piece count uniform in `[MinPieces, MaxPieces]`. For each
    piece, a tile (`rng.Next(15)`) and a cell (`rng.Next(66)`), redrawn
@@ -228,49 +266,107 @@ container order, so the same spec and seed give the same bytes.
    cells can pin it); an arm has no in-bounds cell to reach; the cell
    shares a row or column with an earlier piece (`ExclusiveLines`); or it
    is closer than `MinPieceDistance` (Manhattan) to one. More than 200
-   redraws rejects the seed (`Tiles`).
+   redraws rejects the seed (`Tiles`). Elements decorate the tile after
+   the sample is accepted (§Elements).
 2. **Carve.** `CarveMode.Runs` (default): each arm draws a length in
-   `[MinRun, MaxRun]`, activates that many in-bounds cells, and draws once
-   more for an end wall right past the run (`EndWallChance`/20).
-   `CarveMode.Gaps` is the v1 roll (one draw per cell, chance
-   `BaseChance − Falloff·offset`, shape bias past offset 3). Active count
-   outside `[MinActive, MaxActive]` rejects (`Size`). End walls are then
-   applied on void cells, each kept only if the sampled solution still
-   covers the board and every arm of every sampled piece still reaches an
-   active cell.
-3. **Count.** The oracle count with `SolutionCap`; above it rejects
-   (`TooMany`).
-4. **Prune.** While the board is not unique, place one wall: candidate
-   cells are every void or active non-piece cell whose wall keeps the
-   sampled solution covering and every sampled arm useful (a blinded arm
-   turns the tile into a smaller one and hands the level a swap ambiguity
-   no wall can break). Candidates are ranked by how many of the current
-   covers (up to 400) survive the wall, void cells before active ones on
-   ties, then the best two are counted with the fast distinct-cover search
-   and the strictly smallest wins. No strict reduction, `MaxPruneSteps`,
-   or `MaxWalls` rejects (`NotUnique`). The loop runs on the fast count;
-   when it reaches 1 the oracle count confirms (it can still see a
-   non-minimal cover, in which case pruning continues on its number).
-5. **Deduce.** `Deducer.Solve` must return `Solved` with zero guesses
-   (`NotDeducible`), and the deduced set must use every piece
-   (`Decoy`, when `RequireAllPieces`).
-6. **Grade** with `Grader`; outside `[MinGrade, MaxGrade]` rejects.
-7. **Emit** `Def`, the sampled solution in a winning order, the trace, the
-   grade and effort, the seed, wall count, and the canonical hash:
-   FNV-1a 64 over the smallest of the four encodings (identity, horizontal
-   flip with `L<->R`, vertical flip with `U<->D`, both) of board plus
-   sorted tiles. The batch tool dedupes on it.
+   `[MinRun, MaxRun]` and activates that many in-bounds cells; the cell
+   past the run is recorded as a run end. `CarveMode.Gaps` is the v1 roll
+   (one draw per cell, chance `BaseChance − Falloff·offset`, shape bias
+   past offset 3). Active count outside `[MinActive, MaxActive]` rejects
+   (`Size`).
+3. **Maximal givens.** A wall goes on every void run end where the sampled
+   solution still covers the board and every arm of every sampled piece
+   still reaches an active cell (a wall that blinds an arm turns the tile
+   into a smaller one). This is the over-constrained start the
+   constructor subtracts from.
+
+### Constructor (`Constructor.Build`)
+
+A `Sample` (specs, cells, board, relay data) in; a level out. Any solution
+can be a sample: `Sample.FromLevel` turns a stored level and its solution
+into one, which is how the 128 classic solutions run through the
+constructor as a fixture (`GeneratorV2Tests.ClassicSolutionsConstructToUniqueMinimalLevels`).
+
+**Givens** (`Given`, `GivenKind`) are the units of information a level
+hands the player, in three pools:
+
+| Pool | Kind | States | Withdraws | What it kills |
+|---|---|---|---|---|
+| blockers | `Wall` | a void cell becomes a wall | void | every cover with an arm that crossed the cell |
+| blockers | `Forbidden` (`Element.Forbidden`, ≤ `MaxForbidden`) | a void cell must stay clean | void | every cover with a spread that would touch it |
+| blockers | `Trap` (`Element.Traps`, ≤ `MaxTraps`) | a void cell resets | void | every cover whose arms end on it (statically) |
+| fill | `Gap` | a covered non-piece cell becomes void (arms jump it) | active | every cover with a piece on the cell; withdraws a requirement, so it can also let new covers in |
+| pre-fixed piece | `Lock` (≤ `MaxLocks`) | a piece is placed and locked at its solution cell before play | — | every cover with that piece elsewhere |
+
+A given is **valid** when the sample still solves the level: every sampled
+piece on an active cell legally, together covering every active cell,
+every arm still reaching a cell (`RequireUsefulArms`, off for foreign
+samples like the classics), and some order with the locked pieces first
+winning through the real rules (`SolutionCounter.WinningOrder`, a replay).
+
+1. **Validate.** The sample must solve its own board (`Unwinnable`); with
+   `RequireAllPieces`, no piece's spread may be covered by the others
+   (`Decoy`).
+2. **Discriminate.** The **alternatives** are every covering set the
+   oracle reaches with the locked pieces fixed, minus the sample, minus
+   (with traps or switches) the sets no order wins; above `SolutionCap`
+   rejects (`TooMany`). While any remain: rank every valid board given by
+   how many current alternatives it kills, recount the best three exactly
+   (a gap can let new covers in), and state the one that leaves strictly
+   the fewest — ties go to wall, then gap, then forbidden, then trap, then
+   the lowest cell. When no cell reduces the count, a lock: the piece
+   whose pre-placement leaves the fewest (lowest index on ties). This is
+   the case no cell can break: two mirror pieces (an `L` and an `R`, say)
+   on parallel closed runs swap rows. More than `MaxGivens` rounds, or no
+   given that reduces the count, rejects (`NotUnique`).
+3. **Minimize.** Withdraw every given whose absence keeps the level valid
+   and unique (the oracle count with locks fixed = 1): locks first, then
+   forbidden cells and traps, then every wall on the board (the sampler's
+   run ends included), then the gaps stated in step 2. What remains is
+   irreducible: `GeneratorV2Tests.EveryGivenIsLoadBearing` withdraws each
+   wall, forbidden cell and lock of accepted levels and checks uniqueness
+   breaks. Sampled voids are the sampler's shape, not givens, and are not
+   filled.
+4. **Trace.** `Deducer.Solve` with the locks placed must return `Solved`
+   with zero guesses (`NotDeducible`); effective depth past `Depth.Max`
+   rejects (`TooDeep`); with `RequireAllPieces` the deduced set must use
+   every piece (`Decoy`); the grade must fall in `[MinGrade, MaxGrade]`
+   (`Grade`).
+5. **Emit** `Def`, the sampled solution in a winning order with locked
+   pieces first, `Locks`, the trace, grade, effort, depth and peak, the
+   seed, the givens left by kind, and the canonical hash: FNV-1a 64 over
+   the smallest of the four encodings (identity, horizontal flip with
+   `L<->R`, vertical flip with `U<->D`, both) of board plus sorted pieces
+   (plus relay arms and locks, transformed with the board). The batch tool
+   dedupes on it.
+
+Acceptance at the default spec (2–5 pieces, walls, one lock allowed) is
+238 of the first 300 seeds; the stage-2 pruner accepted under a quarter at
+four or more pieces. Rejections are now almost all `NotUnique` past the
+lock budget and `Grade` (a band the sample did not land in).
+
+### Locks at load
+
+A level's locks travel with it (`GeneratedLevel.Locks`, JSONL `locks`,
+`WorldData.Locks` / `DailyData.Locks`) and the loading action places them
+through the rules before play (`Locked.Apply`, from `world.load`,
+`daily.begin`, `endless.begin` and `endless.advance`): the piece sits on
+the board locked, cannot be lifted, and survives a full reset, exactly as
+a Lock-tool placement does. Stored solutions list locked pieces first;
+solvers and counters take them as `placed` (`Locked.Placed`).
 
 ### Batch tool
 
 `tools/gen_levels` (source `src/GenLevels`) writes accepted levels as JSONL:
-`{seed, grade, effort, board, pieces, solution, trace, hash, walls}` and
-prints the acceptance report per rejection reason. Flags cover every
-`GenSpec` field; `--threads N` generates seed chunks in parallel and
-consumes them in seed order, so the output is independent of N.
-
-Acceptance rates (default carve, `--threads 3`, seeds from 100000) are
-recorded in the stage 2 PR.
+`{seed, grade, effort, depth, peak, board, pieces, solution, trace, hash,
+givens, walls[, gaps][, forbidden][, traps][, locks][, relays]}` and prints
+the acceptance report per rejection reason. Flags cover every `GenSpec`
+field (`--max-givens`, `--max-locks`, `--max-forbidden`, `--max-traps`
+bound the pools); `--daily Monday` takes the weekday's spec from
+`DailySpec`; `--threads N` generates seed chunks in parallel and consumes
+them in seed order, so the output is independent of N.
+`tools/gen_worlds.sh` regenerates the worlds, `tools/gen_daily.sh` the
+seven Daily pools; `tools/bake_worlds.py` bakes both.
 
 ## Elements (stages 8–12)
 
@@ -284,7 +380,7 @@ does with it, and the shipped world and daily slot.
 Sample: after the tile, each arm rolls `ShortArmChance`/20 to become a
 short arm of reach 1 or 2 (one more draw). Carve: a short arm's run is
 capped at its reach (Runs mode) or its cells beyond the reach are skipped
-(Gaps mode). Prune: the arm-useful check uses the reach. Solver: static
+(Gaps mode). Constructor: the arm-useful check uses the reach. Solver: static
 coverage already honours reach; no new rule. World `w13 Short Arms`
 (pieces 3–5, G2–G4, chance 12/20); daily: Tuesdays.
 
@@ -293,18 +389,18 @@ coverage already honours reach; no new rule. World `w13 Short Arms`
 Sample: each piece rolls `AreaChance`/20 (one draw) to be a blot instead
 of its tile; at most one blot per board unless duplicate tiles are
 allowed. Carve: the blot's eight neighbours each roll the ring-1 chance.
-Prune: a blot must cover at least one neighbour. Solver: the area is part
+Constructor: a blot must cover at least one neighbour. Solver: the area is part
 of static coverage; no new rule. World `w14 Blots` (pieces 3–5, G2–G4,
 chance 8/20); daily: Wednesdays.
 
 ### Forbidden cells (`Element.Forbidden`, stage 10)
 
-A second pruner beside walls. A forbidden cell goes on a void cell the
-sampled solution never crosses (so the solution stays legal); every cover
-with a placement whose spread would cross it dies, which prunes harder
-than a wall on the same cell. The pruner ranks both kinds per cell and
-takes the strictly best; a tie goes to the forbidden cell; `MaxForbidden`
-caps them. Solver: illegal placements never enter the candidate set, and
+A blocker given beside walls (§Pipeline). A forbidden cell goes on a void
+cell the sampled solution never crosses (so the solution stays legal);
+every cover with a placement whose spread would cross it dies, which
+kills more than a wall on the same cell. The constructor ranks both kinds
+per cell and takes the strictly best; a tie goes to the wall (the quieter
+kind); `MaxForbidden` caps them. Solver: illegal placements never enter the candidate set, and
 their exclusion counts as one arm-exclusion round in the grade. World
 `w15 Keep Clean` (pieces 3–5, G2–G4, up to 4 forbidden cells); daily:
 Thursdays.
@@ -313,8 +409,8 @@ Thursdays.
 
 Sample: a piece rolls `DiagonalChance`/20 to gain one diagonal arm (two,
 one time in three), redrawn if that leaves only an opposite pair. Carve
-and prune are direction-agnostic. Solver: the two diagonal families join
-the line map. World `w16 Diagonals` (pieces 3–5, G2–G4, chance 14/20);
+and constructor are direction-agnostic. Solver: the two diagonal families
+join the line map; a diagonal arm is one translation layer in the grade. World `w16 Diagonals` (pieces 3–5, G2–G4, chance 14/20);
 daily: Fridays.
 
 ### Relay cells (`Element.Relays`, stage 12)
@@ -323,9 +419,9 @@ Sample and carve: after a piece's arms are carved, the piece rolls
 `RelayChance`/20; one of its carved cells (uniform draw) becomes a relay
 with one arm (two, one time in three; diagonals only with
 `Element.Diagonals`), and the relay's arms are carved as runs, so the
-sampled solution lights the relay and covers what it spreads to. Prune:
-every relay arm must reach a cell; a wall on the relay would uncover its
-cells, so `Covers` rejects it. Solver: static coverage follows relay
-chains, and forbidden legality does too. World `w17 Relays` (pieces 3–5,
+sampled solution lights the relay and covers what it spreads to.
+Constructor: every relay arm must reach a cell; no given ever lands on a
+relay cell. Solver: static coverage follows relay chains, and forbidden
+legality does too; a relay is one translation layer in the grade. World `w17 Relays` (pieces 3–5,
 G2–G4, chance 14/20); daily: Saturdays; Sundays mix short arms, forbidden
 cells and diagonals.

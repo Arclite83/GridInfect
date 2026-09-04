@@ -40,7 +40,7 @@ world w02 "Two Lines"    22 110000 --pieces 2-3 --grade G1
 world w03 "Corners"      22 120000 --pieces 3-3 --grade G1
 world w04 "Crossings"    22 130000 --pieces 3-4 --grade G2
 world w05 "Counting"     22 140000 --pieces 4-4 --grade G2
-world w06 "Walls"        22 150000 --pieces 4-4 --grade G3 --max-walls 12
+world w06 "Walls"        22 150000 --pieces 4-4 --grade G3
 world w07 "Corridors"    22 160000 --pieces 4-5 --grade G3 --max-run 3
 world w08 "Four Arms"    22 170000 --pieces 5-5 --grade G3
 world w09 "Long Reach"   22 180000 --pieces 5-5 --grade G4 --max-run 5

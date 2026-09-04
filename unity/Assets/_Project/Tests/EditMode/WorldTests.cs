@@ -51,6 +51,7 @@ namespace GridInfect.Core.Tests
                     Assert.That(dispatcher.State.Mode, Is.EqualTo(GameMode.World));
                     foreach (var (piece, cell) in Worlds.Solution(w.Id, n))
                     {
+                        if (dispatcher.State.Session.Pieces[piece].Locked) continue;   // placed by the loader
                         var place = dispatcher.Dispatch(GridInfectActions.PiecePlace,
                             Inputs.PiecePlace(piece, cell / Grid.Width, cell % Grid.Width));
                         Assert.That(place.Applied, Is.True, $"{w.Id}/{n}: {place.Rejection}");
@@ -70,10 +71,11 @@ namespace GridInfect.Core.Tests
                 for (int n = 0; n < w.Count; n++)
                 {
                     var def = Worlds.Level(w.Id, n);
-                    Assert.That(SolutionCounter.Count(def), Is.EqualTo(1), $"{w.Id}/{n}");
-                    var solve = Deducer.Solve(def);
+                    var placed = Worlds.Placed(w.Id, n);
+                    Assert.That(SolutionCounter.Count(def, placed), Is.EqualTo(1), $"{w.Id}/{n}");
+                    var solve = Deducer.Solve(def, placed);
                     Assert.That(solve.Solved && solve.Guesses == 0, Is.True, $"{w.Id}/{n}");
-                    Assert.That((int)Grader.Grade(solve), Is.EqualTo(Worlds.Grade(w.Id, n)), $"{w.Id}/{n}: baked grade");
+                    Assert.That((int)Grader.Grade(solve, def), Is.EqualTo(Worlds.Grade(w.Id, n)), $"{w.Id}/{n}: baked grade");
                 }
             }
         }

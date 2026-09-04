@@ -29,6 +29,20 @@ and 120 generated boards per difficulty). The full write-up with charts is the
   count is **31**, not 27 (ids 42, 50, 58, 117 join). The table above keeps
   the rev-4 numbers; `docs/level_metrics_classic.json` is the current truth.
 
+**Rev 6 (2026-09-03, the constructor).** Stage 2's pruner was additive
+and blind: it chose elements before knowing what they did and added walls
+until the count hit one, and 77% of samples at four or more pieces never
+got there. It is replaced by solution-first construction
+(`docs/GENERATOR_V2.md` §Pipeline): the sample stays the answer, the
+constructor subtracts givens from three pools (blockers, fill gaps,
+pre-fixed pieces) using the oracle's alternative solutions to pick each
+one, then withdraws every given the uniqueness proof does not need, then
+grades off the solver trace (lookahead depth capped at two, peak open
+pieces) instead of weighted rule firings. Every world regenerated; the
+Daily moved to baked weekday pools. The lock as a *given* (a piece
+pre-placed by the level) is new: it is the only thing that breaks a
+mirror-pair swap, and it ships at most one per level.
+
 ## Decisions
 
 1. **Pipeline first.** A tiered, line-based deduction solver and grader in

@@ -9,20 +9,20 @@ namespace GridInfect.Core.Generation
     // several. The hash is FNV-1a 64 of the smallest of the four encodings.
     public static class Canonical
     {
-        public static string Encode(LevelDef def)
+        public static string Encode(LevelDef def, (int piece, int cell)[] locks = null)
         {
             string best = null;
             for (int t = 0; t < 4; t++)
             {
-                string text = Transform(def, flipH: (t & 1) != 0, flipV: (t & 2) != 0);
+                string text = Transform(def, flipH: (t & 1) != 0, flipV: (t & 2) != 0, locks);
                 if (best == null || string.CompareOrdinal(text, best) < 0) best = text;
             }
             return best;
         }
 
-        public static string Hash(LevelDef def) => Fnv1a64(Encode(def)).ToString("x16");
+        public static string Hash(LevelDef def, (int piece, int cell)[] locks = null) => Fnv1a64(Encode(def, locks)).ToString("x16");
 
-        public static string Transform(LevelDef def, bool flipH, bool flipV)
+        public static string Transform(LevelDef def, bool flipH, bool flipV, (int piece, int cell)[] locks = null)
         {
             var sb = new StringBuilder(Grid.Cells + 1 + def.Pieces.Length * 3);
             for (int i = 0; i < Grid.Height; i++)
@@ -65,6 +65,22 @@ namespace GridInfect.Core.Generation
                         sb.Append(arms == 0 ? "0" : FlipArms(arms, flipH, flipV).ToString("x2"));
                     }
                 }
+            }
+            // Pre-placed pieces: the piece's transformed spec at its
+            // transformed cell, sorted, so a level with a lock never shares
+            // a hash with the same board without one.
+            if (locks != null && locks.Length > 0)
+            {
+                var entries = new string[locks.Length];
+                for (int n = 0; n < locks.Length; n++)
+                {
+                    int i = locks[n].cell / Grid.Width, j = locks[n].cell % Grid.Width;
+                    int ti = flipV ? Grid.Height - 1 - i : i;
+                    int tj = flipH ? Grid.Width - 1 - j : j;
+                    entries[n] = Flip(def.Specs[locks[n].piece], flipH, flipV).Encode() + "@" + Grid.Loc(ti, tj);
+                }
+                Array.Sort(entries, string.CompareOrdinal);
+                sb.Append("|lock:").Append(string.Join(",", entries));
             }
             return sb.ToString();
         }

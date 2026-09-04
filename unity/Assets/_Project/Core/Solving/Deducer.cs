@@ -11,6 +11,14 @@ namespace GridInfect.Core.Solving
         ArmExclusion = 2,    // a placement ruled out by what its arms would do
         PieceCounting = 3,   // the piece budget pins every piece to a job
         Contradiction1 = 4,  // one-step "suppose it went here" refutation
+        Contradiction2 = 5,  // a suppose whose refutation itself needs a suppose (the depth cap)
+    }
+
+    // Lookahead depth: 0 = propagation only (tiers 1-3), 1 = Contradiction1,
+    // 2 = Contradiction2, 3 = the search fallback (beyond a human solve).
+    public static class Depth
+    {
+        public const int Max = 2;
     }
 
     // A placement the solver derived, with the highest tier it needed to get
@@ -38,8 +46,10 @@ namespace GridInfect.Core.Solving
         public bool Solved;
         public Deduction[] Trace;
         public Tier MaxTier;
-        public int[] TierCounts;       // rule firings per tier (tier 4: passes), index = (int)Tier; [0] unused
+        public int[] TierCounts;       // rule firings per tier (tiers 4-5: passes), index = (int)Tier; [0] unused
         public int Guesses;            // branch points the search fallback needed
+        public int PeakOpen;           // most pieces still undecided (more than one candidate) at any forced placement
+        public int Depth;              // lookahead the solve needed (Depth.Max + 1 when it guessed)
         public bool Complete;          // a winning assignment exists (with or without guesses)
         public (int piece, int cell)[] Placements;   // the winning order when Complete
     }
@@ -62,7 +72,7 @@ namespace GridInfect.Core.Solving
                 }
             }
 
-            var result = new SolveResult { TierCounts = new int[5], Trace = Array.Empty<Deduction>() };
+            var result = new SolveResult { TierCounts = new int[6], Trace = Array.Empty<Deduction>() };
             var trace = new List<Deduction>();
             int guesses = 0;
             // Placements a forbidden cell rules out are read off the board
@@ -72,6 +82,10 @@ namespace GridInfect.Core.Solving
 
             result.Guesses = guesses;
             result.Trace = trace.ToArray();
+            result.PeakOpen = final != null ? final.Peak : state.Peak;
+            result.Depth = guesses > 0 ? Depth.Max + 1
+                : result.TierCounts[(int)Tier.Contradiction2] > 0 ? 2
+                : result.TierCounts[(int)Tier.Contradiction1] > 0 ? 1 : 0;
             foreach (var d in trace)
             {
                 if (d.Tier > result.MaxTier) result.MaxTier = d.Tier;
@@ -99,7 +113,7 @@ namespace GridInfect.Core.Solving
                 }
             }
             var pending = Tier.LineOwnership;
-            return Fixpoint(state, trace, new int[5], ref pending) ? state.Cand : null;
+            return Fixpoint(state, trace, new int[6], ref pending) ? state.Cand : null;
         }
 
         // Propagate to a fixpoint; on a dead end return null; when stuck,
@@ -134,7 +148,8 @@ namespace GridInfect.Core.Solving
 
         enum Step { Nothing, Placed, Contradiction }
 
-        // Tiers 1–3 to a fixpoint, then tier 4 once, repeat. False on contradiction.
+        // Tiers 1–3 to a fixpoint, then one depth-1 pass, then (only when
+        // that finds nothing) one depth-2 pass, repeat. False on contradiction.
         static bool Propagate(State s, List<Deduction> trace, int[] tierCounts)
         {
             var pending = s.ForbiddenExclusions > 0 && s.Remaining == s.N ? Tier.ArmExclusion : Tier.LineOwnership;
@@ -142,10 +157,26 @@ namespace GridInfect.Core.Solving
             {
                 if (!Fixpoint(s, trace, tierCounts, ref pending)) return false;
                 if (s.Done) return true;
-                if (Contradict(s, tierCounts, ref pending)) continue;
-                return true; // stuck, no contradiction
+                s.RecordOpen();
+                if (Contradict(s, tierCounts, ref pending, 1)) continue;
+                if (Contradict(s, tierCounts, ref pending, 2)) continue;
+                return true; // stuck, no contradiction within the depth cap
             }
             return true;
+        }
+
+        // Does `s` contradict within `depth` further supposes? Depth 0: the
+        // tiers 1–3 fixpoint fails, or completes a cover no order wins.
+        static bool Refutes(State s, int depth)
+        {
+            var scratch = new int[6];
+            var pending = Tier.LineOwnership;
+            while (true)
+            {
+                if (!Fixpoint(s, null, scratch, ref pending)) return true;
+                if (s.Done) return SolutionCounter.WinningOrder(s.Map.Def, s.Assignment()) == null;
+                if (depth <= 0 || !Contradict(s, scratch, ref pending, depth)) return false;
+            }
         }
 
         // Tiers 1–3 only. False on contradiction; true when done or stuck.
@@ -192,6 +223,7 @@ namespace GridInfect.Core.Solving
                 if (only < 0) return Step.Contradiction;
 
                 tierCounts[(int)Tier.LineOwnership]++;
+                if (trace != null) s.RecordOpen();
                 var tier = pending > Tier.LineOwnership ? pending : Tier.LineOwnership;
                 pending = Tier.LineOwnership;
                 int kind = only / Grid.Cells;
@@ -204,13 +236,14 @@ namespace GridInfect.Core.Solving
             return Step.Nothing;
         }
 
-        // Tier 4: suppose candidate p; if tiers 1–3 then contradict, drop p.
-        // One pass over every candidate counts as one firing (a player
-        // refutes the few that matter, not every cell on the board).
-        static bool Contradict(State s, int[] tierCounts, ref Tier pending)
+        // Tiers 4 and 5: suppose candidate p; if it refutes within depth-1
+        // further supposes, drop p. One pass over every candidate counts as
+        // one firing (a player refutes the few that matter, not every cell
+        // on the board).
+        static bool Contradict(State s, int[] tierCounts, ref Tier pending, int depth)
         {
             bool any = false;
-            var scratch = new int[5];
+            var tier = depth >= 2 ? Tier.Contradiction2 : Tier.Contradiction1;
             for (int k = 0; k < s.N; k++)
             {
                 if (s.Used[k]) continue;
@@ -219,17 +252,15 @@ namespace GridInfect.Core.Solving
                     if (!s.Cand[k].Has(loc)) continue;
                     var trial = s.Clone();
                     trial.Place(k, loc);
-                    var scratchTier = Tier.LineOwnership;
-                    if (!Fixpoint(trial, null, scratch, ref scratchTier)
-                        || (trial.Done && SolutionCounter.WinningOrder(s.Map.Def, trial.Assignment()) == null))
+                    if (Refutes(trial, depth - 1))
                     {
                         s.Cand[k] = s.Cand[k] & ~CellMask.Bit(loc);
-                        if (pending < Tier.Contradiction1) pending = Tier.Contradiction1;
+                        if (pending < tier) pending = tier;
                         any = true;
                     }
                 }
             }
-            if (any) tierCounts[(int)Tier.Contradiction1]++;
+            if (any) tierCounts[(int)tier]++;
             return any;
         }
 
@@ -252,6 +283,7 @@ namespace GridInfect.Core.Solving
             public bool TripperPlaced;
             public bool CountChanged;
             public int ForbiddenExclusions;         // placements a forbidden cell rules out
+            public int Peak;                        // most undecided pieces seen at once (SolveResult.PeakOpen)
             public (int piece, int cell)[] Order;   // set once Done and order-feasible
 
             public enum Outcome { Nothing, Pruned, Contradiction }
@@ -308,6 +340,20 @@ namespace GridInfect.Core.Solving
                 Remaining = o.Remaining;
                 TripperPlaced = o.TripperPlaced;
                 ForbiddenExclusions = o.ForbiddenExclusions;
+                Peak = o.Peak;
+            }
+
+            // An open piece is unplaced with more than one candidate cell:
+            // a decision the player must still hold. Sampled at every forced
+            // placement and every stuck point.
+            public void RecordOpen()
+            {
+                int open = 0;
+                for (int k = 0; k < N; k++)
+                {
+                    if (!Used[k] && Cand[k].Count > 1) open++;
+                }
+                if (open > Peak) Peak = open;
             }
 
             public State Clone() => new State(this);

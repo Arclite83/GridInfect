@@ -30,8 +30,9 @@ namespace GridInfect.Core.Tests
                 var level = GeneratorV2.Generate(spec, seed);
                 if (level == null) continue;
                 accepted++;
-                Assert.That(SolutionCounter.Count(level.Def), Is.EqualTo(1), $"{what} seed {seed}: unique");
-                var solve = Deducer.Solve(level.Def);
+                var placed = Locked.Placed(level.Def, level.Locks);
+                Assert.That(SolutionCounter.Count(level.Def, placed), Is.EqualTo(1), $"{what} seed {seed}: unique");
+                var solve = Deducer.Solve(level.Def, placed);
                 Assert.That(solve.Solved && solve.Guesses == 0, Is.True, $"{what} seed {seed}: deducible");
                 Assert.That(SolutionCounter.Wins(level.Def, level.Solution), Is.True, $"{what} seed {seed}: stored solution wins");
                 if (UsesElement(level.Def, spec.Elements)) withElement++;

@@ -34,13 +34,7 @@ namespace GridInfect.Core.Solving
         public static Result Analyse(LevelDef def, PieceState[] placed, int cap)
         {
             var search = new Search(def, cap);
-            if (placed != null)
-            {
-                for (int k = 0; k < placed.Length && k < def.Pieces.Length; k++)
-                {
-                    if (placed[k].Placed) search.Fix(k, Grid.Loc(placed[k].I, placed[k].J));
-                }
-            }
+            int fixedCount = Fix(search, def, placed);
             search.Run();
             var result = new Result { Static = search.Sets.Count, Capped = search.HitCap };
             int min = 0;
@@ -48,7 +42,7 @@ namespace GridInfect.Core.Solving
             {
                 foreach (int[] set in search.Sets.Values)
                 {
-                    if (WinningOrder(def, set) == null) continue;
+                    if (WinningOrder(def, set, fixedCount) == null) continue;
                     result.Solutions++;
                     if (min == 0 || set.Length < min) min = set.Length;
                 }
@@ -66,13 +60,30 @@ namespace GridInfect.Core.Solving
         }
 
         // Every covering set the search reaches (feasibility not checked),
-        // each as piece*Cells+cell placements. For the generator's pruner.
-        public static List<int[]> Sets(LevelDef def, int cap, out bool capped)
+        // each as piece*Cells+cell placements, pre-placed pieces first. For
+        // the constructor's discriminator.
+        public static List<int[]> Sets(LevelDef def, int cap, out bool capped) => Sets(def, null, cap, out capped);
+
+        public static List<int[]> Sets(LevelDef def, PieceState[] placed, int cap, out bool capped)
         {
             var search = new Search(def, cap);
+            Fix(search, def, placed);
             search.Run();
             capped = search.HitCap;
             return new List<int[]>(search.Sets.Values);
+        }
+
+        static int Fix(Search search, LevelDef def, PieceState[] placed)
+        {
+            int count = 0;
+            if (placed == null) return 0;
+            for (int k = 0; k < placed.Length && k < def.Pieces.Length; k++)
+            {
+                if (!placed[k].Placed) continue;
+                search.Fix(k, Grid.Loc(placed[k].I, placed[k].J));
+                count++;
+            }
+            return count;
         }
 
         // A cheaper count for ranking (the generator's wall pruner): the
@@ -98,12 +109,14 @@ namespace GridInfect.Core.Solving
         }
 
         // A placement order for `set` (encoded piece*Cells+cell) that wins
-        // through the real rules, or null. Without switches nothing is ever
-        // un-infected, so the only constraint is that at most one placement
-        // trips a trap and that one goes last (the win check runs before the
-        // reset, RULES §4.1). With switches, orders are searched depth-first
-        // so a prefix that already failed prunes every order behind it.
-        public static (int piece, int cell)[] WinningOrder(LevelDef def, int[] set)
+        // through the real rules, or null. The first `fixedPrefix` entries
+        // are pre-placed (locked at load) and stay first. Without switches
+        // nothing is ever un-infected, so the only constraint is that at
+        // most one placement trips a trap and that one goes last (the win
+        // check runs before the reset, RULES §4.1). With switches, orders
+        // are searched depth-first so a prefix that already failed prunes
+        // every order behind it.
+        public static (int piece, int cell)[] WinningOrder(LevelDef def, int[] set, int fixedPrefix = 0)
         {
             var order = new (int piece, int cell)[set.Length];
             for (int n = 0; n < set.Length; n++) order[n] = (set[n] / Grid.Cells, set[n] % Grid.Cells);
@@ -114,10 +127,13 @@ namespace GridInfect.Core.Solving
                 // Non-trippers first (any order), then one tripper: the win
                 // check runs before the reset, so the order wins iff the
                 // board is complete by then. A second tripper never plays.
+                // A pre-placed tripper would reset the board at load.
                 int n = 0;
                 for (int i = 0; i < order.Length; i++)
                 {
-                    if (!map.TripsTrap(def.Pieces[order[i].piece], order[i].cell)) order[n++] = (order[i].piece, order[i].cell);
+                    bool trips = map.TripsTrap(def.Specs[order[i].piece], order[i].cell);
+                    if (i < fixedPrefix && trips) return null;
+                    if (!trips) order[n++] = (order[i].piece, order[i].cell);
                 }
                 var trippers = new List<(int piece, int cell)>();
                 for (int i = 0; i < set.Length; i++)
@@ -139,7 +155,19 @@ namespace GridInfect.Core.Solving
             }
             var chosen = new (int piece, int cell)[set.Length];
             var used = new bool[set.Length];
-            return OrderSearch(def, order, chosen, used, 0) ? chosen : null;
+            for (int i = 0; i < fixedPrefix; i++)
+            {
+                chosen[i] = order[i];
+                used[i] = true;
+            }
+            if (fixedPrefix > 0)
+            {
+                var outcome = Replay(def, chosen, fixedPrefix);
+                if (outcome == Outcome.Dead) return null;
+                if (outcome == Outcome.Won) return fixedPrefix == set.Length ? chosen : null;
+                if (fixedPrefix == set.Length) return null;
+            }
+            return OrderSearch(def, order, chosen, used, fixedPrefix) ? chosen : null;
         }
 
         static bool OrderSearch(LevelDef def, (int piece, int cell)[] all, (int piece, int cell)[] chosen, bool[] used, int depth)

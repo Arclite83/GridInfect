@@ -25,7 +25,7 @@ GridInfect.Game (Unity adapter)     GridInfect.Core.Tests (edit-mode / dotnet)
 | Assembly | Contents | May reference |
 |---|---|---|
 | `Bloodhound.Engine` | Action dispatch/registry/log, `MiniJson`, `Pcg32`. Game-agnostic — the piece that moves to the next game (the logic game) unchanged. | nothing (`noEngineReferences`) |
-| `GridInfect.Core` | Schema types, `Rules` (the mechanics), the actions, `LevelGenerator`, baked classic levels, `SaveCodec`, `Queries`, `Solving` (the deduction solver, exact solution counter and grader) and `Generation` (generator v2: sample, carve, prune with walls, deduce, grade, canonicalise — `docs/GENERATOR_V2.md`). | `Bloodhound.Engine` only (`noEngineReferences`) |
+| `GridInfect.Core` | Schema types, `Rules` (the mechanics), the actions, `LevelGenerator`, baked classic levels, `SaveCodec`, `Queries`, `Solving` (the deduction solver with its depth ladder, exact solution counter and trace grader) and `Generation` (generator v2: the sampler carves a solution's fill; the constructor subtracts givens — walls, gaps, forbidden cells, traps, locks — to a unique, minimal level and grades it off the trace — `docs/GENERATOR_V2.md`). | `Bloodhound.Engine` only (`noEngineReferences`) |
 | `GridInfect.Game` | Everything Unity: boot, camera, screens, board/piece views, input, tweens, the 0.3 s beat, save file IO. Parses input, dispatches one action or reads one query, renders the result. | Core, Engine, UnityEngine |
 | `GridInfect.Services` | The SDK boundary: ads, consent, purchasing interfaces, cadence config, Null services, `Bootstrap`. SDK-backed implementations only here. | UnityEngine (+ the SDK packages) |
 | `GridInfect.Core.Tests` | NUnit suites; run identically in Unity edit mode and under `dotnet test` via the mirror projects in `src/`. | Core, Engine |
@@ -60,7 +60,7 @@ files, touches) into these types at the boundary.
 | `LevelSession` | working board, `PieceState[]` (tile, placed, cell, `Locked`), repel queue, `ResetTripped`, `ResolutionPending`, `Solved`, `Resets` (stat), and its `Rules` (`IRules`: the frozen classic `Rules` via `RulesV1` for V1 definitions, `RulesV2` for V2) | mutated only through `Rules`, called only by actions; a locked piece cannot be lifted and survives a full reset (re-propagated in index order) |
 | `World` | id, name, element set, ordered levels (board, pieces, stored solution, grade, seed, canonical hash) | baked from `docs/worlds/*.jsonl` into `WorldData.g.cs` by `tools/bake_worlds.py`; every level has exactly one solution and solves by deduction (`WorldTests`) |
 | `Profile` | unlocked set, best times ms[5], run counts[5], muted, world progress {id → levels open}, daily bests {date → ms}, daily streak and last date, endless best streak[5], lock wallet (start 5, free grants capped at 10) | pure data; serialization only via `SaveCodec` (versioned JSON, expand/contract; v2 added `worlds`, v3 the daily/endless fields, v4 `locks`) |
-| `DailyRun` / `EndlessRun` | daily: UTC date, accepted seed, start/complete ms, par; endless: grade, run seed, index, streak, level seed | boards are pure functions of the logged inputs (`DailySpec`); the daily clock is a stat, never a rule |
+| `DailyRun` / `EndlessRun` | daily: UTC date, pool level seed and index, start/complete ms, par; endless: grade, run seed, index, streak, level seed | boards are pure functions of the logged inputs (the daily from its weekday's baked pool, `DailyPool`; endless from `DailySpec` on the device); the daily clock is a stat, never a rule |
 | `GameState` | mode (Classic / FreePlay / World / Daily / Endless) + classic id / free-play run / world id and index / daily run / endless run + `Session` + `Profile` + the level's stored `Solution` (vector for Legacy, generator's otherwise) | wall-clock time enters **only** through action inputs |
 
 `ResolutionPending` is the model's name for the original's 0.3 s presentation
@@ -93,7 +93,7 @@ live in `Queries` and carry zero rules.
 | `world.load` | `worldId, index` | WorldActions | enter a baked world level (unlock gating is presentation policy) |
 | `progress.unlockWorld` | `worldId` | WorldActions | a world opens at its first level; dispatched by the adapter when the previous world's last level is solved |
 | `progress.unlockWorldLevel` | `worldId, index` | WorldActions | level `index` opens (`index == Count` marks the world finished); dispatched by the adapter on solve for `index + 1` |
-| `daily.begin` | `dateUtc, nowMs` | DailyActions | the board for that UTC date (seed = hash of the date, `DailySpec` per weekday); clock starts |
+| `daily.begin` | `dateUtc, nowMs` | DailyActions | the board for that UTC date (its weekday's baked pool at the week number, `DailyPool`); places the level's locks; clock starts |
 | `daily.complete` | `nowMs` | DailyActions | solved: elapsed, personal best per date, streak of consecutive dates (`StreakGrantDue` every 7th); rejects a backward clock |
 | `endless.begin` | `grade, seed` | DailyActions | start an Endless run: no clock, boards from the logged seed |
 | `endless.advance` | — | DailyActions | solved: streak +1 (or 1 after a reset), best per grade, next board |
@@ -142,6 +142,12 @@ layered:
    (`docs/level_metrics_classic.json`); `Deducer` may only report a solve on
    a level that counter finds unique. The solver reads `Rules` on scratch
    sessions to check placement order; it never touches game state.
+5. **Constructor**: every accepted level is unique by the counter with its
+   locks fixed, its stored solution wins through the real rules, and each
+   wall, forbidden cell and lock left on it is load-bearing (withdrawing
+   it breaks uniqueness); the 128 classic solutions run through the
+   constructor as a pinned fixture. A level's locks are placed by its
+   loading action through the rules, never by the loader touching the board.
 
 The suite is deliberately a limited, load-bearing subset — integration and
 rule-based tests on the verticals above plus the save round-trip and the

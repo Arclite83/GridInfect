@@ -5,8 +5,9 @@ using GridInfect.Core.Solving;
 namespace GridInfect.Core
 {
     // daily.begin { dateUtc, nowMs }: the board is a pure function of the
-    // date, the clock is a stat. The adapter supplies both (wall clock via
-    // input), so a log replays to the same board and the same times.
+    // date (the weekday's baked pool, indexed by the week), the clock is a
+    // stat. The adapter supplies both (wall clock via input), so a log
+    // replays to the same board and the same times.
     public sealed class BeginDailyAction : GameAction<GameState>
     {
         public override string Name => "daily.begin";
@@ -32,13 +33,15 @@ namespace GridInfect.Core
             {
                 DateUtc = dateUtc,
                 Seed = level.Seed,
+                PoolIndex = level.Index,
                 StartedMs = input.Long("nowMs"),
-                TraceLength = level.Trace.Length,
+                TraceLength = level.TraceLength,
                 Grade = level.Grade,
-                ParMs = DailySpec.ParMs(level.Trace.Length, level.Grade),
+                ParMs = DailySpec.ParMs(level.TraceLength, level.Grade),
             };
             state.Solution = level.Solution;
             state.SetSession(new LevelSession(level.Def));
+            Locked.Apply(state.Session, level.Locks);
         }
     }
 
@@ -114,6 +117,7 @@ namespace GridInfect.Core
             state.EndlessRun = new EndlessRun { Grade = grade, Seed = seed, Index = 0, Streak = 0, LevelSeed = level.Seed };
             state.Solution = level.Solution;
             state.SetSession(new LevelSession(level.Def));
+            Locked.Apply(state.Session, level.Locks);
         }
     }
 
@@ -146,6 +150,7 @@ namespace GridInfect.Core
             run.LevelSeed = level.Seed;
             state.Solution = level.Solution;
             state.SetSession(new LevelSession(level.Def));
+            Locked.Apply(state.Session, level.Locks);
         }
     }
 
