@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grid Infect, round 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--cell:46px;--gap:4px}
+*{box-sizing:border-box}
+body{margin:0;background:#1b1d22;color:#ddd;font:14px/1.5 system-ui,sans-serif;padding:28px 20px}
+h1{font:500 18px system-ui;margin:0 0 4px;color:#eee}
+h2.sec{font:500 15px system-ui;margin:34px 0 10px;color:#eee;border-top:1px solid #333;padding-top:20px}
+p.sub{margin:0 0 22px;color:#9aa}
+.row{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+.col{width:330px}
+.col h3{font:500 14px system-ui;margin:0 0 4px;color:#eee}
+.col .note{font-size:12px;color:#99a;margin:0 0 12px;min-height:54px}
+.phone{width:330px;height:715px;border-radius:26px;position:relative;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.6),inset 0 0 0 2px rgba(255,255,255,.06);font-family:'Chakra Petch',sans-serif}
+.hud{position:absolute;top:0;left:0;right:0;height:78px;display:flex;align-items:center;justify-content:space-between;padding:0 18px}
+.hud .lvl{font-size:22px;letter-spacing:.06em}
+.btn{font-size:12px;padding:6px 10px;border-radius:6px;letter-spacing:.08em}
+.board{position:absolute;left:50%;top:104px;transform:translateX(-50%);display:grid;grid-template-columns:repeat(5,var(--cell));grid-auto-rows:var(--cell);gap:var(--gap);padding:10px;border-radius:10px}
+.c{position:relative;border-radius:5px}
+.tray{position:absolute;bottom:0;left:0;right:0;height:96px;display:flex;align-items:center;justify-content:center;gap:22px}
+.glyph{width:34px;height:34px}
+.glyph.lg{width:52px;height:52px}
+.badge{position:absolute;right:18px;top:80px;font-size:12px;padding:5px 12px;border-radius:6px;letter-spacing:.1em}
+.dot{position:absolute;left:50%;top:50%;width:7px;height:7px;transform:translate(-50%,-50%);border-radius:1px}
+
+/* ===== Rendered PCB family. Variables per variant. ===== */
+.R{background:var(--mask);
+ background-image:
+  repeating-linear-gradient(90deg,var(--tr) 0 1px,transparent 1px 24px),
+  repeating-linear-gradient(0deg,var(--tr2) 0 1px,transparent 1px 24px),
+  radial-gradient(circle at 12% 88%,rgba(255,255,255,.14),transparent 40%),
+  linear-gradient(160deg,var(--mask-hi),var(--mask) 70%,var(--mask-lo))}
+.R .hud{color:var(--ink)}
+.R .btn{background:linear-gradient(var(--cu-hi),var(--cu));color:var(--cu-ink);box-shadow:0 2px 0 var(--cu-lo),0 3px 6px rgba(0,0,0,.25)}
+.R .badge{background:var(--chip-lo);color:var(--cu-hi);box-shadow:0 2px 0 #000}
+.R .board{background:var(--well);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),inset 0 0 40px rgba(0,0,0,.18)}
+.R .c.out{background:rgba(0,0,0,.05);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.R .c.pad{background:radial-gradient(circle,var(--cu-hi) 0 5px,var(--cu) 6px,transparent 7px);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.R .c.pad:after{content:"";position:absolute;inset:0;background:radial-gradient(circle,transparent 0 3px,var(--cu-lo) 3px 4px,transparent 5px)}
+.R .c.chip{background:linear-gradient(150deg,var(--chip-hi),var(--chip-lo));box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -2px 0 rgba(0,0,0,.6),0 3px 0 #0f1113,0 5px 8px rgba(0,0,0,.35),0 0 0 2px var(--cu)}
+.R .c.chip .dot{background:var(--cu-hi);box-shadow:0 0 3px var(--cu-hi)}
+.R .c.inf{background:linear-gradient(150deg,var(--inf-hi),var(--inf-lo));box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -2px 0 rgba(0,0,0,.35),0 0 18px var(--inf),0 0 40px var(--inf-glow),0 0 0 2px var(--inf-rim)}
+.R .c.inf .dot{background:#fff;box-shadow:0 0 6px #fff}
+.R .c.trace{background:repeating-linear-gradient(90deg,transparent 0 8px,var(--inf-glow) 8px 12px);box-shadow:inset 0 0 0 1px var(--inf),0 0 10px var(--inf-glow)}
+.R .c.shield{background:linear-gradient(150deg,#d9dde2,#8e969f);box-shadow:inset 0 1px 0 #fff,inset 0 -2px 0 rgba(0,0,0,.35),0 3px 0 #3f454c,0 5px 8px rgba(0,0,0,.3)}
+.R .c.shield:before{content:"";position:absolute;inset:7px;border:2px solid #4d565f;border-radius:3px;background:repeating-linear-gradient(45deg,transparent 0 4px,rgba(60,70,80,.55) 4px 6px)}
+.R .tray{background:linear-gradient(transparent,rgba(0,0,0,.28))}
+
+.green{--mask:#8bb96f;--mask-hi:#9cc77c;--mask-lo:#6c9954;--tr:rgba(255,255,255,.07);--tr2:rgba(0,0,0,.06);--ink:#1d3316;--well:rgba(40,70,32,.22);
+ --cu:#c9a648;--cu-hi:#f3e2a8;--cu-lo:#7d6120;--cu-ink:#4a3606;--chip-hi:#3b3f44;--chip-lo:#1f2226;
+ --inf:#ff2d95;--inf-hi:#ff5fb0;--inf-lo:#c40d6c;--inf-glow:rgba(255,45,149,.5);--inf-rim:#ffd0e8}
+.cream{--mask:#e9dcb8;--mask-hi:#f4ead0;--mask-lo:#cdbb8c;--tr:rgba(120,90,30,.12);--tr2:rgba(120,90,30,.08);--ink:#3c2e12;--well:rgba(110,80,30,.16);
+ --cu:#c46a3a;--cu-hi:#f0a878;--cu-lo:#7a3a18;--cu-ink:#3d1a08;--chip-hi:#3b3f44;--chip-lo:#1f2226;
+ --inf:#ff2d3a;--inf-hi:#ff6b6b;--inf-lo:#b3101c;--inf-glow:rgba(255,45,58,.5);--inf-rim:#ffd6d6}
+.olive{--mask:#2f3a2a;--mask-hi:#3d4a36;--mask-lo:#1e2619;--tr:rgba(255,255,255,.05);--tr2:rgba(0,0,0,.25);--ink:#e8dfa8;--well:rgba(0,0,0,.35);
+ --cu:#d9a441;--cu-hi:#ffe08a;--cu-lo:#7a5410;--cu-ink:#3a2704;--chip-hi:#4a4f56;--chip-lo:#24282d;
+ --inf:#ff2d95;--inf-hi:#ff6fbe;--inf-lo:#b3086a;--inf-glow:rgba(255,45,149,.55);--inf-rim:#ffd0e8}
+.blue{--mask:#2e5aa8;--mask-hi:#3f70c4;--mask-lo:#1f3f7a;--tr:rgba(255,255,255,.08);--tr2:rgba(0,0,0,.18);--ink:#e6efff;--well:rgba(0,10,40,.35);
+ --cu:#d9a441;--cu-hi:#ffe08a;--cu-lo:#7a5410;--cu-ink:#3a2704;--chip-hi:#3b3f44;--chip-lo:#1f2226;
+ --inf:#ff8a00;--inf-hi:#ffb347;--inf-lo:#c25a00;--inf-glow:rgba(255,138,0,.55);--inf-rim:#ffe2b8}
+
+/* ===== Pixel family. Hard edges, 4px unit, no blur. ===== */
+.P{font-family:'Silkscreen',monospace;image-rendering:pixelated;background:var(--mask);
+ background-image:
+  repeating-linear-gradient(90deg,var(--tr) 0 4px,transparent 4px 28px),
+  repeating-linear-gradient(0deg,var(--tr2) 0 4px,transparent 4px 28px)}
+.P .hud{color:var(--ink);font-size:11px}
+.P .hud .lvl{font-size:16px;letter-spacing:0}
+.P .btn{font-size:10px;border-radius:0;background:var(--cu);color:var(--cu-ink);box-shadow:4px 4px 0 var(--cu-lo);padding:6px 8px}
+.P .badge{border-radius:0;background:var(--chip-lo);color:var(--cu-hi);font-size:10px;box-shadow:4px 4px 0 #000}
+.P .board{border-radius:0;background:var(--well);box-shadow:inset 0 0 0 4px rgba(0,0,0,.35)}
+.P .c{border-radius:0}
+.P .c.out{box-shadow:inset 0 0 0 2px rgba(0,0,0,.1)}
+.P .c.pad{background:
+  radial-gradient(circle,var(--cu-lo) 0 3px,transparent 3px) ,
+  conic-gradient(var(--cu) 0 100%) ;background-size:100% 100%,14px 14px;background-position:center,center;background-repeat:no-repeat}
+.P .c.chip{background:var(--chip-hi);box-shadow:inset 4px 4px 0 var(--chip-glint),inset -4px -4px 0 var(--chip-lo),inset 0 0 0 2px var(--cu),4px 4px 0 var(--chip-lo)}
+.P .c.chip .dot{background:var(--cu-hi);width:8px;height:8px;border-radius:0;box-shadow:none}
+.P .c.inf{background:var(--inf);box-shadow:inset 4px 4px 0 var(--inf-hi),inset -4px -4px 0 var(--inf-lo),4px 4px 0 var(--inf-lo)}
+.P .c.inf:after{content:"";position:absolute;inset:-8px;pointer-events:none;
+  background:
+   linear-gradient(var(--inf-glow) 0 0) top/100% 4px no-repeat,
+   linear-gradient(var(--inf-glow) 0 0) bottom/100% 4px no-repeat,
+   linear-gradient(var(--inf-glow) 0 0) left/4px 100% no-repeat,
+   linear-gradient(var(--inf-glow) 0 0) right/4px 100% no-repeat;
+  clip-path:polygon(8px 0,calc(100% - 8px) 0,calc(100% - 8px) 8px,100% 8px,100% calc(100% - 8px),calc(100% - 8px) calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,8px calc(100% - 8px),0 calc(100% - 8px),0 8px,8px 8px)}
+.P .c.inf .dot{background:#fff;width:8px;height:8px;border-radius:0;box-shadow:none}
+.P .c.trace{background:repeating-conic-gradient(var(--inf) 0 25%,transparent 0 50%) 0 0/12px 12px;opacity:.75}
+.P .c.shield{background:#9aa3ad;box-shadow:inset 4px 4px 0 #e2e7ec,inset -4px -4px 0 #4d565f,4px 4px 0 #2b3138}
+.P .c.shield:before{content:"";position:absolute;inset:8px;background:repeating-linear-gradient(45deg,transparent 0 4px,#4d565f 4px 8px)}
+.P .tray{background:rgba(0,0,0,.25)}
+.P .glyph{shape-rendering:crispEdges}
+
+.pgreen{--mask:#7fae62;--tr:rgba(255,255,255,.12);--tr2:rgba(0,0,0,.1);--ink:#14260f;--well:rgba(20,40,10,.3);
+ --cu:#d1a63f;--cu-hi:#fff0a8;--cu-lo:#6e4e0c;--cu-ink:#3a2704;--chip-hi:#3c4147;--chip-glint:#6b7178;--chip-lo:#16191c;
+ --inf:#ff2d95;--inf-hi:#ff8ac9;--inf-lo:#8e0a52;--inf-glow:rgba(255,45,149,.55)}
+.polive{--mask:#2c3627;--tr:rgba(255,255,255,.07);--tr2:rgba(0,0,0,.3);--ink:#f3e7a8;--well:rgba(0,0,0,.4);
+ --cu:#d1a63f;--cu-hi:#fff0a8;--cu-lo:#6e4e0c;--cu-ink:#3a2704;--chip-hi:#4d535a;--chip-glint:#80878f;--chip-lo:#1c2024;
+ --inf:#ff2d95;--inf-hi:#ff8ac9;--inf-lo:#8e0a52;--inf-glow:rgba(255,45,149,.6)}
+.pcream{--mask:#e7d9b1;--tr:rgba(120,90,30,.16);--tr2:rgba(120,90,30,.1);--ink:#3c2e12;--well:rgba(110,80,30,.2);
+ --cu:#c46a3a;--cu-hi:#ffc39a;--cu-lo:#6e2e0c;--cu-ink:#3d1a08;--chip-hi:#3c4147;--chip-glint:#6b7178;--chip-lo:#16191c;
+ --inf:#ff2d3a;--inf-hi:#ff9a9a;--inf-lo:#8e0a14;--inf-glow:rgba(255,45,58,.55)}
+</style>
+</head>
+<body>
+<h1>Grid Infect, round 2</h1>
+<p class="sub">Direction A carried forward. Top row varies the solder-mask color and the copper/infection pairing. Bottom row re-renders the same board in hard-edged pixel art on a 4px unit, with glow replaced by a stepped halo.</p>
+
+<h2 class="sec">Rendered, mask variants</h2>
+<div class="row" id="rowR"></div>
+
+<h2 class="sec">Pixel art</h2>
+<div class="row" id="rowP"></div>
+
+<script>
+const grid = [
+"....." ,"....." ,"P...." ,"Pxx.." ,"PS..." ,"Px..." ,"Px..." ,"BPPP." ,"P...." ,"....." ,"....." ];
+const map = {".":"out","P":"chip","B":"inf","x":"trace","S":"shield"};
+
+function glyphR(cls, fill, edge){
+ return `<svg class="${cls}" viewBox="0 0 40 40" aria-hidden="true">
+  <polygon points="20,3 33,17 27,17 27,34 13,34 13,17 7,17" fill="${fill}" stroke="${edge}" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="17" y="21" width="6" height="6" fill="${edge}"/></svg>`;
+}
+function glyphP(cls, fill, edge, hi){
+ const px=(x,y,w,h,c)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+ return `<svg class="${cls}" viewBox="0 0 10 10" aria-hidden="true" shape-rendering="crispEdges">
+  ${px(4,0,2,1,fill)}${px(3,1,4,1,fill)}${px(2,2,6,1,fill)}${px(1,3,8,1,fill)}${px(3,4,4,5,fill)}
+  ${px(4,0,1,1,hi)}${px(3,1,1,1,hi)}${px(2,2,1,1,hi)}${px(1,3,1,1,hi)}${px(3,4,1,5,hi)}
+  ${px(6,4,1,5,edge)}${px(3,9,4,1,edge)}${px(4,5,2,2,edge)}</svg>`;
+}
+
+function build(target, variants, family, glyphFn){
+ const row = document.getElementById(target);
+ for (const v of variants){
+  let cells = "";
+  let bugIndex=-1, i=0;
+  for (const line of grid) for (const ch of line){
+   const cls = map[ch] || "out";
+   if (ch==="B") bugIndex=i;
+   const dot = (cls==="chip"||cls==="inf") ? '<span class="dot"></span>' : "";
+   cells += `<div class="c ${cls}">${dot}</div>`; i++;
+  }
+  const g = glyphFn("glyph", v.gf, v.ge, v.gh);
+  row.insertAdjacentHTML("beforeend", `
+  <div class="col">
+   <h3>${v.title}</h3>
+   <p class="note">${v.note}</p>
+   <div class="phone ${family} ${v.k}">
+    <div class="hud"><span class="btn">MENU</span><span class="lvl">LEVEL 6</span><span class="btn">RESET</span></div>
+    <span class="badge">LOCK 0</span>
+    <div class="board" data-bug="${bugIndex}">${cells}</div>
+    <div class="tray">${glyphFn("glyph lg", v.gf, v.ge, v.gh)}${g}</div>
+   </div>
+  </div>`);
+  const board = row.lastElementChild.querySelector(".board");
+  const cell = board.children[bugIndex];
+  cell.innerHTML = g;
+  cell.querySelector("svg").style.cssText="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:34px;height:34px";
+ }
+}
+
+build("rowR",[
+ {k:"green",title:"A1. Green mask, gold copper, magenta infection",
+  note:"Baseline from round 1. Reads as classic hobbyist PCB. Continuity with the 2014 release.",
+  gf:"#ff2d95",ge:"#5a0033"},
+ {k:"cream",title:"A2. Cream mask, bare copper, red infection",
+  note:"Warm and unusual for a puzzle game. Infection shifts to red so it separates from the copper. Least like a hacker game of the set.",
+  gf:"#ff2d3a",ge:"#5a0008"},
+ {k:"olive",title:"A3. Dark olive mask, gold copper, magenta infection",
+  note:"Dark without being neon. Gold pops harder, infection glows harder, and it does not quote the original directly.",
+  gf:"#ff2d95",ge:"#ffd0e8"},
+ {k:"blue",title:"A4. Blue mask, gold copper, amber infection",
+  note:"Real PCB color, rarely used in games. Complementary infection means maximum separation. Risk: reads corporate.",
+  gf:"#ff8a00",ge:"#3a1a00"}
+], "R", glyphR);
+
+build("rowP",[
+ {k:"pgreen",title:"P1. Pixel, green mask",
+  note:"4px unit. Bevels are two flat steps. Glow becomes a stepped halo ring. Tiles keep the 3D read without any blur.",
+  gf:"#ff2d95",ge:"#8e0a52",gh:"#ff8ac9"},
+ {k:"polive",title:"P2. Pixel, dark olive mask",
+  note:"The dark mask lets the halo ring carry more weight. Closest to your pixelated ink-bleed idea.",
+  gf:"#ff2d95",ge:"#8e0a52",gh:"#ff8ac9"},
+ {k:"pcream",title:"P3. Pixel, cream mask, red infection",
+  note:"Pixel art on a light substrate is uncommon. Charming, but the halo ring loses punch here.",
+  gf:"#ff2d3a",ge:"#8e0a14",gh:"#ff9a9a"}
+], "P", glyphP);
+</script>
+</body>
+</html>

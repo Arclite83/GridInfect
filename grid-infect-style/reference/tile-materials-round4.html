@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grid Infect, round 4, glass and clay</title>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Fredoka:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{--cell:46px;--gap:4px}
+*{box-sizing:border-box}
+body{margin:0;background:#1b1d22;color:#ddd;font:14px/1.5 system-ui,sans-serif;padding:28px 20px}
+h1{font:500 18px system-ui;margin:0 0 4px;color:#eee}
+p.sub{margin:0 0 22px;color:#9aa;max-width:900px}
+.row{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+.col{width:330px}
+.col h3{font:500 14px system-ui;margin:0 0 4px;color:#eee}
+.col .note{font-size:12px;color:#99a;margin:0 0 12px;min-height:72px}
+.phone{width:330px;height:715px;border-radius:26px;position:relative;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.6),inset 0 0 0 2px rgba(255,255,255,.06);font-family:'Chakra Petch',sans-serif;
+ --mask:#7fae66;--mask-hi:#95c07a;--mask-lo:#5f8b4a;--ink:#1d3316;--cu:#c9a648;--cu-hi:#f3e2a8;--cu-lo:#7d6120;--cu-ink:#4a3606;--inf:#ff2d95;--inf-hi:#ff7cc4;--inf-lo:#b3086a;--inf-glow:rgba(255,45,149,.55)}
+.hud{position:absolute;top:0;left:0;right:0;height:78px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;z-index:2;color:var(--ink)}
+.hud .lvl{font-size:22px;letter-spacing:.06em}
+.btn{font-size:12px;padding:6px 10px;border-radius:6px;letter-spacing:.08em}
+.board{position:absolute;left:50%;top:104px;transform:translateX(-50%);display:grid;grid-template-columns:repeat(5,var(--cell));grid-auto-rows:var(--cell);gap:var(--gap);padding:10px;border-radius:10px}
+.c{position:relative;border-radius:5px}
+.tray{position:absolute;bottom:0;left:0;right:0;height:96px;display:flex;align-items:center;justify-content:center;gap:22px}
+.glyph{width:34px;height:34px}
+.glyph.lg{width:52px;height:52px}
+.badge{position:absolute;right:18px;top:80px;font-size:12px;padding:5px 12px;border-radius:6px;letter-spacing:.1em;z-index:2}
+.dot{position:absolute;left:50%;top:50%;width:8px;height:8px;transform:translate(-50%,-50%);border-radius:50%}
+
+/* PCB substrate shared */
+.phone{background:var(--mask);background-image:
+ repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 1px,transparent 1px 24px),
+ repeating-linear-gradient(0deg,rgba(0,0,0,.07) 0 1px,transparent 1px 24px),
+ radial-gradient(circle at 50% 18%,rgba(255,255,255,.16),transparent 45%),
+ linear-gradient(160deg,var(--mask-hi),var(--mask) 70%,var(--mask-lo))}
+.c.out{background:rgba(0,0,0,.05);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.c.pad{background:radial-gradient(circle,var(--cu-hi) 0 5px,var(--cu) 6px,transparent 7px)}
+.c.pad:after{content:"";position:absolute;inset:0;background:radial-gradient(circle,transparent 0 3px,var(--cu-lo) 3px 4px,transparent 5px)}
+.tray{background:linear-gradient(transparent,rgba(20,40,15,.35))}
+
+/* ---- G1 Glass refined ---- */
+.G1 .btn,.G1 .badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.45);color:var(--ink)}
+.G1 .board{background:rgba(0,0,0,.28);box-shadow:inset 0 0 0 1px rgba(255,255,255,.15),inset 0 0 50px rgba(0,0,0,.45)}
+.G1 .c.pad{background:radial-gradient(circle,var(--cu-hi) 0 4px,var(--cu) 5px,transparent 6px)}
+.G1 .c.chip{background:linear-gradient(160deg,rgba(255,255,255,.34),rgba(255,255,255,.08) 55%,rgba(255,255,255,.16));box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 0 0 1px rgba(255,255,255,.25),0 6px 14px rgba(0,0,0,.35)}
+.G1 .c.chip .dot{background:var(--cu-hi);box-shadow:0 0 6px rgba(243,226,168,.9)}
+.G1 .c.inf{background:linear-gradient(160deg,rgba(255,200,230,.9),var(--inf) 55%,var(--inf-lo));box-shadow:inset 0 1px 0 rgba(255,255,255,.85),inset 0 0 0 1px rgba(255,255,255,.4),0 0 24px var(--inf),0 0 60px var(--inf-glow),0 6px 14px rgba(0,0,0,.35)}
+.G1 .c.inf .dot{background:#fff;box-shadow:0 0 10px #fff}
+.G1 .c.half{background:linear-gradient(160deg,rgba(255,255,255,.34),rgba(255,255,255,.08) 55%,rgba(255,255,255,.16));box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 0 0 1px rgba(255,255,255,.25),0 6px 14px rgba(0,0,0,.35);overflow:hidden}
+.G1 .c.half:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 100%,var(--inf) 0 14px,var(--inf-glow) 22px,transparent 32px)}
+.G1 .c.half .dot{background:#fff;box-shadow:0 0 8px var(--inf)}
+.G1 .c.trace{background:radial-gradient(circle,var(--inf-glow),transparent 70%);box-shadow:inset 0 0 0 1px rgba(255,45,149,.5)}
+.G1 .c.shield{background:linear-gradient(160deg,rgba(255,255,255,.55),rgba(255,255,255,.18));box-shadow:inset 0 1px 0 #fff,inset 0 0 0 2px rgba(255,255,255,.75),0 6px 14px rgba(0,0,0,.35)}
+.G1 .c.shield:before{content:"";position:absolute;inset:8px;background:repeating-linear-gradient(45deg,transparent 0 4px,rgba(255,255,255,.65) 4px 6px);border-radius:3px}
+
+/* ---- C1 Clay refined with copper ---- */
+.C1{font-family:'Fredoka',sans-serif}
+.C1 .btn,.C1 .badge{background:#f2df9f;color:#4a3606;border-radius:14px;padding:8px 14px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.15),inset 0 3px 0 rgba(255,255,255,.55),0 6px 10px rgba(0,0,0,.18)}
+.C1 .board{background:rgba(0,0,0,.14);border-radius:20px;box-shadow:inset 0 6px 14px rgba(0,0,0,.28),inset 0 -3px 0 rgba(255,255,255,.2)}
+.C1 .c{border-radius:11px}
+.C1 .c.out{background:rgba(0,0,0,.05);box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
+.C1 .c.pad{box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
+.C1 .c.chip{background:#4b535b;box-shadow:inset 0 -6px 0 rgba(0,0,0,.28),inset 0 4px 0 rgba(255,255,255,.22),inset 0 0 0 2px var(--cu),0 7px 12px rgba(0,0,0,.3)}
+.C1 .c.chip .dot{background:var(--cu-hi);width:10px;height:10px}
+.C1 .c.inf{background:#ff4fae;box-shadow:inset 0 -6px 0 rgba(0,0,0,.22),inset 0 4px 0 rgba(255,255,255,.45),inset 0 0 0 2px #ffd0e8,0 7px 12px rgba(0,0,0,.3),0 0 22px var(--inf-glow)}
+.C1 .c.inf .dot{background:#fff;width:10px;height:10px}
+.C1 .c.half{background:#4b535b;box-shadow:inset 0 -6px 0 rgba(0,0,0,.28),inset 0 4px 0 rgba(255,255,255,.22),inset 0 0 0 2px var(--cu),0 7px 12px rgba(0,0,0,.3);overflow:hidden}
+.C1 .c.half:before{content:"";position:absolute;left:-10%;right:-10%;bottom:-8px;height:60%;background:#ff4fae;border-radius:55% 45% 0 0;box-shadow:inset 0 4px 0 rgba(255,255,255,.4)}
+.C1 .c.half .dot{background:#fff;width:10px;height:10px}
+.C1 .c.trace{background:rgba(255,45,149,.18);box-shadow:inset 0 0 0 3px rgba(255,45,149,.5),inset 0 2px 4px rgba(0,0,0,.12)}
+.C1 .c.shield{background:#cfd6dc;box-shadow:inset 0 -6px 0 rgba(0,0,0,.2),inset 0 4px 0 rgba(255,255,255,.6),inset 0 0 0 2px var(--cu),0 7px 12px rgba(0,0,0,.3)}
+.C1 .c.shield:before{content:"";position:absolute;inset:11px;border-radius:50%;background:#6c7681;box-shadow:inset 0 2px 3px rgba(0,0,0,.35)}
+
+/* ---- H1 Clay body, glass lens (backlit keycap) ---- */
+.H1{font-family:'Fredoka',sans-serif}
+.H1 .btn,.H1 .badge{background:#3a4148;color:#f3e2a8;border-radius:12px;padding:8px 14px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.4),inset 0 2px 0 rgba(255,255,255,.18),0 6px 10px rgba(0,0,0,.25)}
+.H1 .board{background:rgba(0,0,0,.2);border-radius:16px;box-shadow:inset 0 6px 14px rgba(0,0,0,.3),inset 0 -3px 0 rgba(255,255,255,.18)}
+.H1 .c{border-radius:9px}
+.H1 .c.out{background:rgba(0,0,0,.05);box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
+.H1 .c.pad{box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
+.H1 .c.chip,.H1 .c.inf,.H1 .c.half{background:#454c54;box-shadow:inset 0 -6px 0 rgba(0,0,0,.34),inset 0 3px 0 rgba(255,255,255,.18),0 7px 12px rgba(0,0,0,.32)}
+.H1 .c.chip:before,.H1 .c.inf:before,.H1 .c.half:before{content:"";position:absolute;inset:9px 9px 13px 9px;border-radius:6px}
+.H1 .c.chip:before{background:linear-gradient(160deg,rgba(255,255,255,.22),rgba(255,255,255,.05));box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),inset 0 1px 0 rgba(255,255,255,.4)}
+.H1 .c.chip .dot{background:var(--cu-hi);width:7px;height:7px;top:45%;box-shadow:0 0 5px rgba(243,226,168,.8)}
+.H1 .c.inf:before{background:linear-gradient(160deg,var(--inf-hi),var(--inf) 60%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.55),inset 0 1px 0 rgba(255,255,255,.8),0 0 16px var(--inf),0 0 34px var(--inf-glow)}
+.H1 .c.inf{box-shadow:inset 0 -6px 0 rgba(0,0,0,.34),inset 0 3px 0 rgba(255,255,255,.18),0 7px 12px rgba(0,0,0,.32),0 0 26px var(--inf-glow)}
+.H1 .c.inf .dot{background:#fff;width:7px;height:7px;top:45%;box-shadow:0 0 8px #fff}
+.H1 .c.half:before{background:linear-gradient(160deg,rgba(255,255,255,.22),rgba(255,255,255,.05)),radial-gradient(circle at 50% 110%,var(--inf) 0 10px,var(--inf-glow) 16px,transparent 24px);background-blend-mode:screen;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3),inset 0 1px 0 rgba(255,255,255,.4)}
+.H1 .c.half .dot{background:#fff;width:7px;height:7px;top:45%;box-shadow:0 0 6px var(--inf)}
+.H1 .c.trace{background:rgba(255,45,149,.16);box-shadow:inset 0 0 0 2px rgba(255,45,149,.55),inset 0 2px 4px rgba(0,0,0,.12)}
+.H1 .c.shield{background:#b9c2cb;box-shadow:inset 0 -6px 0 rgba(0,0,0,.22),inset 0 3px 0 rgba(255,255,255,.55),0 7px 12px rgba(0,0,0,.32)}
+.H1 .c.shield:before{content:"";position:absolute;inset:9px 9px 13px 9px;border-radius:6px;background:#5c6672;box-shadow:inset 0 2px 3px rgba(0,0,0,.4)}
+.H1 .c.shield:after{content:"";position:absolute;left:50%;top:44%;width:12px;height:12px;transform:translate(-50%,-50%);border:2.5px solid #dfe6ee;border-radius:3px}
+
+/* ---- H2 Glass with gold bezel ---- */
+.H2 .btn,.H2 .badge{background:rgba(255,255,255,.14);border:2px solid var(--cu);color:var(--ink);border-radius:10px}
+.H2 .board{background:rgba(0,0,0,.26);box-shadow:inset 0 0 0 2px var(--cu),inset 0 0 0 4px rgba(0,0,0,.4),inset 0 0 50px rgba(0,0,0,.4)}
+.H2 .c{border-radius:7px}
+.H2 .c.chip,.H2 .c.inf,.H2 .c.half,.H2 .c.shield{box-shadow:inset 0 0 0 2px var(--cu),inset 0 0 0 3px var(--cu-lo),0 6px 14px rgba(0,0,0,.35)}
+.H2 .c.chip{background:linear-gradient(160deg,rgba(255,255,255,.32),rgba(255,255,255,.08) 55%,rgba(255,255,255,.14))}
+.H2 .c.chip .dot{background:var(--cu-hi);box-shadow:0 0 6px rgba(243,226,168,.9)}
+.H2 .c.inf{background:linear-gradient(160deg,rgba(255,200,230,.9),var(--inf) 55%,var(--inf-lo));box-shadow:inset 0 0 0 2px var(--cu-hi),inset 0 0 0 3px var(--cu),0 0 22px var(--inf),0 0 50px var(--inf-glow),0 6px 14px rgba(0,0,0,.35)}
+.H2 .c.inf .dot{background:#fff;box-shadow:0 0 10px #fff}
+.H2 .c.half{background:linear-gradient(160deg,rgba(255,255,255,.32),rgba(255,255,255,.08) 55%,rgba(255,255,255,.14));overflow:hidden}
+.H2 .c.half:before{content:"";position:absolute;inset:3px;border-radius:5px;background:radial-gradient(circle at 50% 100%,var(--inf) 0 14px,var(--inf-glow) 22px,transparent 32px)}
+.H2 .c.half .dot{background:#fff;box-shadow:0 0 8px var(--inf)}
+.H2 .c.trace{background:radial-gradient(circle,var(--inf-glow),transparent 70%);box-shadow:inset 0 0 0 1px rgba(255,45,149,.5)}
+.H2 .c.shield{background:linear-gradient(160deg,rgba(255,255,255,.55),rgba(255,255,255,.18))}
+.H2 .c.shield:before{content:"";position:absolute;inset:9px;background:repeating-linear-gradient(45deg,transparent 0 4px,rgba(255,255,255,.65) 4px 6px);border-radius:3px}
+
+/* ---- H3 Clay with gold rim (S6 + S4) ---- */
+.H3{font-family:'Fredoka',sans-serif}
+.H3 .btn,.H3 .badge{background:#f2df9f;color:#4a3606;border-radius:14px;padding:8px 14px;box-shadow:inset 0 0 0 2px var(--cu),inset 0 -4px 0 rgba(0,0,0,.15),0 6px 10px rgba(0,0,0,.18)}
+.H3 .board{background:rgba(0,0,0,.14);border-radius:20px;box-shadow:inset 0 0 0 3px var(--cu),inset 0 0 0 5px var(--cu-lo),inset 0 6px 14px rgba(0,0,0,.28)}
+.H3 .c{border-radius:11px}
+.H3 .c.out{background:rgba(0,0,0,.05);box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
+.H3 .c.pad{box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
+.H3 .c.chip{background:#4b535b;box-shadow:inset 0 0 0 3px var(--cu),inset 0 -7px 0 rgba(0,0,0,.28),inset 0 5px 0 rgba(255,255,255,.2),0 4px 0 var(--cu-lo),0 8px 12px rgba(0,0,0,.3)}
+.H3 .c.chip .dot{background:var(--cu);width:10px;height:10px}
+.H3 .c.inf{background:#ff4fae;box-shadow:inset 0 0 0 3px var(--cu),inset 0 -7px 0 rgba(0,0,0,.22),inset 0 5px 0 rgba(255,255,255,.45),0 4px 0 var(--cu-lo),0 8px 12px rgba(0,0,0,.3),0 0 20px var(--inf-glow)}
+.H3 .c.inf .dot{background:#fff;width:10px;height:10px}
+.H3 .c.half{background:#4b535b;box-shadow:inset 0 0 0 3px var(--cu),inset 0 -7px 0 rgba(0,0,0,.28),inset 0 5px 0 rgba(255,255,255,.2),0 4px 0 var(--cu-lo),0 8px 12px rgba(0,0,0,.3);overflow:hidden}
+.H3 .c.half:before{content:"";position:absolute;left:3px;right:3px;bottom:3px;height:55%;background:#ff4fae;border-radius:55% 45% 8px 8px}
+.H3 .c.half .dot{background:#fff;width:10px;height:10px}
+.H3 .c.trace{background:rgba(255,45,149,.18);box-shadow:inset 0 0 0 3px rgba(255,45,149,.5),inset 0 2px 4px rgba(0,0,0,.12)}
+.H3 .c.shield{background:#cfd6dc;box-shadow:inset 0 0 0 3px var(--cu),inset 0 -7px 0 rgba(0,0,0,.2),inset 0 5px 0 rgba(255,255,255,.6),0 4px 0 var(--cu-lo),0 8px 12px rgba(0,0,0,.3)}
+.H3 .c.shield:before{content:"";position:absolute;inset:12px;border-radius:50%;border:3px solid var(--cu);background:#4b535b}
+</style>
+</head>
+<body>
+<h1>Grid Infect, round 4, glass and clay refined</h1>
+<p class="sub">All five on the A1 palette and a real PCB substrate. New this round: one tile is caught mid-infection (column 2, row 6) so you can compare how each material expresses the bleed. Sticky notes and hand-drawn voice removed.</p>
+<div class="row" id="row"></div>
+
+<script>
+const grid = ["....." ,"....." ,"P...." ,"Pxx.." ,"PS..." ,"Ph..." ,"Px..." ,"BPPP." ,"P...." ,"....." ,"....." ];
+const map = {".":"out","P":"chip","B":"inf","x":"trace","S":"shield","h":"half"};
+const dotted = new Set(["chip","inf","half"]);
+
+const glyphs = {
+ glass:(cls)=>`<svg class="${cls}" viewBox="0 0 40 40" aria-hidden="true"><polygon points="20,3 33,17 27,17 27,34 13,34 13,17 7,17" fill="#ff2d95" opacity=".88"/><polygon points="20,3 33,17 27,17 20,10" fill="rgba(255,255,255,.55)"/><circle cx="20" cy="24" r="3" fill="#fff"/></svg>`,
+ clay:(cls)=>`<svg class="${cls}" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3 L33 17 Q34 19 31 19 L27 19 L27 31 Q27 35 23 35 L17 35 Q13 35 13 31 L13 19 L9 19 Q6 19 7 17 Z" fill="#ff4fae"/><path d="M20 6 L30 17 L25 17 L21 12 Z" fill="rgba(255,255,255,.35)"/><path d="M14 31 Q20 34 26 31 L26 33 Q20 36 14 33 Z" fill="rgba(0,0,0,.25)"/><circle cx="20" cy="25" r="3.5" fill="#fff"/></svg>`,
+ keycap:(cls)=>`<svg class="${cls}" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3 L33 17 Q34 19 31 19 L27 19 L27 31 Q27 35 23 35 L17 35 Q13 35 13 31 L13 19 L9 19 Q6 19 7 17 Z" fill="#454c54"/><path d="M20 8 L29 18 L24 18 L24 30 L16 30 L16 18 L11 18 Z" fill="#ff2d95" opacity=".95"/><path d="M20 8 L29 18 L24 18 L20 13 Z" fill="rgba(255,255,255,.5)"/><circle cx="20" cy="24" r="2.5" fill="#fff"/></svg>`,
+ bezel:(cls)=>`<svg class="${cls}" viewBox="0 0 40 40" aria-hidden="true"><polygon points="20,2 34,17 27,17 27,35 13,35 13,17 6,17" fill="#c9a648"/><polygon points="20,6 30,17 25,17 25,32 15,32 15,17 10,17" fill="#ff2d95" opacity=".9"/><polygon points="20,6 30,17 25,17 20,11" fill="rgba(255,255,255,.55)"/><circle cx="20" cy="24" r="2.5" fill="#fff"/></svg>`,
+ rim:(cls)=>`<svg class="${cls}" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2 L34 17 Q35 19 32 19 L28 19 L28 32 Q28 36 24 36 L16 36 Q12 36 12 32 L12 19 L8 19 Q5 19 6 17 Z" fill="#c9a648"/><path d="M20 6 L30 17 Q31 19 28 19 L25 19 L25 30 Q25 33 22 33 L18 33 Q15 33 15 30 L15 19 L12 19 Q9 19 10 17 Z" fill="#ff4fae"/><path d="M20 8 L28 17 L24 17 L21 13 Z" fill="rgba(255,255,255,.4)"/><circle cx="20" cy="25" r="3" fill="#fff"/></svg>`
+};
+
+const variants = [
+ {k:"G1",g:"glass",title:"G1. Glass on PCB",
+  note:"S3 moved onto the real substrate. Board well is recessed and dark so the glass reads; pads glow gold. Bleed: light pooling up from the bottom of the component."},
+ {k:"C1",g:"clay",title:"C1. Clay with copper",
+  note:"S6 with a copper lead ring on every component so it stays a PCB. Bleed: opaque magenta rising like a fill level. Friendly, tactile, no emissive channel."},
+ {k:"H1",g:"keycap",title:"H1. Clay body, glass lens",
+  note:"Hybrid. Matte dark plastic housing like a tactile switch or IC body, with a translucent lens on top that the infection lights from inside. Bleed: light climbing the lens. The board reads as a bank of backlit keys."},
+ {k:"H2",g:"bezel",title:"H2. Glass with gold bezel",
+  note:"S3 plus the S4 metal rim. Every component is a jewel in a copper setting. Strongest thumbnail of the five; the rim costs about 3px of tile per side."},
+ {k:"H3",g:"rim",title:"H3. Clay with gold rim",
+  note:"S6 plus S4. Enamel-pin feel in a soft body. Warmest option, but the rim plus clay bevel plus drop edge is a lot of edge per tile."}
+];
+
+const row = document.getElementById("row");
+for (const v of variants){
+ let cells="", bug=-1, i=0;
+ for (const line of grid) for (const ch of line){
+  const cls=map[ch]||"out"; if(ch==="B") bug=i;
+  cells+=`<div class="c ${cls}">${dotted.has(cls)?'<span class="dot"></span>':""}</div>`; i++;
+ }
+ const gf=glyphs[v.g];
+ row.insertAdjacentHTML("beforeend",`
+ <div class="col"><h3>${v.title}</h3><p class="note">${v.note}</p>
+  <div class="phone ${v.k}">
+   <div class="hud"><span class="btn">MENU</span><span class="lvl">LEVEL 6</span><span class="btn">RESET</span></div>
+   <span class="badge">LOCK 0</span>
+   <div class="board">${cells}</div>
+   <div class="tray">${gf("glyph lg")}${gf("glyph")}</div>
+  </div></div>`);
+ const cell=row.lastElementChild.querySelector(".board").children[bug];
+ cell.innerHTML=gf("glyph");
+ cell.querySelector("svg").style.cssText="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:34px;height:34px;z-index:1";
+}
+</script>
+</body>
+</html>
