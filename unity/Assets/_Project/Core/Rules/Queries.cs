@@ -31,6 +31,45 @@ namespace GridInfect.Core
             return w != null && profile.WorldUnlocked.TryGetValue(worldId, out int v) && v > w.Count;
         }
 
+        // Whether progress.unlockAll has already been run (the dev row reads
+        // it to say so rather than offer the press again).
+        public static bool EverythingUnlocked(Profile profile)
+        {
+            if (profile.Unlocked.Count < ClassicLevels.Count) return false;
+            foreach (World world in Worlds.All)
+            {
+                if (!IsWorldFinished(profile, world.Id)) return false;
+            }
+            return true;
+        }
+
+        // A replay: the level in play has already been beaten once, so the
+        // Lock tool is on the house (a hint cannot cost what the player has
+        // already paid). Read off progression rather than a second record —
+        // solving N is what opens N + 1. The one blind spot is the last
+        // Legacy level, which opens nothing and so never reads as replayed.
+        public static bool IsReplay(GameState state)
+        {
+            if (state == null) return false;
+            switch (state.Mode)
+            {
+                case GameMode.Classic:
+                    int next = NextClassicId(state.ClassicLevelId);
+                    return next >= 0 && state.Profile.Unlocked.Contains(next);
+                case GameMode.World:
+                    // A later level is open, or the world is finished — the
+                    // last level's unlock lands past Count, where the clamp in
+                    // WorldLevelsUnlocked can no longer see it.
+                    return state.WorldIndex >= 0 &&
+                           (WorldLevelsUnlocked(state.Profile, state.WorldId) > state.WorldIndex + 1 ||
+                            IsWorldFinished(state.Profile, state.WorldId));
+                case GameMode.Daily:
+                    return state.DailyRun != null && DailyBestMs(state.Profile, state.DailyRun.DateUtc) > 0;
+                default:
+                    return false;   // Free Play and Endless are never a second visit
+            }
+        }
+
         public static long ElapsedMs(FreePlayRun run, long nowMs) =>
             run == null ? 0 : (run.Completed ? run.CompletedMs : nowMs) - run.StartedMs;
 

@@ -214,7 +214,8 @@ namespace GridInfect.Game
             foreach (int loc in _previewLocs)
             {
                 int i = loc / Grid.Width, j = loc % Grid.Width;
-                if (_state.KindAt(i, j) == BoardStateTexture.Kind.Preview) _state.SetSettled(i, j, _session.Board[loc]);
+                if (_state.KindAt(i, j) == BoardStateTexture.Kind.Preview)
+                    _state.SetSettled(i, j, _session.Board[loc], BoardStateTexture.IsPieceCell(_session, i, j));
             }
             _previewLocs.Clear();
             _previewPiece = _previewI = _previewJ = -1;
@@ -341,7 +342,7 @@ namespace GridInfect.Game
                     return;
                 }
                 // Re-propagation during an undo, or a board arriving whole.
-                _state.SetSettled(i, j, value);
+                _state.SetSettled(i, j, value, BoardStateTexture.IsPieceCell(_session, i, j));
                 return;
             }
 
@@ -367,7 +368,7 @@ namespace GridInfect.Game
                 return;
             }
 
-            _state.SetSettled(i, j, value);
+            _state.SetSettled(i, j, value, BoardStateTexture.IsPieceCell(_session, i, j));
         }
 
         // Every full reset unbinds the pieces, but only a tripped trap is a

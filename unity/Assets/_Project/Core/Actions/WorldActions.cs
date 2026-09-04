@@ -29,8 +29,12 @@ namespace GridInfect.Core
             state.WorldId = worldId;
             state.WorldIndex = index;
             state.Solution = Worlds.Solution(worldId, index);
-            state.SetSession(new LevelSession(Worlds.Level(worldId, index)));
-            Locked.Apply(state.Session, Worlds.Locks(worldId, index));
+            // Locks land before the session is published: SessionChanged is
+            // what builds the board view, and a given placed after it left
+            // the adapter drawing a board the rules had already infected.
+            var session = new LevelSession(Worlds.Level(worldId, index));
+            Locked.Apply(session, Worlds.Locks(worldId, index));
+            state.SetSession(session);
         }
     }
 

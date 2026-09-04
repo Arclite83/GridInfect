@@ -13,6 +13,23 @@ namespace GridInfect.Game
         public const float PopupSlide = 0.15f;      // COMPLETE popup / BEGIN dismiss
         public const float PageSlide = 0.20f;       // classic level-select paging
 
+        // Touching a locked given: it leans this far off its cell and back,
+        // so a piece that cannot be lifted still answers the finger.
+        public const float LockedNudge = 0.06f;
+        public const float LockedNudgePct = 0.12f;  // of a cell
+
+        // Touch gating (see GameApp.Update). The block runs from the end of a
+        // transition so a press made during the blackout cannot act on the
+        // screen that replaced the one it was aimed at; the debounce is one
+        // button activation per window, so a double-tap navigates once.
+        public const float PostTransitionInputBlock = 0.15f;
+        public const float ButtonDebounce = 0.25f;
+
+        // The largest frame delta animation is allowed to see. A synchronous
+        // level generation can stall the main thread for seconds; without a
+        // clamp that whole stall lands on the next frame's tweens and fades.
+        public const float MaxFrameDelta = 0.1f;
+
         // Board layout metrics (LevelMenuScene::init), made orientation-
         // agnostic: the board fits whichever axis binds, so it composes on a
         // phone held upright without anything running off an edge.

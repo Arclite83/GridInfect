@@ -7,6 +7,9 @@
 #
 #   tools/gen_worlds.sh [--threads N] [--only w13]
 #
+# No pool passes --max-locks: GenSpec budgets it to 0, so no generated
+# level ever ships a piece placed and locked before play.
+#
 # Each world: id, name, level count, seed start, gen_levels flags. Grades
 # ramp within a world (the bake orders by grade, then trace length) and
 # across worlds. Launch content is cardinal arms plus walls (stage 3);

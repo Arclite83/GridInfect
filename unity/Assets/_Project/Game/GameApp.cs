@@ -28,6 +28,14 @@ namespace GridInfect.Game
         SavePort _save;
         float _resolveAt = -1f;
 
+        // Touch gating. A transition swallows input outright; the two cool-
+        // downs cover the frames either side of it — the tap that lands the
+        // instant a screen appears, and the second half of a double-tap that
+        // was only ever meant to be one press.
+        bool _wasTransitioning;
+        float _inputBlockedUntil;
+        float _clickBlockedUntil;
+
         public static long NowMs() => System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         // The Daily's date: UTC, so every device gets the same board.
@@ -97,7 +105,10 @@ namespace GridInfect.Game
 
         void Update()
         {
-            float dt = Time.unscaledDeltaTime;
+            // A level generation or a first-frame hitch produces one enormous
+            // delta. Clamped, it costs a fraction of a second of animation;
+            // unclamped it fast-forwards every tween and fade past its end.
+            float dt = Mathf.Min(Time.unscaledDeltaTime, PresentationConfig.MaxFrameDelta);
             Tweens.Update(dt);
             Screens.Update(dt);
 
@@ -111,10 +122,21 @@ namespace GridInfect.Game
             if (screen == null) return;
             screen.Tick(dt);
 
-            if (Screens.Transitioning) return;
+            bool transitioning = Screens.Transitioning;
+            if (_wasTransitioning && !transitioning)
+            {
+                // A press made during the blackout arrives on the first frame
+                // after it, where the new screen has already claimed the pixels
+                // under the finger. Give it a beat to be let go of.
+                _inputBlockedUntil = Time.unscaledTime + PresentationConfig.PostTransitionInputBlock;
+            }
+            _wasTransitioning = transitioning;
+            if (transitioning) return;
 
             if (Input.GetMouseButtonDown(0))
             {
+                if (Time.unscaledTime < _inputBlockedUntil) return;
+
                 // Any touch fast-forwards a pending resolution first. If that
                 // resolution just solved the level, swallow the touch: the
                 // popup that appeared must not eat a click meant for the board.
@@ -127,17 +149,27 @@ namespace GridInfect.Game
                     {
                         if (button.HitTest(world)) hit = button; // last wins = drawn on top
                     }
-                    if (hit != null) hit.OnClick?.Invoke();
-                    else screen.OnPress(world);
+                    if (hit == null)
+                    {
+                        screen.OnPress(world);   // the board: never debounced, it is a drag
+                    }
+                    else if (Time.unscaledTime >= _clickBlockedUntil)
+                    {
+                        // One button press per debounce window, whichever
+                        // button: a double-tap on a menu row must not both
+                        // navigate and fire again on whatever replaces it.
+                        _clickBlockedUntil = Time.unscaledTime + PresentationConfig.ButtonDebounce;
+                        hit.OnClick?.Invoke();
+                    }
                 }
             }
             else if (Input.GetMouseButton(0))
             {
-                screen.OnDrag(ToWorld(Input.mousePosition));
+                if (Time.unscaledTime >= _inputBlockedUntil) screen.OnDrag(ToWorld(Input.mousePosition));
             }
             else if (Input.GetMouseButtonUp(0))
             {
-                screen.OnRelease(ToWorld(Input.mousePosition));
+                if (Time.unscaledTime >= _inputBlockedUntil) screen.OnRelease(ToWorld(Input.mousePosition));
             }
         }
 

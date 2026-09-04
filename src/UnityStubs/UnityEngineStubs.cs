@@ -325,6 +325,7 @@ namespace UnityEngine
 
     public static class Debug
     {
+        public static bool isDebugBuild => false;
         public static void Log(object message) { }
         public static void LogWarning(object message) { }
     }

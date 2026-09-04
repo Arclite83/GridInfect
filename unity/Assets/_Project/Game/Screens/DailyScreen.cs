@@ -33,9 +33,12 @@ namespace GridInfect.Game
                 new Vector2(0f, -h * 0.08f), new Vector2(L.ContentWidth * 0.55f, L.ButtonHeight),
                 BoardTheme.Primary, BoardTheme.TextOnAccent, () =>
                 {
-                    // Date and clock are the adapter's inputs; both enter the log.
-                    var begin = App.Do(GridInfectActions.DailyBegin, Inputs.DailyBegin(today, GameApp.NowMs()));
-                    if (begin.Applied) App.Screens.Show(new BoardScreen());
+                    // Date and clock are the adapter's inputs; both enter the
+                    // log. The dispatch runs behind the transition's LOADING
+                    // card (ScreenManager.Show), and a rejection cancels the
+                    // navigation instead of landing on an empty board.
+                    App.Screens.Show(new BoardScreen(), prepare: () =>
+                        App.Do(GridInfectActions.DailyBegin, Inputs.DailyBegin(today, GameApp.NowMs())).Applied);
                 }));
         }
     }
@@ -61,8 +64,12 @@ namespace GridInfect.Game
                     {
                         // The seed is the adapter's pick (wall clock); it enters
                         // the log, so the run — boards included — replays.
-                        var begin = App.Do(GridInfectActions.EndlessBegin, Inputs.EndlessBegin(grade, GameApp.NowMs()));
-                        if (begin.Applied) App.Screens.Show(new BoardScreen());
+                        // endless.begin generates on the device and the higher
+                        // grades take seconds of solver work, so it runs behind
+                        // the transition's LOADING card rather than freezing
+                        // this menu with its buttons still live.
+                        App.Screens.Show(new BoardScreen(), prepare: () =>
+                            App.Do(GridInfectActions.EndlessBegin, Inputs.EndlessBegin(grade, GameApp.NowMs())).Applied);
                     }));
                 var best = Ui.MakeText($"best:{g}", Root.transform, $"BEST {profile.EndlessBest[g - 1]}",
                     L.LabelText, BoardTheme.Accent, 2);

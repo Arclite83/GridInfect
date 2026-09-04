@@ -130,11 +130,8 @@ namespace GridInfect.Game
                 var button = UiButton.Make(Root.transform, (n + 1).ToString(), new Vector2(x, y), size,
                     unlocked ? BoardTheme.ButtonBg : BoardTheme.ButtonBgDisabled,
                     unlocked ? BoardTheme.Text : BoardTheme.TextDim,
-                    () =>
-                    {
-                        App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(_worldId, captured));
-                        App.Screens.Show(new BoardScreen());
-                    });
+                    () => App.Screens.Show(new BoardScreen(), prepare: () =>
+                        App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(_worldId, captured)).Applied));
                 button.Enabled = unlocked;
                 if (!unlocked)
                 {

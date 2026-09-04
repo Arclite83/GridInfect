@@ -10,6 +10,8 @@ namespace GridInfect.Game
     {
         UiButton _soundButton;
         TextMesh _soundLabel;
+        UiButton _devButton;
+        TextMesh _devLabel;
 
         protected override void Build()
         {
@@ -53,6 +55,36 @@ namespace GridInfect.Game
                     new Vector2(L.ContentWidth, L.BarHeight),
                     BoardTheme.ButtonBgDisabled, BoardTheme.TextDim, () => App.Ads.ShowPrivacyOptions(null)));
             }
+
+            // Testing affordance: every level open, one press. Debug builds and
+            // the editor only — isDebugBuild is false in a release player, so
+            // this row does not exist for a player.
+            if (Debug.isDebugBuild)
+            {
+                // One bar above SOUND, measured rather than guessed, so the
+                // two do not collide on a squarer aspect than a phone's.
+                _devButton = UiButton.Make(Root.transform, "",
+                    new Vector2(0f, -h * 0.38f + L.BarHeight + L.Gap),
+                    new Vector2(L.ContentWidth, L.BarHeight),
+                    BoardTheme.ButtonBgDisabled, BoardTheme.TextDim, UnlockEverything);
+                _devLabel = _devButton.Root.GetComponentInChildren<TextMesh>();
+                Buttons.Add(_devButton);
+                RefreshDevLabel();
+            }
+        }
+
+        void UnlockEverything()
+        {
+            App.Do(GridInfectActions.ProgressUnlockAll);
+            RefreshDevLabel();
+        }
+
+        void RefreshDevLabel()
+        {
+            if (_devLabel == null) return;
+            bool all = Queries.EverythingUnlocked(App.State.Profile);
+            _devLabel.text = all ? "DEV: ALL LEVELS UNLOCKED" : "DEV: UNLOCK ALL LEVELS";
+            _devButton.Enabled = !all;
         }
 
         void ToggleSound()

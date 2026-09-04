@@ -120,14 +120,8 @@ namespace GridInfect.Game
                 var socket = Ui.MakeGlass($"slot:{k}", _tray.transform, new Vector2(slot, slot), GlassStyle.TraySlot(BoardPalette.Default, false), 4);
                 Ui.SetPos(socket, at.x, at.y);
                 _pieces[k] = new PieceView(Root.transform, k, session.Def.Specs[k], slot, trayGlyph, at);
-                var piece = session.Pieces[k];
-                if (piece.Placed)
-                {
-                    _pieces[k].SetGlyphSize(_board.GlyphPx);
-                    _pieces[k].SetPos(_board.CellCenter(piece.I, piece.J));
-                }
-                _pieces[k].SetLocked(piece.Locked);
             }
+            SyncPieces();   // givens are already on the board
             session.LevelSolved += OnSolved;
             session.PiecesUnbound += OnPiecesUnbound;
 
@@ -161,6 +155,44 @@ namespace GridInfect.Game
                     break;
             }
             Substrate.SetLevel(level);
+            RefreshLockLabel();   // the price of a hint is per level, not per session
+        }
+
+        // The one reconciliation: where a piece view sits is a pure function of
+        // the piece state — its cell if placed, its tray slot if not — so the
+        // view cannot drift out of step with the rules. Every path that
+        // changes what is placed ends here rather than moving views itself.
+        //
+        // The tray is where a piece starts, not where it always is: a level can
+        // ship givens (world / daily / endless levels carry locked placements,
+        // docs/GENERATOR_V2.md), and those pieces are on the board before the
+        // player touches anything. Building every view at its tray slot left
+        // the given's cells lit with its piece stuck in the tray, unliftable
+        // and with its cell refusing every other piece.
+        void SyncPieces(bool animate = false)
+        {
+            if (_bound == null || _pieces == null || _board == null) return;
+            for (int k = 0; k < _pieces.Length; k++)
+            {
+                if (k == _dragIndex) continue;   // the finger owns that one
+                PieceState piece = _bound.Pieces[k];
+                _pieces[k].SetLocked(piece.Locked);
+                // The board LOD on a tile, the tray LOD in a slot (STYLE-GUIDE §6).
+                _pieces[k].SetGlyphSize(piece.Placed ? _board.GlyphPx : TrayGlyphPx);
+                Vector2 to = piece.Placed ? _board.CellCenter(piece.I, piece.J) : _pieces[k].TraySlot;
+                if (animate)
+                {
+                    App.Tweens.MoveTo(_pieces[k].Root.transform, new Vector3(to.x, to.y, 0f),
+                        piece.Placed ? PresentationConfig.DropSnap : PresentationConfig.TrayReturn);
+                }
+                else
+                {
+                    // A fresh binding: no travel, and no tween left running
+                    // that would drag the piece off the cell a frame later.
+                    App.Tweens.Cancel(_pieces[k].Root.transform);
+                    _pieces[k].SetPos(to);
+                }
+            }
         }
 
         void Unbind()
@@ -221,7 +253,14 @@ namespace GridInfect.Game
             for (int k = _pieces.Length - 1; k >= 0; k--)
             {
                 if (!_pieces[k].HitTest(world)) continue;
-                if (_bound.Pieces[k].Locked) return true; // a locked piece cannot be lifted
+                if (_bound.Pieces[k].Locked)
+                {
+                    // A locked given cannot be lifted (GENERATOR_V2 "Locks at
+                    // load"). Swallowing the touch outright reads as a dead
+                    // piece rather than a fixed one, so it leans and settles.
+                    NudgeLocked(k);
+                    return true;
+                }
 
                 if (_bound.Pieces[k].Placed)
                 {
@@ -238,6 +277,19 @@ namespace GridInfect.Game
                 return true;
             }
             return false;
+        }
+
+        void NudgeLocked(int k)
+        {
+            PieceState piece = _bound.Pieces[k];
+            if (!piece.Placed || _board == null) return;
+            Vector2 home = _board.CellCenter(piece.I, piece.J);
+            Transform t = _pieces[k].Root.transform;
+            // From the cell, not from wherever a previous nudge left it.
+            t.localPosition = new Vector3(home.x, home.y, 0f);
+            float lift = _board.CellSize * PresentationConfig.LockedNudgePct;
+            App.Tweens.MoveTo(t, new Vector3(home.x, home.y + lift, 0f), PresentationConfig.LockedNudge,
+                () => App.Tweens.MoveTo(t, new Vector3(home.x, home.y, 0f), PresentationConfig.LockedNudge));
         }
 
         public override void OnDrag(Vector2 world)
@@ -297,38 +349,27 @@ namespace GridInfect.Game
             var result = App.Do(GridInfectActions.PieceLock);
             _board.EndBatch(result.Applied);
             if (!result.Applied) return;
-            for (int k = 0; k < _pieces.Length; k++)
-            {
-                var piece = _bound.Pieces[k];
-                _pieces[k].SetLocked(piece.Locked);
-                if (piece.Placed)
-                {
-                    // Snap: the locked piece lands on its cell.
-                    Vector2 to = _board.CellCenter(piece.I, piece.J);
-                    _pieces[k].SetGlyphSize(_board.GlyphPx);
-                    App.Tweens.MoveTo(_pieces[k].Root.transform, new Vector3(to.x, to.y, 0f),
-                        piece.Locked ? PresentationConfig.DropSnap : PresentationConfig.TrayReturn);
-                }
-                else
-                {
-                    // Evicted ones return to the tray.
-                    ReturnToTray(k, PresentationConfig.TrayReturn);
-                }
-            }
+            // The locked piece lands on its cell, anything it evicted returns
+            // to the tray — both fall out of reconciling against the rules.
+            SyncPieces(animate: true);
             RefreshLockLabel();
             App.ScheduleResolve();
         }
 
         // With an empty wallet the button becomes the rewarded placement
-        // (NEXT_PASS decision 8): watch an ad, earn one lock.
+        // (NEXT_PASS decision 8): watch an ad, earn one lock. On a replay the
+        // tool costs nothing (piece.lock never touches the wallet there), so
+        // the button says HINT instead of counting down a price it will not
+        // charge — and stays live at wallet 0.
         void RefreshLockLabel()
         {
             if (_lockButton?.Label == null) return;
+            bool replay = Queries.IsReplay(App.State);
             int locks = App.State.Profile.Locks;
-            bool rewarded = locks == 0 && App.Ads.RewardedAvailable;
-            _lockButton.Label.text = rewarded ? "+1 LOCK" : $"LOCK {locks:00}";
+            bool rewarded = !replay && locks == 0 && App.Ads.RewardedAvailable;
+            _lockButton.Label.text = replay ? "HINT" : rewarded ? "+1 LOCK" : $"LOCK {locks:00}";
             _lockButton.OnClick = rewarded ? EarnLock : (System.Action)LockPiece;
-            _lockButton.Enabled = (locks > 0 || rewarded) && !_popupOpen;
+            _lockButton.Enabled = (replay || locks > 0 || rewarded) && !_popupOpen;
         }
 
         void EarnLock()
@@ -342,15 +383,11 @@ namespace GridInfect.Game
 
         // ---- session reactions ----
 
-        void OnPiecesUnbound()
-        {
-            if (_pieces == null) return;
-            for (int k = 0; k < _pieces.Length; k++)
-            {
-                if (_bound != null && _bound.Pieces[k].Locked) continue; // locked pieces stay put
-                ReturnToTray(k, PresentationConfig.TrayReturn);
-            }
-        }
+        // A full reset (the replay button, or a tripped trap) unbinds every
+        // piece the level did not lock. Reconciling rather than sweeping the
+        // tray is what keeps a locked given on its cell: the rules re-placed
+        // it before this ran, so the sync leaves it exactly where it is.
+        void OnPiecesUnbound() => SyncPieces(animate: true);
 
         void OnSolved()
         {
@@ -413,7 +450,13 @@ namespace GridInfect.Game
             }
             else if (App.State.Mode == GameMode.Endless)
             {
-                App.Do(GridInfectActions.EndlessAdvance); // no pause between levels; the streak is in the HUD
+                // No popup between Endless levels — the streak is in the HUD —
+                // but the next board is generated here on the device, and the
+                // high grades are seconds of solver work. That goes behind the
+                // transition's LOADING card instead of stopping the frame with
+                // the solved board still on screen.
+                App.Screens.Show(new BoardScreen(),
+                    prepare: () => App.Do(GridInfectActions.EndlessAdvance).Applied);
             }
             else
             {

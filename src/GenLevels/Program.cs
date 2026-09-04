@@ -14,7 +14,7 @@ namespace GridInfect.GenLevels
     //            [--min-active 6] [--max-active 40] [--min-run 1] [--max-run 5]
     //            [--gaps] [--base-chance 15] [--falloff 1] [--shape-bias 0]
     //            [--distance 2] [--shared-lines] [--symmetric-tiles] [--dup-tiles]
-    //            [--max-givens 12] [--max-locks 1] [--max-forbidden 4] [--max-traps 2] [--cap 4000] [--max-seeds N] [--max-seconds S] [--threads 1] [--quiet] [--spec-json]
+    //            [--max-givens 12] [--max-locks 0] [--max-forbidden 4] [--max-traps 2] [--cap 4000] [--max-seeds N] [--max-seconds S] [--threads 1] [--quiet] [--spec-json]
     // Writes one JSON object per accepted level and prints the acceptance
     // report (per rejection reason, seeds tried, wall clock) to stderr.
     public static class Program

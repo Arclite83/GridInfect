@@ -91,11 +91,8 @@ namespace GridInfect.Game
                     new Vector2(x, y), size,
                     unlocked ? BoardTheme.ButtonBg : BoardTheme.ButtonBgDisabled,
                     unlocked ? BoardTheme.Text : BoardTheme.TextDim,
-                    () =>
-                    {
-                        App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(captured));
-                        App.Screens.Show(new BoardScreen());
-                    });
+                    () => App.Screens.Show(new BoardScreen(), prepare: () =>
+                        App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(captured)).Applied));
                 button.Enabled = unlocked;
                 if (!unlocked)
                 {

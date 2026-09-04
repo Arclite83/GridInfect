@@ -296,7 +296,7 @@ hands the player, in three pools:
 | blockers | `Forbidden` (`Element.Forbidden`, ≤ `MaxForbidden`) | a void cell must stay clean | void | every cover with a spread that would touch it |
 | blockers | `Trap` (`Element.Traps`, ≤ `MaxTraps`) | a void cell resets | void | every cover whose arms end on it (statically) |
 | fill | `Gap` | a covered non-piece cell becomes void (arms jump it) | active | every cover with a piece on the cell; withdraws a requirement, so it can also let new covers in |
-| pre-fixed piece | `Lock` (≤ `MaxLocks`) | a piece is placed and locked at its solution cell before play | — | every cover with that piece elsewhere |
+| pre-fixed piece | `Lock` (≤ `MaxLocks`, **0 by default — see below**) | a piece is placed and locked at its solution cell before play | — | every cover with that piece elsewhere |
 
 A given is **valid** when the sample still solves the level: every sampled
 piece on an active cell legally, together covering every active cell,
@@ -340,10 +340,15 @@ winning through the real rules (`SolutionCounter.WinningOrder`, a replay).
    (plus relay arms and locks, transformed with the board). The batch tool
    dedupes on it.
 
-Acceptance at the default spec (2–5 pieces, walls, one lock allowed) is
-238 of the first 300 seeds; the stage-2 pruner accepted under a quarter at
-four or more pieces. Rejections are now almost all `NotUnique` past the
-lock budget and `Grade` (a band the sample did not land in).
+Acceptance at the default spec (2–5 pieces, walls) is 183 of the first 300
+seeds, down from 238 when one lock was allowed; the stage-2 pruner
+accepted under a quarter at four or more pieces. The 55 seeds the lock
+used to rescue now reject as `NotUnique` — that ambiguity is exactly what
+a pre-placed piece existed to break — and the rest is `Grade` (a band the
+sample did not land in). The generator scans further seeds, so pool sizes
+are unchanged; the cost is wall clock, and it is only steep at the top:
+regenerating every world took under six minutes, of which the two G5
+worlds were four (w11 3,359 seeds for 20 levels, w12 3,281 for 20).
 
 ### Locks at load
 
@@ -354,6 +359,23 @@ through the rules before play (`Locked.Apply`, from `world.load`,
 the board locked, cannot be lifted, and survives a full reset, exactly as
 a Lock-tool placement does. Stored solutions list locked pieces first;
 solvers and counters take them as `placed` (`Locked.Placed`).
+
+**No shipped level uses one.** `GenSpec.MaxLocks` is 0, so the worlds, the
+Daily pools and Endless (which generates on the device from the same
+`GenSpec`) never hand the player a piece they cannot move: a sample whose
+ambiguity only a lock could break is rejected as `NotUnique` and the
+generator takes the next seed. Everything above stays — the given kind,
+the discriminator's fallback to it, `Locked.Apply` and the load path — so
+raising the budget is one field, and a level that does carry a lock still
+loads correctly. `GivensAndHintsTests` holds both halves:
+`NoShippedLevelPreplacesAPiece` over every world level, every Daily pool
+and the Endless and Daily specs, and
+`LockedApplyStillPlacesInfectsAndSurvivesAFullReset` over the load path
+itself, so the budgeted-out mechanism cannot rot.
+
+The Lock *tool* is unaffected: a piece the player spends a lock on is
+placed and locked the same way, and that is a placement they asked for.
+Touching a locked piece nudges it and puts it back, so it still answers.
 
 ### Batch tool
 
