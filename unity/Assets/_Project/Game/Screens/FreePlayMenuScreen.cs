@@ -41,13 +41,11 @@ namespace GridInfect.Game
         void StartRun(Difficulty difficulty)
         {
             // The seed is the adapter's pick (wall clock); it enters the log,
-            // so the run — boards included — replays deterministically.
-            var generate = App.Do(GridInfectActions.LevelGenerate,
-                Inputs.LevelGenerate(difficulty, GameApp.NowMs()));
-            if (generate.Applied)
-            {
-                App.Screens.Show(new BoardScreen());
-            }
+            // so the run — boards included — replays deterministically. Five
+            // levels are generated up front, so the dispatch goes behind the
+            // transition's LOADING card.
+            App.Screens.Show(new BoardScreen(), prepare: () => App.Do(GridInfectActions.LevelGenerate,
+                Inputs.LevelGenerate(difficulty, GameApp.NowMs())).Applied);
         }
     }
 }

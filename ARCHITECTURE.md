@@ -85,6 +85,7 @@ live in `Queries` and carry zero rules.
 | `board.resolve` | — | BoardActions | RULES §4.1 order: win check first, else reset if tripped, else repels in queue order |
 | `piece.clear` | `piece` | BoardActions | undo per RULES §7 (99 marking, re-propagation, queue accumulation) |
 | `progress.unlock` | `levelId` | ProfileActions | solving id N unlocks N+1; dispatched by the adapter on solve, so replay reproduces progression |
+| `progress.unlockAll` | — | ProfileActions | development affordance (offered only in a debug build): every Legacy level, world and world level open at once |
 | `settings.mute` | `muted` | ProfileActions | audio preference |
 | `freeplay.begin` | `nowMs` | FreePlayActions | BEGIN pressed; run clock starts (wall clock via input) |
 | `freeplay.advance` | — | FreePlayActions | next generated level, clock keeps running |
@@ -98,7 +99,7 @@ live in `Queries` and carry zero rules.
 | `endless.begin` | `grade, seed` | DailyActions | start an Endless run: no clock, boards from the logged seed |
 | `endless.advance` | — | DailyActions | solved: streak +1 (or 1 after a reset), best per grade, next board |
 | `endless.abort` | — | DailyActions | leave a run |
-| `piece.lock` | — | LockActions | spend one lock: the deducer's next forced placement from the player's correct pieces (fallback: largest-coverage unplaced piece of the stored solution), evicting a player piece on that cell, placed and locked; rejects at wallet 0 or nothing left |
+| `piece.lock` | — | LockActions | spend one lock: the deducer's next forced placement from the player's correct pieces (fallback: largest-coverage unplaced piece of the stored solution), evicting a player piece on that cell, placed and locked; rejects at wallet 0 or nothing left. Free on a replay (`Queries.IsReplay`): an already-beaten level never charges for a hint |
 | `locks.grant` | `amount, reason` | LockActions | `"rewarded"` (an ad) is uncapped; other reasons (`"streak"`, dispatched by the adapter on every 7th daily) top up to the cap |
 
 Adding a capability = a new action (or a new version of one); never an

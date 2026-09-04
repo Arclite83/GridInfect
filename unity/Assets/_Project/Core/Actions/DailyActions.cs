@@ -40,8 +40,11 @@ namespace GridInfect.Core
                 ParMs = DailySpec.ParMs(level.TraceLength, level.Grade),
             };
             state.Solution = level.Solution;
-            state.SetSession(new LevelSession(level.Def));
-            Locked.Apply(state.Session, level.Locks);
+            // Locks before publication: SessionChanged builds the board view,
+            // so a given applied afterwards is a board the view never saw.
+            var session = new LevelSession(level.Def);
+            Locked.Apply(session, level.Locks);
+            state.SetSession(session);
         }
     }
 
@@ -116,8 +119,9 @@ namespace GridInfect.Core
             state.DailyRun = null;
             state.EndlessRun = new EndlessRun { Grade = grade, Seed = seed, Index = 0, Streak = 0, LevelSeed = level.Seed };
             state.Solution = level.Solution;
-            state.SetSession(new LevelSession(level.Def));
-            Locked.Apply(state.Session, level.Locks);
+            var session = new LevelSession(level.Def);
+            Locked.Apply(session, level.Locks);
+            state.SetSession(session);
         }
     }
 
@@ -149,8 +153,9 @@ namespace GridInfect.Core
                         ?? throw new InvalidOperationException("no endless board from this seed");
             run.LevelSeed = level.Seed;
             state.Solution = level.Solution;
-            state.SetSession(new LevelSession(level.Def));
-            Locked.Apply(state.Session, level.Locks);
+            var session = new LevelSession(level.Def);
+            Locked.Apply(session, level.Locks);
+            state.SetSession(session);
         }
     }
 

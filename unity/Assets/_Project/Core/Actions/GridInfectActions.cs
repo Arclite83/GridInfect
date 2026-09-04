@@ -14,6 +14,7 @@ namespace GridInfect.Core
         public const string PieceClear = "piece.clear";
         public const string BoardResolve = "board.resolve";
         public const string ProgressUnlock = "progress.unlock";
+        public const string ProgressUnlockAll = "progress.unlockAll";
         public const string SettingsMute = "settings.mute";
         public const string FreePlayBegin = "freeplay.begin";
         public const string FreePlayAdvance = "freeplay.advance";
@@ -39,6 +40,7 @@ namespace GridInfect.Core
             registry.Register(new ClearPieceAction());
             registry.Register(new ResolveBoardAction());
             registry.Register(new UnlockLevelAction());
+            registry.Register(new UnlockEverythingAction());
             registry.Register(new SetMutedAction());
             registry.Register(new BeginFreePlayAction());
             registry.Register(new AdvanceFreePlayAction());
