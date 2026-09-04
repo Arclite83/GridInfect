@@ -3,107 +3,137 @@ using NUnit.Framework;
 
 namespace GridInfect.Core.Tests
 {
-    // Two rules the adapter leans on and could not see before:
+    // Three rules the adapter leans on and could not see before:
     //
-    //  1. A level's givens are on the board by the time the session is
-    //     published. SessionChanged is what builds the board view, so a lock
-    //     applied after it left the view drawing a board the rules had already
-    //     infected — cells lit with the piece stranded in the tray.
-    //  2. A hint on an already-beaten level is free. The wallet pays for
+    //  1. A loader finishes its session before it publishes it. SessionChanged
+    //     is what builds the board view, so anything applied after it is a
+    //     board the view never saw — which is how a locked given came to light
+    //     two cells with its piece still stranded in the tray.
+    //  2. No level a player can load pre-places a piece (GenSpec.MaxLocks = 0).
+    //  3. A hint on an already-beaten level is free. The wallet pays for
     //     progress, and a replay is not progress.
     [TestFixture]
     public class GivensAndHintsTests
     {
-        // The state of a session at the instant SessionChanged fired: what an
-        // adapter binding to the event can actually see.
-        struct Snapshot
-        {
-            public int PlacedPieces;
-            public int InfectedCells;
-        }
-
-        static Snapshot OnPublish(Bloodhound.Engine.Dispatcher<GameState> d, string action,
-            Dictionary<string, object> input)
-        {
-            var seen = new Snapshot();
-            void Capture(LevelSession s)
-            {
-                if (s == null) return;
-                foreach (PieceState p in s.Pieces) if (p.Placed) seen.PlacedPieces++;
-                foreach (byte v in s.Board) if (v == Cell.Infected) seen.InfectedCells++;
-            }
-            d.State.SessionChanged += Capture;
-            Assert.That(d.Dispatch(action, input).Applied, Is.True, action);
-            d.State.SessionChanged -= Capture;
-            return seen;
-        }
-
+        // The invariant the givens bug broke, stated without needing a level
+        // that has givens: whatever a loader builds, it finishes building it
+        // before it publishes. SessionChanged is what makes the adapter draw
+        // the board, so anything applied after it is a board the view never
+        // saw — which is exactly how a locked given came to light two cells
+        // with its piece still sitting in the tray.
         [Test]
-        public void WorldGivensAreOnTheBoardWhenTheSessionIsPublished()
+        public void EveryLoaderFinishesTheSessionBeforeItPublishesIt()
         {
-            int levelsWithGivens = 0;
+            var loads = new List<(string action, Dictionary<string, object> input)>
+            {
+                (GridInfectActions.LevelLoad, Inputs.LevelLoad(0)),
+                (GridInfectActions.LevelLoad, Inputs.LevelLoad(37)),
+                (GridInfectActions.WorldLoad, Inputs.WorldLoad(Worlds.First.Id, 0)),
+                (GridInfectActions.WorldLoad, Inputs.WorldLoad(Worlds.All[3].Id, 5)),
+                (GridInfectActions.DailyBegin, Inputs.DailyBegin("2026-01-05", 0L)),
+                (GridInfectActions.EndlessBegin, Inputs.EndlessBegin(Solving.Grade.G1, 4242L)),
+                (GridInfectActions.LevelGenerate, Inputs.LevelGenerate(Difficulty.Beginner, 99L)),
+            };
+
+            foreach (var (action, input) in loads)
+            {
+                var d = GridInfectActions.CreateDispatcher();
+                byte[] atPublish = null;
+                PieceState[] piecesAtPublish = null;
+                void Capture(LevelSession s)
+                {
+                    if (s == null) return;
+                    atPublish = (byte[])s.Board.Clone();
+                    piecesAtPublish = (PieceState[])s.Pieces.Clone();
+                }
+                d.State.SessionChanged += Capture;
+                Assert.That(d.Dispatch(action, input).Applied, Is.True, action);
+                d.State.SessionChanged -= Capture;
+
+                var session = d.State.Session;
+                Assert.That(atPublish, Is.Not.Null, $"{action}: never published a session");
+                Assert.That(atPublish, Is.EqualTo(session.Board), $"{action}: board changed after publication");
+                for (int k = 0; k < session.Pieces.Length; k++)
+                {
+                    Assert.That(piecesAtPublish[k].Placed, Is.EqualTo(session.Pieces[k].Placed),
+                        $"{action}: piece {k} was placed after publication");
+                    Assert.That(piecesAtPublish[k].Locked, Is.EqualTo(session.Pieces[k].Locked),
+                        $"{action}: piece {k} was locked after publication");
+                }
+            }
+        }
+
+        // The policy (GENERATOR_V2 "Locks at load"): GenSpec.MaxLocks is 0, so
+        // nothing the player can load hands them a piece they cannot move.
+        [Test]
+        public void NoShippedLevelPreplacesAPiece()
+        {
             foreach (World w in Worlds.All)
             {
                 for (int n = 0; n < w.Count; n++)
                 {
-                    var locks = Worlds.Locks(w.Id, n);
-                    if (locks.Length == 0) continue;
-                    levelsWithGivens++;
+                    Assert.That(Worlds.Locks(w.Id, n), Is.Empty, $"{w.Id}/{n} ships a locked given");
+                }
+            }
+            foreach (System.DayOfWeek day in System.Enum.GetValues(typeof(System.DayOfWeek)))
+            {
+                for (int n = 0; n < DailyPool.Count(day); n++)
+                {
+                    Assert.That(DailyPool.Get(day, n).Locks, Is.Empty, $"daily {day}/{n} ships a locked given");
+                }
+                Assert.That(DailySpec.For(day).MaxLocks, Is.Zero, $"daily spec {day}");
+            }
 
-                    var d = GridInfectActions.CreateDispatcher();
-                    Snapshot seen = OnPublish(d, GridInfectActions.WorldLoad, Inputs.WorldLoad(w.Id, n));
-                    Assert.That(seen.PlacedPieces, Is.EqualTo(locks.Length),
-                        $"{w.Id}/{n}: givens must be placed before SessionChanged");
-                    Assert.That(seen.InfectedCells, Is.GreaterThan(0),
-                        $"{w.Id}/{n}: a given infects at least its own cell");
+            // Endless has no baked pool to check — it generates on the device,
+            // so the guarantee there is the spec it generates from.
+            for (int g = (int)Solving.Grade.G1; g <= (int)Solving.Grade.G5; g++)
+            {
+                Assert.That(DailySpec.Endless((Solving.Grade)g).MaxLocks, Is.Zero, $"endless spec G{g}");
+            }
+        }
 
-                    var s = d.State.Session;
-                    foreach (var (piece, cell) in locks)
+        // ... and the loaders agree, board by board.
+        [Test]
+        public void EveryBoardAPlayerCanLoadStartsWithAnEmptyTray()
+        {
+            var d = GridInfectActions.CreateDispatcher();
+            foreach (World w in Worlds.All)
+            {
+                for (int n = 0; n < w.Count; n++)
+                {
+                    Assert.That(d.Dispatch(GridInfectActions.WorldLoad, Inputs.WorldLoad(w.Id, n)).Applied);
+                    foreach (PieceState piece in d.State.Session.Pieces)
                     {
-                        Assert.That(s.Pieces[piece].Locked, Is.True, $"{w.Id}/{n}: piece {piece} locked");
-                        Assert.That(Grid.Loc(s.Pieces[piece].I, s.Pieces[piece].J), Is.EqualTo(cell));
+                        Assert.That(piece.Placed, Is.False, $"{w.Id}/{n} starts with a piece on the board");
                     }
                 }
             }
-            Assert.That(levelsWithGivens, Is.GreaterThan(0), "the baked worlds ship levels with givens");
+            Assert.That(d.Dispatch(GridInfectActions.DailyBegin, Inputs.DailyBegin("2026-01-05", 0L)).Applied);
+            foreach (PieceState piece in d.State.Session.Pieces) Assert.That(piece.Placed, Is.False, "daily");
+            Assert.That(d.Dispatch(GridInfectActions.EndlessBegin, Inputs.EndlessBegin(Solving.Grade.G3, 31337L)).Applied);
+            foreach (PieceState piece in d.State.Session.Pieces) Assert.That(piece.Placed, Is.False, "endless");
         }
 
+        // The mechanism stays budgeted out, not deleted: a level that does
+        // carry a lock still loads the way GENERATOR_V2 says it does, so
+        // raising MaxLocks stays a one-field change.
         [Test]
-        public void TheOpeningWorldNeverShipsALockedGiven()
+        public void LockedApplyStillPlacesInfectsAndSurvivesAFullReset()
         {
-            // A lock is the constructor's last resort for uniqueness and the
-            // one thing a player cannot move; the first world a player sees is
-            // generated with --max-locks 0 (tools/gen_worlds.sh) so nobody's
-            // opening board hands them a piece they cannot pick up.
-            World first = Worlds.First;
-            for (int n = 0; n < first.Count; n++)
-            {
-                Assert.That(Worlds.Locks(first.Id, n), Is.Empty, $"{first.Id}/{n}");
-            }
+            var def = UndoTests.ParseDef(
+                "......" + "..1..." + "..1..." + "..1..." + "......" +
+                "......" + "......" + "......" + "......" + "......" + "......", "D");
+            var session = new LevelSession(def);
+            Locked.Apply(session, new[] { (0, Grid.Loc(1, 2)) });
 
-            var d = GridInfectActions.CreateDispatcher();
-            Assert.That(d.Dispatch(GridInfectActions.WorldLoad, Inputs.WorldLoad(first.Id, 0)).Applied);
-            foreach (PieceState piece in d.State.Session.Pieces)
-            {
-                Assert.That(piece.Placed, Is.False, "every piece of the opening board starts in the tray");
-            }
-        }
+            Assert.That(session.Pieces[0].Placed && session.Pieces[0].Locked, Is.True);
+            Assert.That(session.Board[Grid.Loc(1, 2)], Is.EqualTo(Cell.Infected), "its own cell");
+            Assert.That(session.Board[Grid.Loc(3, 2)], Is.EqualTo(Cell.Infected), "and down its arm");
+            Assert.That(session.ResolutionPending, Is.False, "Apply resolves once");
 
-        [Test]
-        public void DailyAndEndlessGivensAreOnTheBoardWhenTheSessionIsPublished()
-        {
-            var daily = GridInfectActions.CreateDispatcher();
-            var level = DailySpec.Build("2026-01-05");   // a Monday
-            Snapshot seenDaily = OnPublish(daily, GridInfectActions.DailyBegin, Inputs.DailyBegin("2026-01-05", 0L));
-            Assert.That(seenDaily.PlacedPieces, Is.EqualTo(level.Locks.Length));
-            if (level.Locks.Length > 0) Assert.That(seenDaily.InfectedCells, Is.GreaterThan(0));
-
-            var endless = GridInfectActions.CreateDispatcher();
-            Snapshot seenEndless = OnPublish(endless, GridInfectActions.EndlessBegin,
-                Inputs.EndlessBegin(Solving.Grade.G1, 4242L));
-            int locked = 0;
-            foreach (PieceState p in endless.State.Session.Pieces) if (p.Locked) locked++;
-            Assert.That(seenEndless.PlacedPieces, Is.EqualTo(locked));
+            session.Rules.FullReset(session);
+            Assert.That(session.Pieces[0].Placed && session.Pieces[0].Locked, Is.True, "a lock survives a full reset");
+            Assert.That(session.Board[Grid.Loc(3, 2)], Is.EqualTo(Cell.Infected), "and re-infects");
         }
 
         // ---- free hints on a replay ----

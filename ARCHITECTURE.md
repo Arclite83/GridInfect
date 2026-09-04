@@ -148,7 +148,10 @@ layered:
    wall, forbidden cell and lock left on it is load-bearing (withdrawing
    it breaks uniqueness); the 128 classic solutions run through the
    constructor as a pinned fixture. A level's locks are placed by its
-   loading action through the rules, never by the loader touching the board.
+   loading action through the rules, never by the loader touching the
+   board, and before the session is published — `SessionChanged` is what
+   builds the board view. No shipped level has any: `GenSpec.MaxLocks` is
+   0, so nothing a player loads pre-places a piece they cannot move.
 
 The suite is deliberately a limited, load-bearing subset — integration and
 rule-based tests on the verticals above plus the save round-trip and the

@@ -160,10 +160,14 @@ namespace GridInfect.Core.Tests
         [Test]
         public void ClassicSolutionsConstructToUniqueMinimalLevels()
         {
+            // MaxLocks = 1 explicitly: this is a capability fixture for the
+            // constructor against a foreign corpus, not shipped content, and
+            // the pinned table is only comparable across versions if the lock
+            // pool stays open. Shipped levels use the GenSpec default (0).
             var spec = new GenSpec
             {
                 Elements = Element.Walls | Element.Traps, RequireAllPieces = false, RequireUsefulArms = false,
-                MinGrade = Grade.G1, MaxGrade = Grade.G5,
+                MinGrade = Grade.G1, MaxGrade = Grade.G5, MaxLocks = 1,
             };
             var sb = new StringBuilder();
             int constructed = 0;
@@ -187,9 +191,14 @@ namespace GridInfect.Core.Tests
             Assert.That(Canonical.Fnv1a64(table).ToString("x16"), Is.EqualTo(GeneratorV2Goldens.ClassicConstruction), table);
         }
 
+        // Seed 1 is pinned as a *rejection*: its ambiguity was the kind only a
+        // pre-placed piece could break, so at MaxLocks 0 it is refused. The
+        // other four pin real boards, up to a five-piece G4.
         [TestCase(1ul, GeneratorV2Goldens.Seed1)]
         [TestCase(2ul, GeneratorV2Goldens.Seed2)]
         [TestCase(3ul, GeneratorV2Goldens.Seed3)]
+        [TestCase(5ul, GeneratorV2Goldens.Seed5)]
+        [TestCase(7ul, GeneratorV2Goldens.Seed7)]
         public void GoldenSeedsAreStable(ulong seed, string expected)
         {
             var level = GeneratorV2.Generate(new GenSpec(), seed);
@@ -199,7 +208,7 @@ namespace GridInfect.Core.Tests
         [Test, Explicit("run once to (re)capture the golden values above")]
         public void CaptureGoldenSeeds()
         {
-            for (ulong seed = 1; seed <= 3; seed++)
+            for (ulong seed = 1; seed <= 8; seed++)
             {
                 TestContext.Out.WriteLine($"GOLDEN {seed}: {Encode(GeneratorV2.Generate(new GenSpec(), seed))}");
             }
@@ -238,9 +247,11 @@ namespace GridInfect.Core.Tests
 
     internal static class GeneratorV2Goldens
     {
-        public const string Seed1 = "......................1...1.1...1.1...1.1...1111..1.1..11111111.1.|LRU,LRUD,RU|G1|0@61 1@46 2@56|0@61";
+        public const string Seed1 = "rejected";
         public const string Seed2 = "1.....1111............................11....1.....1...............|RD,RU|G1|0@38 1@6";
         public const string Seed3 = "............1111..1.....1.....1112.11...111....1..................|RD,L,LUD|G1|0@12 1@32 2@41";
+        public const string Seed5 = "1.....1.....1...1.1...1.1...1.2.1111..................111.....1...|U,LD,LRU|G1|0@24 1@56 2@34";
+        public const string Seed7 = ".......11111..1..1.11111.112.1.111.1.111.11112.2.11....11111....1.|RD,LRD,D,LUD,LD|G4|0@19 1@58 2@33 3@44 4@11";
         public const string ClassicConstruction = "32a62e239bf620ad";
     }
 }
