@@ -65,10 +65,25 @@ namespace GridInfect.Game
 
         // A cell whose state simply *is* what it is: level load, undo resync,
         // full reset. Everything reads as settled on the very first frame.
-        public void SetSettled(int i, int j, byte value)
+        //
+        // `seed` is the placement marker, not a formality: the shader draws an
+        // emissive ring on the cell border of any infected cell carrying
+        // SeedDir. Every resync used to claim it, so lifting one piece painted
+        // a magenta border around every cell still infected by the others.
+        // Only a cell a piece actually sits on is a seed.
+        public void SetSettled(int i, int j, byte value, bool seed)
         {
             float kind = value == Cell.Infected ? Kind.Infecting : Kind.None;
-            Set(i, j, value, Vfx.SettledLongAgo, SeedDir, kind);
+            Set(i, j, value, Vfx.SettledLongAgo, seed ? SeedDir : SettledDirAt(i, j), kind);
+        }
+
+        // The entry direction to keep for a non-seed cell being resynced: the
+        // one it already had, so the blot does not restyle itself under the
+        // player; a plain rightward entry for a cell with no history.
+        int SettledDirAt(int i, int j)
+        {
+            int dir = PackedDirAt(i, j);
+            return dir == SeedDir || dir < 0 || dir > 8 ? PackDir(0, 1) : dir;
         }
 
         public float StartTimeAt(int i, int j) => _pixels[Index(i, j)].g;
@@ -77,15 +92,28 @@ namespace GridInfect.Game
 
         public int PackedDirAt(int i, int j) => Mathf.RoundToInt(_pixels[Index(i, j)].b);
 
+        // The board as the session hands it over: a level's own cells plus
+        // whatever its locked givens have already infected.
         public void Fill(LevelSession session)
         {
             for (int i = 0; i < Grid.Height; i++)
             {
                 for (int j = 0; j < Grid.Width; j++)
                 {
-                    SetSettled(i, j, session.Board[Grid.Loc(i, j)]);
+                    SetSettled(i, j, session.Board[Grid.Loc(i, j)], IsPieceCell(session, i, j));
                 }
             }
+        }
+
+        // True when a placed piece sits on this cell — the one thing that
+        // makes an infected cell a seed rather than somewhere the ink reached.
+        public static bool IsPieceCell(LevelSession session, int i, int j)
+        {
+            foreach (PieceState piece in session.Pieces)
+            {
+                if (piece.Placed && piece.I == i && piece.J == j) return true;
+            }
+            return false;
         }
 
         public void Flush()

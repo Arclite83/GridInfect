@@ -9,6 +9,10 @@ namespace GridInfect.Core
     // forced placement given the player's currently correct pieces; failing
     // that, the unplaced piece with the largest coverage in the stored
     // solution. A player piece on the target cell goes back to the tray.
+    //
+    // On a replay (Queries.IsReplay) the lock is free and the wallet is not
+    // even consulted: the level is already beaten, so a hint on it is not a
+    // shortcut past anything the player has not already done.
     public sealed class LockPieceAction : GameAction<GameState>
     {
         public override string Name => "piece.lock";
@@ -19,7 +23,7 @@ namespace GridInfect.Core
             if (s == null) return "no level loaded";
             if (s.ResolutionPending) return "resolution pending — dispatch board.resolve first";
             if (s.Solved) return "level already solved";
-            if (state.Profile.Locks <= 0) return "no locks left";
+            if (state.Profile.Locks <= 0 && !Queries.IsReplay(state)) return "no locks left";
             if (state.Solution == null) return "no stored solution for this level";
             if (Lock.ChooseTarget(state) == null) return "nothing left to lock";
             return null;
@@ -44,8 +48,11 @@ namespace GridInfect.Core
 
             s.Rules.SetPiece(s, target.piece, i, j);
             s.Pieces[target.piece].Locked = true;
-            state.Profile.Locks--;
-            state.Profile.Dirty = true;
+            if (!Queries.IsReplay(state))
+            {
+                state.Profile.Locks--;
+                state.Profile.Dirty = true;
+            }
         }
     }
 

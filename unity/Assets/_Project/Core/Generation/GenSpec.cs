@@ -63,7 +63,12 @@ namespace GridInfect.Core.Generation
         public Grade MaxGrade = Grade.G5;
         public CarveParams Carve = new CarveParams();
         public int MaxGivens = 12;             // discriminating givens the constructor may add
-        public int MaxLocks = 1;               // pieces the constructor may pre-place, when no cell breaks the ambiguity
+        // 0: a level never hands the player a piece they cannot move. The
+        // Lock given is the constructor's last resort for uniqueness and it
+        // is the one thing on the board that does not answer a touch, so a
+        // sample that needs one is rejected (NotUnique) instead. The
+        // machinery stays, budgeted out; the Lock *tool* is unaffected.
+        public int MaxLocks = 0;               // pieces the constructor may pre-place, when no cell breaks the ambiguity
         public bool AllowDuplicateTiles = false;
         // UD and LR cover their whole line from any cell of it, so nothing
         // but other pieces' cells can pin them; excluded unless asked for.

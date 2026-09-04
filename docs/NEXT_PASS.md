@@ -41,7 +41,11 @@ grades off the solver trace (lookahead depth capped at two, peak open
 pieces) instead of weighted rule firings. Every world regenerated; the
 Daily moved to baked weekday pools. The lock as a *given* (a piece
 pre-placed by the level) is new: it is the only thing that breaks a
-mirror-pair swap, and it ships at most one per level.
+mirror-pair swap. It is now budgeted to **zero** (`GenSpec.MaxLocks`):
+play showed that a piece the player cannot pick up reads as a broken
+board, not as a rule, so a sample that needs one is rejected and the
+generator takes the next seed. The machinery stays for the Lock tool and
+for a future level that wants it.
 
 ## Decisions
 

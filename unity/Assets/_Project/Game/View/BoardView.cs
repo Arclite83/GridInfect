@@ -281,7 +281,7 @@ namespace GridInfect.Game
                     return;
                 }
                 // Re-propagation during an undo, or a board arriving whole.
-                _state.SetSettled(i, j, value);
+                _state.SetSettled(i, j, value, BoardStateTexture.IsPieceCell(_session, i, j));
                 return;
             }
 
@@ -307,7 +307,7 @@ namespace GridInfect.Game
                 return;
             }
 
-            _state.SetSettled(i, j, value);
+            _state.SetSettled(i, j, value, BoardStateTexture.IsPieceCell(_session, i, j));
         }
 
         // Every full reset unbinds the pieces, but only a tripped trap is a

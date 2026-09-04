@@ -22,6 +22,30 @@ namespace GridInfect.Core
         }
     }
 
+    // progress.unlockAll { }: open every Legacy level, every world and every
+    // world level at once. A development affordance (the adapter only offers
+    // it in a debug build), but it writes progression, so it is an action
+    // like any other and replays from the log.
+    public sealed class UnlockEverythingAction : GameAction<GameState>
+    {
+        public override string Name => "progress.unlockAll";
+
+        public override string Validate(GameState state, ActionInput input) => null;
+
+        public override void Execute(GameState state, ActionInput input)
+        {
+            var profile = state.Profile;
+            for (int id = 0; id < ClassicLevels.Count; id++) profile.Unlocked.Add(id);
+            foreach (World world in Worlds.All)
+            {
+                // Count + 1 is the "finished" marker unlockWorldLevel writes
+                // when the last level is solved (Queries.IsWorldFinished).
+                profile.WorldUnlocked[world.Id] = world.Count + 1;
+            }
+            profile.Dirty = true;
+        }
+    }
+
     public sealed class SetMutedAction : GameAction<GameState>
     {
         public override string Name => "settings.mute";

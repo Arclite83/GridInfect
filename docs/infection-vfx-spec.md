@@ -208,6 +208,17 @@ undo lifts a piece. Receding cells run the same blot in reverse, staggered by
 hop for a repel (it walks) and simultaneous for an undo or a reset (they do
 not).
 
+### The seed marker belongs to a piece, not to a resync
+
+The B channel's `SeedDir` is what makes the shader ring a cell's border in
+emissive magenta, so it means "a piece sits here", not "this cell arrived
+without a direction". `BoardStateTexture.SetSettled` writes the whole board
+whenever state arrives outside a wave — level load, undo resync, full reset —
+and originally wrote `SeedDir` for all of it, which put a magenta ring on every
+cell that was still infected the moment the player lifted any piece. It now
+takes the marker from the session: a cell is a seed only while a placed piece
+is on it, and a resynced cell keeps whatever entry direction it already had.
+
 ### Edge sparks
 
 Confined to the cell's own pitch tile so each fragment tests eight sparks and
