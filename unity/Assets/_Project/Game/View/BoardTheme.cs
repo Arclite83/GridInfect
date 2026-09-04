@@ -2,27 +2,55 @@ using UnityEngine;
 
 namespace GridInfect.Game
 {
-    // UI chrome only. Board colours are not here: every colour the board draws
-    // comes from BoardPalette, so there is exactly one place to restyle a board
-    // (docs/infection-vfx-spec.md, acceptance criterion 8).
+    // UI chrome, all derived from the palette so a skin swap restyles the
+    // menus with the board (STYLE-GUIDE §2: mask plus infection is the skin,
+    // everything else is constant). Nothing here is a literal hue: the
+    // constants are alphas and tints of white and black from §5 and §7.
     public static class BoardTheme
     {
-        // The screen behind the board has to be the board's own background, or
-        // the quad reads as a panel sitting on a different surface.
-        public static Color Background => BoardPalette.Default.Background;
+        static BoardPalette P => BoardPalette.Default;
 
-        public static readonly Color PanelDim = new Color(0f, 0f, 0f, 0.65f);
+        // The camera clear: the substrate quad covers it, but a frame with
+        // nothing drawn should still be the mask, not a foreign colour.
+        public static Color Background => P.MaskLo;
 
-        public static readonly Color GlyphDark = new Color(0.043f, 0.063f, 0.125f);
-        public static readonly Color GlyphLight = new Color(0.92f, 0.92f, 0.95f);
+        public static Color Text => P.Ink;
+        public static Color TextDim => BoardPalette.Alpha(P.Ink, 0.7f);
+        public static Color TextOnAccent => P.Tip;
+        public static Color Accent => P.Ink;             // stats and readouts: ink, like the level label
+        public static Color Copper => P.CopperHi;        // the lock counter's mono type on its black badge
+        public static Color Primary => P.Infect;         // the one lit control on a screen
 
-        public static readonly Color PieceBody = new Color(0.17f, 0.62f, 0.36f);    // green
-        public static readonly Color PieceArm = new Color(0.34f, 0.82f, 0.52f);
+        // Kept for the lock marks and the popup dim.
+        public static Color GlyphDark => P.GlyphEdge;
+        public static Color GlyphLight => P.Tip;
+        public static readonly Color PanelDim = new Color(0f, 0f, 0f, 0.55f);
 
-        public static readonly Color ButtonBg = new Color(0.11f, 0.16f, 0.28f);
-        public static readonly Color ButtonBgDisabled = new Color(0.08f, 0.11f, 0.19f);
-        public static readonly Color Text = new Color(0.92f, 0.92f, 0.95f);
-        public static readonly Color TextDim = new Color(0.42f, 0.50f, 0.64f);
-        public static readonly Color Accent = new Color(0f, 0.85f, 1f);
+        // Glass fills. Buttons are chips (§7): white 42% to 14%; a disabled
+        // chip is the same glass at a third of the light.
+        public static Color ButtonBg => P.Tip;
+        public static Color ButtonBgDisabled => BoardPalette.Alpha(P.Tip, 0.35f);
+
+        public static GlassStyle Chip(Color tint)
+        {
+            var g = GlassStyle.Chip(P);
+            if (tint.a < 1f)
+            {
+                g.FillTop.a *= tint.a;
+                g.FillBottom.a *= tint.a;
+                g.Border.a *= tint.a;
+                g.TopLight.a *= tint.a;
+            }
+            else if (tint.r != P.Tip.r || tint.g != P.Tip.g || tint.b != P.Tip.b)
+            {
+                // A coloured chip: the infection (or any accent) lit from
+                // inside, the way an infected tile is.
+                g.FillTop = BoardPalette.Alpha(Color.Lerp(tint, P.Tip, 0.35f), 0.95f);
+                g.FillBottom = BoardPalette.Alpha(tint, 0.9f);
+                g.Glow = BoardPalette.Alpha(tint, 0.45f);
+                g.GlowPx = 14f;
+            }
+            return g;
+        }
     }
 }

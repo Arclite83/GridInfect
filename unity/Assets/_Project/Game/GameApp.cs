@@ -56,6 +56,11 @@ namespace GridInfect.Game
             _camera.clearFlags = CameraClearFlags.SolidColor;
             _camera.backgroundColor = BoardTheme.Background;
 
+            // The PCB under every screen, and the bloom that gives the
+            // infection its halo. Both outlive any one screen.
+            Substrate.Ensure(BoardPalette.Default);
+            BoardBloom.Ensure(_camera, BoardPalette.Default);
+
             Dispatcher = GridInfectActions.CreateDispatcher();
             _save = new SavePort(Application.persistentDataPath);
             State.Profile = _save.Load();

@@ -18,22 +18,46 @@ Trace and bleed durations are the two remaining tunables. Everything else is fix
 
 ## Style
 
-Neon circuit on near-black. Flat fills, hard edges, no gradients in the base art. All visual richness comes from the transition, not the resting state.
+**Superseded 2026-09-04** by the locked visual style
+(`grid-infect-style/STYLE-GUIDE.md`): bugs on a printed circuit board. The
+board is the substrate, components are frosted-glass tiles, the infection is
+light inside the glass, and the bug is a component-shaped glyph. The neon
+circuit look this section used to describe was the proof of concept; the
+timeline, spread rule, architecture and legibility rules below are unchanged.
+
+Palette lives in a `BoardPalette` ScriptableObject and nothing samples a
+literal colour. A skin is mask colour plus infection hue; everything else is
+constant. New skins are a palette swap.
+
+| Element | Default | Blue | Breadboard |
+|---|---|---|---|
+| Mask | `#7FAE66` | `#2E5AA8` | `#E9DCB8` |
+| Mask highlight | `#97C27C` | `#3F70C4` | `#F4EAD0` |
+| Mask shadow | `#5F8B4A` | `#1F3F7A` | `#CDBB8C` |
+| Ink (type on the mask) | `#1D3316` | `#E6EFFF` | `#3C2E12` |
+| Copper | `#C9A648` | `#D9A441` | `#C46A3A` |
+| Copper highlight | `#F3E2A8` | `#FFE08A` | `#F0A878` |
+| Copper shadow | `#7D6120` | `#7A5410` | `#7A3A18` |
+| Infection | `#FF2D95` | `#FF8A00` | `#FF2D3A` |
+| Infection highlight | `#FF7CC4` | `#FFB347` | `#FF6B6B` |
+| Infection shadow | `#B3086A` | `#C25A00` | `#B3101C` |
+| Glyph edge | `#5A0033` | `#4A2600` | `#5A0008` |
+| Glyph wire | `#3A0B22` | `#3A1D00` | `#3A0008` |
+
+Neutrals, constant across skins: lit tips and highlights `#FFFFFF`, blocker
+body `#CFD8E0`, blocker edge `#4D565F`, board well black at 36%, shadows
+`#000000`. Rule: copper appears only as points (pads, vias, holes, chip
+pads), never as lines.
+
+States the guide does not draw are tints on its component glass plus a shape
+glyph each, never a colour alone:
 
 | Element | Colour | Notes |
 |---|---|---|
-| Board background | `#0B1020` | Near-black, never pure black |
-| Cell plate | `#141C33` | Every cell that exists; a hole shows the background |
-| Grid lines | `#1B2A48` | Hairline, always visible |
-| Cell border (empty) | `#2B3F63` | 1 px |
-| Infected fill | `#00D9FF` | HDR emissive, cools on fade |
-| Cooled fill | `#0B7F99` | Fade target, non-emissive |
-| Bleed edge band | `#E0FFFF` | Transition only |
-| Glitch ghost | `#FF3DD8` at 45% | Transition only |
-| Seed marker | `#FF3DD8` | Emissive |
-| Immune hatch | `#55688A` | 45 degree lines, 7 px pitch |
-
-Palette lives in a `BoardPalette` ScriptableObject. Nothing samples a literal colour. New board types are a palette swap plus a noise texture swap.
+| Repel switch | `#8A5CFF` | violet tint, diamond glyph |
+| Reset trap | `#0D0D12` | near-black tint, X glyph |
+| Conflict overprint | `#FF3B30` | on the ray that tripped a trap, plus the X |
+| Forbidden cell | copper | the bare pad with a copper ring: nothing may sit on it |
 
 ## Architecture
 
@@ -151,14 +175,73 @@ Each is an independent bool on the board controller, default on unless noted.
 ## As built
 
 Implemented in `unity/Assets/_Project/Game/`: `Shaders/GridInfectBoard.shader`
-(everything the board draws), `View/BoardPalette.cs` + `Resources/BoardPalette.asset`
-(the palette), `View/BoardStateTexture.cs` (the data texture), `View/BoardNoise.cs`
-(the blot), `View/BoardView.cs` (quad, clock, juice switches, wave scheduling),
+(the well, every tile, the bleed, the beam and the sparks),
+`Shaders/GridInfectSubstrate.shader` (the PCB under every screen),
+`Shaders/GridInfectGlass.shader` (chips, badges, slots, panels),
+`View/BoardPalette.cs` + `Resources/BoardPalette.asset` (the palette and the
+three skins), `View/BoardStateTexture.cs` (the data texture), `View/BoardNoise.cs`
+(the blot), `View/BoardView.cs` (quad, clock, juice switches, wave scheduling,
+the drop preview), `View/GlyphRaster.cs` + `View/BugGlyph.cs` (the bug glyph
+grammar, rasterised at runtime), `View/Substrate.cs`, `Ui/Glass.cs`,
 `View/BoardBloom.cs`, `Audio/HopClickAudio.cs`. The locked parameters live in
-`PresentationConfig.Infection`; `InfectionVfxSpecTests` fails if this document
-and that table stop agreeing.
+`PresentationConfig.Infection`, the style guide's px tokens in
+`PresentationConfig.Style`; `InfectionVfxSpecTests` fails if this document
+and those tables stop agreeing.
 
 Where the build deviates from the spec above, and why.
+
+### The style pass (2026-09-04)
+
+The guide replaced the look, not the machinery. What changed on the board:
+
+- **Material.** Tiles are frosted glass drawn transparent over the dark well:
+  a dormant component is white at 34% to 8% to 16% with a top light and a
+  ring; an infected one is the same glass lit from inside, resting at
+  `RestEmission` (1.15) so the bloom gives it the guide's 64 px halo, and
+  pushed to `HotEmission` on arrival. A 26 px in-shader glow spills into the
+  gutters. The board quad is now larger than the lattice: it carries the
+  well, its 3 px ring and the glow margin.
+- **Bleed.** The guide's infection "enters a tile from the edge facing its
+  source and pools across", so the field is radial from the entry-edge
+  midpoint (the seed pools from its centre) and the blot only ripples the
+  front: `t = e + (n - 0.5) * (1 - _Bias) * BlotAmp`. The edge band, the 20 Hz
+  glitch band and the ghost of steps 7-9 were the neon look's transition
+  and are gone; the ghost-trail switch now keeps the pool's leading glow band
+  for `GhostTrailDur` after settle. `_Blocks` still quantises the noise and
+  the sparks; `_Bias` still leans the front. The open note on bias below is
+  therefore closed: the front is a front.
+- **Glyphs.** The piece is its bug glyph (BUG-GLYPH-SPEC), rasterised from
+  `PieceSpec` by a small SDF rasteriser at the pixel size each context needs
+  (44 on a 54 tile, 58 in the tray, scaled to the device), cached per skin.
+  Walls carry the blocker shield sprite, relay cells a hub-and-stubs sprite.
+  A short arm draws the glyph-types M2 stop bar, one per cell of reach; the
+  lock is a padlock mark over the core. Neither is in the locked guide; both
+  are in its grammar.
+- **States without a guide entry.** Repel switch and reset trap are tinted
+  component glass with their diamond and X; the forbidden cell is the guide's
+  "empty pad" with a copper ring. The seed marker ring is gone: the glyph
+  sits on the seed.
+- **Drop preview.** New: while a piece is over a cell it could go on, every
+  cell it would light gets the guide's "pending trace" look. The reach comes
+  from the solver's `LineMap.Coverage`, which already mirrors the stop set.
+- **Chrome.** Every screen sits on the substrate quad (mask gradient, 24 and
+  12 px grids, sheen, tone-on-tone margin traces, corner holes, vignette,
+  silkscreen). Buttons are glass chips with a copper pad each side; the lock
+  counter is the mono badge; the tray is component slots. Fonts: Chakra Petch
+  and Share Tech Mono are requested by name and fall back to a system face
+  until the TTFs are imported (`Ui.FindFont`).
+- **Tray.** The guide's tray is a next slot plus two queued; Grid Infect has
+  no queue, any piece can go first. Every piece gets a slot at the next
+  slot's treatment, scaled down only if six would not fit the width.
+- **Motion.** Placement shake (2 px, 80 ms) added as its own juice switch;
+  conflict shake is unchanged. The lead-tip light-up sequence, the area bug's
+  expanding arcs, the undo desaturation and the win power-up of guide §9 are
+  not built yet.
+
+The colour space, bloom and tonemapping notes below still hold. The bloom
+threshold at 1 now passes the resting infected tile by design (it is the only
+emissive element on screen), and rejects the mask, the dormant glass, the
+copper and the chrome, which all sit well under it.
 
 ### Board size
 
@@ -261,7 +344,7 @@ spatial structure alone and re-spreads the values, so the filled fraction
 tracks `p` directly and the 0.12 edge band is 12% of a cell rather than most of
 it.
 
-### Open: bias 0.3 does not give the edge band an edge
+### Closed: bias 0.3 did not give the edge band an edge
 
 `t = lerp(noise, entryDistance, _Bias)`, and at bias 0.3 that field is
 noise-dominant — so a *threshold* band in `t` is a scattered set of blocks, not
@@ -270,8 +353,9 @@ transition zone rather than as a front, and step 7's "edge band" is not an
 edge. Past roughly 0.6, with the band nearer 0.05, it becomes the ink the spec
 describes.
 
-Bias is a locked parameter and this is an art call, so nothing has been
-changed. Both knobs are live in the WebGL bench if you want to see it.
+Bias is a locked parameter, so it was not moved. The style pass resolved it
+from the other side: the pool front is radial and the blot only ripples it
+(see "The style pass" above), so there is a front for the band to sit on.
 
 ### Not verified here
 

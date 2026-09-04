@@ -138,9 +138,9 @@ namespace GridInfect.Game
                 button.Enabled = unlocked;
                 if (!unlocked)
                 {
-                    var lockGlyph = Ui.MakeRect("lock", button.Root.transform,
-                        new Vector2(0.28f, 0.20f), BoardTheme.GlyphDark, 22);
-                    lockGlyph.transform.localPosition = new Vector3(0f, -0.30f, 0f);
+                    var lockGlyph = Ui.MakeSprite("lock", button.Root.transform,
+                        BugGlyph.Lock(BoardPalette.Default, Mathf.RoundToInt(tile * 0.9f)), 22);
+                    lockGlyph.transform.localPosition = new Vector3(0f, -tile * 0.12f, 0f);
                 }
                 Buttons.Add(button);
             }

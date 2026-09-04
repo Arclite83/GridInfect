@@ -31,7 +31,7 @@ namespace GridInfect.Game
 
             Buttons.Add(UiButton.Make(Root.transform, best > 0 ? "PLAY AGAIN" : "BEGIN",
                 new Vector2(0f, -h * 0.08f), new Vector2(L.ContentWidth * 0.55f, L.ButtonHeight),
-                BoardTheme.Accent, BoardTheme.GlyphDark, () =>
+                BoardTheme.Primary, BoardTheme.TextOnAccent, () =>
                 {
                     // Date and clock are the adapter's inputs; both enter the log.
                     var begin = App.Do(GridInfectActions.DailyBegin, Inputs.DailyBegin(today, GameApp.NowMs()));

@@ -26,7 +26,9 @@ board states extracted from the 2014 code.
 | [`docs/GENERATOR_V2.md`](docs/GENERATOR_V2.md), [`docs/RULES_V2.md`](docs/RULES_V2.md) | The deduction solver, trace grader, sampler and constructor (solution-first, subtractive, minimal); the rules every generated level runs on |
 | [`docs/worlds/`](docs/worlds/), [`docs/daily/`](docs/daily/) | The shipped worlds and the seven Daily pools as JSONL (one header line with the generator spec, one level per line), baked into `WorldData.g.cs` / `DailyData.g.cs` |
 | [`src/GenLevels/`](src/GenLevels/) | The offline level generator behind `tools/gen_levels`, `tools/gen_worlds.sh` and `tools/gen_daily.sh` |
-| [`docs/infection-vfx-spec.md`](docs/infection-vfx-spec.md) | The board's art direction and infection animation, plus an "As built" section recording every deviation and what is still open |
+| [`grid-infect-style/`](grid-infect-style/) | The locked visual style (`STYLE-GUIDE.md`): bugs on a printed circuit board. Tokens, the vector asset generator, the reference mockups |
+| [`grid-infect-bug-glyph/`](grid-infect-bug-glyph/) | The bug glyph grammar (`BUG-GLYPH-SPEC.md`) and its generator; the Unity rasteriser (`View/BugGlyph.cs`) is a port of it |
+| [`docs/infection-vfx-spec.md`](docs/infection-vfx-spec.md) | The infection animation and its locked parameters, plus an "As built" section recording every deviation, including the style pass |
 | [`tools/`](tools/) | Mechanical derivations: level and world baking, undo fixtures, the solver oracle and its golden, world generation |
 | [`grid-infect-cocos2dx/`](grid-infect-cocos2dx/) | The original 2014 source, kept as reference. Not built |
 
@@ -62,11 +64,17 @@ Full first-open walkthrough (what to commit, folder layout, asset policy):
    push.
 
 Presentation is still 100% procedural — no imported art, no serialized scene
-content — but it is no longer placeholder. The board is the infection VFX
-(`docs/infection-vfx-spec.md`): one quad, one material, one draw call, with
-cell state in a data texture the shader reads. Colour lives in a single
-`BoardPalette` asset. The chrome around it (menus, tray, popups) is still
-plain rectangles and a system font, sized from `PresentationConfig.Layout`.
+content — and it is now the locked style (`grid-infect-style/STYLE-GUIDE.md`):
+a printed circuit board under every screen, frosted-glass tiles in a recessed
+well, the infection as light inside the glass, and the bug glyphs rasterised
+at runtime from the same grammar as the SVGs. The board is one quad, one
+material, one draw call, with cell state in a data texture the shader reads
+(`docs/infection-vfx-spec.md`). Colour lives in a single `BoardPalette`
+asset, which also carries the blue and breadboard skins. The chrome (glass
+chips, the lock badge, tray slots, popups) is sized from the guide's px
+tokens in `PresentationConfig.Style`. The two typefaces (Chakra Petch, Share
+Tech Mono) are requested by name and fall back to a system face until their
+TTFs are imported.
 
 ## Regenerating derived files
 
@@ -88,6 +96,9 @@ python3 docs/tools/verify_test_vectors.py   # sanity: vectors self-verify
   consent and remove-ads wait on the SDK packages and a device build.
 - Board VFX, portrait layout across every screen: written, and verified by
   numbers and by a WebGL port of the shader — see `docs/infection-vfx-spec.md`.
+- Visual style pass (PCB, glass, bug glyphs): written against the locked
+  guide; the glyph rasteriser is verified against the SVG sheet headlessly,
+  the three shaders have not been compiled by Unity yet.
 - **Nothing has been through the Unity editor yet.** The adapter is
   compile-checked against API stubs (`src/`) and the shader has never been
   compiled by Unity. `docs/UNITY_SETUP.md` §6 is the first-run checklist,

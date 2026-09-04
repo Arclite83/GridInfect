@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="FakeUnity.cs" />
+    <Compile Include="../../../unity/Assets/_Project/Game/View/GlyphRaster.cs" />
+    <Compile Include="../../../unity/Assets/_Project/Game/View/BugGlyph.cs" />
+    <Compile Include="../../../unity/Assets/_Project/Game/View/BoardPalette.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../src/Core.Mirror/GridInfect.Core.Mirror.csproj" />
+  </ItemGroup>
+</Project>

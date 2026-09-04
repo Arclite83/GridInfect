@@ -1,20 +1,25 @@
 using GridInfect.Core;
 using UnityEngine;
 using L = GridInfect.Game.PresentationConfig.Layout;
+using S = GridInfect.Game.PresentationConfig.Style;
 
 namespace GridInfect.Game
 {
+    // The board screen laid out per STYLE-GUIDE §7-§8: a 96 px HUD with a
+    // glass chip either side and the level label between them, the lock
+    // counter as a mono badge under the right chip, the well below, and a
+    // 150 px tray of component slots along the bottom.
     public sealed class BoardScreen : AppScreen
     {
         BoardView _board;
         PieceView[] _pieces;
         LevelSession _bound;
         TextMesh _title;
-        TextMesh _hud;
+        TextMesh _caption;
         UiButton _backButton;
         UiButton _resetButton;
         UiButton _lockButton;
-        TextMesh _lockLabel;
+        GameObject _tray;
         GameObject _popup;
         GameObject _beginCover;
         int _dragIndex = -1;
@@ -27,30 +32,44 @@ namespace GridInfect.Game
         // when the screen turns; positions stay fractions of their own axis.
         static float Short => PresentationConfig.ShortEdge;
 
+        // A chip's box from its label: 12 px type, 8 x 14 padding (§7).
+        static Vector2 ChipSize(string label) =>
+            new Vector2(S.Px(S.ChipPadX * 2f + label.Length * S.ChipText * 0.66f), S.Px(S.ChipPadY * 2f + S.ChipText * 1.25f));
+
         protected override void Build()
         {
-            // Same top bar as every other screen: back on the left, title
-            // centred, the screen's one action on the right.
-            _backButton = UiButton.Make(Root.transform, "MENU", L.BackPos, L.BackSize,
+            float w = ScreenW, h = ScreenH;
+
+            // HUD: items bottom-aligned in the 96 px band, 22 px in from
+            // either edge. Same top bar as every other screen: back on the
+            // left, the screen's one action on the right.
+            float hudBottom = h / 2f - S.Px(S.HudHeight - S.HudBottomPad);
+            var chip = ChipSize("RESET");
+            float chipY = hudBottom + chip.y / 2f;
+            _backButton = UiButton.Make(Root.transform, "MENU",
+                new Vector2(-w / 2f + S.Px(S.HudInset) + chip.x / 2f, chipY), chip,
                 BoardTheme.ButtonBg, BoardTheme.Text, GoBack);
             Buttons.Add(_backButton);
             _resetButton = UiButton.Make(Root.transform, "RESET",
-                new Vector2(-L.BackPos.x, L.TopBarY), L.BackSize,
+                new Vector2(w / 2f - S.Px(S.HudInset) - chip.x / 2f, chipY), chip,
                 BoardTheme.ButtonBg, BoardTheme.Text, ResetLevel);
             Buttons.Add(_resetButton);
 
-            _title = Ui.MakeText("title", Root.transform, "", L.HeadingText, BoardTheme.Text, 2);
-            Ui.SetPos(_title.gameObject, 0f, L.TopBarY);
-
-            _hud = Ui.MakeText("hud", Root.transform, "", L.BodyText, BoardTheme.Accent, 2);
-            Ui.SetPos(_hud.gameObject, 0f, L.TopBarY - L.HeadingText - L.Gap);
+            // Level label: Chakra Petch 26 px in ink, with a mono 11 px
+            // caption above it. The caption doubles as the mode's readout
+            // (clock, streak) where a mode has one.
+            _title = Ui.MakeText("title", Root.transform, "", S.Px(S.HudLevel), BoardTheme.Text, 2);
+            Ui.SetPos(_title.gameObject, 0f, hudBottom + S.Px(S.HudLevel) * 0.55f);
+            _caption = Ui.MakeText("caption", Root.transform, "GI-REV B", S.Px(S.HudCaption), BoardTheme.TextDim, 2, mono: true);
+            Ui.SetPos(_caption.gameObject, 0f, hudBottom + S.Px(S.HudLevel) * 1.1f + S.Px(S.HudCaption) * 0.9f);
 
             // The one tool (stage 5): spends a lock, places one piece at its
-            // solution cell and locks it. Sits under RESET, off the board.
+            // solution cell and locks it. The counter badge under RESET, off
+            // the board: mono 13 px copperHi on black 35%.
+            var badge = new Vector2(S.Px(S.BadgePadX * 2f + 7 * S.BadgeText * 0.62f), S.Px(S.BadgePadY * 2f + S.BadgeText * 1.25f));
             _lockButton = UiButton.Make(Root.transform, "",
-                new Vector2(-L.BackPos.x, L.TopBarY - L.HeadingText - L.Gap), L.BackSize,
-                BoardTheme.Accent, BoardTheme.GlyphDark, LockPiece);
-            _lockLabel = _lockButton.Root.GetComponentInChildren<TextMesh>();
+                new Vector2(w / 2f - S.Px(S.HudInset) - badge.x / 2f, h / 2f - S.Px(S.BadgeTop) - badge.y / 2f), badge,
+                GlassStyle.Badge(BoardPalette.Default), BoardTheme.Copper, LockPiece, 20, pads: false, padAlpha: 1f, mono: true);
             Buttons.Add(_lockButton);
             RefreshLockLabel();
 
@@ -67,6 +86,7 @@ namespace GridInfect.Game
         {
             App.State.SessionChanged -= OnSessionChanged;
             Unbind();
+            Substrate.SetLevel(null);
         }
 
         // ---- session binding ----
@@ -84,21 +104,63 @@ namespace GridInfect.Game
             if (session == null) return;
 
             _board = new BoardView(Root.transform, session);
-            _pieces = new PieceView[session.Pieces.Length];
-            for (int k = 0; k < session.Pieces.Length; k++)
+
+            // The tray: one component slot per piece, the glyph at 58/74 of
+            // the slot. Slots sit under the pieces so a lifted piece leaves
+            // its socket visible.
+            int count = session.Pieces.Length;
+            float slot = TraySlotSize(count);
+            int trayGlyph = Mathf.RoundToInt(slot * S.TrayNextGlyph / S.TraySlot);
+            _tray = new GameObject("tray");
+            _tray.transform.SetParent(Root.transform, false);
+            _pieces = new PieceView[count];
+            for (int k = 0; k < count; k++)
             {
-                _pieces[k] = new PieceView(Root.transform, k, session.Def.Specs[k],
-                    TrayTileSize(session.Pieces.Length), TraySlot(k));
+                Vector2 at = TraySlot(k);
+                var socket = Ui.MakeGlass($"slot:{k}", _tray.transform, new Vector2(slot, slot), GlassStyle.TraySlot(BoardPalette.Default, false), 4);
+                Ui.SetPos(socket, at.x, at.y);
+                _pieces[k] = new PieceView(Root.transform, k, session.Def.Specs[k], slot, trayGlyph, at);
+                var piece = session.Pieces[k];
+                if (piece.Placed)
+                {
+                    _pieces[k].SetGlyphSize(_board.GlyphPx);
+                    _pieces[k].SetPos(_board.CellCenter(piece.I, piece.J));
+                }
+                _pieces[k].SetLocked(piece.Locked);
             }
             session.LevelSolved += OnSolved;
             session.PiecesUnbound += OnPiecesUnbound;
 
-            _title.text = App.State.Mode == GameMode.Classic ? $"LEVEL {App.State.ClassicLevelId + 1}"
-                : App.State.Mode == GameMode.World ? $"{Worlds.Get(App.State.WorldId).Name.ToUpperInvariant()}  {App.State.WorldIndex + 1}"
-                : App.State.Mode == GameMode.Daily ? $"DAILY  {App.State.DailyRun.DateUtc}"
-                : App.State.Mode == GameMode.Endless ? $"ENDLESS  GRADE {(int)App.State.EndlessRun.Grade}"
-                : $"{App.State.Difficulty}".ToUpperInvariant();
-            _hud.text = "";
+            string level;
+            switch (App.State.Mode)
+            {
+                case GameMode.Classic:
+                    _caption.text = "LEGACY";
+                    _title.text = $"LEVEL {App.State.ClassicLevelId + 1}";
+                    level = (App.State.ClassicLevelId + 1).ToString("00");
+                    break;
+                case GameMode.World:
+                    _caption.text = Worlds.Get(App.State.WorldId).Name.ToUpperInvariant();
+                    _title.text = $"LEVEL {App.State.WorldIndex + 1}";
+                    level = (App.State.WorldIndex + 1).ToString("00");
+                    break;
+                case GameMode.Daily:
+                    _caption.text = "DAILY";
+                    _title.text = App.State.DailyRun.DateUtc;
+                    level = "DAILY";
+                    break;
+                case GameMode.Endless:
+                    _caption.text = $"ENDLESS  GRADE {(int)App.State.EndlessRun.Grade}";
+                    _title.text = $"LEVEL {App.State.EndlessRun.Index + 1}";
+                    level = "ENDLESS";
+                    break;
+                default:
+                    _caption.text = $"{App.State.Difficulty}".ToUpperInvariant();
+                    _title.text = $"LEVEL {App.State.FreePlayIndex + 1}";
+                    level = "FREE";
+                    break;
+            }
+            Substrate.SetLevel(level);
         }
 
         void Unbind()
@@ -119,30 +181,36 @@ namespace GridInfect.Game
                 }
                 _pieces = null;
             }
+            if (_tray != null) Object.Destroy(_tray);
+            _tray = null;
             _dragIndex = -1;
         }
 
         // The original racked the tray into eight fixed slots and centred on
-        // slot 3. Six columns of board leave no room for that, so the tray
-        // centres on the pieces the level actually has and shrinks only if
-        // they would not fit the width — which, at a real maximum of six
-        // pieces, they always do.
-        float TrayTileSize(int count)
+        // slot 3. The guide's tray is component slots on a 30 px gap, centred
+        // on the pieces the level actually has, shrinking only if they would
+        // not fit the width — which, at a real maximum of six, they do. The
+        // slot follows the board's cell too, so a small board on a short
+        // screen keeps the guide's 74:54 slot-to-tile ratio.
+        float TraySlotSize(int count)
         {
-            float board = _board != null ? _board.CellSize : ScreenH * PresentationConfig.CellHeightPct;
+            float byGuide = S.Px(S.TraySlot);
+            float byBoard = (_board != null ? _board.CellSize : S.Px(S.Cell)) * S.TraySlot / S.Cell;
             float byWidth = ScreenW * PresentationConfig.BoardWidthPct
                             / (count * PresentationConfig.TraySlotPitch);
-            return Mathf.Min(board, byWidth);
+            return Mathf.Min(byGuide, Mathf.Min(byBoard, byWidth));
         }
 
         Vector2 TraySlot(int k)
         {
             int count = _bound != null ? _bound.Pieces.Length : PresentationConfig.TraySlots;
-            float size = TrayTileSize(count);
+            float size = TraySlotSize(count);
             float x = (k - (count - 1) / 2f) * size * PresentationConfig.TraySlotPitch;
-            float y = -ScreenH / 2f + ScreenH * PresentationConfig.TrayBottomPct + size / 2f;
+            float y = -ScreenH / 2f + S.Px(S.TrayHeight) / 2f;
             return new Vector2(x, y);
         }
+
+        int TrayGlyphPx => Mathf.RoundToInt(TraySlotSize(_bound != null ? _bound.Pieces.Length : PresentationConfig.TraySlots) * S.TrayNextGlyph / S.TraySlot);
 
         // ---- input ----
 
@@ -165,6 +233,7 @@ namespace GridInfect.Game
                 }
                 _dragIndex = k;
                 App.Tweens.Cancel(_pieces[k].Root.transform);
+                _pieces[k].SetGlyphSize(_board.GlyphPx);   // heading for a tile: the board LOD
                 _pieces[k].SetPos(world);
                 return true;
             }
@@ -173,7 +242,12 @@ namespace GridInfect.Game
 
         public override void OnDrag(Vector2 world)
         {
-            if (_dragIndex >= 0) _pieces[_dragIndex].SetPos(world);
+            if (_dragIndex < 0) return;
+            _pieces[_dragIndex].SetPos(world);
+            // The pending trace under the finger (STYLE-GUIDE §5).
+            var (i, j) = _board.CellAt(world);
+            if (i >= 0) _board.ShowPreview(_dragIndex, i, j);
+            else _board.ClearPreview();
         }
 
         public override void OnRelease(Vector2 world)
@@ -181,6 +255,7 @@ namespace GridInfect.Game
             if (_dragIndex < 0 || _bound == null) return;
             int index = _dragIndex;
             _dragIndex = -1;
+            _board.ClearPreview();
 
             var (i, j) = _board.CellAt(world);
             if (i >= 0)
@@ -202,9 +277,14 @@ namespace GridInfect.Game
             }
             // Illegal drop: back to the tray slot (the piece was already
             // cleared on touch, so board state is consistent).
-            App.Tweens.MoveTo(_pieces[index].Root.transform,
-                new Vector3(_pieces[index].TraySlot.x, _pieces[index].TraySlot.y, 0f),
-                PresentationConfig.TrayReturn);
+            ReturnToTray(index, PresentationConfig.TrayReturn);
+        }
+
+        void ReturnToTray(int k, float duration)
+        {
+            _pieces[k].SetGlyphSize(TrayGlyphPx);
+            App.Tweens.MoveTo(_pieces[k].Root.transform,
+                new Vector3(_pieces[k].TraySlot.x, _pieces[k].TraySlot.y, 0f), duration);
         }
 
         // ---- lock tool ----
@@ -221,10 +301,19 @@ namespace GridInfect.Game
             {
                 var piece = _bound.Pieces[k];
                 _pieces[k].SetLocked(piece.Locked);
-                Vector2 to = piece.Placed ? _board.CellCenter(piece.I, piece.J) : _pieces[k].TraySlot;
-                // Snap: the locked piece lands on its cell, evicted ones return to the tray.
-                App.Tweens.MoveTo(_pieces[k].Root.transform, new Vector3(to.x, to.y, 0f),
-                    piece.Locked ? PresentationConfig.DropSnap : PresentationConfig.TrayReturn);
+                if (piece.Placed)
+                {
+                    // Snap: the locked piece lands on its cell.
+                    Vector2 to = _board.CellCenter(piece.I, piece.J);
+                    _pieces[k].SetGlyphSize(_board.GlyphPx);
+                    App.Tweens.MoveTo(_pieces[k].Root.transform, new Vector3(to.x, to.y, 0f),
+                        piece.Locked ? PresentationConfig.DropSnap : PresentationConfig.TrayReturn);
+                }
+                else
+                {
+                    // Evicted ones return to the tray.
+                    ReturnToTray(k, PresentationConfig.TrayReturn);
+                }
             }
             RefreshLockLabel();
             App.ScheduleResolve();
@@ -234,10 +323,10 @@ namespace GridInfect.Game
         // (NEXT_PASS decision 8): watch an ad, earn one lock.
         void RefreshLockLabel()
         {
-            if (_lockLabel == null) return;
+            if (_lockButton?.Label == null) return;
             int locks = App.State.Profile.Locks;
             bool rewarded = locks == 0 && App.Ads.RewardedAvailable;
-            _lockLabel.text = rewarded ? "+1 LOCK" : $"LOCK {locks}";
+            _lockButton.Label.text = rewarded ? "+1 LOCK" : $"LOCK {locks:00}";
             _lockButton.OnClick = rewarded ? EarnLock : (System.Action)LockPiece;
             _lockButton.Enabled = (locks > 0 || rewarded) && !_popupOpen;
         }
@@ -259,9 +348,7 @@ namespace GridInfect.Game
             for (int k = 0; k < _pieces.Length; k++)
             {
                 if (_bound != null && _bound.Pieces[k].Locked) continue; // locked pieces stay put
-                App.Tweens.MoveTo(_pieces[k].Root.transform,
-                    new Vector3(_pieces[k].TraySlot.x, _pieces[k].TraySlot.y, 0f),
-                    PresentationConfig.TrayReturn);
+                ReturnToTray(k, PresentationConfig.TrayReturn);
             }
         }
 
@@ -349,11 +436,14 @@ namespace GridInfect.Game
         {
             _beginCover = new GameObject("beginCover");
             _beginCover.transform.SetParent(Root.transform, false);
-            var cover = Ui.MakeRect("bg", _beginCover.transform, new Vector2(ScreenW, ScreenH * 0.86f), BoardTheme.Background, 30);
-            Ui.SetPos(cover, 0f, -ScreenH * 0.07f); // board area only; title stays visible
+            // A recessed cover over the board area only; the HUD stays visible.
+            var cover = Ui.MakeGlass("bg", _beginCover.transform,
+                new Vector2(ScreenW * PresentationConfig.BoardWidthPct, ScreenH * 0.86f),
+                GlassStyle.Well(BoardPalette.Default), 30);
+            Ui.SetPos(cover, 0f, -ScreenH * 0.07f);
             var begin = UiButton.Make(_beginCover.transform, "BEGIN",
                 new Vector2(0f, 0f), new Vector2(L.ContentWidth * 0.55f, L.ButtonHeight),
-                BoardTheme.Accent, BoardTheme.GlyphDark, () =>
+                BoardTheme.Primary, BoardTheme.TextOnAccent, () =>
                 {
                     App.Do(GridInfectActions.FreePlayBegin, Inputs.Now(GameApp.NowMs()));
                     Buttons.RemoveAll(b => b.Root != null && b.Root.transform.parent == _beginCover.transform);
@@ -377,13 +467,13 @@ namespace GridInfect.Game
                 if (daily == null || daily.Completed) return;
                 long elapsedDaily = Queries.ElapsedMs(daily, GameApp.NowMs());
                 if (elapsedDaily < 0) elapsedDaily = 0; // a backward clock is refused at daily.complete
-                _hud.text = $"{Queries.FormatDuration(elapsedDaily)}   PAR {Queries.FormatDuration(daily.ParMs)}";
+                _caption.text = $"{Queries.FormatDuration(elapsedDaily)}   PAR {Queries.FormatDuration(daily.ParMs)}";
                 return;
             }
             if (App.State.Mode == GameMode.Endless)
             {
                 var endless = App.State.EndlessRun;
-                if (endless != null) _hud.text = $"SOLVED {endless.Index}   STREAK {endless.Streak}   BEST {App.State.Profile.EndlessBest[(int)endless.Grade - 1]}";
+                if (endless != null) _caption.text = $"SOLVED {endless.Index}   STREAK {endless.Streak}   BEST {App.State.Profile.EndlessBest[(int)endless.Grade - 1]}";
                 return;
             }
             if (App.State.Mode != GameMode.FreePlay) return;
@@ -398,7 +488,7 @@ namespace GridInfect.Game
                 App.Screens.Show(new FreePlayMenuScreen());
                 return;
             }
-            _hud.text = $"{App.State.Difficulty}   {App.State.FreePlayIndex + 1}/5   {Queries.FormatDuration(elapsed)}"
+            _caption.text = $"{App.State.Difficulty}   {App.State.FreePlayIndex + 1}/5   {Queries.FormatDuration(elapsed)}"
                 .ToUpperInvariant();
         }
 
@@ -409,7 +499,7 @@ namespace GridInfect.Game
             OpenPopup("COMPLETE");
             float y = -Short * 0.06f;
             float step = L.ContentWidth / 3f;
-            var size = new Vector2(step * 0.9f, L.BarHeight);
+            var size = new Vector2(step * 0.82f, L.BarHeight);
             AddPopupButton("MENU", new Vector2(-step, y), size, GoBack);
             AddPopupButton("REPLAY", new Vector2(0f, y), size, replay);
             if (next != null)
@@ -437,9 +527,10 @@ namespace GridInfect.Game
             _popup.transform.SetParent(Root.transform, false);
             Ui.MakeRect("dim", _popup.transform, new Vector2(ScreenW, ScreenH), BoardTheme.PanelDim, 40);
 
+            // A glass panel (the chip material at the well's radius), ink type.
             var panel = new GameObject("panel");
             panel.transform.SetParent(_popup.transform, false);
-            Ui.MakeRect("bg", panel.transform, new Vector2(L.ContentWidth, Short * 0.36f), BoardTheme.ButtonBg, 41);
+            Ui.MakeGlass("bg", panel.transform, new Vector2(L.ContentWidth, Short * 0.36f), GlassStyle.Panel(BoardPalette.Default), 41);
             var text = Ui.MakeText("message", panel.transform, message, L.HeadingText, BoardTheme.Text, 42);
             Ui.SetPos(text.gameObject, 0f, Short * 0.08f);
 
@@ -456,7 +547,7 @@ namespace GridInfect.Game
         void AddPopupButton(string label, Vector2 center, Vector2 size, System.Action onClick)
         {
             var button = UiButton.Make(_popupPanel.transform, label, center, size,
-                BoardTheme.Accent, BoardTheme.GlyphDark,
+                BoardTheme.Primary, BoardTheme.TextOnAccent,
                 () => { if (!App.Ads.MaybeShowInterstitial(onClick)) onClick?.Invoke(); }, 43);
             Buttons.Add(button);
         }
