@@ -35,10 +35,10 @@ namespace GridInfect.Game
         // phone held upright without anything running off an edge.
         public const float CellHeightPct = 0.11f;   // cap: cell = 11% of screen height
         public const float BoardWidthPct = 0.94f;   // the board spans at most 94% of the width
-        public const float CellPitch = 1.05f;       // 5% gutters both axes
-        public const float BoardCeilingPct = 0.855f; // board stays below the title and HUD
-        public const float TrayBottomPct = 0.075f;  // tray pieces 7.5% from the bottom
-        public const float TraySlotPitch = 1.1f * 1.1f;
+        public const float CellPitch = 59f / 54f;   // style guide: 54 px cells on a 5 px gap
+        public const float BoardCeilingPct = 0.82f;  // lattice top: 138 px board top + 14 px well pad on 844
+        public const float TrayBottomPct = 0.045f;  // tray slots centred 75 px up on 844 (150 px tray)
+        public const float TraySlotPitch = (74f + 30f) / 74f;   // 74 px slots on a 30 px gap
         public const int TraySlots = 8;             // LevelDef.MaxPieces; real levels top out at 6
 
         // Anything square-ish — button boxes, glyphs, type — is sized off the
@@ -56,7 +56,7 @@ namespace GridInfect.Game
             static float W => UnityEngine.Screen.width;
 
             public const float ContentWidthPct = 0.88f;   // full-width controls
-            public const float TopBarPct = 0.44f;         // title row, from centre
+            public const float TopBarPct = 0.42f;         // HUD row: chips bottom-aligned in the 96 px band
 
             public static float ShortEdgeUnit => ShortEdge;
             public static float ContentWidth => W * ContentWidthPct;
@@ -89,6 +89,62 @@ namespace GridInfect.Game
 
         public const int TargetFrameRate = 60;      // R-1104
 
+        // The visual style (grid-infect-style/STYLE-GUIDE.md, locked
+        // 2026-09-04). Every token is a px value on the guide's 390 x 844
+        // reference screen; Px() maps it onto this device off the short edge,
+        // so the chrome keeps the guide's proportions at any resolution. The
+        // board itself still fits whichever axis binds (Layout above).
+        public static class Style
+        {
+            public const float RefWidth = 390f;
+            public const float RefHeight = 844f;
+
+            public static float Scale => ShortEdge / RefWidth;
+            public static float Px(float refPx) => refPx * Scale;
+
+            // §4 board well, §5 tiles
+            public const float Cell = 54f;
+            public const float Gap = 5f;
+            public const float WellPad = 14f;
+            public const float WellRadius = 12f;
+            public const float TileRadius = 6f;
+            public const float BoardTop = 138f;
+
+            // §6 glyph sizes per context
+            public const float GlyphOnTile = 44f;
+            public const float TrayNextGlyph = 58f;
+            public const float TrayQueuedGlyph = 40f;
+
+            // §7 HUD
+            public const float HudHeight = 96f;
+            public const float HudInset = 22f;         // chips sit 22 px in from the edge
+            public const float HudBottomPad = 12f;     // and 12 px up from the band's bottom
+            public const float HudLevel = 26f;
+            public const float HudCaption = 11f;
+            public const float ChipText = 12f;
+            public const float ChipPadX = 14f;
+            public const float ChipPadY = 8f;
+            public const float ChipRadius = 7f;
+            public const float ChipPadDot = 5f;        // the copper pad either side of a chip
+            public const float ChipPadGap = 9f;        // pad centre from the chip edge
+            public const float BadgeText = 13f;
+            public const float BadgeTop = 104f;
+            public const float BadgePadX = 12f;
+            public const float BadgePadY = 6f;
+
+            // §8 tray
+            public const float TrayHeight = 150f;
+            public const float TraySlot = 74f;
+            public const float TraySlotQueued = 54f;
+            public const float TrayGap = 30f;
+            public const float TraySlotRadius = 12f;
+            public const float TrayCaption = 10f;
+
+            // §3 silkscreen
+            public const float Silkscreen = 9f;
+            public const float PanelRadius = 12f;
+        }
+
         // Infection VFX (docs/infection-vfx-spec.md "Locked parameters").
         // Blocks, hop, bias, glow hold and glow fade are fixed; trace and
         // bleed are the two remaining tunables. InfectionVfxSpecTests keeps
@@ -108,6 +164,8 @@ namespace GridInfect.Game
             public const float ArrivalPulseDur = 0.060f;
             public const float ConflictShakePx = 2f;
             public const float ConflictShakeDur = 0.120f;
+            public const float PlacementShakeDur = 0.080f;   // STYLE-GUIDE §9
+            public const float PreviewFadeDur = 0.120f;      // the pending trace fading in under the finger
             public const float ConflictFlashDur = 0.500f;
             public const float SparkLife = 0.200f;
             public const float TraceDimLevel = 0.30f;

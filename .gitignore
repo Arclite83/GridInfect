@@ -99,3 +99,9 @@ unity/Assets/_Local.meta
 
 # Uncompressed audio masters (commit .ogg exports instead)
 *.wav
+
+# style bench outputs (tools/style-bench/README.md)
+tools/style-bench/shaders.js
+tools/style-bench/*.png
+tools/style-bench/glyphs/bin/
+tools/style-bench/glyphs/obj/

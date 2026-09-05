@@ -7,17 +7,19 @@ namespace GridInfect.Game
     // URP Bloom and tonemapping, created from code like everything else here.
     //
     // The threshold is the whole point: it sits at 1, so only output the board
-    // shader pushes into HDR blooms — the hot fill, the bleed edge band, the
-    // active trace and the seed marker. Every LDR colour on screen (cooled
-    // fill, cell border, immune hatch, UI text) is rejected, which is what
-    // acceptance criterion 9 asks for. If the effect ever needs the threshold
-    // lowered to read, the effect is wrong, not the threshold.
+    // shader pushes into HDR blooms — an infected tile at rest (RestEmission,
+    // just over 1, which is the guide's 64 px halo), a freshly lit one, the
+    // active trace and the sparks. Everything else on screen (the mask, the
+    // dormant glass, the copper, the chrome, the type) is LDR and is rejected,
+    // which is STYLE-GUIDE §1: the infection glow is the only strong emissive
+    // element. If the effect ever needs the threshold lowered to read, the
+    // effect is wrong, not the threshold.
     //
     // Tonemapping is not decoration here. The hot fill is the palette colour
-    // times 2.2, which without a curve hard-clips per channel: #00D9FF lands on
-    // pure #00FFFF and the authored hue is gone exactly where the eye is
-    // looking. Neutral rolls the highlights off instead, so the fill keeps its
-    // colour and the bloom does the work of reading as bright.
+    // times 2.2, which without a curve hard-clips per channel and loses the
+    // authored hue exactly where the eye is looking. Neutral rolls the
+    // highlights off instead, so the fill keeps its colour and the bloom does
+    // the work of reading as bright.
     public static class BoardBloom
     {
         static GameObject _volume;

@@ -66,8 +66,9 @@ namespace GridInfect.Game
             Object.DontDestroyOnLoad(go);
             _fade = go.GetComponent<SpriteRenderer>();
 
+            // On the black of the fade, so the lit tip white, not the ink.
             _loading = Ui.MakeText("loading", null, "LOADING",
-                PresentationConfig.Layout.HeadingText, BoardTheme.Text, 101);
+                PresentationConfig.Layout.HeadingText, BoardTheme.TextOnAccent, 101);
             Object.DontDestroyOnLoad(_loading.gameObject);
             _loading.gameObject.SetActive(false);
         }

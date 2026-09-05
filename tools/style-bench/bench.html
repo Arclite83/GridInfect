@@ -1,0 +1,163 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#111}
+#screen{position:relative;width:780px;height:1688px;overflow:hidden}
+canvas{position:absolute;left:0;top:0}
+.t{position:absolute;font-family:'Chakra Petch',sans-serif;color:#1d3316;white-space:nowrap}
+.m{font-family:'Share Tech Mono',monospace}
+.g{position:absolute;width:72px;height:72px;background-image:url(glyphs72.png);background-size:640px auto}
+.g2{position:absolute;width:96px;height:96px;background-image:url(glyphs96.png);background-size:832px auto}
+</style></head><body>
+<div id="screen"><canvas id="c" width="780" height="1688"></canvas><div id="overlay"></div></div>
+<script src="shaders.js"></script>
+<script>
+// ---- layout, mirroring PresentationConfig / BoardView for a 390x844 reference at 2x ----
+const W=780,H=1688,SCALE=2, Px=v=>v*SCALE;
+const COLS=6,ROWS=11,CELLPITCH=59/54;
+const bandBottom=Px(150+14), bandTop=H-Px(138+14);
+const cell=Math.min(Px(54), (bandTop-bandBottom)/(ROWS*CELLPITCH), W*0.94/(COLS*CELLPITCH));
+const pitch=cell*CELLPITCH, refScale=cell/54;
+const margin=Px(14+26*1.2+4);
+const quadW=COLS*pitch+2*margin, quadH=ROWS*pitch+2*margin;
+const latticeBottom=bandBottom+((bandTop-bandBottom)-ROWS*pitch)/2;   // centred in the band
+const quadX=(W-quadW)/2, quadY=latticeBottom-margin;
+const cellCenter=(i,j)=>[quadX+margin+(j+0.5)*pitch, quadY+margin+(ROWS-1-i+0.5)*pitch];
+
+// ---- palette (default skin) ----
+const hex=h=>[1,3,5].map(k=>parseInt(h.substr(k,2),16)/255);
+const P={Mask:hex('#7fae66'),MaskHi:hex('#97c27c'),MaskLo:hex('#5f8b4a'),Ink:hex('#1d3316'),Copper:hex('#c9a648'),CopperHi:hex('#f3e2a8'),CopperLo:hex('#7d6120'),
+ Infect:hex('#ff2d95'),InfectHi:hex('#ff7cc4'),InfectLo:hex('#b3086a'),GlyphEdge:hex('#5a0033'),Tip:[1,1,1],Shade:[0,0,0],Switch:hex('#8a5cff'),Trap:hex('#0d0d12'),Conflict:hex('#ff3b30')};
+// Unity converts sRGB colour properties to linear when the project renders linear and the framebuffer converts back.
+// The bench works in sRGB end to end, which for a look check is the same thing.
+
+// ---- board state ----
+// legend: . void  a active  W wall  S switch  T trap  F forbidden  X seed(piece)  p preview
+const level=[
+ "..aaa.",
+ ".aaaaa",
+ "aaWaaa",
+ "aaaaSa",
+ "aaappa",
+ "aFappa",
+ "aaaXaa",
+ "aaaaaa",
+ "aTaaaa",
+ ".aaaa.",
+ "..aa..",
+];
+const V={'.':0,a:1,W:2,S:3,X:4,T:5,F:6,p:1};
+const seed=[6,3];
+function buildState(t){
+  const data=new Float32Array(COLS*ROWS*4);
+  for(let i=0;i<ROWS;i++)for(let j=0;j<COLS;j++){
+    const ch=level[i][j]; let v=V[ch], start=-1000, dir=4, kind=0;
+    if(v===4){kind=1;start=0;}
+    // the seed's cross wave: N and S and E and W rays, stopped by wall/switch/trap, jumping voids
+    if(v===1){
+      const di=i-seed[0], dj=j-seed[1];
+      if(di===0||dj===0){
+        const depth=Math.max(Math.abs(di),Math.abs(dj));
+        // stop check along the ray
+        let blocked=false; const si=Math.sign(di), sj=Math.sign(dj);
+        for(let k=1;k<depth;k++){const c=level[seed[0]+si*k][seed[1]+sj*k]; if('WST'.includes(c)) blocked=true;}
+        if(!blocked){ v=4; kind=1; start=depth*0.040; dir=(si+1)*3+(sj+1); }
+      }
+    }
+    if(ch==='p'){kind=4;start=t-0.5;}
+    const n=(i*COLS+j)*4; data[n]=v; data[n+1]=start; data[n+2]=dir; data[n+3]=kind;
+  }
+  return data;
+}
+
+// ---- gl ----
+const gl=document.getElementById('c').getContext('webgl2',{premultipliedAlpha:true,antialias:false});
+const VS=`#version 300 es
+in vec2 aPos; uniform vec4 uRect; uniform vec2 uCanvas; out vec2 vUv;
+void main(){ vUv=aPos; vec2 px=uRect.xy+aPos*uRect.zw; gl_Position=vec4(px/uCanvas*2.0-1.0,0.0,1.0); }`;
+function compile(type,src,name){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){console.error(name+' compile error:\n'+gl.getShaderInfoLog(s));}return s;}
+function program(fs,name){const p=gl.createProgram();gl.attachShader(p,compile(gl.VERTEX_SHADER,VS,'vs'));gl.attachShader(p,compile(gl.FRAGMENT_SHADER,fs,name));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))console.error(name+' link: '+gl.getProgramInfoLog(p));return p;}
+const progs={board:program(SHADERS.board,'board'),substrate:program(SHADERS.substrate,'substrate'),glass:program(SHADERS.glass,'glass')};
+const vbo=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vbo);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([0,0,1,0,0,1,1,1]),gl.STATIC_DRAW);
+function draw(prog,rect,uniforms,blend){
+  gl.useProgram(prog);
+  const loc=gl.getAttribLocation(prog,'aPos');gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  gl.uniform4f(gl.getUniformLocation(prog,'uRect'),...rect);gl.uniform2f(gl.getUniformLocation(prog,'uCanvas'),W,H);
+  let tex=0;
+  for(const [k,v] of Object.entries(uniforms)){const l=gl.getUniformLocation(prog,k);if(l===null)continue;
+    if(v instanceof WebGLTexture){gl.activeTexture(gl.TEXTURE0+tex);gl.bindTexture(gl.TEXTURE_2D,v);gl.uniform1i(l,tex);tex++;}
+    else if(typeof v==='number')gl.uniform1f(l,v);else if(v.length===2)gl.uniform4f(l,v[0],v[1],0,0);else if(v.length===3)gl.uniform4f(l,...v,1);else gl.uniform4f(l,...v);}
+  if(blend){gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);}else gl.disable(gl.BLEND);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+}
+// textures
+const stateTex=gl.createTexture();
+function uploadState(data){gl.bindTexture(gl.TEXTURE_2D,stateTex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA32F,COLS,ROWS,0,gl.RGBA,gl.FLOAT,data);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);}
+const NW=COLS*16,NH=ROWS*16; const noise=new Uint8Array(NW*NH*4);
+{ // smooth-ish value noise, rank normalised
+  const vals=[];let s=12345;const rnd=()=>{s=(s*1103515245+12345)&0x7fffffff;return s/0x7fffffff;};
+  const lat=[];for(let y=0;y<=12;y++){lat.push([]);for(let x=0;x<=8;x++)lat[y].push(rnd());}
+  for(let y=0;y<NH;y++)for(let x=0;x<NW;x++){const u=x/NW*8,v=y/NH*12;const x0=Math.floor(u),y0=Math.floor(v),fx=u-x0,fy=v-y0;
+    const a=lat[y0][x0],b=lat[y0][Math.min(x0+1,8)],c=lat[Math.min(y0+1,12)][x0],d=lat[Math.min(y0+1,12)][Math.min(x0+1,8)];
+    vals.push({v:(a*(1-fx)+b*fx)*(1-fy)+(c*(1-fx)+d*fx)*fy+rnd()*0.3,i:y*NW+x});}
+  vals.sort((p,q)=>p.v-q.v);vals.forEach((p,r)=>{const g=Math.round(r/(vals.length-1)*255);noise[p.i*4]=noise[p.i*4+1]=noise[p.i*4+2]=g;noise[p.i*4+3]=255;});
+}
+const noiseTex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,noiseTex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,NW,NH,0,gl.RGBA,gl.UNSIGNED_BYTE,noise);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+
+const white=a=>[1,1,1,a], black=a=>[0,0,0,a];
+function glass(rect,style){ // rect = box in px (x,y,w,h); style in ref px
+  const m=Px(Math.max(style.GlowPx||0,(style.ShadowBlur||0)+Math.abs((style.ShadowOffset||[0,0])[1]))+2);
+  draw(progs.glass,[rect[0]-m,rect[1]-m,rect[2]+2*m,rect[3]+2*m],{
+    _QuadPx:[rect[2]+2*m,rect[3]+2*m],_BoxPx:[rect[2],rect[3]],_RadiusPx:Px(style.Radius),
+    _FillTop:style.FillTop,_FillMid:style.FillMid||[0,0,0,0],_FillBottom:style.FillBottom,_MidStop:style.MidStop||0,
+    _Border:style.Border||[0,0,0,0],_BorderPx:Px(style.BorderPx||1),_TopLight:style.TopLight||[0,0,0,0],
+    _Glow:style.Glow||[0,0,0,0],_GlowPx:Px(style.GlowPx||0),_Shadow:style.Shadow||[0,0,0,0],
+    _ShadowOffset:[Px((style.ShadowOffset||[0,0])[0]),Px((style.ShadowOffset||[0,0])[1])],_ShadowBlurPx:Px(style.ShadowBlur||0),
+    _InsetShadow:style.InsetShadow||[0,0,0,0],_InsetPx:Px(style.InsetPx||0)},true);
+}
+const Chip={FillTop:white(.42),FillBottom:white(.14),Radius:7,Border:white(.3),BorderPx:1,TopLight:white(.7),Shadow:black(.25),ShadowOffset:[0,-4],ShadowBlur:10};
+const Pad={FillTop:[...P.CopperHi,1],FillBottom:[...P.CopperHi,1],Radius:5,Glow:[...P.CopperHi,.9],GlowPx:4};
+const Badge={FillTop:black(.35),FillBottom:black(.35),Radius:7,Border:[...P.CopperHi,.35],BorderPx:1};
+const Slot=lit=>({FillTop:black(.3),FillBottom:black(.3),Radius:12,Border:white(.14),BorderPx:1,InsetShadow:black(.5),InsetPx:24,Glow:lit?[...P.Infect,.45]:[0,0,0,0],GlowPx:lit?22:0});
+
+function chip(label,cx,cy){const w=Px(28+label.length*12*0.66),h=Px(16+12*1.25);glass([cx-w/2,cy-h/2,w,h],Chip);const d=Px(5);glass([cx-w/2-Px(9)-d/2,cy-d/2,d,d],Pad);glass([cx+w/2+Px(9)-d/2,cy-d/2,d,d],Pad);
+  overlay(`<div class="t" style="left:${cx}px;top:${H-cy}px;transform:translate(-50%,-50%);font-size:${Px(12)}px;letter-spacing:.1em">${label}</div>`);}
+let ov='';const overlay=h=>ov+=h;
+
+function render(t){
+  ov='';
+  uploadState(buildState(t));
+  gl.viewport(0,0,W,H);
+  draw(progs.substrate,[0,0,W,H],{_ScreenPx:[W,H],_RefScale:SCALE,_ColMask:P.Mask,_ColMaskHi:P.MaskHi,_ColMaskLo:P.MaskLo,_ColCopper:P.Copper,_ColTip:P.Tip,_ColShade:P.Shade},false);
+  draw(progs.board,[quadX,quadY,quadW,quadH],{
+    _StateTex:stateTex,_NoiseTex:noiseTex,_Cols:COLS,_Rows:ROWS,_Blocks:16,_Bias:0.3,_TraceDur:0.09,_BleedDur:0.26,_GlowHold:0.15,_GlowFade:0.3,_BoardTime:t,
+    _QuadPx:[quadW,quadH],_LatticeOrigin:[margin,margin],_PitchPx:pitch,_CellFrac:1/CELLPITCH,_RefScale:refScale,_TileRadiusPx:cell*6/54,_WellPadPx:Px(14),_WellRadiusPx:Px(12),
+    _GlowPx:Px(26),_TracePx:Px(2.5),_BlotAmp:0.18,_HotEmission:2.2,_RestEmission:1.15,_ConflictDur:0.5,_PreviewFade:0.12,
+    _ArrivalPulse:1,_PulseGain:1.4,_PulseDur:0.06,_EdgeSparks:1,_SparkLife:0.2,_TraceDim:1,_TraceDimLevel:0.3,_GhostTrail:0,_GhostTrailDur:0.2,
+    _ColTip:P.Tip,_ColShade:P.Shade,_ColWellBg:[0,0,0,.36],_ColCopper:P.Copper,_ColCopperHi:P.CopperHi,_ColCopperLo:P.CopperLo,_ColInfect:P.Infect,_ColInfectHi:P.InfectHi,_ColInfectLo:P.InfectLo,
+    _ColInfectGlow:[...P.Infect,.55],_ColGlyphEdge:P.GlyphEdge,_ColSwitch:P.Switch,_ColTrap:P.Trap,_ColConflict:P.Conflict},true);
+  // HUD
+  const hudBottom=H-Px(96-12), ch=Px(16+15);
+  chip('MENU',Px(22)+Px(28+4*12*.66)/2,hudBottom+ch/2); chip('RESET',W-Px(22)-Px(28+5*12*.66)/2,hudBottom+ch/2);
+  overlay(`<div class="t" style="left:390px;top:${H-(hudBottom+Px(26)*.55)}px;transform:translate(-50%,-50%);font-size:${Px(26)}px;letter-spacing:.06em">LEVEL 6</div>`);
+  overlay(`<div class="t m" style="left:390px;top:${H-(hudBottom+Px(26)*1.1+Px(11)*.9)}px;transform:translate(-50%,-50%);font-size:${Px(11)}px;letter-spacing:.2em;opacity:.7">GI-REV B</div>`);
+  const bw=Px(24+7*13*.62),bh=Px(12+13*1.25);glass([W-Px(22)-bw,H-Px(104)-bh,bw,bh],Badge);
+  overlay(`<div class="t m" style="left:${W-Px(22)-bw/2}px;top:${Px(104)+bh/2}px;transform:translate(-50%,-50%);font-size:${Px(13)}px;letter-spacing:.12em;color:#f3e2a8">LOCK 02</div>`);
+  // tray: 4 pieces
+  const count=4, slot=Math.min(Px(74),cell*74/54,W*.94/(count*104/74)), gpx=Math.round(slot*58/74);
+  for(let k=0;k<count;k++){const x=W/2+(k-(count-1)/2)*slot*104/74, y=Px(150)/2; glass([x-slot/2,y-slot/2,slot,slot],Slot(false));
+    const idx=[6,1,15,32][k]; overlay(`<div class="g2" style="left:${x-48}px;top:${H-y-48}px;background-position:${-(idx%8)*104-4}px ${-Math.floor(idx/8)*104-4}px;transform:scale(${gpx/96})"></div>`);}
+  // the seed glyph (NESW = index 14) on its tile, 44/54 of the cell
+  const [sx,sy]=cellCenter(...seed); const g=cell*44/54;
+  overlay(`<div class="g" style="left:${sx-36}px;top:${H-sy-36}px;background-position:${-(14%8)*80-4}px ${-Math.floor(14/8)*80-4}px;transform:scale(${g/72})"></div>`);
+  // blocker shield on the wall (index 35), relay none
+  const [wx,wy]=cellCenter(2,2); overlay(`<div class="g" style="left:${wx-36}px;top:${H-wy-36}px;background-position:${-(35%8)*80-4}px ${-Math.floor(35/8)*80-4}px;transform:scale(${g/72})"></div>`);
+  // silkscreen
+  overlay(`<div class="t m" style="left:${Px(44)}px;top:${Px(27)}px;transform:translateY(-50%);font-size:${Px(9)}px;letter-spacing:1.5px;color:rgba(255,255,255,.55)">BLOODHOUND STUDIOS</div>`);
+  overlay(`<div class="t m" style="left:${Px(44)}px;top:${H-Px(12)}px;transform:translateY(-50%);font-size:${Px(9)}px;letter-spacing:1.5px;color:rgba(255,255,255,.55)">© 2026</div>`);
+  overlay(`<div class="t m" style="right:${Px(20)}px;top:${H-Px(12)}px;transform:translateY(-50%);font-size:${Px(9)}px;letter-spacing:1.5px;color:rgba(255,255,255,.55)">GI-06 REV B</div>`);
+  document.getElementById('overlay').innerHTML=ov;
+}
+window.render=render;
+render(window.BOARD_TIME||3.0);
+</script></body></html>

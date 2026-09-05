@@ -12,25 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20dc65c4de4f4856849afb2ae8decece, type: 3}
   m_Name: BoardPalette
   m_EditorClassIdentifier: 
-  Background: {r: 0.043137, g: 0.062745, b: 0.12549, a: 1}
-  CellPlate: {r: 0.078431, g: 0.109804, b: 0.2, a: 1}
-  GridLine: {r: 0.105882, g: 0.164706, b: 0.282353, a: 1}
-  CellBorder: {r: 0.168627, g: 0.247059, b: 0.388235, a: 1}
-  Infected: {r: 0, g: 0.85098, b: 1, a: 1}
-  Cooled: {r: 0.043137, g: 0.498039, b: 0.6, a: 1}
-  BleedEdge: {r: 0.878431, g: 1, b: 1, a: 1}
-  Ghost: {r: 1, g: 0.239216, b: 0.847059, a: 1}
-  Seed: {r: 1, g: 0.239216, b: 0.847059, a: 1}
-  ImmuneHatch: {r: 0.333333, g: 0.407843, b: 0.541176, a: 1}
+  Mask: {r: 0.498039, g: 0.682353, b: 0.4, a: 1}
+  MaskHi: {r: 0.592157, g: 0.760784, b: 0.486275, a: 1}
+  MaskLo: {r: 0.372549, g: 0.545098, b: 0.290196, a: 1}
+  Ink: {r: 0.113725, g: 0.2, b: 0.086275, a: 1}
+  Copper: {r: 0.788235, g: 0.65098, b: 0.282353, a: 1}
+  CopperHi: {r: 0.952941, g: 0.886275, b: 0.658824, a: 1}
+  CopperLo: {r: 0.490196, g: 0.380392, b: 0.12549, a: 1}
+  Infect: {r: 1, g: 0.176471, b: 0.584314, a: 1}
+  InfectHi: {r: 1, g: 0.486275, b: 0.768627, a: 1}
+  InfectLo: {r: 0.701961, g: 0.031373, b: 0.415686, a: 1}
+  InfectGlow: {r: 1, g: 0.176471, b: 0.584314, a: 0.55}
+  GlyphEdge: {r: 0.352941, g: 0, b: 0.2, a: 1}
+  GlyphWire: {r: 0.227451, g: 0.043137, b: 0.133333, a: 1}
+  Tip: {r: 1, g: 1, b: 1, a: 1}
+  BlockerBody: {r: 0.811765, g: 0.847059, b: 0.878431, a: 1}
+  BlockerEdge: {r: 0.301961, g: 0.337255, b: 0.372549, a: 1}
+  WellBg: {r: 0, g: 0, b: 0, a: 0.36}
+  Shade: {r: 0, g: 0, b: 0, a: 1}
   RepelSwitch: {r: 0.541176, g: 0.360784, b: 1, a: 1}
   ResetTrap: {r: 0.05098, g: 0.05098, b: 0.070588, a: 1}
   Conflict: {r: 1, g: 0.231373, b: 0.188235, a: 1}
-  Glyph: {r: 0.043137, g: 0.062745, b: 0.12549, a: 1}
   HotEmission: 2.2
+  RestEmission: 1.15
   BloomThreshold: 1
   BloomIntensity: 0.9
   BloomScatter: 0.62
-  GridLinePx: 1
-  CellBorderPx: 1
-  ImmuneHatchPitchPx: 7
+  GlowPx: 26
   TraceWidthPx: 2.5
+  BlotAmp: 0.18

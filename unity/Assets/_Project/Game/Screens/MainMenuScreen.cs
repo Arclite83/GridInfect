@@ -29,7 +29,7 @@ namespace GridInfect.Game
             var size = new Vector2(L.ContentWidth, L.ButtonHeight);
             Buttons.Add(UiButton.Make(Root.transform, "PLAY",
                 new Vector2(0f, L.StackRowY(0, 4, L.ButtonHeight, 0f)), size,
-                BoardTheme.Accent, BoardTheme.GlyphDark, () => App.Screens.Show(new WorldSelectScreen())));
+                BoardTheme.Primary, BoardTheme.TextOnAccent, () => App.Screens.Show(new WorldSelectScreen())));
             Buttons.Add(UiButton.Make(Root.transform, "DAILY",
                 new Vector2(0f, L.StackRowY(1, 4, L.ButtonHeight, 0f)), size,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new DailyScreen())));

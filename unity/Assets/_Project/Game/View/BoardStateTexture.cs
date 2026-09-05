@@ -27,6 +27,7 @@ namespace GridInfect.Game
             public const float Infecting = 1f;
             public const float Receding = 2f;
             public const float Conflict = 3f;
+            public const float Preview = 4f;   // the drop preview: where the piece under the finger would reach
         }
 
         public const int SeedDir = 4;   // (dr, dc) = (0, 0)
@@ -91,6 +92,8 @@ namespace GridInfect.Game
         public byte ValueAt(int i, int j) => (byte)Mathf.RoundToInt(_pixels[Index(i, j)].r);
 
         public int PackedDirAt(int i, int j) => Mathf.RoundToInt(_pixels[Index(i, j)].b);
+
+        public float KindAt(int i, int j) => _pixels[Index(i, j)].a;
 
         // The board as the session hands it over: a level's own cells plus
         // whatever its locked givens have already infected.

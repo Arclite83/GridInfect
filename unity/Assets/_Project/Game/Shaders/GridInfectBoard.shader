@@ -1,17 +1,26 @@
-// Grid Infect board shader — docs/infection-vfx-spec.md.
+// Grid Infect board shader — STYLE-GUIDE §4-§5 on the infection machinery of
+// docs/infection-vfx-spec.md.
 //
-// The whole board is one quad, one material, one draw call. Cell state lives
-// in _StateTex (point-filtered RGBAFloat, one texel per cell); the simulation
-// writes it, this shader only reads it. Nothing here gates input and nothing
-// writes back, so a placement landing mid-bleed just changes texels and the
-// cells already in flight keep running off their own start times.
+// The whole board is one quad, one material, one draw call: the recessed well,
+// every tile, the infection bleed, the beam between cells and the sparks. Cell
+// state lives in _StateTex (point-filtered RGBAFloat, one texel per cell); the
+// simulation writes it, this shader only reads it. Nothing here gates input
+// and nothing writes back, so a placement landing mid-bleed just changes
+// texels and the cells already in flight keep running off their own start
+// times.
+//
+// The material is backlit frosted glass: tiles are translucent white over the
+// dark well, and the infection is light inside the glass. The quad is drawn
+// transparent over the substrate, premultiplied, so a dormant tile really is
+// the well showing through 34% white.
 //
 // _StateTex channels (BoardStateTexture.cs owns the writes):
 //   R  cell value, the game's own wire vocabulary (0 void, 1 active, 2 wall,
-//      3 repel switch, 4 infected, 5 reset trap)
+//      3 repel switch, 4 infected, 5 reset trap, 6 forbidden)
 //   G  transition start time, seconds on the board clock
 //   B  entry direction packed as (dr + 1) * 3 + (dc + 1), grid deltas, 4 = seed
-//   A  transition kind: 0 none, 1 infecting, 2 receding, 3 conflict flash
+//   A  transition kind: 0 none, 1 infecting, 2 receding, 3 conflict flash,
+//      4 pending (the drop preview)
 Shader "GridInfect/Board"
 {
     Properties
@@ -21,8 +30,8 @@ Shader "GridInfect/Board"
 
         // Locked parameters (spec table). Blocks/bias/hop never move; trace
         // and bleed are the two tunables.
-        _Cols ("Columns", Float) = 11
-        _Rows ("Rows", Float) = 6
+        _Cols ("Columns", Float) = 6
+        _Rows ("Rows", Float) = 11
         _Blocks ("Blocks per cell", Float) = 16
         _Bias ("Direction bias", Range(0, 1)) = 0.3
         _TraceDur ("Trace pulse (s)", Float) = 0.09
@@ -31,20 +40,24 @@ Shader "GridInfect/Board"
         _GlowFade ("Glow fade (s)", Float) = 0.30
         _BoardTime ("Board clock (s)", Float) = 0
 
-        // Layout, in screen pixels (1 world unit = 1 screen pixel here).
-        _BoardPx ("Board size (px)", Vector) = (1155, 630, 0, 0)
-        _CellFrac ("Cell size / pitch", Float) = 0.952381
-        _GridLinePx ("Grid line (px)", Float) = 1
-        _BorderPx ("Cell border (px)", Float) = 1
-        _HatchPitchPx ("Immune hatch pitch (px)", Float) = 7
+        // Layout, in screen pixels (1 world unit = 1 screen pixel here). The
+        // quad is larger than the lattice: it carries the well and its ring.
+        _QuadPx ("Quad size (px)", Vector) = (400, 700, 0, 0)
+        _LatticeOrigin ("Lattice origin in quad (px)", Vector) = (0, 0, 0, 0)
+        _PitchPx ("Cell pitch (px)", Float) = 59
+        _CellFrac ("Cell size / pitch", Float) = 0.915254
+        _RefScale ("Device px per style-guide px", Float) = 1
+        _TileRadiusPx ("Tile radius (px)", Float) = 6
+        _WellPadPx ("Well padding (px)", Float) = 14
+        _WellRadiusPx ("Well radius (px)", Float) = 12
+        _GlowPx ("Infected tile glow (px)", Float) = 26
         _TracePx ("Trace width (px)", Float) = 2.5
+        _BlotAmp ("Blot ripple on the pool front", Range(0, 1)) = 0.18
 
         _HotEmission ("Hot emission (HDR gain)", Float) = 2.2
-        _EdgeBand ("Edge band width", Float) = 0.12
-        _GlitchBand ("Glitch band width", Float) = 0.15
-        _GlitchHz ("Glitch resample (Hz)", Float) = 20
-        _GhostAlpha ("Ghost alpha", Range(0, 1)) = 0.45
+        _RestEmission ("Resting emission (HDR gain)", Float) = 1.15
         _ConflictDur ("Conflict flash (s)", Float) = 0.5
+        _PreviewFade ("Pending trace fade-in (s)", Float) = 0.12
 
         // Juice layers — each an independent toggle on the board controller.
         _ArrivalPulse ("Juice: arrival pulse", Float) = 1
@@ -59,33 +72,33 @@ Shader "GridInfect/Board"
 
         // Palette. Every colour arrives from BoardPalette; the defaults here
         // are only what the inspector shows on a bare material.
-        _ColBackground ("Board background", Color) = (0, 0, 0, 1)
-        _ColCellPlate ("Cell plate", Color) = (0, 0, 0, 1)
-        _ColGridLine ("Grid line", Color) = (0, 0, 0, 1)
-        _ColCellBorder ("Cell border", Color) = (0, 0, 0, 1)
-        _ColInfected ("Infected fill", Color) = (0, 0, 0, 1)
-        _ColCooled ("Cooled fill", Color) = (0, 0, 0, 1)
-        _ColBleedEdge ("Bleed edge band", Color) = (0, 0, 0, 1)
-        _ColGhost ("Glitch ghost", Color) = (0, 0, 0, 1)
-        _ColSeed ("Seed marker", Color) = (0, 0, 0, 1)
-        _ColImmuneHatch ("Immune hatch", Color) = (0, 0, 0, 1)
-        _ColSwitch ("Repel switch", Color) = (0, 0, 0, 1)
-        _ColTrap ("Reset trap", Color) = (0, 0, 0, 1)
-        _ColForbidden ("Forbidden cell", Color) = (0, 0, 0, 1)
+        _ColTip ("Tip / highlight white", Color) = (1, 1, 1, 1)
+        _ColShade ("Shade black", Color) = (0, 0, 0, 1)
+        _ColWellBg ("Well fill (with alpha)", Color) = (0, 0, 0, 0.36)
+        _ColCopper ("Copper", Color) = (0, 0, 0, 1)
+        _ColCopperHi ("Copper highlight", Color) = (0, 0, 0, 1)
+        _ColCopperLo ("Copper shadow", Color) = (0, 0, 0, 1)
+        _ColInfect ("Infection", Color) = (0, 0, 0, 1)
+        _ColInfectHi ("Infection highlight", Color) = (0, 0, 0, 1)
+        _ColInfectLo ("Infection shadow", Color) = (0, 0, 0, 1)
+        _ColInfectGlow ("Infection glow (with alpha)", Color) = (0, 0, 0, 0.55)
+        _ColGlyphEdge ("Glyph edge (shape glyphs)", Color) = (0, 0, 0, 1)
+        _ColSwitch ("Repel switch tint", Color) = (0, 0, 0, 1)
+        _ColTrap ("Reset trap tint", Color) = (0, 0, 0, 1)
         _ColConflict ("Conflict overprint", Color) = (0, 0, 0, 1)
-        _ColGlyph ("Glyph", Color) = (0, 0, 0, 1)
     }
 
     SubShader
     {
-        Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalPipeline" "Queue" = "Geometry" }
+        Tags { "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" "Queue" = "Transparent" }
 
         Pass
         {
-            Name "BoardInfection"
+            Name "BoardGlass"
             // No LightMode tag: Unity files the pass under SRPDefaultUnlit,
             // which both the Forward and the 2D renderer draw.
-            ZWrite On
+            Blend One OneMinusSrcAlpha
+            ZWrite Off
             ZTest LEqual
             Cull Off
 
@@ -102,30 +115,31 @@ Shader "GridInfect/Board"
             CBUFFER_START(UnityPerMaterial)
                 float _Cols, _Rows, _Blocks, _Bias;
                 float _TraceDur, _BleedDur, _GlowHold, _GlowFade, _BoardTime;
-                float4 _BoardPx;
-                float _CellFrac, _GridLinePx, _BorderPx, _HatchPitchPx, _TracePx;
-                float _HotEmission, _EdgeBand, _GlitchBand, _GlitchHz, _GhostAlpha, _ConflictDur;
+                float4 _QuadPx, _LatticeOrigin;
+                float _PitchPx, _CellFrac, _RefScale, _TileRadiusPx, _WellPadPx, _WellRadiusPx, _GlowPx, _TracePx, _BlotAmp;
+                float _HotEmission, _RestEmission, _ConflictDur, _PreviewFade;
                 float _ArrivalPulse, _PulseGain, _PulseDur;
                 float _EdgeSparks, _SparkLife;
                 float _TraceDim, _TraceDimLevel;
                 float _GhostTrail, _GhostTrailDur;
-                float4 _ColBackground, _ColCellPlate, _ColGridLine, _ColCellBorder, _ColInfected, _ColCooled;
-                float4 _ColBleedEdge, _ColGhost, _ColSeed, _ColImmuneHatch;
-                float4 _ColSwitch, _ColTrap, _ColForbidden, _ColConflict, _ColGlyph;
+                float4 _ColTip, _ColShade, _ColWellBg, _ColCopper, _ColCopperHi, _ColCopperLo;
+                float4 _ColInfect, _ColInfectHi, _ColInfectLo, _ColInfectGlow, _ColGlyphEdge;
+                float4 _ColSwitch, _ColTrap, _ColConflict;
             CBUFFER_END
 
-            #define CELL_VOID    0
-            #define CELL_ACTIVE  1
-            #define CELL_WALL    2
-            #define CELL_SWITCH  3
-            #define CELL_INFECT  4
-            #define CELL_TRAP    5
+            #define CELL_VOID      0
+            #define CELL_ACTIVE    1
+            #define CELL_WALL      2
+            #define CELL_SWITCH    3
+            #define CELL_INFECT    4
+            #define CELL_TRAP      5
             #define CELL_FORBIDDEN 6
 
             #define TR_NONE      0
             #define TR_INFECT    1
             #define TR_RECEDE    2
             #define TR_CONFLICT  3
+            #define TR_PREVIEW   4
 
             #define SPARK_COUNT  8
 
@@ -140,7 +154,50 @@ Shader "GridInfect/Board"
                 return o;
             }
 
-            // ---- state access -------------------------------------------------
+            // ---- compositing -----------------------------------------------------
+            // Premultiplied "over": layers are painted in order, bottom first.
+
+            void Over(inout float4 pm, float3 rgb, float a)
+            {
+                a = saturate(a);
+                pm.rgb = rgb * a + pm.rgb * (1.0 - a);
+                pm.a = a + pm.a * (1.0 - a);
+            }
+
+            float SdRoundBox(float2 p, float2 halfSize, float r)
+            {
+                float2 q = abs(p) - halfSize + r;
+                return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
+            }
+
+            // Anti-aliased coverage of the inside of a distance field.
+            float Inside(float d) { return 1.0 - smoothstep(-0.5, 0.5, d); }
+
+            // A ring `w` px wide just inside the edge (CSS inset 0 0 0 w).
+            float InsetRing(float d, float w) { return Inside(d) * smoothstep(-w - 0.5, -w + 0.5, d); }
+
+            // CSS `inset 0 0 blur` — a shadow pooling in from the edge.
+            float InsetShadow(float d, float blur)
+            {
+                float t = saturate(1.0 + d / max(blur, 1e-3));
+                return Inside(d) * t * t;
+            }
+
+            // The guide's gradients run at 160 degrees: nearly top to bottom,
+            // leaning right. t is 0 at the lit corner and 1 at the far one.
+            float Gradient160(float2 q, float2 size)
+            {
+                const float2 dir = float2(0.34202, -0.93969);
+                float len = size.x * 0.34202 + size.y * 0.93969;
+                return saturate(0.5 + dot(q, dir) / max(len, 1e-3));
+            }
+
+            float4 Stops3(float4 a, float4 b, float4 c, float mid, float t)
+            {
+                return t < mid ? lerp(a, b, t / max(mid, 1e-3)) : lerp(b, c, (t - mid) / max(1.0 - mid, 1e-3));
+            }
+
+            // ---- state access ----------------------------------------------------
 
             // cell = (column j, grid row i); row 0 is the top row.
             float4 LoadState(float2 cell)
@@ -168,7 +225,35 @@ Shader "GridInfect/Board"
 
             bool IsSeedDir(float2 drdc) { return abs(drdc.x) + abs(drdc.y) < 0.5; }
 
-            // ---- blot ---------------------------------------------------------
+            // Does this cell carry a glass body (and so a shadow)?
+            bool HasBody(int value)
+            {
+                return value == CELL_ACTIVE || value == CELL_WALL || value == CELL_SWITCH ||
+                       value == CELL_INFECT || value == CELL_TRAP;
+            }
+
+            // ---- infection timeline ----------------------------------------------
+
+            float Progress(float startTime)
+            {
+                return saturate((_BoardTime - startTime - _TraceDur) / max(_BleedDur, 1e-4));
+            }
+
+            // Emission gain: hot on arrival, cooling to the resting glow.
+            float Emission(float startTime)
+            {
+                float settle = startTime + _TraceDur + _BleedDur;
+                float k = saturate((_BoardTime - settle - _GlowHold) / max(_GlowFade, 1e-4));
+                float pulse = 1.0;
+                if (_ArrivalPulse > 0.5)
+                {
+                    float age = _BoardTime - settle;
+                    if (age >= 0.0 && age <= _PulseDur) pulse = lerp(_PulseGain, 1.0, age / max(_PulseDur, 1e-4));
+                }
+                return lerp(_HotEmission * pulse, _RestEmission, k);
+            }
+
+            // ---- blot --------------------------------------------------------------
 
             float Hash21(float2 p)
             {
@@ -178,41 +263,42 @@ Shader "GridInfect/Board"
             }
 
             // The noise texture is exactly (_Cols * _Blocks) x (_Rows * _Blocks),
-            // so a quantised board UV lands on its own texel: one noise value per
-            // block, generated as one continuous field across the whole board.
+            // one continuous field across the whole board.
             float NoiseAtBlock(float2 blockGlobal)
             {
                 float2 uv = (blockGlobal + 0.5) / (float2(_Cols, _Rows) * _Blocks);
                 return SAMPLE_TEXTURE2D_LOD(_NoiseTex, sampler_NoiseTex, uv, 0).r;
             }
 
-            // 0 at the edge the infection entered from, 1 at the opposite edge.
-            // The seed has no entry edge, so it uses radial distance instead.
-            float EntryDistance(float2 drdc, float2 cellUv)
+            // The pool: 0 at the midpoint of the edge the infection entered
+            // from, 1 at the far corner. The seed has no entry edge and pools
+            // out of its centre. The blot only ripples the front (STYLE-GUIDE
+            // §5: the infection "pools across", it does not dissolve in).
+            float PoolField(float2 cellUv, float2 drdc, float2 blockGlobal)
             {
-                if (IsSeedDir(drdc)) return saturate(length(cellUv - 0.5) * 2.0);
-                float2 travel = TravelUv(drdc);
-                float2 entry = 0.5 - travel * 0.5;
-                return saturate(dot(cellUv - entry, travel));
+                float e;
+                if (IsSeedDir(drdc))
+                {
+                    e = length(cellUv - 0.5) / 0.70711;
+                }
+                else
+                {
+                    float2 travel = TravelUv(drdc);
+                    float2 entry = 0.5 - travel * 0.5;
+                    e = length(cellUv - entry) / 1.11803;
+                }
+                float n = NoiseAtBlock(blockGlobal) - 0.5;
+                return e + n * (1.0 - _Bias) * _BlotAmp;
             }
 
-            // t = lerp(noise, entryDistance, bias): noise-dominant with a lean
-            // toward the entry edge, so it reads as ink soaking in.
-            float BlotT(float2 blockGlobal, float2 blockInCell, float2 drdc)
-            {
-                float n = NoiseAtBlock(blockGlobal);
-                float e = EntryDistance(drdc, (blockInCell + 0.5) / _Blocks);
-                return lerp(n, e, _Bias);
-            }
-
-            // ---- traces ---------------------------------------------------------
+            // ---- traces ----------------------------------------------------------
 
             float SegDistance(float2 p, float2 a, float2 b)
             {
                 float2 ab = b - a;
                 float2 ap = p - a;
                 float h = saturate(dot(ap, ab) / max(dot(ab, ab), 1e-6));
-                return length(ap - ab * h);   // round caps fall out of the distance
+                return length(ap - ab * h);
             }
 
             // A trace cools on the same curve as the cell it feeds, and holds at
@@ -225,28 +311,135 @@ Shader "GridInfect/Board"
                 return dim * (1.0 - k);
             }
 
-            float TraceCoverage(float2 cellUv, float2 a, float2 b, float pitchPx)
+            float TraceCoverage(float2 cellUv, float2 a, float2 b)
             {
-                float d = SegDistance(cellUv, a, b) * pitchPx;
+                float d = SegDistance(cellUv, a, b) * _PitchPx;
                 return 1.0 - smoothstep(_TracePx * 0.5 - 0.5, _TracePx * 0.5 + 0.5, d);
             }
 
-            // ---- fragment -------------------------------------------------------
+            // ---- tile materials --------------------------------------------------
+
+            // Component, placed and dormant: white 34% -> 8% (55%) -> 16% at
+            // 160 degrees, a 1 px top light at 60%, a 1 px ring at 25%.
+            void GlassComponent(inout float4 pm, float2 q, float d, float2 tile, float3 tint, float tintAmount, float alphaScale)
+            {
+                float t = Gradient160(q, tile);
+                float4 fill = Stops3(float4(_ColTip.rgb, 0.34), float4(_ColTip.rgb, 0.08), float4(_ColTip.rgb, 0.16), 0.55, t);
+                fill.rgb = lerp(fill.rgb, tint, tintAmount);
+                fill.a = lerp(fill.a, 0.75, tintAmount) * alphaScale;
+                Over(pm, fill.rgb, fill.a * Inside(d));
+                Over(pm, _ColTip.rgb, 0.25 * InsetRing(d, _RefScale));
+                float top = (q.y > 0.0 && abs(q.x) < tile.x * 0.5 - _TileRadiusPx) ? Inside(d) * smoothstep(-_RefScale - 0.5, -_RefScale + 0.5, d) : 0.0;
+                Over(pm, _ColTip.rgb, 0.6 * top);
+            }
+
+            // Blocker: white 60% -> 20%, top light at 100%, a 2 px ring at 75%.
+            void GlassBlocker(inout float4 pm, float2 q, float d, float2 tile)
+            {
+                float t = Gradient160(q, tile);
+                Over(pm, _ColTip.rgb, lerp(0.6, 0.2, t) * Inside(d));
+                Over(pm, _ColTip.rgb, 0.75 * InsetRing(d, 2.0 * _RefScale));
+                float top = (q.y > 0.0 && abs(q.x) < tile.x * 0.5 - _TileRadiusPx) ? Inside(d) * smoothstep(-_RefScale - 0.5, -_RefScale + 0.5, d) : 0.0;
+                Over(pm, _ColTip.rgb, top);
+            }
+
+            // Infected: the light inside the glass. Coverage masks the fill so
+            // the same material draws the pool mid-bleed and the settled tile.
+            void GlassInfected(inout float4 pm, float2 q, float d, float2 tile, float coverage, float emission)
+            {
+                float t = Gradient160(q, tile);
+                float3 hi = lerp(_ColInfectHi.rgb, _ColTip.rgb, 0.45);
+                float4 fill = Stops3(float4(hi, 0.9), float4(_ColInfect.rgb, 1.0), float4(_ColInfectLo.rgb, 1.0), 0.55, t);
+                Over(pm, fill.rgb * emission, fill.a * Inside(d) * coverage);
+                Over(pm, _ColTip.rgb * emission, 0.4 * InsetRing(d, _RefScale) * coverage);
+                float top = (q.y > 0.0 && abs(q.x) < tile.x * 0.5 - _TileRadiusPx) ? Inside(d) * smoothstep(-_RefScale - 0.5, -_RefScale + 0.5, d) : 0.0;
+                Over(pm, _ColTip.rgb * emission, 0.85 * top * coverage);
+            }
+
+            // A 9 px dot with a 7 px glow: gold on a dormant component, white
+            // on a lit one — the shape that stays constant while the colour
+            // and the light change (R-1001).
+            void CoreDot(inout float4 pm, float2 q, float3 col, float glowAlpha, float emission)
+            {
+                float dd = length(q) - 4.5 * _RefScale;
+                float g = saturate(1.0 - max(dd, 0.0) / (7.0 * _RefScale));
+                Over(pm, col * emission, glowAlpha * g * g);
+                Over(pm, col * emission, Inside(dd));
+            }
+
+            // ---- fragment --------------------------------------------------------
 
             half4 Frag(Varyings input) : SV_Target
             {
-                float2 uv = saturate(input.uv);
-                float2 grid = uv * float2(_Cols, _Rows);
-                float2 cellXY = min(floor(grid), float2(_Cols - 1, _Rows - 1));
-                float2 cellUv = grid - cellXY;                      // 0..1 across the pitch tile
+                float2 px = saturate(input.uv) * _QuadPx.xy;
+                float2 lp = px - _LatticeOrigin.xy;                 // lattice-local px, y up
+                float2 latticeSize = float2(_Cols, _Rows) * _PitchPx;
+                float gapPx = _PitchPx * (1.0 - _CellFrac);
+                float2 tile = float2(_PitchPx * _CellFrac, _PitchPx * _CellFrac);
+                float2 halfTile = tile * 0.5;
+                float s = _RefScale;
+
+                float4 pm = 0;
+
+                // ---- the well (STYLE-GUIDE §4) ----
+                float2 wellHalf = latticeSize * 0.5 - gapPx * 0.5 + _WellPadPx;
+                float dWell = SdRoundBox(lp - latticeSize * 0.5, wellHalf, _WellRadiusPx);
+                Over(pm, _ColShade.rgb, 0.18 * (1.0 - smoothstep(3.0 * s - 0.5, 3.0 * s + 0.5, dWell)) * (1.0 - Inside(dWell)));
+                Over(pm, _ColWellBg.rgb, _ColWellBg.a * Inside(dWell));
+                Over(pm, _ColShade.rgb, 0.5 * InsetShadow(dWell, 60.0 * s));
+                Over(pm, _ColTip.rgb, 0.14 * InsetRing(dWell, s));
+
+                // ---- which cell, and the 3 x 3 neighbourhood ----
+                float2 grid = lp / _PitchPx;
+                float2 cellXY = floor(grid);
+                bool inLattice = all(cellXY >= 0.0) && all(cellXY < float2(_Cols, _Rows));
+                float2 own = clamp(cellXY, float2(0.0, 0.0), float2(_Cols - 1.0, _Rows - 1.0));
+
+                // Shadows and glows spill into the gutters and over the well,
+                // so every tile within a pitch of this fragment gets a say.
+                for (int ny = -1; ny <= 1; ny++)
+                {
+                    for (int nx = -1; nx <= 1; nx++)
+                    {
+                        float2 nXY = own + float2(nx, ny);
+                        if (any(nXY < 0.0) || any(nXY >= float2(_Cols, _Rows))) continue;
+                        float2 nCell = float2(nXY.x, (_Rows - 1) - nXY.y);
+                        float4 ns = LoadState(nCell);
+                        int nValue = (int)round(ns.r);
+                        if (!HasBody(nValue)) continue;
+                        float2 nq = lp - (nXY + 0.5) * _PitchPx;
+                        float nd = SdRoundBox(nq, halfTile, _TileRadiusPx);
+                        float outside = 1.0 - Inside(nd);
+
+                        // 0 7px 16px black 38%: a drop shadow below every body.
+                        float ds = SdRoundBox(nq + float2(0.0, 7.0 * s), halfTile, _TileRadiusPx);
+                        Over(pm, _ColShade.rgb, 0.38 * (1.0 - smoothstep(-8.0 * s, 8.0 * s, ds)) * outside);
+
+                        // 0 0 26px infect: the near glow of a lit tile. The 64 px
+                        // halo beyond it is the bloom's job.
+                        if (nValue == CELL_INFECT && Progress(ns.g) > 0.0)
+                        {
+                            // The glow rests at the tile's resting light; the
+                            // arrival flash is the bloom's to carry.
+                            float cover = Progress(ns.g);
+                            float e = min(Emission(ns.g), _RestEmission);
+                            float g = saturate(1.0 - max(nd, 0.0) / _GlowPx);
+                            Over(pm, _ColInfect.rgb * e, 0.7 * g * g * cover * outside);
+                            float g2 = saturate(1.0 - max(nd, 0.0) / (2.4 * _GlowPx));
+                            Over(pm, _ColInfectGlow.rgb * e, _ColInfectGlow.a * 0.4 * g2 * g2 * cover * outside);
+                        }
+                    }
+                }
+
+                if (!inLattice) return half4(pm);
+
                 float2 cell = float2(cellXY.x, (_Rows - 1) - cellXY.y);   // (j, i)
+                float2 cellUv = grid - cellXY;
+                float2 q = lp - (cellXY + 0.5) * _PitchPx;              // px from the tile centre
+                float d = SdRoundBox(q, halfTile, _TileRadiusPx);
 
-                float2 blockGlobal = min(floor(uv * float2(_Cols, _Rows) * _Blocks),
-                                         float2(_Cols, _Rows) * _Blocks - 1);
-                float2 blockInCell = blockGlobal - float2(cellXY.x, cellXY.y) * _Blocks;
-
-                float pitchPx = _BoardPx.x / _Cols;
-                float2 px = uv * _BoardPx.xy;
+                float2 blockGlobal = min(floor(grid * _Blocks), float2(_Cols, _Rows) * _Blocks - 1);
+                float2 blockInCell = blockGlobal - cellXY * _Blocks;
 
                 float4 state = LoadState(cell);
                 int value = (int)round(state.r);
@@ -254,193 +447,152 @@ Shader "GridInfect/Board"
                 float2 drdc = UnpackDir(state.b);
                 int kind = (int)round(state.a);
 
-                // Tile geometry: gutter, hairline grid line, 1 px cell border.
-                float2 m = abs(cellUv - 0.5);
-                float halfCell = _CellFrac * 0.5;
-                float2 toTileEdgePx = (0.5 - m) * pitchPx;
-                float2 insideCellPx = (halfCell - m) * pitchPx;
-                float edgeDistPx = min(toTileEdgePx.x, toTileEdgePx.y);
-                float cellDistPx = min(insideCellPx.x, insideCellPx.y);
-                bool inCell = cellDistPx > 0.0;
-                bool onBorder = inCell && cellDistPx <= _BorderPx;
-
-                float3 col = (edgeDistPx <= _GridLinePx * 0.5) ? _ColGridLine.rgb : _ColBackground.rgb;
-
-                if (value != CELL_VOID && inCell)
+                if (value == CELL_VOID)
                 {
-                    // Every cell that exists sits on a plate. A 1 px border on
-                    // the board background was not enough to tell an empty cell
-                    // from a hole at thumb size (criterion 5) — the fill is what
-                    // carries it, and the border sharpens the edge.
-                    col = _ColCellPlate.rgb;
+                    // Out of bounds: black 5%, inset 1 px black 10%.
+                    Over(pm, _ColShade.rgb, 0.05 * Inside(d));
+                    Over(pm, _ColShade.rgb, 0.10 * InsetRing(d, s));
+                }
+                else if (value == CELL_FORBIDDEN)
+                {
+                    // Must stay clean (R-1001): the bare pad with nothing on
+                    // it, ringed so it is a shape and not a colour.
+                    float r = length(q);
+                    Over(pm, _ColCopper.rgb, Inside(r - 5.5 * s));
+                    Over(pm, _ColCopperHi.rgb, Inside(r - 4.5 * s));
+                    float ring = Inside(r - 0.27 * tile.x) * (1.0 - Inside(r - 0.17 * tile.x));
+                    Over(pm, _ColCopperLo.rgb, 0.9 * ring);
+                }
+                else if (value == CELL_WALL)
+                {
+                    GlassBlocker(pm, q, d, tile);
+                }
+                else if (value == CELL_SWITCH)
+                {
+                    GlassComponent(pm, q, d, tile, _ColSwitch.rgb, 0.6, 1.0);
+                    float diamond = (abs(q.x) + abs(q.y)) - 0.19 * tile.x;
+                    Over(pm, _ColGlyphEdge.rgb, Inside(diamond));
+                }
+                else if (value == CELL_TRAP)
+                {
+                    GlassComponent(pm, q, d, tile, _ColTrap.rgb, 0.7, 1.0);
+                    float2 a = abs(q) / tile.x;
+                    float x = (abs(a.x - a.y) < 0.07 && max(a.x, a.y) < 0.28) ? 1.0 : 0.0;
+                    Over(pm, _ColConflict.rgb, x);
+                }
+                else if (value == CELL_ACTIVE)
+                {
+                    GlassComponent(pm, q, d, tile, _ColTip.rgb, 0.0, 1.0);
 
-                    if (value == CELL_ACTIVE)
+                    if (kind == TR_RECEDE)
                     {
-                        if (onBorder) col = _ColCellBorder.rgb;
-
-                        if (kind == TR_RECEDE)
+                        // A repel walking the infection back off a cell, or an
+                        // undo lifting it: the pool drains back toward the edge
+                        // it came in from.
+                        float r = saturate((_BoardTime - startTime) / max(_BleedDur, 1e-4));
+                        if (r < 1.0)
                         {
-                            // A repel walking infection back off a cell, or an
-                            // undo lifting it: the same blot, pulled back toward
-                            // the edge it came in from.
-                            float r = saturate((_BoardTime - startTime) / max(_BleedDur, 1e-4));
-                            if (r < 1.0)
-                            {
-                                float back = 1.0 - r;
-                                float bt = BlotT(blockGlobal, blockInCell, drdc);
-                                if (bt <= back) col = _ColCooled.rgb;
-                                if (bt > back - _EdgeBand && bt <= back)
-                                    col = _ColBleedEdge.rgb * _HotEmission;
-                            }
+                            float f = PoolField(cellUv, drdc, blockGlobal);
+                            float coverage = 1.0 - smoothstep(1.0 - r - 0.06, 1.0 - r, f);
+                            GlassInfected(pm, q, d, tile, coverage, _RestEmission * (1.0 - r));
                         }
                     }
-                    else if (value == CELL_WALL)
+
+                    CoreDot(pm, q, _ColCopperHi.rgb, 0.9, 1.0);
+
+                    if (kind == TR_PREVIEW)
                     {
-                        // Immune: 45 degree hatch, constant on-screen pitch.
-                        float hatch = frac((px.x + px.y) / (_HatchPitchPx * 1.41421356));
-                        col = (hatch < 0.5) ? _ColImmuneHatch.rgb : _ColCellPlate.rgb;
-                        if (onBorder) col = _ColCellBorder.rgb;
+                        // Pending trace: where the piece under the finger would
+                        // reach. Radial glow to transparent at 70%, 1 px ring.
+                        float fade = saturate((_BoardTime - startTime) / max(_PreviewFade, 1e-4));
+                        float r = length(q) / (halfTile.x * 1.41421356 * 0.7);
+                        Over(pm, _ColInfectGlow.rgb, _ColInfectGlow.a * (1.0 - saturate(r)) * Inside(d) * fade);
+                        Over(pm, _ColInfect.rgb, 0.5 * InsetRing(d, s) * fade);
                     }
-                    else if (value == CELL_SWITCH)
+                }
+                else if (value == CELL_INFECT)
+                {
+                    GlassComponent(pm, q, d, tile, _ColTip.rgb, 0.0, 1.0);
+
+                    float p = Progress(startTime);
+                    if (p > 0.0)
                     {
-                        col = _ColSwitch.rgb;
-                        if (abs(cellUv.x - 0.5) + abs(cellUv.y - 0.5) < 0.19) col = _ColGlyph.rgb;
-                    }
-                    else if (value == CELL_TRAP)
-                    {
-                        col = _ColTrap.rgb;
-                        float2 d = abs(cellUv - 0.5);
-                        if (abs(d.x - d.y) < 0.07 && max(d.x, d.y) < 0.28) col = _ColConflict.rgb;
-                    }
-                    else if (value == CELL_FORBIDDEN)
-                    {
-                        // Must stay clean: a ring glyph, never colour alone (R-1001).
-                        col = _ColForbidden.rgb;
-                        float r = length(cellUv - 0.5);
-                        if (r > 0.17 && r < 0.27) col = _ColGlyph.rgb;
-                    }
-                    else if (value == CELL_INFECT)
-                    {
-                        float p = saturate((_BoardTime - startTime - _TraceDur) / max(_BleedDur, 1e-4));
-                        if (p > 0.0)
+                        float emission = Emission(startTime);
+                        float f = PoolField(cellUv, drdc, blockGlobal);
+
+                        // Solid where the pool has reached, then a glow band
+                        // leading the front (r16 solid, r26 glow, r38 clear).
+                        float coverage = p >= 1.0 ? 1.0 : 1.0 - smoothstep(p - 0.05, p + 0.02, f);
+                        GlassInfected(pm, q, d, tile, coverage, emission);
+                        bool trailing = _GhostTrail > 0.5 && _BoardTime < startTime + _TraceDur + _BleedDur + _GhostTrailDur;
+                        if (p < 1.0 || trailing)
                         {
-                            float settle = startTime + _TraceDur + _BleedDur;
-                            float k = saturate((_BoardTime - settle - _GlowHold) / max(_GlowFade, 1e-4));
+                            float band = (1.0 - smoothstep(p, p + 0.22, f)) * smoothstep(p - 0.02, p + 0.02, f);
+                            float bandFade = p < 1.0 ? 1.0 : saturate((startTime + _TraceDur + _BleedDur + _GhostTrailDur - _BoardTime) / max(_GhostTrailDur, 1e-4));
+                            Over(pm, _ColInfectGlow.rgb * emission, _ColInfectGlow.a * band * Inside(d) * bandFade);
+                        }
 
-                            float pulse = 1.0;
-                            if (_ArrivalPulse > 0.5)
+                        CoreDot(pm, q, _ColTip.rgb, 0.6 * coverage, emission);
+
+                        // Edge sparks: single-block particles thrown off the
+                        // front, confined to the cell's own tile.
+                        if (_EdgeSparks > 0.5 && p < 1.0)
+                        {
+                            bool radial = IsSeedDir(drdc);
+                            float2 travel = radial ? float2(0, 0) : TravelUv(drdc);
+                            float2 perp = float2(-travel.y, travel.x);
+                            float best = 0.0;
+                            for (int k = 0; k < SPARK_COUNT; k++)
                             {
-                                float age = _BoardTime - settle;
-                                if (age >= 0.0 && age <= _PulseDur)
-                                    pulse = lerp(_PulseGain, 1.0, age / max(_PulseDur, 1e-4));
+                                float2 seed = cell * 17.0 + float2(k * 7.13, k * 13.71);
+                                float h0 = Hash21(seed);
+                                float h1 = Hash21(seed + 3.31);
+                                float h2 = Hash21(seed + 9.77);
+                                float launch = startTime + _TraceDur + _BleedDur * h0;
+                                float age = _BoardTime - launch;
+                                if (age < 0.0 || age > _SparkLife) continue;
+                                float2 origin = radial
+                                    ? float2(0.5, 0.5)
+                                    : 0.5 - travel * 0.5 + travel * h0 + perp * (h1 - 0.5) * 0.6;
+                                float2 vel = radial
+                                    ? normalize(float2(h1 - 0.5, h2 - 0.5) + 1e-3) * (0.6 + h2 * 0.8)
+                                    : travel * (0.9 + h2 * 0.9) + perp * (h1 - 0.5) * 0.8;
+                                float2 pos = origin + vel * age;
+                                if (any(pos <= 0.0) || any(pos >= 1.0)) continue;
+                                if (all(abs(floor(pos * _Blocks) - blockInCell) < 0.5))
+                                    best = max(best, 1.0 - age / max(_SparkLife, 1e-4));
                             }
-
-                            float3 hot = _ColInfected.rgb * _HotEmission * pulse;
-                            float3 fill = lerp(hot, _ColCooled.rgb, k);
-
-                            float t = BlotT(blockGlobal, blockInCell, drdc);
-
-                            // Ghost: the fill mask displaced one block along the
-                            // entry direction, so a magenta fringe leads the front.
-                            bool ghostOn = (p < 1.0) ||
-                                (_GhostTrail > 0.5 && _BoardTime < startTime + _TraceDur + _BleedDur + _GhostTrailDur);
-                            if (ghostOn && !IsSeedDir(drdc))
-                            {
-                                float2 back = TravelUv(drdc);
-                                float2 gBlock = blockGlobal - back;
-                                float2 gInCell = clamp(blockInCell - back, 0.0, _Blocks - 1.0);
-                                if (BlotT(gBlock, gInCell, drdc) <= p)
-                                    col = lerp(col, _ColGhost.rgb, _GhostAlpha);
-                            }
-
-                            if (t <= p) col = fill;
-
-                            // Edge band and the 20 Hz glitch band straddle the
-                            // front; both belong to the dissolve only, so they
-                            // fade out as the cell locks down hard-edged.
-                            if (p < 1.0)
-                            {
-                                float bandFade = saturate((1.0 - p) * 8.0);
-                                bool edge = t > p - _EdgeBand && t <= p;
-                                bool glitch = t > p - _EdgeBand && t <= p + _GlitchBand &&
-                                    Hash21(blockGlobal + floor(_BoardTime * _GlitchHz) * 37.0) > 0.5;
-                                if (edge || glitch)
-                                    col = lerp(col, _ColBleedEdge.rgb * _HotEmission, bandFade);
-                            }
-
-                            // Seed marker: an emissive ring one block thick, so it
-                            // still reads with the piece sprite sitting on the cell.
-                            if (IsSeedDir(drdc))
-                            {
-                                float ringPx = pitchPx / _Blocks;
-                                if (cellDistPx <= ringPx) col = _ColSeed.rgb * _HotEmission;
-                            }
-                            else if (t <= p)
-                            {
-                                // Shape glyph so infected never reads by colour
-                                // alone; it shows as a hole in the ink.
-                                if (max(abs(cellUv.x - 0.5), abs(cellUv.y - 0.5)) < 0.09) col = _ColGlyph.rgb;
-                            }
-
-                            // Edge sparks: single-block particles thrown off the
-                            // band, confined to the cell's own tile.
-                            if (_EdgeSparks > 0.5 && p < 1.0)
-                            {
-                                bool radial = IsSeedDir(drdc);
-                                float2 travel = radial ? float2(0, 0) : TravelUv(drdc);
-                                float2 perp = float2(-travel.y, travel.x);
-                                float best = 0.0;
-                                for (int s = 0; s < SPARK_COUNT; s++)
-                                {
-                                    float2 seed = cell * 17.0 + float2(s * 7.13, s * 13.71);
-                                    float h0 = Hash21(seed);
-                                    float h1 = Hash21(seed + 3.31);
-                                    float h2 = Hash21(seed + 9.77);
-                                    float launch = startTime + _TraceDur + _BleedDur * h0;
-                                    float age = _BoardTime - launch;
-                                    if (age < 0.0 || age > _SparkLife) continue;
-
-                                    // Launched from wherever the front is: along
-                                    // the ray for a ray cell, out of the centre
-                                    // for the seed, which has no entry edge.
-                                    float2 origin = radial
-                                        ? float2(0.5, 0.5)
-                                        : 0.5 - travel * 0.5 + travel * h0 + perp * (h1 - 0.5) * 0.6;
-                                    float2 vel = radial
-                                        ? normalize(float2(h1 - 0.5, h2 - 0.5) + 1e-3) * (0.6 + h2 * 0.8)
-                                        : travel * (0.9 + h2 * 0.9) + perp * (h1 - 0.5) * 0.8;
-                                    float2 pos = origin + vel * age;
-                                    if (any(pos <= 0.0) || any(pos >= 1.0)) continue;
-                                    if (all(abs(floor(pos * _Blocks) - blockInCell) < 0.5))
-                                        best = max(best, 1.0 - age / max(_SparkLife, 1e-4));
-                                }
-                                if (best > 0.0) col = _ColInfected.rgb * _HotEmission * best;
-                            }
+                            if (best > 0.0) Over(pm, _ColInfectHi.rgb * _HotEmission, best);
                         }
                     }
-                    // Conflict is an overprint plus the X glyph the trap already
-                    // carries, never a colour shift of the cell's own state.
-                    if (kind == TR_CONFLICT)
+                    else
                     {
-                        float flash = saturate(1.0 - (_BoardTime - startTime) / max(_ConflictDur, 1e-4));
-                        col = lerp(col, _ColConflict.rgb * _HotEmission, flash * 0.85);
+                        CoreDot(pm, q, _ColCopperHi.rgb, 0.9, 1.0);
                     }
                 }
 
-                // Traces last, so a beam crosses gutters and grid lines. Each
-                // trace runs parent centre -> cell centre over _TraceDur; this
-                // cell draws its own inbound half and the outbound half of every
-                // neighbour that was entered from here.
+                // Conflict is an overprint plus the X glyph the trap already
+                // carries, never a colour shift of the cell's own state.
+                if (kind == TR_CONFLICT)
+                {
+                    float flash = saturate(1.0 - (_BoardTime - startTime) / max(_ConflictDur, 1e-4));
+                    Over(pm, _ColConflict.rgb * _HotEmission, flash * 0.85 * Inside(d));
+                }
+
+                // Traces last, so a beam crosses the gutters. Each trace runs
+                // parent centre -> cell centre over _TraceDur; this cell draws
+                // its own inbound half and the outbound half of every neighbour
+                // that was entered from here.
                 float trace = 0.0;
                 if (value == CELL_INFECT && !IsSeedDir(drdc))
                 {
-                    float q = (_BoardTime - startTime) / max(_TraceDur, 1e-4);
-                    if (q > 0.5)
+                    float t = (_BoardTime - startTime) / max(_TraceDur, 1e-4);
+                    if (t > 0.5)
                     {
                         float2 travel = TravelUv(drdc);
                         float2 a = 0.5 - travel * 0.5;
-                        float2 b = lerp(a, float2(0.5, 0.5), saturate((q - 0.5) * 2.0));
-                        trace = max(trace, TraceCoverage(cellUv, a, b, pitchPx) * TraceBrightness(startTime));
+                        float2 b = lerp(a, float2(0.5, 0.5), saturate((t - 0.5) * 2.0));
+                        trace = max(trace, TraceCoverage(cellUv, a, b) * TraceBrightness(startTime));
                     }
                 }
                 // Only an infected cell can be a trace's parent — or a void,
@@ -457,17 +609,17 @@ Shader "GridInfect/Board"
                         float4 ns = LoadState(ncell);
                         if ((int)round(ns.r) != CELL_INFECT) continue;
                         if (any(abs(UnpackDir(ns.b) - nd) > 0.01)) continue;   // not entered from here
-                        float q = (_BoardTime - ns.g) / max(_TraceDur, 1e-4);
-                        if (q <= 0.0) continue;
+                        float t = (_BoardTime - ns.g) / max(_TraceDur, 1e-4);
+                        if (t <= 0.0) continue;
                         float2 travel = TravelUv(nd);
                         float2 a = float2(0.5, 0.5);
-                        float2 b = lerp(a, a + travel * 0.5, saturate(q * 2.0));
-                        trace = max(trace, TraceCoverage(cellUv, a, b, pitchPx) * TraceBrightness(ns.g));
+                        float2 b = lerp(a, a + travel * 0.5, saturate(t * 2.0));
+                        trace = max(trace, TraceCoverage(cellUv, a, b) * TraceBrightness(ns.g));
                     }
                 }
-                if (trace > 0.0) col = lerp(col, _ColInfected.rgb * _HotEmission, trace);
+                if (trace > 0.0) Over(pm, _ColInfect.rgb * _HotEmission, trace);
 
-                return half4(col, 1.0);
+                return half4(pm);
             }
             ENDHLSL
         }

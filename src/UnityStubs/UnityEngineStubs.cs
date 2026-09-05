@@ -11,6 +11,12 @@ namespace UnityEngine
     {
         public float x, y;
         public Vector2(float x, float y) { this.x = x; this.y = y; }
+        public static Vector2 zero => default;
+        public float magnitude => (float)System.Math.Sqrt(x * x + y * y);
+        public static float Dot(Vector2 a, Vector2 b) => a.x * b.x + a.y * b.y;
+        public static Vector2 operator +(Vector2 a, Vector2 b) => new Vector2(a.x + b.x, a.y + b.y);
+        public static Vector2 operator -(Vector2 a, Vector2 b) => new Vector2(a.x - b.x, a.y - b.y);
+        public static Vector2 operator *(Vector2 a, float f) => new Vector2(a.x * f, a.y * f);
         public static implicit operator Vector3(Vector2 v) => new Vector3(v.x, v.y, 0f);
     }
 
@@ -38,8 +44,16 @@ namespace UnityEngine
         public float r, g, b, a;
         public Color(float r, float g, float b, float a = 1f) { this.r = r; this.g = g; this.b = b; this.a = a; }
         public static Color white => new Color(1f, 1f, 1f);
+        public static Color black => new Color(0f, 0f, 0f);
+        public static Color clear => new Color(0f, 0f, 0f, 0f);
         public Color linear => this;
         public Color gamma => this;
+        public static Color Lerp(Color a, Color b, float t)
+        {
+            t = Mathf.Clamp01(t);
+            return new Color(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t, a.a + (b.a - a.a) * t);
+        }
+        public static Color operator *(Color a, float f) => new Color(a.r * f, a.g * f, a.b * f, a.a * f);
     }
 
     public struct Rect
@@ -57,12 +71,22 @@ namespace UnityEngine
         public static int Abs(int v) => v < 0 ? -v : v;
         public static float Max(float a, float b) => a > b ? a : b;
         public static float Min(float a, float b) => a < b ? a : b;
+        public static int Max(int a, int b) => a > b ? a : b;
+        public static int Min(int a, int b) => a < b ? a : b;
         public static float Lerp(float a, float b, float t) => a + (b - a) * Clamp01(t);
         public static int RoundToInt(float v) => (int)System.Math.Round(v);
         public static float Sin(float v) => (float)System.Math.Sin(v);
         public static float Cos(float v) => (float)System.Math.Cos(v);
         public static float Exp(float v) => (float)System.Math.Exp(v);
         public static float Pow(float a, float b) => (float)System.Math.Pow(a, b);
+        public static float Sqrt(float v) => (float)System.Math.Sqrt(v);
+        public static float Atan2(float y, float x) => (float)System.Math.Atan2(y, x);
+        public static float Floor(float v) => (float)System.Math.Floor(v);
+        public static float Ceil(float v) => (float)System.Math.Ceiling(v);
+        public static int FloorToInt(float v) => (int)System.Math.Floor(v);
+        public static int CeilToInt(float v) => (int)System.Math.Ceiling(v);
+        public static float Round(float v) => (float)System.Math.Round(v);
+        public const float Deg2Rad = PI / 180f;
     }
 
     public enum HideFlags { None, HideAndDontSave }
@@ -70,8 +94,9 @@ namespace UnityEngine
     public enum TextureFormat { RGBA32, RGBAFloat }
     public enum FilterMode { Point, Bilinear, Trilinear }
     public enum TextureWrapMode { Repeat, Clamp }
-    public enum TextAnchor { MiddleCenter }
-    public enum TextAlignment { Center }
+    public enum TextAnchor { MiddleCenter, MiddleLeft, MiddleRight, UpperLeft, UpperRight, LowerLeft, LowerRight }
+    public enum TextAlignment { Center, Left, Right }
+    public enum FontStyle { Normal, Bold, Italic, BoldAndItalic }
     public enum CameraClearFlags { SolidColor }
     public enum RuntimeInitializeLoadType { AfterSceneLoad, BeforeSceneLoad }
 
@@ -186,6 +211,7 @@ namespace UnityEngine
         public void SetColor(string name, Color value) { }
         public void SetColor(int nameID, Color value) { }
         public void SetVector(string name, Vector4 value) { }
+        public void SetVector(int nameID, Vector4 value) { }
         public void SetTexture(string name, Texture value) { }
     }
 
@@ -244,6 +270,7 @@ namespace UnityEngine
         public string text { get; set; }
         public int fontSize { get; set; }
         public float characterSize { get; set; }
+        public FontStyle fontStyle { get; set; }
         public TextAnchor anchor { get; set; }
         public TextAlignment alignment { get; set; }
         public Color color { get; set; }
