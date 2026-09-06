@@ -5,10 +5,16 @@ using S = GridInfect.Game.PresentationConfig.Style;
 
 namespace GridInfect.Game
 {
-    // The board screen laid out per STYLE-GUIDE §7-§8: a 96 px HUD with a
-    // glass chip either side and the level label between them, the lock
-    // counter as a mono badge under the right chip, the well below, and a
-    // 150 px tray of component slots along the bottom.
+    // The board screen laid out per STYLE-GUIDE §7-§8: a 56 px HUD with a
+    // glass chip either side and the level label between them, then a second
+    // row carrying the mono caption on the left and the SOLVE counter badge
+    // under the right chip, the well below, and a 96 px tray of component
+    // slots along the bottom.
+    //
+    // The caption sits on the badge row rather than stacked over the title:
+    // the badge needs a row of its own (the title is far too wide to share the
+    // top one), so putting the caption there costs nothing and takes a whole
+    // text line out of the HUD band — which is what the board gets back.
     public sealed class BoardScreen : AppScreen
     {
         BoardView _board;
@@ -55,22 +61,28 @@ namespace GridInfect.Game
                 BoardTheme.ButtonBg, BoardTheme.Text, ResetLevel);
             Buttons.Add(_resetButton);
 
-            // Level label: Chakra Petch 26 px in ink, with a mono 11 px
-            // caption above it. The caption doubles as the mode's readout
-            // (clock, streak) where a mode has one.
+            // Level label: Chakra Petch 26 px in ink, filling the HUD band
+            // between the two chips.
             _title = Ui.MakeText("title", Root.transform, "", S.Px(S.HudLevel), BoardTheme.Text, 2);
             Ui.SetPos(_title.gameObject, 0f, hudBottom + S.Px(S.HudLevel) * 0.55f);
-            _caption = Ui.MakeText("caption", Root.transform, "GI-REV B", S.Px(S.HudCaption), BoardTheme.TextDim, 2, mono: true);
-            Ui.SetPos(_caption.gameObject, 0f, hudBottom + S.Px(S.HudLevel) * 1.1f + S.Px(S.HudCaption) * 0.9f);
 
             // The one tool (stage 5): spends a lock, places one piece at its
             // solution cell and locks it. The counter badge under RESET, off
-            // the board: mono 13 px copperHi on black 35%.
-            var badge = new Vector2(S.Px(S.BadgePadX * 2f + 7 * S.BadgeText * 0.62f), S.Px(S.BadgePadY * 2f + S.BadgeText * 1.25f));
+            // the board: mono 13 px copperHi on black 35%. Eight characters —
+            // "SOLVE 03" and "+1 SOLVE" are both that wide.
+            var badge = new Vector2(S.Px(S.BadgePadX * 2f + 8 * S.BadgeText * 0.62f), S.Px(S.BadgePadY * 2f + S.BadgeText * 1.25f));
+            float badgeY = h / 2f - S.Px(S.BadgeTop) - badge.y / 2f;
             _lockButton = UiButton.Make(Root.transform, "",
-                new Vector2(w / 2f - S.Px(S.HudInset) - badge.x / 2f, h / 2f - S.Px(S.BadgeTop) - badge.y / 2f), badge,
+                new Vector2(w / 2f - S.Px(S.HudInset) - badge.x / 2f, badgeY), badge,
                 GlassStyle.Badge(BoardPalette.Default), BoardTheme.Copper, LockPiece, 20, pads: false, padAlpha: 1f, mono: true);
             Buttons.Add(_lockButton);
+
+            // The mono caption shares the badge's row, left-aligned under
+            // MENU. It doubles as the mode's readout (clock, streak) where a
+            // mode has one.
+            _caption = Ui.MakeText("caption", Root.transform, "GI-REV B", S.Px(S.HudCaption), BoardTheme.TextDim, 2,
+                mono: true, anchor: TextAnchor.MiddleLeft);
+            Ui.SetPos(_caption.gameObject, -w / 2f + S.Px(S.HudInset), badgeY);
             RefreshLockLabel();
 
             App.State.SessionChanged += OnSessionChanged;
@@ -367,7 +379,10 @@ namespace GridInfect.Game
             bool replay = Queries.IsReplay(App.State);
             int locks = App.State.Profile.Locks;
             bool rewarded = !replay && locks == 0 && App.Ads.RewardedAvailable;
-            _lockButton.Label.text = replay ? "HINT" : rewarded ? "+1 LOCK" : $"LOCK {locks:00}";
+            // "SOLVE", not "LOCK": what the player buys is one piece solved
+            // for them. Locking is what the rules then do to it, which is the
+            // mechanism, not the offer.
+            _lockButton.Label.text = replay ? "HINT" : rewarded ? "+1 SOLVE" : $"SOLVE {locks:00}";
             _lockButton.OnClick = rewarded ? EarnLock : (System.Action)LockPiece;
             _lockButton.Enabled = (replay || locks > 0 || rewarded) && !_popupOpen;
         }

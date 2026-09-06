@@ -201,15 +201,14 @@ The guide replaced the look, not the machinery. What changed on the board:
   pushed to `HotEmission` on arrival. A 26 px in-shader glow spills into the
   gutters. The board quad is now larger than the lattice: it carries the
   well, its 3 px ring and the glow margin.
-- **Bleed.** The guide's infection "enters a tile from the edge facing its
+- **Bleed.** ~~The guide's infection "enters a tile from the edge facing its
   source and pools across", so the field is radial from the entry-edge
   midpoint (the seed pools from its centre) and the blot only ripples the
   front: `t = e + (n - 0.5) * (1 - _Bias) * BlotAmp`. The edge band, the 20 Hz
   glitch band and the ghost of steps 7-9 were the neon look's transition
   and are gone; the ghost-trail switch now keeps the pool's leading glow band
-  for `GhostTrailDur` after settle. `_Blocks` still quantises the noise and
-  the sparks; `_Bias` still leans the front. The open note on bias below is
-  therefore closed: the front is a front.
+  for `GhostTrailDur` after settle.~~ **Reverted 2026-09-05** — see "The bleed
+  is scattered, not a pool" below. The rest of the style pass stands.
 - **Glyphs.** The piece is its bug glyph (BUG-GLYPH-SPEC), rasterised from
   `PieceSpec` by a small SDF rasteriser at the pixel size each context needs
   (44 on a 54 tile, 58 in the tray, scaled to the device), cached per skin.
@@ -355,7 +354,7 @@ spatial structure alone and re-spreads the values, so the filled fraction
 tracks `p` directly and the 0.12 edge band is 12% of a cell rather than most of
 it.
 
-### Closed: bias 0.3 did not give the edge band an edge
+### The bleed is scattered, not a pool
 
 `t = lerp(noise, entryDistance, _Bias)`, and at bias 0.3 that field is
 noise-dominant — so a *threshold* band in `t` is a scattered set of blocks, not
@@ -364,9 +363,21 @@ transition zone rather than as a front, and step 7's "edge band" is not an
 edge. Past roughly 0.6, with the band nearer 0.05, it becomes the ink the spec
 describes.
 
-Bias is a locked parameter, so it was not moved. The style pass resolved it
-from the other side: the pool front is radial and the blot only ripples it
-(see "The style pass" above), so there is a front for the band to sit on.
+This was twice read as a defect and twice it was not one. **The scatter is the
+art call.** Bias is locked at 0.3 precisely because the field should be
+noise-dominant: the infection is meant to read as pixels flipping on, one block
+at a time, not as a wavefront sweeping a tile. Do not "fix" it by moving the
+bias, by softening the threshold, or by giving the front a shape.
+
+History, so the next pass does not repeat it: the style pass (2026-09-04)
+resolved the "missing edge" by making the front radial and continuous
+(`t = e + (n - 0.5) * (1 - _Bias) * BlotAmp`, a smoothstep coverage), which
+removed the scatter along with the edge band, the 20 Hz glitch band and the
+ghost. That was reverted on 2026-09-05. The dissolve is once again a hard
+per-block threshold — `coverage = (t <= p) ? 1 : 0`, one value per block, so a
+block is in or out — composited through the style pass's frosted glass, which
+stays. `PoolField` survives for `TR_RECEDE` only: a drain (undo, repel) reads
+better smooth.
 
 ### Not verified here
 

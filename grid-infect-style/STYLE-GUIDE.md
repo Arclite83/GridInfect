@@ -1,4 +1,4 @@
-# Grid Infect visual style guide (locked 2026-09-04)
+# Grid Infect visual style guide (locked 2026-09-04, chrome retuned 2026-09-05)
 
 Everything below is the decision. Regenerate vector assets with `node gen-assets.mjs out`.
 
@@ -31,7 +31,9 @@ Rule: gold appears only as points (pads, vias, mounting holes, HUD chip pads), n
 Trace routing is placeholder art. Production generates routing per level.
 
 ## 4. Board well
-Centered, top 138px. Grid of 54px cells, 5px gap, 14px padding, radius 12. Fill rgba(0,0,0,.36). Inset 1px white 14%, inset 60px black 50% blur, outer 3px black 18% ring.
+Centered, top 88px. Grid of 54px cells, 5px gap, 14px padding, radius 12. Fill rgba(0,0,0,.36). Inset 1px white 14%, inset 60px black 50% blur, outer 3px black 18% ring.
+
+54px is the design cell, not a ceiling: the board takes whatever the band between the HUD and the tray allows, up to 72px. Everything else here scales with it.
 
 ## 5. Tile states (frosted glass)
 All tiles radius 6. Material: backlit frosted glass. Light lives inside the tile.
@@ -69,10 +71,10 @@ Invariant: lit tips are the only long bright elements. No stub or wire exceeds l
 Files: `out/glyphs/bug_<DIRS>.svg` (DIRS canonical order N E S W NE SE SW NW), `bug_AREA.svg`, `tile_BLOCKER.svg`, `glyph_sheet.svg` (8 per row, 44px pitch, each in `<g id>`).
 
 ## 7. HUD
-Height 96px, items bottom-aligned. Level label Chakra Petch 26px ink color, 0.06em tracking, with a Share Tech Mono 11px caption above (`GI-REV B`). Buttons are glass chips: 12px 0.1em uppercase, padding 8×14, radius 7, glass fill white 42%→14%, one 5px copperHi pad on each side outside the chip. Lock counter: Share Tech Mono 13px copperHi on black 35%, radius 7, inset 1px copperHi 35%.
+Height 56px, items bottom-aligned: the two chips and the level label, nothing else. Level label Chakra Petch 26px ink color, 0.06em tracking. A second row at 52px from the top carries the Share Tech Mono 11px caption (`GI-REV B`) left-aligned under MENU and the counter badge right-aligned under RESET; the caption sits there rather than above the label so the HUD band costs one text line, not two. Buttons are glass chips: 12px 0.1em uppercase, padding 8×14, radius 7, glass fill white 42%→14%, one 5px copperHi pad on each side outside the chip. Solve counter: Share Tech Mono 13px copperHi on black 35%, radius 7, inset 1px copperHi 35%, sized for eight characters (`SOLVE 03`, `+1 SOLVE`).
 
 ## 8. Tray
-Bottom 150px. Three slots, 30px gap. Next slot 74px radius 12, black 30% with inset 24px black 50%, plus infect glow 22px 45%, glyph at 58px, caption `NEXT` Share Tech Mono 10px ink 75%. Queued slots 54px at 75% opacity, glyph at 40px.
+Bottom 96px. Three slots, 30px gap. Next slot 74px radius 12, black 30% with inset 24px black 50%, plus infect glow 22px 45%, glyph at 58px, caption `NEXT` Share Tech Mono 10px ink 75%. Queued slots 54px at 75% opacity, glyph at 40px.
 
 ## 9. Motion
 - Placement: bug lands, lead tips light in sequence, then infection propagates out of the tips.
