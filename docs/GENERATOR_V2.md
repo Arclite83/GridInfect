@@ -221,7 +221,7 @@ escape-room and logic-grid generators: **depth** is the lookahead the
 solve needed, **peak open** is how many undecided pieces the player held
 at once. Piece types the player must translate before the line rules
 apply count as depth (`Grader.Translation`: diagonal arms +1, the area
-blot +1, relays +1; short arms are read off the piece and cost nothing);
+blot +1, relays +1);
 `Grader.EffectiveDepth` is solver depth plus translation, and the
 constructor rejects anything past `Depth.Max` (`TooDeep`).
 
@@ -390,21 +390,18 @@ them in seed order, so the output is independent of N.
 `tools/gen_worlds.sh` regenerates the worlds, `tools/gen_daily.sh` the
 seven Daily pools; `tools/bake_worlds.py` bakes both.
 
-## Elements (stages 8–12)
+## Elements (stages 9–12)
 
 Each element is a flag in `GenSpec.Elements`. Its draws come from the
 same `Pcg32` but only when the flag is on, so classic specs keep their
 seeds. Per element: how the sample and the carve change, what the solver
-does with it, and the shipped world and daily slot.
+does with it, and the shipped world and daily slot. A piece is always one
+family (`RULES_V2.md` §1): a cardinal tile, a diagonal piece, or the blot.
 
-### Short arms (`Element.ShortArms`, stage 8)
-
-Sample: after the tile, each arm rolls `ShortArmChance`/20 to become a
-short arm of reach 1 or 2 (one more draw). Carve: a short arm's run is
-capped at its reach (Runs mode) or its cells beyond the reach are skipped
-(Gaps mode). Constructor: the arm-useful check uses the reach. Solver: static
-coverage already honours reach; no new rule. World `w13 Short Arms`
-(pieces 3–5, G2–G4, chance 12/20); daily: Tuesdays.
+Short arms (stage 8, `Element.ShortArms`, flag value 8, world `w13`,
+Tuesdays) shipped and were cut: the blot is the one short-range piece.
+The flag value is retired, `w13` is retired (ids after it keep their
+numbers), Tuesday is a plain-walls pool one grade above Monday.
 
 ### Area piece (`Element.Area`, stage 9)
 
@@ -429,21 +426,26 @@ Thursdays.
 
 ### Diagonal arms (`Element.Diagonals`, stage 11)
 
-Sample: a piece rolls `DiagonalChance`/20 to gain one diagonal arm (two,
-one time in three), redrawn if that leaves only an opposite pair. Carve
-and constructor are direction-agnostic. Solver: the two diagonal families
-join the line map; a diagonal arm is one translation layer in the grade. World `w16 Diagonals` (pieces 3–5, G2–G4, chance 14/20);
-daily: Fridays.
+Sample: a piece rolls `DiagonalChance`/20 to become a diagonal piece
+instead of its tile: one draw over the fifteen non-empty subsets of UL,
+UR, DL, DR, redrawn while it is an opposite-only pair (the diagonal `UD`,
+unless symmetric tiles are allowed). A diagonal arm with no cell to reach
+from the piece's corner is dropped; a piece left with no arms, or a
+duplicate of a piece already sampled, falls back to its tile. Carve and
+constructor are direction-agnostic. Solver: the two diagonal families
+join the line map; a diagonal arm is one translation layer in the grade.
+World `w16 Diagonals` (pieces 3–5, G2–G4, chance 14/20); daily: Fridays.
 
 ### Relay cells (`Element.Relays`, stage 12)
 
 Sample and carve: after a piece's arms are carved, the piece rolls
 `RelayChance`/20; one of its carved cells (uniform draw) becomes a relay
 with one arm (two, one time in three; diagonals only with
-`Element.Diagonals`), and the relay's arms are carved as runs, so the
+`Element.Diagonals`, and a second arm joins the first one's family), and
+the relay's arms are carved as runs, so the
 sampled solution lights the relay and covers what it spreads to.
 Constructor: every relay arm must reach a cell; no given ever lands on a
 relay cell. Solver: static coverage follows relay chains, and forbidden
 legality does too; a relay is one translation layer in the grade. World `w17 Relays` (pieces 3–5,
-G2–G4, chance 14/20); daily: Saturdays; Sundays mix short arms, forbidden
-cells and diagonals.
+G2–G4, chance 14/20); daily: Saturdays; Sundays mix forbidden cells and
+diagonals.

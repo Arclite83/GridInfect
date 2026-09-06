@@ -8,15 +8,19 @@ file, one section per element.
 
 ## 1. Pieces
 
-A piece is a `PieceSpec`: a set of arms out of eight directions (L, R, U,
-D and the diagonals UL, UR, DL, DR), a reach per arm (0 = to the edge, else
-a number of cells — stage 8), and an optional 3×3 area (stage 9). A classic
-tile is the spec with unlimited cardinal arms and no area; `Tile` stays
-the wire form for Legacy and for drawing the cardinal part.
+A piece is a `PieceSpec`: a set of arms of **one family** — cardinal (L,
+R, U, D: the fifteen classic tiles) or diagonal (UL, UR, DL, DR), never
+both — and/or the 3×3 area (stage 9). Every arm reaches to the edge;
+there is no per-arm reach. The blot is the one short-range piece: it is
+not directional, it takes the eight neighbours. The constructor enforces
+the one-family rule, so no level, save or generator draw can hold a mixed
+piece. A classic tile is the spec with cardinal arms and no area; `Tile`
+stays the wire form for Legacy and for drawing the cardinal part.
 
-Text form (`PieceSpec.Encode/Parse`): the unlimited cardinal arms as a tile
-name, then `+` tokens: `L2` a short arm, `ul`/`ur`/`dl`/`dr` a diagonal
-(with an optional reach), `A` the area. `LRD`, `LR+U1`, `L+ur2`, `L+A`.
+Text form (`PieceSpec.Encode/Parse`): the cardinal arms as a tile name
+(`LRD`), or `+`-joined diagonal tokens `ul`/`ur`/`dl`/`dr` (`ul+dr`), then
+`+A` for the area (`A`, `L+A`). A digit on a token or a mix of families is
+a parse error.
 
 ## 2. Board
 
@@ -38,8 +42,7 @@ illegal (§6). The spread is the classic one generalised:
    queue of a classic tile is built in the classic order). A wall stops
    the arm; a switch stops it and queues a repel back along the arm; a
    trap stops it and trips the reset; a void or the board edge is passed
-   over; an active cell is infected. An arm with reach *n* stops after
-   ring *n*.
+   over; an active cell is infected.
 3. A cell that turns from 1 to 4 and carries relay arms spreads those arms
    from itself (rings as above, unlimited reach), at most once per
    propagation.
@@ -87,14 +90,15 @@ after each placement. The 128 vectors themselves stay on V1
 (`VectorReplayTests`); the generated worlds, the daily and endless boards
 run on V2 (`WorldTests`, `DailyTests` go through the action pipeline).
 
-## 8. Short arms (stage 8)
+## 8. Short arms (retired)
 
-A `PieceSpec` arm with reach *n* (1 or 2 in shipped content) infects at
-most *n* rings out from the piece and stops there; walls, switches, traps
-and forbidden cells inside those rings act as for a long arm, voids and
-the edge are passed over and still count as rings. Text form `L2`, `U1`.
-The classic order of arms and repels is unchanged. Everything else (undo,
-reset, locks) sees a short arm as an ordinary arm.
+Stage 8 shipped a per-arm reach (`L2`, `U1`: an arm that stopped after
+one or two rings). It is cut: a short arm was a second short-range
+symbology beside the blot for a rule the player read off the piece, not
+the board. The blot (§9) is the only short-range piece. Every arm reaches
+the edge; the reach field, its text form, the stop-bar glyph and the
+`ShortArms` element are gone, and world `w13` with them (its id is
+retired, not reused, so saved world progress keeps its keys).
 
 ## 9. The area piece (stage 9)
 
@@ -111,12 +115,16 @@ any placed piece. Blots with arms are held back (NEXT_PASS: later).
 `Dir` gains UL, UR, DL, DR; a diagonal arm walks (±1, ±1) per ring with
 exactly the cardinal rules: walls stop it, a switch stops it and queues a
 repel back along the same diagonal, a trap trips, a forbidden cell makes
-the placement illegal, voids and the edge are passed over, reach applies.
-Arms are visited cardinal first, then UL, UR, DL, DR. The solver adds two
-line families (the diagonal and the antidiagonal) when a level has a
-diagonal arm anywhere; every rule is written over families, so nothing
-else changes. Text form `ul`, `dr2`; the shipped set is a tile plus one
-diagonal arm, or two diagonal arms that are not an opposite pair.
+the placement illegal, voids and the edge are passed over. A **diagonal
+piece** has diagonal arms only (§1): the fifteen non-empty subsets of the
+four diagonals, as the tiles are of the four cardinals; an opposite-only
+pair (`ul+dr`, `ur+dl`) is the diagonal `UD` and is excluded from
+generated content for the same reason. A relay's arms follow the same
+rule. Arms are visited cardinal first, then UL, UR, DL, DR (only one
+family is ever present on a piece). The solver adds two line families
+(the diagonal and the antidiagonal) when a level has a diagonal arm
+anywhere; every rule is written over families, so nothing else changes.
+Text form `ul`, `ul+dr`.
 
 ## 12. Relay cells (stage 12)
 

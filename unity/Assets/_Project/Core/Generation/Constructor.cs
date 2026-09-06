@@ -291,12 +291,12 @@ namespace GridInfect.Core.Generation
             {
                 var spec = map.Def.Specs[p / Grid.Cells];
                 int cell = p % Grid.Cells;
-                if (spec.Area && map.Coverage(new PieceSpec(0, 0, true), cell).Count < 2) return false;
+                if (spec.Area && map.Coverage(new PieceSpec(0, true), cell).Count < 2) return false;
                 for (int d = 0; d < 8; d++)
                 {
                     var dir = (Dir)d;
                     if (!spec.Has(dir)) continue;
-                    var arm = new PieceSpec(0).WithArm(dir).WithReach(dir, spec.ReachOf(dir));
+                    var arm = new PieceSpec(0).WithArm(dir);
                     if (map.Coverage(arm, cell).Count < 2) return false;
                 }
             }

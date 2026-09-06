@@ -114,10 +114,10 @@ namespace GridInfect.Core.Tests
 
         [TestCase("L")]
         [TestCase("LRUD")]
-        [TestCase("LR+U1")]
-        [TestCase("D2")]
+        [TestCase("ur+dl")]
+        [TestCase("ul+ur+dl+dr")]
         [TestCase("ul+dr")]
-        [TestCase("L+ur2")]
+        [TestCase("dl")]
         [TestCase("A")]
         [TestCase("LD+A")]
         public void PieceSpecTextRoundTrips(string text)
@@ -128,7 +128,7 @@ namespace GridInfect.Core.Tests
         }
 
         [Test]
-        public void ClassicTilesAreExactlyTheUnlimitedCardinalSpecs()
+        public void ClassicTilesAreExactlyTheCardinalSpecs()
         {
             for (int t = 0; t <= (int)Tile.LRUD; t++)
             {
@@ -137,7 +137,7 @@ namespace GridInfect.Core.Tests
                 Assert.That(spec.ToTile(), Is.EqualTo((Tile)t));
                 Assert.That(spec.Encode(), Is.EqualTo(((Tile)t).ToString()));
             }
-            Assert.That(PieceSpec.Parse("L1").IsTile, Is.False);
+            Assert.That(PieceSpec.Parse("L+A").IsTile, Is.False);
             Assert.That(PieceSpec.Parse("ul").IsTile, Is.False);
             Assert.That(PieceSpec.Parse("A").IsTile, Is.False);
         }

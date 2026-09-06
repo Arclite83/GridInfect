@@ -57,8 +57,10 @@ for a future level that wants it.
    unique solution → accept only if the solver finishes without guessing →
    grade → canonicalise under flips and dedupe. Walls are the primary
    pruning tool; wall density and shape are per-world tunables.
-3. **New elements** (see the table below). In order: short arms, the
-   area piece, forbidden cells, diagonal arms, then relays. Mirrors are a
+3. **New elements** (see the table below). In order: short arms (shipped,
+   then cut: one short-range symbology, the blot, is enough), the
+   area piece, forbidden cells, diagonal arms (a piece is cardinal or
+   diagonal, never both), then relays. Mirrors are a
    maybe, decided after relays ship. Walls used deliberately throughout.
    Fixed pieces as world spice. Cut: decoy pieces, one-way walls,
    pre-infected cells, rotation, knight jumps, multi-strain infection.
@@ -120,7 +122,7 @@ vectors; new content runs on V2. That refactor is paid once.
 
 | Element | What it does | Deduction value | Cost | Call |
 |---|---|---|---|---|
-| Short arms | Arm reaches 1 or 2 cells, not the edge | High: local reasoning, walls matter more | Trivial (per-arm range) | Build first |
+| Short arms | Arm reaches 1 or 2 cells, not the edge | High: local reasoning, walls matter more | Trivial (per-arm range) | Built, then cut: the blot is the one short-range piece |
 | Area piece ("blot") | Infects its 3×3 neighbourhood; walls/switches/traps inside are inert | High: a blob family alongside lines; pairs with diagonals | Low rules; medium VFX | Build second, needs V2 |
 | Forbidden cells | Must stay clean; a placement whose spread would hit one is illegal and bounces | High: prunes options instead of truncating coverage (the trap without punishment) | Low | Build third |
 | Diagonal arms | Four more directions, curated tile set | High | Medium (Dir, generator, shader, solver family) | Committed, after the above |
@@ -144,7 +146,8 @@ vectors; new content runs on V2. That refactor is paid once.
 4. Daily + Endless replace timed Free Play.
 5. Lock tool (Core + view), then AdMob + UMP + Unity IAP. First Android
    store build.
-6. RulesV2, then short arms, blot, forbidden cells, diagonals, relays —
+6. RulesV2, then blot, forbidden cells, diagonals, relays (short arms
+   shipped between RulesV2 and the blot and were cut) —
    each as new worlds through the same pipeline. Mirrors only if relays
    leave room for them. iOS follow lands alongside whichever is current.
 

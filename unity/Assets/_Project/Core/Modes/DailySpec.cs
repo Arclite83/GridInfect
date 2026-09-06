@@ -27,17 +27,17 @@ namespace GridInfect.Core
         public static ulong PoolSeed(DayOfWeek day) => 1_000_000ul + 100_000ul * (ulong)(day == DayOfWeek.Sunday ? 7 : (int)day);
 
         // The element set rotates with the weekday (one element per day as
-        // the stages land): Monday is plain, the weekend stacks them.
+        // the stages land): Monday and Tuesday are plain walls (Tuesday one
+        // grade up), the weekend stacks them.
         public static Element ElementsFor(DayOfWeek day)
         {
             switch (day)
             {
-                case DayOfWeek.Tuesday: return Element.Walls | Element.ShortArms;
                 case DayOfWeek.Wednesday: return Element.Walls | Element.Area;
                 case DayOfWeek.Thursday: return Element.Walls | Element.Forbidden;
                 case DayOfWeek.Friday: return Element.Walls | Element.Diagonals;
                 case DayOfWeek.Saturday: return Element.Walls | Element.Relays;
-                case DayOfWeek.Sunday: return Element.Walls | Element.ShortArms | Element.Forbidden | Element.Diagonals;
+                case DayOfWeek.Sunday: return Element.Walls | Element.Forbidden | Element.Diagonals;
                 default: return Element.Walls;
             }
         }

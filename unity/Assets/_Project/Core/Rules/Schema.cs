@@ -119,74 +119,60 @@ namespace GridInfect.Core
         public static bool IsDiagonal(Dir dir) => (int)dir >= (int)Dir.UL;
     }
 
-    // A piece for RulesV2: up to eight arms, each reaching to the edge
-    // (reach 0) or a fixed number of cells (stage 8), optionally a 3x3 area
-    // (stage 9). A classic tile is the special case of four unlimited
-    // cardinal arms. Text form: cardinal arms as a tile name ("LRD"), then
-    // "+" tokens — "L2" a short arm, "ul"/"ur"/"dl"/"dr" (with optional
-    // reach) a diagonal, "A" the area — e.g. "LR+U1+dr", "A", "L+A".
+    // A piece for RulesV2: a set of arms that all reach to the edge, either
+    // cardinal (L, R, U, D: the fifteen classic tiles) or diagonal (UL, UR,
+    // DL, DR) but never both, or the 3x3 area blot (stage 9). There is no
+    // per-arm reach: the blot is the one short-range piece. Text form: the
+    // cardinal arms as a tile name ("LRD"), or "+"-joined diagonal tokens
+    // ("ul+dr"), or "A" the area — e.g. "LRD", "ul+dr", "A", "L+A".
     public readonly struct PieceSpec : IEquatable<PieceSpec>
     {
         public readonly byte Arms;    // bit = (int)Dir
-        public readonly uint Reach;   // 4 bits per Dir, 0 = to the edge
         public readonly bool Area;
 
-        public const int MaxReach = 15;
+        public const byte CardinalMask = 0x0F;
+        public const byte DiagonalMask = 0xF0;
 
-        public PieceSpec(byte arms, uint reach = 0, bool area = false)
+        public PieceSpec(byte arms, bool area = false)
         {
+            if ((arms & CardinalMask) != 0 && (arms & DiagonalMask) != 0)
+                throw new ArgumentException("a piece has cardinal arms or diagonal arms, never both");
             Arms = arms;
-            Reach = reach;
             Area = area;
         }
 
         public bool Has(Dir dir) => (Arms & (1 << (int)dir)) != 0;
-        public int ReachOf(Dir dir) => (int)(Reach >> (4 * (int)dir)) & 0xF;
         public bool IsEmpty => Arms == 0 && !Area;
-        public bool HasDiagonal => (Arms & 0xF0) != 0;
-        public bool HasShortArm => Reach != 0;
+        public bool HasCardinal => (Arms & CardinalMask) != 0;
+        public bool HasDiagonal => (Arms & DiagonalMask) != 0;
 
         public static PieceSpec FromTile(Tile tile) => new PieceSpec((byte)TileArms.Mask(tile));
 
-        public PieceSpec WithReach(Dir dir, int reach)
-        {
-            if (reach < 0 || reach > MaxReach) throw new ArgumentOutOfRangeException(nameof(reach));
-            int shift = 4 * (int)dir;
-            return new PieceSpec(Arms, (Reach & ~(0xFu << shift)) | ((uint)reach << shift), Area);
-        }
-
         public PieceSpec WithArm(Dir dir, bool present = true) =>
-            new PieceSpec((byte)(present ? Arms | (1 << (int)dir) : Arms & ~(1 << (int)dir)), Reach, Area);
+            new PieceSpec((byte)(present ? Arms | (1 << (int)dir) : Arms & ~(1 << (int)dir)), Area);
 
-        public PieceSpec WithArea(bool area) => new PieceSpec(Arms, Reach, area);
+        public PieceSpec WithArea(bool area) => new PieceSpec(Arms, area);
 
-        // Exactly a classic tile: cardinal, unlimited, no area, at least one arm.
-        public bool IsTile => (Arms & 0xF0) == 0 && Reach == 0 && !Area && Arms != 0;
+        // Exactly a classic tile: cardinal, no area, at least one arm.
+        public bool IsTile => HasCardinal && !Area;
 
-        public Tile ToTile() => TileArms.FromMask(Arms & 0xF);
+        public Tile ToTile() => TileArms.FromMask(Arms & CardinalMask);
 
-        // The cardinal, unlimited part as a tile for code that only draws
-        // arms; Tile.L when there is none (callers check IsTile first).
-        public Tile Projection => (Arms & 0xF) != 0 ? TileArms.FromMask(Arms & 0xF) : Tile.L;
+        // The cardinal part as a tile for code that only draws arms; Tile.L
+        // when there is none (callers check IsTile first).
+        public Tile Projection => HasCardinal ? TileArms.FromMask(Arms & CardinalMask) : Tile.L;
 
         public static readonly string[] DiagonalNames = { "ul", "ur", "dl", "dr" };
 
         public string Encode()
         {
             var sb = new System.Text.StringBuilder();
-            int plain = 0;
-            for (int d = 0; d < 4; d++)
+            if (HasCardinal) sb.Append(TileArms.FromMask(Arms & CardinalMask).ToString());
+            for (int d = 4; d < 8; d++)
             {
-                if (Has((Dir)d) && ReachOf((Dir)d) == 0) plain |= 1 << d;
-            }
-            if (plain != 0) sb.Append(TileArms.FromMask(plain).ToString());
-            for (int d = 0; d < 8; d++)
-            {
-                var dir = (Dir)d;
-                if (!Has(dir) || (d < 4 && ReachOf(dir) == 0)) continue;
+                if (!Has((Dir)d)) continue;
                 if (sb.Length > 0) sb.Append('+');
-                sb.Append(d < 4 ? dir.ToString() : DiagonalNames[d - 4]);
-                if (ReachOf(dir) != 0) sb.Append(ReachOf(dir));
+                sb.Append(DiagonalNames[d - 4]);
             }
             if (Area)
             {
@@ -199,40 +185,27 @@ namespace GridInfect.Core
         public static PieceSpec Parse(string text)
         {
             if (string.IsNullOrEmpty(text)) throw new FormatException("empty piece spec");
-            var spec = new PieceSpec();
+            int arms = 0;
+            bool area = false;
             foreach (string raw in text.Split('+'))
             {
                 string token = raw.Trim();
-                if (token == "A") { spec = spec.WithArea(true); continue; }
-                int digits = 0;
-                while (digits < token.Length && char.IsDigit(token[token.Length - 1 - digits])) digits++;
-                string name = token.Substring(0, token.Length - digits);
-                int reach = digits > 0 ? int.Parse(token.Substring(token.Length - digits)) : 0;
-                int diag = Array.IndexOf(DiagonalNames, name);
-                if (diag >= 0)
-                {
-                    var dir = (Dir)(4 + diag);
-                    spec = spec.WithArm(dir).WithReach(dir, reach);
-                }
-                else if (name.Length == 1 && "LRUD".IndexOf(name[0]) >= 0)
-                {
-                    var dir = (Dir)"LRUD".IndexOf(name[0]);
-                    spec = spec.WithArm(dir).WithReach(dir, reach);
-                }
-                else
-                {
-                    if (reach != 0) throw new FormatException($"reach on a tile token '{token}'");
-                    int mask = TileArms.Mask(ClassicLevels.ParseTile(name));
-                    spec = new PieceSpec((byte)(spec.Arms | mask), spec.Reach, spec.Area);
-                }
+                if (token == "A") { area = true; continue; }
+                if (token.Length > 0 && char.IsDigit(token[token.Length - 1]))
+                    throw new FormatException($"reach on '{token}': every arm reaches the edge");
+                int diag = Array.IndexOf(DiagonalNames, token);
+                if (diag >= 0) arms |= 1 << (4 + diag);
+                else arms |= TileArms.Mask(ClassicLevels.ParseTile(token));
             }
-            if (spec.IsEmpty) throw new FormatException($"piece spec '{text}' has no arms and no area");
-            return spec;
+            if ((arms & CardinalMask) != 0 && (arms & DiagonalMask) != 0)
+                throw new FormatException($"piece spec '{text}' mixes cardinal and diagonal arms");
+            if (arms == 0 && !area) throw new FormatException($"piece spec '{text}' has no arms and no area");
+            return new PieceSpec((byte)arms, area);
         }
 
-        public bool Equals(PieceSpec other) => Arms == other.Arms && Reach == other.Reach && Area == other.Area;
+        public bool Equals(PieceSpec other) => Arms == other.Arms && Area == other.Area;
         public override bool Equals(object obj) => obj is PieceSpec o && Equals(o);
-        public override int GetHashCode() => (Arms << 24) ^ (int)Reach ^ (Area ? 1 << 30 : 0);
+        public override int GetHashCode() => Arms ^ (Area ? 1 << 8 : 0);
         public static bool operator ==(PieceSpec a, PieceSpec b) => a.Equals(b);
         public static bool operator !=(PieceSpec a, PieceSpec b) => !a.Equals(b);
         public override string ToString() => Encode();

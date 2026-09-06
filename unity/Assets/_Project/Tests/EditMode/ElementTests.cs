@@ -1,11 +1,13 @@
+using System;
 using GridInfect.Core.Generation;
 using GridInfect.Core.Solving;
 using NUnit.Framework;
 
 namespace GridInfect.Core.Tests
 {
-    // Stages 8–12: one rules check and one generator check per element,
-    // through the real V2 rules and the real pipeline.
+    // Stages 9–12: one rules check and one generator check per element,
+    // through the real V2 rules and the real pipeline, plus the piece
+    // schema's one-family rule.
     [TestFixture]
     public class ElementTests
     {
@@ -46,7 +48,6 @@ namespace GridInfect.Core.Tests
             bool any = false;
             foreach (PieceSpec spec in def.Specs)
             {
-                if ((elements & Element.ShortArms) != 0 && spec.HasShortArm) any = true;
                 if ((elements & Element.Area) != 0 && spec.Area) any = true;
                 if ((elements & Element.Diagonals) != 0 && spec.HasDiagonal) any = true;
             }
@@ -58,23 +59,34 @@ namespace GridInfect.Core.Tests
             return any;
         }
 
-        // ---- stage 8: short arms ----
+        // ---- the piece schema ----
 
         [Test]
-        public void ShortArmStopsAfterItsReachAndCountsVoidsAsRings()
+        public void APieceIsCardinalOrDiagonalNeverBothAndHasNoReach()
         {
-            // Column 2: piece at row 5 with U2 and D1; a void at row 4 is one ring.
+            Assert.That(PieceSpec.Parse("LRD").IsTile, Is.True);
+            Assert.That(PieceSpec.Parse("ul+dr").Encode(), Is.EqualTo("ul+dr"));
+            Assert.That(PieceSpec.Parse("ul+dr").HasCardinal, Is.False);
+            Assert.That(PieceSpec.Parse("L+A").Encode(), Is.EqualTo("L+A"));
+            Assert.Throws<FormatException>(() => PieceSpec.Parse("L+ul"), "mixed families");
+            Assert.Throws<FormatException>(() => PieceSpec.Parse("ur+D"), "mixed families, diagonal first");
+            Assert.Throws<FormatException>(() => PieceSpec.Parse("L2"), "reach on a cardinal arm");
+            Assert.Throws<FormatException>(() => PieceSpec.Parse("ul1"), "reach on a diagonal arm");
+            Assert.Throws<ArgumentException>(() => new PieceSpec((byte)((1 << (int)Dir.L) | (1 << (int)Dir.UL))), "the constructor holds the invariant");
+            Assert.Throws<ArgumentException>(() => PieceSpec.Parse("ul").WithArm(Dir.L), "so does WithArm");
+        }
+
+        [Test]
+        public void EveryArmReachesTheEdge()
+        {
+            // Column 2: U and D from row 5 light the whole column past the void at row 4.
             var def = V2("..1..." + "..1..." + "..1..." + "..1..." + "......" + "..1..." +
-                         "..1..." + "..1..." + "......" + "......" + "......", "U2+D1");
+                         "..1..." + "..1..." + "......" + "......" + "......", "UD");
             var s = new LevelSession(def);
-            Assert.That(s.Rules.CanPlace(s, 0, 5, 2), Is.True);
             s.Rules.SetPiece(s, 0, 5, 2);
             s.Rules.Resolve(s);
-            Assert.That(s.Board[Grid.Loc(3, 2)], Is.EqualTo(Cell.Infected), "ring 2 up, past the void");
-            Assert.That(s.Board[Grid.Loc(2, 2)], Is.EqualTo(Cell.Active), "ring 3 up is out of reach");
-            Assert.That(s.Board[Grid.Loc(6, 2)], Is.EqualTo(Cell.Infected), "ring 1 down");
-            Assert.That(s.Board[Grid.Loc(7, 2)], Is.EqualTo(Cell.Active), "ring 2 down is out of reach");
-            Assert.That(new LineMap(def).Coverage(def.Specs[0], Grid.Loc(5, 2)).Count, Is.EqualTo(3), "solver agrees");
+            Assert.That(s.Solved, Is.True);
+            Assert.That(new LineMap(def).Coverage(def.Specs[0], Grid.Loc(5, 2)).Count, Is.EqualTo(7), "solver agrees");
         }
 
         // ---- stage 9: the area piece ----
@@ -170,17 +182,32 @@ namespace GridInfect.Core.Tests
         [Test]
         public void DiagonalSpecsFlipWithTheBoard()
         {
-            var spec = PieceSpec.Parse("L+ul2");
-            Assert.That(Canonical.Flip(spec, flipH: true, flipV: false).Encode(), Is.EqualTo("R+ur2"));
-            Assert.That(Canonical.Flip(spec, flipH: false, flipV: true).Encode(), Is.EqualTo("L+dl2"));
-            Assert.That(Canonical.Flip(spec, flipH: true, flipV: true).Encode(), Is.EqualTo("R+dr2"));
+            var spec = PieceSpec.Parse("ul+ur");
+            Assert.That(Canonical.Flip(spec, flipH: true, flipV: false).Encode(), Is.EqualTo("ul+ur"));
+            Assert.That(Canonical.Flip(spec, flipH: false, flipV: true).Encode(), Is.EqualTo("dl+dr"));
+            Assert.That(Canonical.Flip(PieceSpec.Parse("ul+dr"), flipH: true, flipV: false).Encode(), Is.EqualTo("ur+dl"));
+            Assert.That(Canonical.Flip(PieceSpec.Parse("LU"), flipH: true, flipV: true).Encode(), Is.EqualTo("RD"));
         }
 
         [Test]
-        public void DiagonalBoardsGenerateUniqueAndDeducible()
+        public void DiagonalBoardsGenerateUniqueAndDeducibleWithDiagonalOnlyPieces()
         {
             var spec = new GenSpec { Elements = Element.Walls | Element.Diagonals, MinPieces = 3, MaxPieces = 4, DiagonalChance = 14 };
             AssertAccepted(spec, 12, "diagonals");
+            int diagonalPieces = 0;
+            for (ulong seed = 1; seed < 400; seed++)
+            {
+                var level = GeneratorV2.Generate(spec, seed);
+                if (level == null) continue;
+                foreach (PieceSpec piece in level.Def.Specs)
+                {
+                    if (!piece.HasDiagonal) continue;
+                    diagonalPieces++;
+                    Assert.That(piece.HasCardinal, Is.False, $"seed {seed}: {piece} mixes families");
+                    Assert.That(piece.Arms, Is.Not.EqualTo(0x90).And.Not.EqualTo(0x60), $"seed {seed}: {piece} is an opposite-only pair");
+                }
+            }
+            Assert.That(diagonalPieces, Is.GreaterThan(0));
         }
 
         // ---- stage 12: relay cells ----
@@ -247,13 +274,6 @@ namespace GridInfect.Core.Tests
                 return;
             }
             Assert.Fail("no accepted board with a relay in the seed range");
-        }
-
-        [Test]
-        public void ShortArmBoardsGenerateUniqueAndDeducible()
-        {
-            var spec = new GenSpec { Elements = Element.Walls | Element.ShortArms, MinPieces = 3, MaxPieces = 4, ShortArmChance = 12 };
-            AssertAccepted(spec, 12, "short arms");
         }
     }
 }

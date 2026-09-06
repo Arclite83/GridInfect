@@ -34,9 +34,9 @@ pool() {
 }
 
 pool d1 Monday    '["walls"]'                                        1100000
-pool d2 Tuesday   '["walls","shortarms"]'                            1200000
+pool d2 Tuesday   '["walls"]'                                        1200000
 pool d3 Wednesday '["walls","area"]'                                 1300000
 pool d4 Thursday  '["walls","forbidden"]'                            1400000
 pool d5 Friday    '["walls","diagonals"]'                            1500000
 pool d6 Saturday  '["walls","relays"]'                               1600000
-pool d7 Sunday    '["walls","shortarms","forbidden","diagonals"]'    1700000
+pool d7 Sunday    '["walls","forbidden","diagonals"]'                1700000

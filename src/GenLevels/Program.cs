@@ -10,7 +10,7 @@ using GridInfect.Core.Solving;
 namespace GridInfect.GenLevels
 {
     // gen_levels --grade G2 --count 25 --seed 1000 --pieces 3-5 --out file.jsonl [--daily Monday]
-    //            [--grades G2-G3] [--elements walls,shortarms,area] [--short-arm-chance 10] [--area-chance 6]
+    //            [--grades G2-G3] [--elements walls,area,diagonals] [--area-chance 6] [--diagonal-chance 10] [--relay-chance 10]
     //            [--min-active 6] [--max-active 40] [--min-run 1] [--max-run 5]
     //            [--gaps] [--base-chance 15] [--falloff 1] [--shape-bias 0]
     //            [--distance 2] [--shared-lines] [--symmetric-tiles] [--dup-tiles]
@@ -55,7 +55,6 @@ namespace GridInfect.GenLevels
                         }
                         break;
                     }
-                    case "--short-arm-chance": spec.ShortArmChance = int.Parse(next()); break;
                     case "--area-chance": spec.AreaChance = int.Parse(next()); break;
                     case "--max-forbidden": spec.MaxForbidden = int.Parse(next()); break;
                     case "--diagonal-chance": spec.DiagonalChance = int.Parse(next()); break;

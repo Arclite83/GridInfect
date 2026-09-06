@@ -39,7 +39,7 @@ namespace GridInfect.Core.Solving
 
         // A piece type the player must translate before the line rules
         // apply counts as a lookahead layer: diagonal arms, the area blot,
-        // relays. Short arms are read off the piece and cost nothing.
+        // relays.
         public static int Translation(LevelDef def)
         {
             bool diagonal = false, area = false;

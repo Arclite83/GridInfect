@@ -5,8 +5,8 @@ using Style = GridInfect.Game.PresentationConfig.Style;
 namespace GridInfect.Game
 {
     // A piece is its bug glyph (STYLE-GUIDE §6), rasterised from the spec:
-    // one lit lead per arm, a wire lead per diagonal, stop bars for a short
-    // arm, the pulse arcs for an area bug. It draws at the tray size in its
+    // one lit lead per cardinal arm, a wire lead per diagonal arm, the
+    // pulse arcs for an area bug. It draws at the tray size in its
     // slot and at the tile size once it sits on the board.
     public sealed class PieceView
     {

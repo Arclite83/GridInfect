@@ -14,7 +14,7 @@ namespace GridInfect.Core.Generation
         Walls = 1,
         Switches = 2,
         Traps = 4,
-        ShortArms = 8,     // stage 8: an arm reaches 1 or 2 cells
+        // 8 was the per-arm reach element, removed: the blot is the one short-range piece.
         Area = 16,         // stage 9: the 3x3 blot piece
         Forbidden = 32,    // stage 10: cells that must stay clean
         Diagonals = 64,    // stage 11: diagonal arms
@@ -80,11 +80,10 @@ namespace GridInfect.Core.Generation
         public int SolutionCap = 4000;         // above this a sample is rejected as hopeless
 
         // Element tunables (each only draws from the RNG when its element is on).
-        public int ShortArmChance = 10;        // out of 20, per arm: reach 1 or 2 instead of the edge
         public int AreaChance = 6;             // out of 20, per piece: a 3x3 blot instead of a tile
         public int MaxForbidden = 4;           // forbidden cells the constructor may add (Element.Forbidden)
         public int MaxTraps = 2;               // reset traps the constructor may add (Element.Traps)
-        public int DiagonalChance = 10;        // out of 20, per piece: one or two diagonal arms join its tile
+        public int DiagonalChance = 10;        // out of 20, per piece: a diagonal piece (diagonal arms only) instead of its tile
         public int RelayChance = 10;           // out of 20, per piece with arms: one carved cell on an arm becomes a relay
 
         // The spec as data (docs/worlds headers, the daily spec): every
@@ -111,7 +110,6 @@ namespace GridInfect.Core.Generation
                 ["allPieces"] = RequireAllPieces,
                 ["usefulArms"] = RequireUsefulArms,
                 ["cap"] = SolutionCap,
-                ["shortArmChance"] = ShortArmChance,
                 ["areaChance"] = AreaChance,
                 ["maxForbidden"] = MaxForbidden,
                 ["maxTraps"] = MaxTraps,
@@ -161,7 +159,6 @@ namespace GridInfect.Core.Generation
             if (raw.TryGetValue("allPieces", out object ap) && ap is bool all) spec.RequireAllPieces = all;
             if (raw.TryGetValue("usefulArms", out object ua) && ua is bool useful) spec.RequireUsefulArms = useful;
             spec.SolutionCap = input.IntOr("cap", spec.SolutionCap);
-            spec.ShortArmChance = input.IntOr("shortArmChance", spec.ShortArmChance);
             spec.AreaChance = input.IntOr("areaChance", spec.AreaChance);
             spec.MaxForbidden = input.IntOr("maxForbidden", spec.MaxForbidden);
             spec.MaxTraps = input.IntOr("maxTraps", spec.MaxTraps);
@@ -178,7 +175,7 @@ namespace GridInfect.Core.Generation
                 MinGrade = MinGrade, MaxGrade = MaxGrade, MaxGivens = MaxGivens, MaxLocks = MaxLocks,
                 AllowDuplicateTiles = AllowDuplicateTiles, AllowSymmetricTiles = AllowSymmetricTiles,
                 ExclusiveLines = ExclusiveLines, MinPieceDistance = MinPieceDistance,
-                RequireAllPieces = RequireAllPieces, RequireUsefulArms = RequireUsefulArms, SolutionCap = SolutionCap, ShortArmChance = ShortArmChance,
+                RequireAllPieces = RequireAllPieces, RequireUsefulArms = RequireUsefulArms, SolutionCap = SolutionCap,
                 AreaChance = AreaChance, MaxForbidden = MaxForbidden, MaxTraps = MaxTraps, DiagonalChance = DiagonalChance, RelayChance = RelayChance,
                 Carve = new CarveParams
                 {

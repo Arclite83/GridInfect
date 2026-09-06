@@ -413,10 +413,8 @@ namespace GridInfect.Game
             {
                 var dir = (Dir)d;
                 if (!spec.Has(dir)) continue;
-                int reach = spec.ReachOf(dir);
                 for (int offset = 1; offset <= Grid.SpreadRange; offset++)
                 {
-                    if (reach != 0 && offset > reach) break;
                     int i = _waveI + TileArms.Di(dir) * offset;
                     int j = _waveJ + TileArms.Dj(dir) * offset;
                     if (!Grid.InBounds(i, j)) break;

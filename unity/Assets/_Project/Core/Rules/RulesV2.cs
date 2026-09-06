@@ -5,7 +5,7 @@ namespace GridInfect.Core
     // RulesV2 (docs/RULES_V2.md): the classic placement path (rings of
     // arms, walls stop, switches repel, traps trip, voids are jumped, win
     // before reset before repels) generalised to PieceSpec — eight arm
-    // directions, per-arm reach, the 3x3 area — plus forbidden cells and
+    // directions (cardinal or diagonal, never both), the 3x3 area — plus forbidden cells and
     // relay cells, with a clean undo: restore the initial board and
     // re-propagate the placed pieces in index order. The repel queue is
     // fresh at every placement and emptied after it runs; the V1 queue
@@ -224,13 +224,13 @@ namespace GridInfect.Core
                         }
                     }
                 }
-                Arms(spec.Arms, spec.Reach, i, j);
+                Arms(spec.Arms, i, j);
             }
 
-            // Rings 1..SpreadRange (or the arm's reach), inner order
+            // Rings 1..SpreadRange, inner order
             // TileArms.SpreadOrderV2; 2/3/5 stop a direction, 6 is a hit,
             // voids and the edge are passed over.
-            void Arms(int arms, uint reach, int i0, int j0)
+            void Arms(int arms, int i0, int j0)
             {
                 if (arms == 0) return;
                 int stopped = 0;
@@ -241,8 +241,6 @@ namespace GridInfect.Core
                         Dir dir = TileArms.SpreadOrderV2[n];
                         int d = (int)dir;
                         if ((arms & (1 << d)) == 0 || (stopped & (1 << d)) != 0) continue;
-                        int limit = (int)(reach >> (4 * d)) & 0xF;
-                        if (limit != 0 && offset > limit) { stopped |= 1 << d; continue; }
 
                         int i = i0 + TileArms.Di(dir) * offset;
                         int j = j0 + TileArms.Dj(dir) * offset;
@@ -284,7 +282,7 @@ namespace GridInfect.Core
                 _board[loc] = Cell.Infected;
                 if (_fire) _s.RaiseCellChanged(i, j, Cell.Infected);
                 byte relay = _s.Def.CellDataAt(loc);
-                if (relay != 0) Arms(relay, 0, i, j);
+                if (relay != 0) Arms(relay, i, j);
             }
         }
     }

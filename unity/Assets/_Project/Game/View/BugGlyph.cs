@@ -141,14 +141,12 @@ namespace GridInfect.Game
                     Lead(c, a, p);
                     Bond(c, a, p);
                     Stubs(c, a, p);
-                    int reach = spec.ReachOf(dir);
-                    if (reach > 0) StopBars(c, a, reach, p);
                 }
             }
 
             // The area bug has no leads and no body stubs: the arcs are its
-            // whole outside. Arms on an area piece (RulesV2 allows both) keep
-            // their leads, and the stubs return only for the edges they leave.
+            // whole outside. Arms on an area piece (the schema allows both)
+            // keep their leads, and the stubs return only for the edges they leave.
             if (!spec.Area || spec.Arms != 0) Body(c, active, p);
             Core(c, p.Infect, p.GlyphEdge, p);
             c.ClearTransform();
@@ -209,17 +207,6 @@ namespace GridInfect.Game
             c.Stroke(new[] { 20f, 14f, 20f, 6f }, 2.4f, p.GlyphEdge);
             c.Circle(20f, 5f, 2.6f, p.GlyphEdge);
             c.Circle(20f, 5f, 1.3f, p.Tip);
-        }
-
-        // Range-limited modifier (glyph-types M2): a stop bar under the tip,
-        // one per cell of reach. Not in the locked guide; drawn in its grammar.
-        static void StopBars(GlyphCanvas c, float a, int reach, BoardPalette p)
-        {
-            c.SetTransform(a);
-            for (int n = 0; n < Mathf.Min(reach, 3); n++)
-            {
-                c.Rect(14f, 8f + n * 2.2f, 12f, 1.6f, 0f, p.Tip);
-            }
         }
 
         // A body pin: rotate(a 20 20) translate(t 0), line from y 10.5 up
