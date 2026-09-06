@@ -225,7 +225,7 @@ namespace GridInfect.Game
 
         // The band the lattice gets: above the tray and the well's bottom
         // pad, below the HUD and the well's top pad (STYLE-GUIDE §4: board top
-        // 138, tray 150). Measured in the guide's px, so it is independent of
+        // 88, tray 96). Measured in the guide's px, so it is independent of
         // the cell size and the fit below cannot chase its own tail.
         static void MeasureBand(out float bottom, out float top)
         {
@@ -234,14 +234,16 @@ namespace GridInfect.Game
             top = h - Style.Px(Style.BoardTop + Style.WellPad);
         }
 
-        // Whichever of the three binds. Height caps the cell at the guide's
-        // 54 px (and, on a short screen, the original's 11% of height); width
-        // is the phone's short edge across six columns; the band is what stops
-        // an 11-tall board growing into the tray.
+        // Whichever of the three binds. Height caps the cell at CellMaxPx (and,
+        // on a short screen, the original's 11% of height); width is the
+        // phone's short edge across six columns; the band is what stops an
+        // 11-tall board growing into the tray. The height cap used to be the
+        // guide's 54 px design cell, which held the board small on a short,
+        // wide screen where nothing else was asking for the room.
         static float MeasureCellSize()
         {
             MeasureBand(out float bottom, out float top);
-            float byHeight = Mathf.Min(UnityEngine.Screen.height * PresentationConfig.CellHeightPct, Style.Px(Style.Cell));
+            float byHeight = Mathf.Min(UnityEngine.Screen.height * PresentationConfig.CellHeightPct, Style.Px(PresentationConfig.CellMaxPx));
             float byWidth = UnityEngine.Screen.width * PresentationConfig.BoardWidthPct
                             / (Grid.Width * PresentationConfig.CellPitch);
             float byBand = (top - bottom) / (Grid.Height * PresentationConfig.CellPitch);

@@ -81,16 +81,25 @@ for a future level that wants it.
    spec already exists, and Unity Ads can be added later as a mediated
    network if fill needs it. iOS ATT/SKAdNetwork stay with the iOS follow.
 
-## Lock (the hint replacement)
+## Solve (the hint replacement)
 
-One tool, no explanation text: **Lock** places one unplaced piece at its
+One tool, no explanation text: **Solve** places one unplaced piece at its
 solution cell and locks it there (lock icon, snap animation, cannot be
 lifted, survives a reset-trap full reset). If a player's piece occupies that
 cell it returns to the tray. Which piece: the solver's next forced
 deduction from the player's current correct pieces when a solver exists;
 until then, the unplaced piece with the largest solution coverage. Needs a
 stored solution per level, which generator v2 produces and the classic
-vectors already hold — so Legacy can have Lock too.
+vectors already hold — so Legacy can have Solve too.
+
+The button reads `SOLVE nn`, `+1 SOLVE` at an empty wallet with a rewarded ad
+available, and `HINT` on a replay (where it costs nothing). It was called
+"Lock" and that is still its name throughout the code, the `piece.lock`
+action and the `"locks"` save key — but locking is the mechanism, not the
+offer. What the player buys is one piece solved for them, so that is what the
+button says. The 2014 original had no such tool; "locked" there only ever
+meant an ungated level, which is the other, unrelated sense still in use for
+world and level progression.
 
 Engine: `PieceState.Locked`; input refuses to lift; `FullReset` skips locked
 pieces; undo re-propagation treats them as ordinary placed pieces.

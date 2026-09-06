@@ -54,6 +54,14 @@ Shader "GridInfect/Board"
         _TracePx ("Trace width (px)", Float) = 2.5
         _BlotAmp ("Blot ripple on the pool front", Range(0, 1)) = 0.18
 
+        // The scattered dissolve. At _Bias 0.3 the blot field is noise-
+        // dominant, so a threshold in it is a scattered set of blocks rather
+        // than a moving line — the grain is the point, not an artefact.
+        _EdgeBand ("Edge band width", Float) = 0.12
+        _GlitchBand ("Glitch band width", Float) = 0.15
+        _GlitchHz ("Glitch resample (Hz)", Float) = 20
+        _GhostAlpha ("Ghost alpha", Range(0, 1)) = 0.45
+
         _HotEmission ("Hot emission (HDR gain)", Float) = 2.2
         _RestEmission ("Resting emission (HDR gain)", Float) = 1.15
         _ConflictDur ("Conflict flash (s)", Float) = 0.5
@@ -117,6 +125,7 @@ Shader "GridInfect/Board"
                 float _TraceDur, _BleedDur, _GlowHold, _GlowFade, _BoardTime;
                 float4 _QuadPx, _LatticeOrigin;
                 float _PitchPx, _CellFrac, _RefScale, _TileRadiusPx, _WellPadPx, _WellRadiusPx, _GlowPx, _TracePx, _BlotAmp;
+                float _EdgeBand, _GlitchBand, _GlitchHz, _GhostAlpha;
                 float _HotEmission, _RestEmission, _ConflictDur, _PreviewFade;
                 float _ArrivalPulse, _PulseGain, _PulseDur;
                 float _EdgeSparks, _SparkLife;
@@ -270,10 +279,32 @@ Shader "GridInfect/Board"
                 return SAMPLE_TEXTURE2D_LOD(_NoiseTex, sampler_NoiseTex, uv, 0).r;
             }
 
+            // 0 at the edge the infection entered from, 1 at the opposite
+            // edge. The seed has no entry edge, so it uses radial distance.
+            float EntryDistance(float2 drdc, float2 cellUv)
+            {
+                if (IsSeedDir(drdc)) return saturate(length(cellUv - 0.5) * 2.0);
+                float2 travel = TravelUv(drdc);
+                float2 entry = 0.5 - travel * 0.5;
+                return saturate(dot(cellUv - entry, travel));
+            }
+
+            // t = lerp(noise, entryDistance, bias), both sampled at the block
+            // centre so the whole block shares one value and flips as a unit.
+            // At _Bias 0.3 this is noise-dominant with a lean toward the entry
+            // edge: ink soaking in, scattered, not a wipe. The quantisation is
+            // the look — do not take this back to a continuous cellUv.
+            float BlotT(float2 blockGlobal, float2 blockInCell, float2 drdc)
+            {
+                float n = NoiseAtBlock(blockGlobal);
+                float e = EntryDistance(drdc, (blockInCell + 0.5) / _Blocks);
+                return lerp(n, e, _Bias);
+            }
+
             // The pool: 0 at the midpoint of the edge the infection entered
             // from, 1 at the far corner. The seed has no entry edge and pools
-            // out of its centre. The blot only ripples the front (STYLE-GUIDE
-            // §5: the infection "pools across", it does not dissolve in).
+            // out of its centre. Smooth and continuous — this is the drain
+            // (undo / repel), where a receding front should not be grainy.
             float PoolField(float2 cellUv, float2 drdc, float2 blockGlobal)
             {
                 float e;
@@ -518,18 +549,40 @@ Shader "GridInfect/Board"
                     if (p > 0.0)
                     {
                         float emission = Emission(startTime);
-                        float f = PoolField(cellUv, drdc, blockGlobal);
+                        float t = BlotT(blockGlobal, blockInCell, drdc);
 
-                        // Solid where the pool has reached, then a glow band
-                        // leading the front (r16 solid, r26 glow, r38 clear).
-                        float coverage = p >= 1.0 ? 1.0 : 1.0 - smoothstep(p - 0.05, p + 0.02, f);
-                        GlassInfected(pm, q, d, tile, coverage, emission);
+                        // The block is in or it is out. One value per block,
+                        // one decision per block: that hard threshold against a
+                        // noise-dominant field is what makes the infection read
+                        // as scattered pixels soaking in rather than a front
+                        // sweeping across. The glass fill itself is unchanged —
+                        // it is the coverage mask that is quantised.
+                        float coverage = (p >= 1.0 || t <= p) ? 1.0 : 0.0;
+
+                        // Ghost: the same mask displaced one block back along
+                        // the entry direction, so a fringe leads the front.
                         bool trailing = _GhostTrail > 0.5 && _BoardTime < startTime + _TraceDur + _BleedDur + _GhostTrailDur;
-                        if (p < 1.0 || trailing)
+                        if ((p < 1.0 || trailing) && !IsSeedDir(drdc))
                         {
-                            float band = (1.0 - smoothstep(p, p + 0.22, f)) * smoothstep(p - 0.02, p + 0.02, f);
-                            float bandFade = p < 1.0 ? 1.0 : saturate((startTime + _TraceDur + _BleedDur + _GhostTrailDur - _BoardTime) / max(_GhostTrailDur, 1e-4));
-                            Over(pm, _ColInfectGlow.rgb * emission, _ColInfectGlow.a * band * Inside(d) * bandFade);
+                            float2 back = TravelUv(drdc);
+                            float2 gInCell = clamp(blockInCell - back, 0.0, _Blocks - 1.0);
+                            if (BlotT(blockGlobal - back, gInCell, drdc) <= p)
+                                Over(pm, _ColInfectGlow.rgb * emission, _ColInfectGlow.a * _GhostAlpha * Inside(d));
+                        }
+
+                        GlassInfected(pm, q, d, tile, coverage, emission);
+
+                        // Edge band and the 20 Hz glitch band straddle the
+                        // front. Both belong to the dissolve only, so they fade
+                        // out as the cell locks down hard-edged.
+                        if (p < 1.0)
+                        {
+                            float bandFade = saturate((1.0 - p) * 8.0);
+                            bool edge = t > p - _EdgeBand && t <= p;
+                            bool glitch = t > p - _EdgeBand && t <= p + _GlitchBand &&
+                                Hash21(blockGlobal + floor(_BoardTime * _GlitchHz) * 37.0) > 0.5;
+                            if (edge || glitch)
+                                Over(pm, _ColInfect.rgb * _HotEmission, bandFade * Inside(d));
                         }
 
                         CoreDot(pm, q, _ColTip.rgb, 0.6 * coverage, emission);

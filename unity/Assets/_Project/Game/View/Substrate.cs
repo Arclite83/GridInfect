@@ -49,12 +49,11 @@ namespace GridInfect.Game
                 quad.AddComponent<MaterialOwner>().Material = material;
             }
 
-            // Silkscreen: mono 9 px, white 55%, studio top-left, copyright
-            // bottom-left, the board legend bottom-right.
+            // Silkscreen: mono 9 px, white 55%, copyright bottom-left, the
+            // board legend bottom-right. The studio mark belongs to the title
+            // card, not to every screen, so the top-left corner stays clear.
             var silk = BoardPalette.Alpha(palette.Tip, 0.55f);
             float size = S.Px(S.Silkscreen);
-            var studio = Ui.MakeText("silk:studio", _root.transform, "BLOODHOUND STUDIOS", size, silk, 1, mono: true, anchor: TextAnchor.MiddleLeft);
-            Ui.SetPos(studio.gameObject, -w / 2f + S.Px(44f), h / 2f - S.Px(27f));
             var copyright = Ui.MakeText("silk:copyright", _root.transform, "© 2026", size, silk, 1, mono: true, anchor: TextAnchor.MiddleLeft);
             Ui.SetPos(copyright.gameObject, -w / 2f + S.Px(44f), -h / 2f + S.Px(12f));
             _legend = Ui.MakeText("silk:legend", _root.transform, "", size, silk, 1, mono: true, anchor: TextAnchor.MiddleRight);

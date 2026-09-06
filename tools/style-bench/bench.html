@@ -15,8 +15,8 @@ canvas{position:absolute;left:0;top:0}
 // ---- layout, mirroring PresentationConfig / BoardView for a 390x844 reference at 2x ----
 const W=780,H=1688,SCALE=2, Px=v=>v*SCALE;
 const COLS=6,ROWS=11,CELLPITCH=59/54;
-const bandBottom=Px(150+14), bandTop=H-Px(138+14);
-const cell=Math.min(Px(54), (bandTop-bandBottom)/(ROWS*CELLPITCH), W*0.94/(COLS*CELLPITCH));
+const bandBottom=Px(96+14), bandTop=H-Px(88+14);
+const cell=Math.min(Px(72), (bandTop-bandBottom)/(ROWS*CELLPITCH), W*0.97/(COLS*CELLPITCH));
 const pitch=cell*CELLPITCH, refScale=cell/54;
 const margin=Px(14+26*1.2+4);
 const quadW=COLS*pitch+2*margin, quadH=ROWS*pitch+2*margin;
@@ -133,19 +133,19 @@ function render(t){
     _StateTex:stateTex,_NoiseTex:noiseTex,_Cols:COLS,_Rows:ROWS,_Blocks:16,_Bias:0.3,_TraceDur:0.09,_BleedDur:0.26,_GlowHold:0.15,_GlowFade:0.3,_BoardTime:t,
     _QuadPx:[quadW,quadH],_LatticeOrigin:[margin,margin],_PitchPx:pitch,_CellFrac:1/CELLPITCH,_RefScale:refScale,_TileRadiusPx:cell*6/54,_WellPadPx:Px(14),_WellRadiusPx:Px(12),
     _GlowPx:Px(26),_TracePx:Px(2.5),_BlotAmp:0.18,_HotEmission:2.2,_RestEmission:1.15,_ConflictDur:0.5,_PreviewFade:0.12,
-    _ArrivalPulse:1,_PulseGain:1.4,_PulseDur:0.06,_EdgeSparks:1,_SparkLife:0.2,_TraceDim:1,_TraceDimLevel:0.3,_GhostTrail:0,_GhostTrailDur:0.2,
+    _ArrivalPulse:1,_PulseGain:1.4,_PulseDur:0.06,_EdgeSparks:1,_SparkLife:0.2,_TraceDim:1,_TraceDimLevel:0.3,_GhostTrail:0,_GhostTrailDur:0.2,_EdgeBand:0.12,_GlitchBand:0.15,_GlitchHz:20,_GhostAlpha:0.45,
     _ColTip:P.Tip,_ColShade:P.Shade,_ColWellBg:[0,0,0,.36],_ColCopper:P.Copper,_ColCopperHi:P.CopperHi,_ColCopperLo:P.CopperLo,_ColInfect:P.Infect,_ColInfectHi:P.InfectHi,_ColInfectLo:P.InfectLo,
     _ColInfectGlow:[...P.Infect,.55],_ColGlyphEdge:P.GlyphEdge,_ColSwitch:P.Switch,_ColTrap:P.Trap,_ColConflict:P.Conflict},true);
   // HUD
-  const hudBottom=H-Px(96-12), ch=Px(16+15);
+  const hudBottom=H-Px(56-10), ch=Px(16+15);
   chip('MENU',Px(22)+Px(28+4*12*.66)/2,hudBottom+ch/2); chip('RESET',W-Px(22)-Px(28+5*12*.66)/2,hudBottom+ch/2);
   overlay(`<div class="t" style="left:390px;top:${H-(hudBottom+Px(26)*.55)}px;transform:translate(-50%,-50%);font-size:${Px(26)}px;letter-spacing:.06em">LEVEL 6</div>`);
-  overlay(`<div class="t m" style="left:390px;top:${H-(hudBottom+Px(26)*1.1+Px(11)*.9)}px;transform:translate(-50%,-50%);font-size:${Px(11)}px;letter-spacing:.2em;opacity:.7">GI-REV B</div>`);
-  const bw=Px(24+7*13*.62),bh=Px(12+13*1.25);glass([W-Px(22)-bw,H-Px(104)-bh,bw,bh],Badge);
-  overlay(`<div class="t m" style="left:${W-Px(22)-bw/2}px;top:${Px(104)+bh/2}px;transform:translate(-50%,-50%);font-size:${Px(13)}px;letter-spacing:.12em;color:#f3e2a8">LOCK 02</div>`);
+  const bw=Px(24+8*13*.62),bh=Px(12+13*1.25);glass([W-Px(22)-bw,H-Px(52)-bh,bw,bh],Badge);
+  overlay(`<div class="t m" style="left:${W-Px(22)-bw/2}px;top:${Px(52)+bh/2}px;transform:translate(-50%,-50%);font-size:${Px(13)}px;letter-spacing:.12em;color:#f3e2a8">SOLVE 02</div>`);
+  overlay(`<div class="t m" style="left:${Px(22)}px;top:${Px(52)+bh/2}px;transform:translateY(-50%);font-size:${Px(11)}px;letter-spacing:.2em;opacity:.7">GI-REV B</div>`);
   // tray: 4 pieces
-  const count=4, slot=Math.min(Px(74),cell*74/54,W*.94/(count*104/74)), gpx=Math.round(slot*58/74);
-  for(let k=0;k<count;k++){const x=W/2+(k-(count-1)/2)*slot*104/74, y=Px(150)/2; glass([x-slot/2,y-slot/2,slot,slot],Slot(false));
+  const count=4, slot=Math.min(Px(74),cell*74/54,W*.97/(count*104/74)), gpx=Math.round(slot*58/74);
+  for(let k=0;k<count;k++){const x=W/2+(k-(count-1)/2)*slot*104/74, y=Px(96)/2; glass([x-slot/2,y-slot/2,slot,slot],Slot(false));
     const idx=[6,1,15,32][k]; overlay(`<div class="g2" style="left:${x-48}px;top:${H-y-48}px;background-position:${-(idx%8)*104-4}px ${-Math.floor(idx/8)*104-4}px;transform:scale(${gpx/96})"></div>`);}
   // the seed glyph (NESW = index 14) on its tile, 44/54 of the cell
   const [sx,sy]=cellCenter(...seed); const g=cell*44/54;
@@ -153,7 +153,6 @@ function render(t){
   // blocker shield on the wall (index 35), relay none
   const [wx,wy]=cellCenter(2,2); overlay(`<div class="g" style="left:${wx-36}px;top:${H-wy-36}px;background-position:${-(35%8)*80-4}px ${-Math.floor(35/8)*80-4}px;transform:scale(${g/72})"></div>`);
   // silkscreen
-  overlay(`<div class="t m" style="left:${Px(44)}px;top:${Px(27)}px;transform:translateY(-50%);font-size:${Px(9)}px;letter-spacing:1.5px;color:rgba(255,255,255,.55)">BLOODHOUND STUDIOS</div>`);
   overlay(`<div class="t m" style="left:${Px(44)}px;top:${H-Px(12)}px;transform:translateY(-50%);font-size:${Px(9)}px;letter-spacing:1.5px;color:rgba(255,255,255,.55)">© 2026</div>`);
   overlay(`<div class="t m" style="right:${Px(20)}px;top:${H-Px(12)}px;transform:translateY(-50%);font-size:${Px(9)}px;letter-spacing:1.5px;color:rgba(255,255,255,.55)">GI-06 REV B</div>`);
   document.getElementById('overlay').innerHTML=ov;
