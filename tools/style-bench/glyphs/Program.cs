@@ -31,11 +31,7 @@ static class Program
             for (int i = 0; i < 4; i++) if ((m & (1 << i)) != 0) { arms |= (byte)(1 << (int)diag[i]); name += new[] { "NE", "SE", "SW", "NW" }[i]; }
             specs.Add(("bug_" + name, BugGlyph.Piece(new PieceSpec(arms), p, px)));
         }
-        specs.Add(("bug_N_SE", BugGlyph.Piece(new PieceSpec((byte)((1 << (int)Dir.U) | (1 << (int)Dir.DR))), p, px)));
-        specs.Add(("bug_NS_NESW", BugGlyph.Piece(new PieceSpec((byte)((1 << (int)Dir.U) | (1 << (int)Dir.D) | (1 << (int)Dir.UR) | (1 << (int)Dir.DL))), p, px)));
-        specs.Add(("bug_AREA", BugGlyph.Piece(new PieceSpec(0, 0, true), p, px)));
-        specs.Add(("bug_N_reach1", BugGlyph.Piece(new PieceSpec((byte)(1 << (int)Dir.U)).WithReach(Dir.U, 1), p, px)));
-        specs.Add(("bug_NE_reach2", BugGlyph.Piece(new PieceSpec((byte)((1 << (int)Dir.U) | (1 << (int)Dir.R))).WithReach(Dir.R, 2), p, px)));
+        specs.Add(("bug_AREA", BugGlyph.Piece(new PieceSpec(0, true), p, px)));
         specs.Add(("tile_BLOCKER", BugGlyph.Blocker(p, px)));
         specs.Add(("mark_LOCK", BugGlyph.Lock(p, px)));
         specs.Add(("relay_NESW", BugGlyph.Relay((byte)((1 << (int)Dir.U) | (1 << (int)Dir.R) | (1 << (int)Dir.D) | (1 << (int)Dir.L)), p, px)));

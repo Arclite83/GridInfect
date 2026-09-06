@@ -86,20 +86,10 @@ namespace GridInfect.Core.Generation
         }
 
         // Arms move with the board: a horizontal flip swaps L/R (and UL/UR,
-        // DL/DR), a vertical one U/D (and UL/DL, UR/DR); reach travels with
-        // its arm.
-        public static PieceSpec Flip(PieceSpec spec, bool flipH, bool flipV)
-        {
-            var result = new PieceSpec(0, 0, spec.Area);
-            for (int d = 0; d < 8; d++)
-            {
-                var dir = (Dir)d;
-                if (!spec.Has(dir)) continue;
-                var to = FlipDir(dir, flipH, flipV);
-                result = result.WithArm(to).WithReach(to, spec.ReachOf(dir));
-            }
-            return result;
-        }
+        // DL/DR), a vertical one U/D (and UL/DL, UR/DR). A flip keeps a
+        // piece in its family, so the result is always a valid spec.
+        public static PieceSpec Flip(PieceSpec spec, bool flipH, bool flipV) =>
+            new PieceSpec((byte)FlipArms(spec.Arms, flipH, flipV), spec.Area);
 
         public static int FlipArms(int arms, bool flipH, bool flipV)
         {

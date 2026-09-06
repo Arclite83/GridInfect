@@ -61,7 +61,9 @@ namespace GridInfect.Core.Generation
                     {
                         // Decoration draws only after the sample is accepted, so
                         // element-free specs keep their draw sequence. A diagonal
-                        // arm with no cell to reach from this corner is dropped.
+                        // arm with no cell to reach from this corner is dropped; a
+                        // diagonal piece left with no arms, a second blot, or a
+                        // duplicate diagonal piece falls back to the sampled tile.
                         var decorated = Decorate(PieceSpec.FromTile(tile), spec, ref rng);
                         for (int d = 4; d < 8; d++)
                         {
@@ -69,11 +71,12 @@ namespace GridInfect.Core.Generation
                             if (decorated.Has(dir) && !Grid.InBounds(cell / Grid.Width + TileArms.Di(dir), cell % Grid.Width + TileArms.Dj(dir)))
                                 decorated = decorated.WithArm(dir, false);
                         }
-                        if (!spec.AllowDuplicateTiles && decorated.Area)
+                        if (decorated.IsEmpty) decorated = PieceSpec.FromTile(tile);
+                        if (!spec.AllowDuplicateTiles)
                         {
-                            bool secondBlot = false;
-                            for (int k = 0; k < n; k++) secondBlot |= specs[k].Area;
-                            if (secondBlot) decorated = PieceSpec.FromTile(tile);   // one blot per board
+                            bool duplicate = false;
+                            for (int k = 0; k < n; k++) duplicate |= decorated.Area ? specs[k].Area : specs[k] == decorated;
+                            if (duplicate) decorated = PieceSpec.FromTile(tile);   // one blot per board, distinct diagonal pieces
                         }
                         tiles[n] = tile;
                         specs[n] = decorated;
@@ -101,9 +104,12 @@ namespace GridInfect.Core.Generation
                     int at = carved[rng.Next(carved.Count)];
                     if (cellData[at] == 0)
                     {
-                        int arms = 0, armCount = rng.Next(3) == 0 ? 2 : 1;
+                        int armCount = rng.Next(3) == 0 ? 2 : 1;
                         int dirs = (spec.Elements & Element.Diagonals) != 0 ? 8 : 4;
-                        for (int a = 0; a < armCount; a++) arms |= 1 << rng.Next(dirs);
+                        int first = rng.Next(dirs);
+                        int arms = 1 << first;
+                        // A relay is one family too: a second arm joins the first one's.
+                        for (int a = 1; a < armCount; a++) arms |= 1 << ((first & 4) + rng.Next(4));
                         var relaySpec = new PieceSpec((byte)arms);
                         cellData[at] = (byte)arms;
                         Carve(board, relaySpec, at, spec.Carve, ref rng, endWalls, null);
@@ -136,37 +142,27 @@ namespace GridInfect.Core.Generation
         }
 
         // Element decoration of a sampled tile. Draws happen only for the
-        // elements the spec turns on, so classic specs keep their goldens.
+        // elements the spec turns on, so classic specs keep their goldens. A
+        // piece is one family: the blot, a cardinal tile, or a diagonal piece.
         static PieceSpec Decorate(PieceSpec piece, GenSpec spec, ref Pcg32 rng)
         {
             if ((spec.Elements & Element.Area) != 0 && rng.Next(20) < spec.AreaChance)
             {
-                return new PieceSpec(0, 0, area: true);   // the blot: 3x3, no arms
+                return new PieceSpec(0, area: true);   // the blot: 3x3, no arms
             }
             if ((spec.Elements & Element.Diagonals) != 0 && rng.Next(20) < spec.DiagonalChance)
             {
-                // The curated set: a tile plus one diagonal arm, or two
-                // diagonal arms that are not an opposite pair (an
-                // opposite-only pair slides along its line like UD does).
-                int count = rng.Next(3) == 0 ? 2 : 1;
-                for (int n = 0; n < count; n++)
+                // A diagonal piece replaces the tile: one of the fifteen
+                // non-empty subsets of UL, UR, DL, DR, as the cardinal tiles
+                // are of L, R, U, D. An opposite-only pair (UL+DR, UR+DL)
+                // slides along its line like UD does, so it is redrawn
+                // unless symmetric tiles are allowed.
+                while (true)
                 {
-                    var diag = (Dir)(4 + rng.Next(4));
-                    piece = piece.WithArm(diag);
-                }
-                if ((piece.Arms & 0x0F) == 0 && (piece.Arms == 0x90 || piece.Arms == 0x60))
-                {
-                    piece = piece.WithArm(Dir.UL, false).WithArm(Dir.DR, false).WithArm(Dir.UR, false).WithArm(Dir.DL, false)
-                        .WithArm((Dir)(4 + rng.Next(4)));
-                }
-            }
-            if ((spec.Elements & Element.ShortArms) != 0)
-            {
-                for (int d = 0; d < 8; d++)
-                {
-                    var dir = (Dir)d;
-                    if (!piece.Has(dir)) continue;
-                    if (rng.Next(20) < spec.ShortArmChance) piece = piece.WithReach(dir, 1 + rng.Next(2));
+                    int mask = 1 + rng.Next(15);   // bit 0 UL, 1 UR, 2 DL, 3 DR
+                    bool symmetric = mask == 0x9 || mask == 0x6;
+                    if (symmetric && !spec.AllowSymmetricTiles) continue;
+                    return new PieceSpec((byte)(mask << 4));
                 }
             }
             return piece;
@@ -205,7 +201,6 @@ namespace GridInfect.Core.Generation
                         int i = pi + TileArms.Di(dir) * offset;
                         int j = pj + TileArms.Dj(dir) * offset;
                         if (!Grid.InBounds(i, j)) continue;
-                        if (spec.ReachOf(dir) != 0 && offset > spec.ReachOf(dir)) continue;
                         if (rng.Next(20) < carve.ChanceAt(offset))
                         {
                             board[Grid.Loc(i, j)] = Cell.Active;
@@ -220,7 +215,6 @@ namespace GridInfect.Core.Generation
                 Dir dir = TileArms.SpreadOrderV2[n];
                 if (!spec.Has(dir)) continue;
                 int run = carve.MinRun + (carve.MaxRun > carve.MinRun ? rng.Next(carve.MaxRun - carve.MinRun + 1) : 0);
-                if (spec.ReachOf(dir) != 0 && run > spec.ReachOf(dir)) run = spec.ReachOf(dir);   // a short arm carves no further than it reaches
                 int offset = 1;
                 for (; offset <= run; offset++)
                 {

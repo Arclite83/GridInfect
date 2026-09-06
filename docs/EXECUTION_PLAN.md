@@ -17,7 +17,7 @@ table below in the same PR.
 | 5 | Lock tool | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
 | 6 | Ads, consent, remove-ads (Android) | Blocked: the Google Mobile Ads / UMP and Unity IAP packages and an Android device build are not available in the authoring environment; the Services boundary, interfaces, Null services, cadence config, gate test and adapter wiring are in | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
 | 7 | RulesV2 | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
-| 8 | Short arms | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
+| 8 | Short arms | Cut | [#7](https://github.com/Arclite83/GridInfect/pull/7), then removed: the blot is the one short-range piece (`RULES_V2.md` §8) |
 | 9 | Area piece | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
 | 10 | Forbidden cells | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
 | 11 | Diagonal arms | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
@@ -212,8 +212,9 @@ switch/trap semantics preserved but the repel-queue accumulation quirk is
 not carried. Element specs are in `NEXT_PASS.md`; write `docs/RULES_V2.md`
 in stage 7 and extend it per stage.
 
-Order: short arms (8), area piece (9), forbidden cells (10), diagonal arms
-(11), relay cells (12). Mirror is undecided; do not start it without a
+Order: short arms (8, since cut), area piece (9), forbidden cells (10),
+diagonal arms (11), relay cells (12). A piece is one family — cardinal or
+diagonal, never both — and the blot is the only short-range piece. Mirror is undecided; do not start it without a
 decision recorded in `NEXT_PASS.md`.
 
 ---

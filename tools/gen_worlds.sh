@@ -5,7 +5,7 @@
 # WorldTests regenerate a sample from the recorded seeds and compare, so a
 # generator change shows up as a diff here.
 #
-#   tools/gen_worlds.sh [--threads N] [--only w13]
+#   tools/gen_worlds.sh [--threads N] [--only w16]
 #
 # No pool passes --max-locks: GenSpec budgets it to 0, so no generated
 # level ever ships a piece placed and locked before play.
@@ -51,9 +51,9 @@ world w10 "Tight"        22 190000 --pieces 5-5 --grade G4 --max-run 3
 world w11 "Suppose"      20 200000 --pieces 5-5 --grade G5
 world w12 "Mastery"      20 210000 --pieces 5-6 --grade G5
 
-# One element per world from here (stages 8-12).
-ELEMENTS='["walls","shortarms"]'
-world w13 "Short Arms"   22 220000 --pieces 3-5 --grades G2-G4 --elements walls,shortarms --short-arm-chance 12
+# One element per world from here (stages 9-12). w13 was the short-arm
+# world; per-arm reach is gone (the blot is the one short-range piece) and
+# the id is retired so saved world progress keeps its keys.
 ELEMENTS='["walls","area"]'
 world w14 "Blots"        22 230000 --pieces 3-5 --grades G2-G4 --elements walls,area --area-chance 8
 ELEMENTS='["walls","forbidden"]'

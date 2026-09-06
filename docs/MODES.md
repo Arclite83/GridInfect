@@ -231,7 +231,8 @@ actions and tests stay so old logs replay. Two modes replace it.
   every device gets the same board. The board comes from the weekday's
   baked pool (`docs/daily/d1..d7.jsonl`, generated offline by
   `tools/gen_daily.sh` from the weekday specs in `DailySpec.For` — Monday
-  3 pieces G1–G2 up to Sunday 5 pieces G4–G5, one element per weekday —
+  3 pieces G1–G2 up to Sunday 5 pieces G4–G5, plain walls Monday and
+  Tuesday, one element per weekday from Wednesday, the weekend stacked —
   and baked into `DailyData.g.cs`): pool index = weeks since
   `DailyPool.Epoch` (Monday 2026-01-05) modulo the pool size, so 52 levels
   a pool is a year without a repeat and nothing is generated on the

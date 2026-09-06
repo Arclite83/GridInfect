@@ -213,9 +213,9 @@ The guide replaced the look, not the machinery. What changed on the board:
   `PieceSpec` by a small SDF rasteriser at the pixel size each context needs
   (44 on a 54 tile, 58 in the tray, scaled to the device), cached per skin.
   Walls carry the blocker shield sprite, relay cells a hub-and-stubs sprite.
-  A short arm draws the glyph-types M2 stop bar, one per cell of reach; the
-  lock is a padlock mark over the core. Neither is in the locked guide; both
-  are in its grammar.
+  The lock is a padlock mark over the core; it is not in the locked guide
+  but is drawn in its grammar. A piece is one family, cardinal leads or
+  diagonal wire leads, never both.
 - **States without a guide entry.** Repel switch and reset trap are tinted
   component glass with their diamond and X; the forbidden cell is the guide's
   "empty pad" with a copper ring. The seed marker ring is gone: the glyph

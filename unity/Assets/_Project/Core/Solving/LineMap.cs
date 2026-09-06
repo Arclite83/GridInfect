@@ -137,7 +137,7 @@ namespace GridInfect.Core.Solving
         public CellMask Coverage(Tile tile, int loc) => Coverage(PieceSpec.FromTile(tile), loc);
 
         // Cells infected by placing `spec` at `loc` on the static board: the
-        // RulesV2 spread (arms with reach, the area, relay chains) with
+        // RulesV2 spread (arms, the area, relay chains) with
         // switches and traps as blockers and repels ignored — the static
         // model the oracle uses; order feasibility is checked at the end.
         public CellMask Coverage(PieceSpec spec, int loc) => Spread(spec, loc).Covered;
@@ -170,7 +170,7 @@ namespace GridInfect.Core.Solving
             var covered = CellMask.None;
             bool trips = false, forbidden = false, switches = false;
             int i0 = loc / Grid.Width, j0 = loc % Grid.Width;
-            var pending = new System.Collections.Generic.Stack<(int cell, byte arms, uint reach)>();
+            var pending = new System.Collections.Generic.Stack<(int cell, byte arms)>();
 
             Infect(loc, ref covered, pending);
             if (spec.Area)
@@ -188,20 +188,18 @@ namespace GridInfect.Core.Solving
                     }
                 }
             }
-            if (spec.Arms != 0) pending.Push((loc, spec.Arms, spec.Reach));
+            if (spec.Arms != 0) pending.Push((loc, spec.Arms));
 
             while (pending.Count > 0)
             {
-                var (cell, arms, reach) = pending.Pop();
+                var (cell, arms) = pending.Pop();
                 int ci = cell / Grid.Width, cj = cell % Grid.Width;
                 for (int d = 0; d < 8; d++)
                 {
                     if ((arms & (1 << d)) == 0) continue;
                     var dir = (Dir)d;
-                    int limit = (int)(reach >> (4 * d)) & 0xF;
                     for (int offset = 1; offset <= Grid.SpreadRange; offset++)
                     {
-                        if (limit != 0 && offset > limit) break;
                         int i = ci + TileArms.Di(dir) * offset, j = cj + TileArms.Dj(dir) * offset;
                         if (!Grid.InBounds(i, j)) continue;
                         byte v = Def.BoardAt(Grid.Loc(i, j));
@@ -216,12 +214,12 @@ namespace GridInfect.Core.Solving
             return new SpreadResult(covered & ActiveMask, trips, forbidden, switches);
         }
 
-        void Infect(int loc, ref CellMask covered, System.Collections.Generic.Stack<(int cell, byte arms, uint reach)> pending)
+        void Infect(int loc, ref CellMask covered, System.Collections.Generic.Stack<(int cell, byte arms)> pending)
         {
             if (covered.Has(loc)) return;
             covered |= CellMask.Bit(loc);
             byte relay = Def.CellDataAt(loc);
-            if (relay != 0) pending.Push((loc, relay, 0u));
+            if (relay != 0) pending.Push((loc, relay));
         }
 
         // Every cell in the two lines through `loc` (the cells a line rule
