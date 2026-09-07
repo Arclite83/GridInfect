@@ -140,6 +140,7 @@ namespace GridInfect.Game
             float dt = Mathf.Min(Time.unscaledDeltaTime, PresentationConfig.MaxFrameDelta);
             Tweens.Update(dt);
             Screens.Update(dt);
+            Work.Shared.Pump();                        // completions of background jobs land here
             _levels.SaveIfDirty(LevelCache.Shared);   // a board landed on the worker: keep it
 
             var session = State.Session;

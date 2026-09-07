@@ -235,10 +235,13 @@ actions and tests stay so old logs replay. Two modes replace it.
   (`DailySpec.SeedFor`: `2 000 000 + 10 000 × days since the epoch`, the
   epoch being Monday 2026-01-05), first accepted seed wins. Nothing is
   pregenerated. `LevelCache` memoises that function on the device and
-  runs it ahead of time on one background worker (`Warmup`: today's board
-  at boot, then the recent unsolved days, then Endless's opening boards;
-  the calendar's visible month while it is open); a board the cache has
-  not reached yet generates behind the LOADING card. The cache persists
+  has the kernel's `Work` scheduler run it ahead of time, one job at a
+  time in priority order, each job scanning its seed range across the
+  cores and taking the lowest accepted seed (`Warmup`: today's board at
+  boot, then the recent unsolved days, then Endless's opening boards; the
+  calendar's visible month while it is open); a board the cache has not
+  reached yet generates behind the LOADING card, or the loader waits for
+  the job already on it. The cache persists
   (`gridinfect_levels.json`) and is dropped whole when
   `LevelCache.GeneratorVersion` changes, which is the generator's
   versioning rule: a change to its output is a change to every daily,
