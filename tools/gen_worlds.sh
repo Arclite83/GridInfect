@@ -2,8 +2,7 @@
 # Regenerates every launch world's level list (docs/worlds/*.jsonl) from
 # its recorded GenSpec and seed range with tools/gen_levels. The bake
 # (tools/bake_worlds.py) turns those files into WorldData.g.cs; the
-# WorldTests regenerate a sample from the recorded seeds and compare, so a
-# generator change shows up as a diff here.
+# A generator change shows up as a diff here.
 #
 #   tools/gen_worlds.sh [--threads N] [--only w16]
 #

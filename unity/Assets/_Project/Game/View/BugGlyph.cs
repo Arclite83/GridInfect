@@ -97,6 +97,18 @@ namespace GridInfect.Game
             });
         }
 
+        // The solved mark on a calendar day (R-1001: a shape, never colour
+        // alone): a lit tick.
+        public static Sprite Check(BoardPalette p, int sizePx)
+        {
+            return Cached($"check:{sizePx}:{p.GlyphKey}", () =>
+            {
+                var c = new GlyphCanvas(sizePx);
+                c.Stroke(new[] { 9f, 21f, 16f, 28f, 31f, 12f }, 3.4f, p.Tip);
+                return c.ToSprite($"mark_CHECK_{sizePx}");
+            });
+        }
+
         // Relay cells (RULES_V2 §12): a hub with one stub and pad per arm,
         // in the grammar's wire colour.
         public static Sprite Relay(byte arms, BoardPalette p, int sizePx)

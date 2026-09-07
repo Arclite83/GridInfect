@@ -151,8 +151,8 @@ namespace GridInfect.Game
 
         // Infection VFX (docs/infection-vfx-spec.md "Locked parameters").
         // Blocks, hop, bias, glow hold and glow fade are fixed; trace and
-        // bleed are the two remaining tunables. InfectionVfxSpecTests keeps
-        // this table and the spec from drifting apart.
+        // bleed are the two remaining tunables. Keep this table and the spec in
+        // step by hand.
         public static class Infection
         {
             public const int Blocks = 16;           // blocks per cell

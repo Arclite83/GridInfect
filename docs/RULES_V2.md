@@ -88,7 +88,7 @@ On a board with only classic tiles and no forbidden or relay cells, §3 and
 every vector solution through both and compares boards, queues and flags
 after each placement. The 128 vectors themselves stay on V1
 (`VectorReplayTests`); the generated worlds, the daily and endless boards
-run on V2 (`WorldTests`, `DailyTests` go through the action pipeline).
+run on V2 through the action pipeline.
 
 ## 8. Short arms (retired)
 

@@ -79,6 +79,12 @@ namespace GridInfect.Core
         public static long DailyBestMs(Profile profile, string dateUtc) =>
             profile.DailyBestMs.TryGetValue(dateUtc ?? "", out long ms) ? ms : 0;
 
+        // A date is solved once it has a best time, on the day or from the archive.
+        public static bool IsDailySolved(Profile profile, string dateUtc) => DailyBestMs(profile, dateUtc) > 0;
+
+        // The grade band a weekday's dailies fall in (the calendar's column header).
+        public static (Solving.Grade min, Solving.Grade max) DailyBand(System.DayOfWeek day) => DailyCalendar.Band(day);
+
         // The streak as of `dateUtc`: intact if the last completed date is
         // today or yesterday, otherwise broken (shown as 0 until today's solve).
         public static int DailyStreakOn(Profile profile, string dateUtc)

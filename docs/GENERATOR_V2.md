@@ -353,7 +353,7 @@ worlds were four (w11 3,359 seeds for 20 levels, w12 3,281 for 20).
 ### Locks at load
 
 A level's locks travel with it (`GeneratedLevel.Locks`, JSONL `locks`,
-`WorldData.Locks` / `DailyData.Locks`) and the loading action places them
+`WorldData.Locks`, the level cache) and the loading action places them
 through the rules before play (`Locked.Apply`, from `world.load`,
 `daily.begin`, `endless.begin` and `endless.advance`): the piece sits on
 the board locked, cannot be lifted, and survives a full reset, exactly as
@@ -361,17 +361,13 @@ a Lock-tool placement does. Stored solutions list locked pieces first;
 solvers and counters take them as `placed` (`Locked.Placed`).
 
 **No shipped level uses one.** `GenSpec.MaxLocks` is 0, so the worlds, the
-Daily pools and Endless (which generates on the device from the same
-`GenSpec`) never hand the player a piece they cannot move: a sample whose
+Daily and Endless (which generate on the device through `LevelCache` from
+`DailySpec`) never hand the player a piece they cannot move: a sample whose
 ambiguity only a lock could break is rejected as `NotUnique` and the
 generator takes the next seed. Everything above stays — the given kind,
 the discriminator's fallback to it, `Locked.Apply` and the load path — so
 raising the budget is one field, and a level that does carry a lock still
-loads correctly. `GivensAndHintsTests` holds both halves:
-`NoShippedLevelPreplacesAPiece` over every world level, every Daily pool
-and the Endless and Daily specs, and
-`LockedApplyStillPlacesInfectsAndSurvivesAFullReset` over the load path
-itself, so the budgeted-out mechanism cannot rot.
+loads correctly, through the same path the Lock tool's placements take.
 
 The Lock *tool* is unaffected: a piece the player spends a lock on is
 placed and locked the same way, and that is a placement they asked for.
@@ -387,8 +383,11 @@ field (`--max-givens`, `--max-locks`, `--max-forbidden`, `--max-traps`
 bound the pools); `--daily Monday` takes the weekday's spec from
 `DailySpec`; `--threads N` generates seed chunks in parallel and consumes
 them in seed order, so the output is independent of N.
-`tools/gen_worlds.sh` regenerates the worlds, `tools/gen_daily.sh` the
-seven Daily pools; `tools/bake_worlds.py` bakes both.
+`tools/gen_worlds.sh` regenerates the worlds and `tools/bake_worlds.py`
+bakes them. The Daily and Endless are not batch content: the device runs
+the same `GeneratorV2.Generate` for the date's (or the run's) seed range
+through `LevelCache` (`docs/MODES.md` §5); `--daily Monday` reproduces a
+weekday's spec for inspection.
 
 ## Elements (stages 9–12)
 

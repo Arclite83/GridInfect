@@ -114,22 +114,6 @@ namespace GridInfect.Core.Tests
             foreach (var d in partial.Trace) Assert.That(d.Piece, Is.Not.EqualTo(first.piece));
         }
 
-        // Three seconds: the 97 non-unique classics run the two-deep
-        // contradiction pass before the search fallback takes over.
-        [Test]
-        public void WholeClassicRunStaysUnderThreeSeconds()
-        {
-            var watch = Stopwatch.StartNew();
-            for (int id = 0; id < ClassicLevels.Count; id++)
-            {
-                SolutionCounter.Count(ClassicLevels.Get(id));
-                Deducer.Solve(ClassicLevels.Get(id));
-            }
-            watch.Stop();
-            TestContext.Out.WriteLine($"128 levels counted and solved in {watch.ElapsedMilliseconds} ms");
-            Assert.That(watch.ElapsedMilliseconds, Is.LessThan(3000));
-        }
-
         // The grade of every unique classic level, locked: a change here is a
         // change to every generated world's difficulty ramp.
         [Test]

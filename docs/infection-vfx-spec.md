@@ -185,8 +185,8 @@ the drop preview), `View/GlyphRaster.cs` + `View/BugGlyph.cs` (the bug glyph
 grammar, rasterised at runtime), `View/Substrate.cs`, `Ui/Glass.cs`,
 `View/BoardBloom.cs`, `Audio/HopClickAudio.cs`. The locked parameters live in
 `PresentationConfig.Infection`, the style guide's px tokens in
-`PresentationConfig.Style`; `InfectionVfxSpecTests` fails if this document
-and those tables stop agreeing.
+`PresentationConfig.Style`; keep this document and those tables in step by
+hand (there is no gate test).
 
 Where the build deviates from the spec above, and why.
 

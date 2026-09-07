@@ -25,7 +25,7 @@ GridInfect.Game (Unity adapter)     GridInfect.Core.Tests (edit-mode / dotnet)
 | Assembly | Contents | May reference |
 |---|---|---|
 | `Bloodhound.Engine` | Action dispatch/registry/log, `MiniJson`, `Pcg32`. Game-agnostic — the piece that moves to the next game (the logic game) unchanged. | nothing (`noEngineReferences`) |
-| `GridInfect.Core` | Schema types, `Rules` (the mechanics), the actions, `LevelGenerator`, baked classic levels, `SaveCodec`, `Queries`, `Solving` (the deduction solver with its depth ladder, exact solution counter and trace grader) and `Generation` (generator v2: the sampler carves a solution's fill; the constructor subtracts givens — walls, gaps, forbidden cells, traps, locks — to a unique, minimal level and grades it off the trace — `docs/GENERATOR_V2.md`). | `Bloodhound.Engine` only (`noEngineReferences`) |
+| `GridInfect.Core` | Schema types, `Rules` (the mechanics), the actions, `LevelGenerator`, baked classic levels, `SaveCodec`, `Queries`, `Solving` (the deduction solver with its depth ladder, exact solution counter and trace grader), `Generation` (generator v2: the sampler carves a solution's fill; the constructor subtracts givens — walls, gaps, forbidden cells, traps, locks — to a unique, minimal level and grades it off the trace — `docs/GENERATOR_V2.md`) and `LevelCache` (the on-device memo of generated boards, with its background warmer `Warmup`). | `Bloodhound.Engine` only (`noEngineReferences`) |
 | `GridInfect.Game` | Everything Unity: boot, camera, screens, board/piece views, input, tweens, the 0.3 s beat, save file IO. Parses input, dispatches one action or reads one query, renders the result. | Core, Engine, UnityEngine |
 | `GridInfect.Services` | The SDK boundary: ads, consent, purchasing interfaces, cadence config, Null services, `Bootstrap`. SDK-backed implementations only here. | UnityEngine (+ the SDK packages) |
 | `GridInfect.Core.Tests` | NUnit suites; run identically in Unity edit mode and under `dotnet test` via the mirror projects in `src/`. | Core, Engine |
@@ -58,9 +58,9 @@ files, touches) into these types at the boundary.
 | `LevelDef` | immutable board (66 bytes) + ordered pieces (1–8) as `Tile[]` and `PieceSpec[]` + `Version` (1 classic, 2 RulesV2) + per-cell relay arms | V1: cell values ∈ {0,1,2,3,5}; V2 also 6 (forbidden) and relay data on active cells; validated at construction |
 | `PieceSpec` | arms of one family — cardinal (L/R/U/D) or diagonal (UL/UR/DL/DR), never both — every arm to the edge; optional 3×3 area | text form `LRD`, `ul+dr`, `A`; a classic tile is the cardinal case; the blot is the only short-range piece; the constructor rejects a mixed piece (`docs/RULES_V2.md` §1) |
 | `LevelSession` | working board, `PieceState[]` (tile, placed, cell, `Locked`), repel queue, `ResetTripped`, `ResolutionPending`, `Solved`, `Resets` (stat), and its `Rules` (`IRules`: the frozen classic `Rules` via `RulesV1` for V1 definitions, `RulesV2` for V2) | mutated only through `Rules`, called only by actions; a locked piece cannot be lifted and survives a full reset (re-propagated in index order) |
-| `World` | id, name, element set, ordered levels (board, pieces, stored solution, grade, seed, canonical hash) | baked from `docs/worlds/*.jsonl` into `WorldData.g.cs` by `tools/bake_worlds.py`; every level has exactly one solution and solves by deduction (`WorldTests`) |
+| `World` | id, name, element set, ordered levels (board, pieces, stored solution, grade, seed, canonical hash) | baked from `docs/worlds/*.jsonl` into `WorldData.g.cs` by `tools/bake_worlds.py`; every level has exactly one solution and solves by deduction |
 | `Profile` | unlocked set, best times ms[5], run counts[5], muted, world progress {id → levels open}, daily bests {date → ms}, daily streak and last date, endless best streak[5], lock wallet (start 5, free grants capped at 10) | pure data; serialization only via `SaveCodec` (versioned JSON, expand/contract; v2 added `worlds`, v3 the daily/endless fields, v4 `locks`) |
-| `DailyRun` / `EndlessRun` | daily: UTC date, pool level seed and index, start/complete ms, par; endless: grade, run seed, index, streak, level seed | boards are pure functions of the logged inputs (the daily from its weekday's baked pool, `DailyPool`; endless from `DailySpec` on the device); the daily clock is a stat, never a rule |
+| `DailyRun` / `EndlessRun` | daily: UTC date, level seed and day number, start/complete ms, par; endless: grade, run seed, index, streak, level seed | boards are pure functions of the logged inputs (the daily from its weekday's spec at the date's seed range, `DailyCalendar`; endless from its run seed), both through `LevelCache`, which memoises the generator on the device and runs it ahead of the player in the background; the daily clock is a stat, never a rule |
 | `GameState` | mode (Classic / FreePlay / World / Daily / Endless) + classic id / free-play run / world id and index / daily run / endless run + `Session` + `Profile` + the level's stored `Solution` (vector for Legacy, generator's otherwise) | wall-clock time enters **only** through action inputs |
 
 `ResolutionPending` is the model's name for the original's 0.3 s presentation
@@ -94,8 +94,8 @@ live in `Queries` and carry zero rules.
 | `world.load` | `worldId, index` | WorldActions | enter a baked world level (unlock gating is presentation policy) |
 | `progress.unlockWorld` | `worldId` | WorldActions | a world opens at its first level; dispatched by the adapter when the previous world's last level is solved |
 | `progress.unlockWorldLevel` | `worldId, index` | WorldActions | level `index` opens (`index == Count` marks the world finished); dispatched by the adapter on solve for `index + 1` |
-| `daily.begin` | `dateUtc, nowMs` | DailyActions | the board for that UTC date (its weekday's baked pool at the week number, `DailyPool`); places the level's locks; clock starts |
-| `daily.complete` | `nowMs` | DailyActions | solved: elapsed, personal best per date, streak of consecutive dates (`StreakGrantDue` every 7th); rejects a backward clock |
+| `daily.begin` | `dateUtc, nowMs` | DailyActions | the board for that UTC date (the weekday's spec at the date's seed range, `DailyCalendar`, through `LevelCache`); any date from the epoch to the clock's own UTC date, so past days play from the calendar; places the level's locks; clock starts |
+| `daily.complete` | `nowMs` | DailyActions | solved: elapsed, personal best per date; the streak counts dates solved on the day, so it moves only when the run's date is the clock's own UTC date (`StreakGrantDue` every 7th); rejects a backward clock |
 | `endless.begin` | `grade, seed` | DailyActions | start an Endless run: no clock, boards from the logged seed |
 | `endless.advance` | — | DailyActions | solved: streak +1 (or 1 after a reset), best per grade, next board |
 | `endless.abort` | — | DailyActions | leave a run |
@@ -169,37 +169,27 @@ Faithfully ported quirks (contract, do not "fix" silently):
 
 ## 6. Mechanical gates
 
-Cheap to amend in a normal change, so the layering iterates instead of
-ossifying or eroding:
+The suite is load-bearing core only: rules, solver, generator, save. There
+are no source-scanning or documentation-sync tests; the asmdefs and the
+mirror build are the module gate, and the docs are kept honest by the
+change policy (§9), not by a test.
 
 - **asmdefs** enforce the module graph in Unity (`noEngineReferences` on
-  Engine and Core).
-- **`ArchitectureGateTests`** enforce the same rules under `dotnet test`:
-  no `UnityEngine` in Engine/Core sources, no `GridInfect` in Engine sources,
-  no direct `Rules` mutation from the adapter, registry ⇔ constants ⇔
-  this document kept in sync, and SDK types confined to `GridInfect.Services`.
-- **Oracle and golden tests** pin the derived truth: the solution counter
-  against `tools/level_metrics.py` on all 128 levels, generator v2 golden
-  seeds, the classic grade table, every world level regenerating from its
-  recorded seed, and every generated file's freshness in CI
-  (`ClassicLevelData.g.cs`, `WorldData.g.cs`, `UndoFixtures.g.cs`,
-  `docs/level_metrics_classic.json`).
-- **`InfectionVfxSpecTests`** do the same for the art and layout contract.
-  The presentation layer is Unity-only, so these are source gates, not
-  behaviour tests:
-  - the locked parameter table and the palette in
-    `docs/infection-vfx-spec.md` ⇔ `PresentationConfig.Infection` ⇔
-    `BoardPalette` ⇔ the board shader's properties;
-  - no literal colour anywhere in the shader body, so a palette swap really
-    is the only way to restyle a board;
-  - every juice layer is an independent, correctly-defaulted switch;
-  - the project's colour space and orientation match the baseline
-    `docs/DEPENDENCIES.md` declares, because gamma or landscape would keep
-    drawing — just wrong, and quietly;
-  - the board's cell size takes the smallest of its three fits, and every
-    screen measures from `PresentationConfig.Layout`, which is the drift that
-    made all four screens landscape-only in the first place.
-- **CI** (`.github/workflows/ci.yml`) runs the full suite on every push.
+  Engine and Core); `src/` compiles the same sources headless and
+  type-checks the adapter against API stubs, so a Core file reaching for
+  `UnityEngine` fails the mirror build.
+- **Oracle and golden tests** pin the derived truth: the 128 classic
+  levels replaying their recorded solutions against per-step golden boards
+  (`VectorReplayTests`), the undo path against the Python reference
+  (`UndoTests`), the solution counter against `tools/level_metrics.py` on
+  all 128 levels and the classic grade table (`SolverTests`), generator v1
+  and v2 golden seeds (`GeneratorTests`, `GeneratorV2Tests`), the rules of
+  every element (`RulesV2Tests`, `ElementTests`, `RulesEdgeTests`), the
+  Lock tool (`LockTests`) and the save codec (`SaveAndProgressTests`).
+- **CI** (`.github/workflows/ci.yml`) runs the suite on every push and
+  re-derives every generated file (`ClassicLevelData.g.cs`,
+  `WorldData.g.cs`, `UndoFixtures.g.cs`, `docs/level_metrics_classic.json`)
+  to fail a stale bake.
 
 ## 7. Performance posture
 
@@ -239,8 +229,8 @@ Chrome measures from one place, `PresentationConfig.Layout`: anything
 square-ish — button boxes, glyphs, type — comes off the short edge so a control
 keeps its shape when the screen turns, and positions stay fractions of the axis
 they belong to. Screens each inventing their own fractions of screen height is
-what let all four drift into a landscape-only shape, so a gate test
-(`EveryScreenMeasuresFromTheSharedLayout`) fails a screen that stops using it.
+what let all four drift into a landscape-only shape, so every screen
+measures from it.
 
 The board itself is `docs/infection-vfx-spec.md`, built the same way — one
 quad, one material, zero imported art. Cell state goes into a point-filtered

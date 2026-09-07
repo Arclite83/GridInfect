@@ -61,6 +61,29 @@ namespace GridInfect.Core.Tests
             Assert.That(second.State.Profile.BestTimesMs[0], Is.EqualTo(30_000), "slower run keeps the best");
         }
 
+        [Test]
+        public void SaveMigratesFromV2AndRoundTripsV3()
+        {
+            string v2 = "{\"v\":2,\"unlocked\":[1],\"bestMs\":[0,0,0,0,0],\"counts\":[0,0,0,0,0],\"muted\":false,\"worlds\":{\"w01\":3}}";
+            var migrated = SaveCodec.Load(v2);
+            Assert.That(migrated.WorldUnlocked["w01"], Is.EqualTo(3));
+            Assert.That(migrated.DailyStreak, Is.EqualTo(0));
+            Assert.That(migrated.DailyBestMs, Is.Empty);
+
+            migrated.DailyBestMs["2026-09-07"] = 61_000;
+            migrated.DailyStreak = 3;
+            migrated.DailyLastDate = "2026-09-07";
+            migrated.EndlessBest[2] = 9;
+            string json = SaveCodec.Save(migrated);
+            Assert.That(json, Does.Contain("\"v\":" + SaveCodec.Version));
+            var loaded = SaveCodec.Load(json);
+            Assert.That(loaded.DailyBestMs, Is.EqualTo(migrated.DailyBestMs));
+            Assert.That(loaded.DailyStreak, Is.EqualTo(3));
+            Assert.That(loaded.DailyLastDate, Is.EqualTo("2026-09-07"));
+            Assert.That(loaded.EndlessBest, Is.EqualTo(migrated.EndlessBest));
+            Assert.That(SaveCodec.Save(loaded), Is.EqualTo(json));
+        }
+
         static void SolveCurrentLevel(Bloodhound.Engine.Dispatcher<GameState> dispatcher, ulong seed)
         {
             var rng = new Bloodhound.Engine.Pcg32(seed);

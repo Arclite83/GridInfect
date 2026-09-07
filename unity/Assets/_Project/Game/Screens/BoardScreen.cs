@@ -459,7 +459,9 @@ namespace GridInfect.Game
                 }
                 long elapsed = Queries.ElapsedMs(run, GameApp.NowMs());
                 long best = Queries.DailyBestMs(App.State.Profile, run.DateUtc);
-                OpenPopup($"SOLVED IN {Queries.FormatDuration(elapsed)}\nPAR {Queries.FormatDuration(run.ParMs)}   BEST {Queries.FormatDuration(best)}\nSTREAK {App.State.Profile.DailyStreak}");
+                // A past day solved from the calendar sets a best, never the streak.
+                string third = run.DateUtc == GameApp.TodayUtc() ? $"STREAK {App.State.Profile.DailyStreak}" : "ARCHIVE";
+                OpenPopup($"SOLVED IN {Queries.FormatDuration(elapsed)}\nPAR {Queries.FormatDuration(run.ParMs)}   BEST {Queries.FormatDuration(best)}\n{third}");
                 AddPopupButton("MENU", new Vector2(0f, -Short * 0.06f),
                     new Vector2(L.ContentWidth / 3f, L.BarHeight), () => App.Screens.Show(new DailyScreen()));
             }

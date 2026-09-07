@@ -6,25 +6,30 @@ using GridInfect.Core.Solving;
 namespace GridInfect.Core
 {
     // The Daily's board is a pure function of the UTC date: the weekday's
-    // baked pool (DailyPool) indexed by the week. The weekday specs here are
-    // what tools/gen_daily.sh generated those pools from (gen_levels
-    // --daily), so they stay the single source of truth for the ramp
-    // (MODES.md §5). Endless still generates on the device from the same
-    // library.
+    // spec (the ramp below) at the date's seed range (SeedFor), first
+    // accepted seed wins. Nothing is pregenerated; the level cache runs that
+    // math ahead of time in the background and the loader covers a miss
+    // (MODES.md §5.1). Endless works the same way from its logged run seed.
     public static class DailySpec
     {
         public const string DateFormat = "yyyy-MM-dd";
-        public const int MaxSeedTries = 4000;
+
+        // A date's seed range: day n since DailyCalendar.Epoch scans from
+        // CalendarSeedBase + n * DayStride; the stride leaves the cache's
+        // MaxSeedTries room, so two dates never share a seed.
+        public const ulong CalendarSeedBase = 2_000_000;
+        public const ulong DayStride = 10_000;
+
+        public static ulong SeedFor(DateTime date) => CalendarSeedBase + (ulong)DailyCalendar.DayIndex(date) * DayStride;
+
+        // The UTC date a clock stamp falls on: what "today" means to an action.
+        public static DateTime DateOf(long nowMs) => DateTimeOffset.FromUnixTimeMilliseconds(nowMs).UtcDateTime.Date;
 
         public static bool TryParseDate(string dateUtc, out DateTime date) =>
             DateTime.TryParseExact(dateUtc, DateFormat, CultureInfo.InvariantCulture,
                 DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out date);
 
         public static string Format(DateTime date) => date.ToString(DateFormat, CultureInfo.InvariantCulture);
-
-        // The seed range each weekday's pool was generated from (recorded in
-        // the pool header as well).
-        public static ulong PoolSeed(DayOfWeek day) => 1_000_000ul + 100_000ul * (ulong)(day == DayOfWeek.Sunday ? 7 : (int)day);
 
         // The element set rotates with the weekday (one element per day as
         // the stages land): Monday and Tuesday are plain walls (Tuesday one
@@ -61,22 +66,16 @@ namespace GridInfect.Core
             return spec;
         }
 
-        // The board for a date, from the weekday's baked pool.
-        public static PoolLevel Build(string dateUtc)
+        // The board for a date (DailyCalendar.For); null for a malformed date.
+        public static PlayableLevel Build(string dateUtc)
         {
             if (!TryParseDate(dateUtc, out DateTime date)) return null;
-            return DailyPool.For(date);
+            return DailyCalendar.For(date);
         }
 
-        public static GeneratedLevel FirstAccepted(GenSpec spec, ulong seed)
-        {
-            for (int n = 0; n < MaxSeedTries; n++)
-            {
-                var level = GeneratorV2.Generate(spec, seed + (ulong)n);
-                if (level != null) return level;
-            }
-            return null;
-        }
+        // The first seed at or after `seed` the generator accepts, through the
+        // cache: at once when it is there, otherwise generated now.
+        public static PlayableLevel FirstAccepted(GenSpec spec, ulong seed) => LevelCache.Shared.Get(spec, seed);
 
         // Par: a deduction step every fifteen seconds, more for the harder
         // grades, plus a look at the board.
@@ -102,8 +101,8 @@ namespace GridInfect.Core
     public sealed class DailyRun
     {
         public string DateUtc;
-        public ulong Seed;             // the pool level's generator seed
-        public int PoolIndex;          // its position in the weekday's pool
+        public ulong Seed;             // the level's accepted generator seed
+        public int Day;                // days since DailyCalendar.Epoch
         public long StartedMs;
         public long CompletedMs;       // 0 while running
         public int TraceLength;
