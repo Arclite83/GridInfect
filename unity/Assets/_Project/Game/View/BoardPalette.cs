@@ -29,14 +29,15 @@ namespace GridInfect.Game
         public Color CopperLo = Hex("#7D6120");
 
         // ---- skin: infection. The only strong emissive element on screen.
-        // Red: infection is success. (Placeholder values until the palette
-        // is final; the hue direction is the decision.) ----
-        public Color Infect = Hex("#FF3030");
-        public Color InfectHi = Hex("#FF7A7A");
-        public Color InfectLo = Hex("#B00E1A");
-        public Color InfectGlow = Alpha(Hex("#FF3030"), 0.55f);
-        public Color GlyphEdge = Hex("#5A0008");    // leads, body outline
-        public Color GlyphWire = Hex("#3A0008");    // bond wires, stubs, pads
+        // Deep rose red: infection is success. The rose lives in the
+        // highlight and the shadow; the fill sits down into the glass and
+        // the glow carries the emission. ----
+        public Color Infect = Hex("#D9204F");
+        public Color InfectHi = Hex("#FF6E93");
+        public Color InfectLo = Hex("#8F0A32");
+        public Color InfectGlow = Alpha(Hex("#D9204F"), 0.55f);
+        public Color GlyphEdge = Hex("#4A0018");    // leads, body outline
+        public Color GlyphWire = Hex("#300010");    // bond wires, stubs, pads
 
         // ---- neutrals, constant across skins ----
         public Color Tip = Hex("#FFFFFF");          // lit lead tips, highlights, core dot
@@ -49,7 +50,7 @@ namespace GridInfect.Game
         // Grid Infect ships a repel switch, a reset trap and a forbidden cell
         // alongside empty / infected / blocker. They are tints on the guide's
         // component glass plus a shape glyph each (R-1001), never a literal.
-        public Color RepelSwitch = Hex("#8A5CFF");  // violet tint, diamond glyph
+        public Color RepelSwitch = Hex("#7C8A99");  // slate tint, diamond glyph: a plain component, never a cousin of the infection
         public Color ResetTrap = Hex("#0D0D12");    // near-black tint, X glyph
         public Color Conflict = Hex("#4DE3FF");     // ice overprint on a tripped ray, a warned arm, a refused drop: never red, red is infection
 
@@ -102,9 +103,9 @@ namespace GridInfect.Game
                     default:
                         p.Mask = Hex("#7FAE66"); p.MaskHi = Hex("#97C27C"); p.MaskLo = Hex("#5F8B4A"); p.Ink = Hex("#1D3316");
                         p.Copper = Hex("#C9A648"); p.CopperHi = Hex("#F3E2A8"); p.CopperLo = Hex("#7D6120");
-                        p.Infect = Hex("#FF3030"); p.InfectHi = Hex("#FF7A7A"); p.InfectLo = Hex("#B00E1A");
-                        p.InfectGlow = Alpha(Hex("#FF3030"), 0.55f);
-                        p.GlyphEdge = Hex("#5A0008"); p.GlyphWire = Hex("#3A0008");
+                        p.Infect = Hex("#D9204F"); p.InfectHi = Hex("#FF6E93"); p.InfectLo = Hex("#8F0A32");
+                        p.InfectGlow = Alpha(Hex("#D9204F"), 0.55f);
+                        p.GlyphEdge = Hex("#4A0018"); p.GlyphWire = Hex("#300010");
                         break;
                 }
             }

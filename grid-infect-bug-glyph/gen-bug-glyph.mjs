@@ -8,7 +8,7 @@ const OUT = process.argv[2] ?? "out";
 
 // Palette. Skin-swappable: these are the default (green mask) values.
 const C = {
-  body: "#ff3030",   // infection fill (red: infection is success)
+  body: "#d9204f",   // infection fill (deep rose red: infection is success)
   edge: "#5a0033",   // lead + outline
   wire: "#3a0b22",   // bond wires, branch stubs, pads
   tip:  "#ffffff",   // lit lead tip, core highlight

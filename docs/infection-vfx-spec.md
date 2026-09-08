@@ -38,11 +38,11 @@ constant. New skins are a palette swap.
 | Copper | `#C9A648` | `#D9A441` | `#C46A3A` |
 | Copper highlight | `#F3E2A8` | `#FFE08A` | `#F0A878` |
 | Copper shadow | `#7D6120` | `#7A5410` | `#7A3A18` |
-| Infection | `#FF3030` | `#FF8A00` | `#FF2D3A` |
+| Infection | `#D9204F` | `#FF8A00` | `#FF2D3A` |
 | Infection highlight | `#FF7CC4` | `#FFB347` | `#FF6B6B` |
 | Infection shadow | `#B3086A` | `#C25A00` | `#B3101C` |
-| Glyph edge | `#5A0033` | `#4A2600` | `#5A0008` |
-| Glyph wire | `#3A0B22` | `#3A1D00` | `#3A0008` |
+| Glyph edge | `#4A0018` | `#4A2600` | `#5A0008` |
+| Glyph wire | `#300010` | `#3A1D00` | `#3A0008` |
 
 Neutrals, constant across skins: lit tips and highlights `#FFFFFF`, blocker
 body `#CFD8E0`, blocker edge `#4D565F`, board well black at 36%, shadows
@@ -54,7 +54,7 @@ glyph each, never a colour alone:
 
 | Element | Colour | Notes |
 |---|---|---|
-| Repel switch | `#8A5CFF` | violet tint, diamond glyph |
+| Repel switch | `#7C8A99` | slate tint, diamond glyph |
 | Reset trap | `#0D0D12` | near-black tint, X glyph |
 | Conflict overprint | `#4DE3FF` | on the ray that tripped a trap, plus the X; a warned arm in the drop preview; a refused drop. Ice, never red: red is the infection |
 | Forbidden cell | copper | the bare pad with a copper ring: nothing may sit on it |
