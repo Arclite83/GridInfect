@@ -13,8 +13,9 @@ namespace GridInfect.Game
     // the well holding the days as tiles, two readout badges, and today's
     // board in a tray slot with the one lit control. A solved day is an
     // infected tile, today wears the copper ring, a past day is dormant
-    // glass and opens on a tap (behind the loader when the cache has not
-    // generated it yet), a future day is out of bounds. Swipe pages months.
+    // glass, a future day is out of bounds. A tap selects a day: the slot
+    // shows it and its one lit control opens it (behind the loader when
+    // the cache has not generated it yet). Swipe pages months.
     public sealed class DailyScreen : AppScreen
     {
         const int Columns = 7;
@@ -23,17 +24,19 @@ namespace GridInfect.Game
 
         static int _month = -1;            // year * 12 + month - 1, remembered across visits
 
-        GameObject _page;
-        TextMesh _monthLabel, _yearLabel, _infoLine, _parLabel;
+        GameObject _page, _selection;
+        TextMesh _monthLabel, _yearLabel, _slotNumber, _slotCaption, _dateLine, _infoLine, _bestLine;
         UiButton _prev, _next, _todayChip, _play;
-        readonly System.Collections.Generic.List<(Rect bounds, DateTime date)> _tiles =
-            new System.Collections.Generic.List<(Rect, DateTime)>();
+        DateTime _selected;
+        readonly System.Collections.Generic.List<(Rect bounds, Vector2 centre, DateTime date)> _tiles =
+            new System.Collections.Generic.List<(Rect, Vector2, DateTime)>();
+        Vector2 _playCentre, _playSize;
 
         string _today;
         DateTime _todayDate;
         float _cell, _gap, _pitch, _wellW, _wellH, _wellY, _headerY, _badgeY;
         Vector2 _press;
-        bool _pressed, _parPending;
+        bool _pressed, _infoPending;
 
         int TodayMonth => _todayDate.Year * 12 + _todayDate.Month - 1;
         int EpochMonth => DailyCalendar.Epoch.Year * 12 + DailyCalendar.Epoch.Month - 1;
@@ -53,6 +56,7 @@ namespace GridInfect.Game
             DailySpec.TryParseDate(_today, out _todayDate);
             if (_month < 0) _month = TodayMonth;
             _month = Mathf.Clamp(_month, EpochMonth, TodayMonth);
+            _selected = _todayDate;
 
             // HUD (§7): the mode label between two chips.
             var title = Ui.MakeText("title", Root.transform, "DAILY", L.HeadingText, BoardTheme.Text, 2);
@@ -62,7 +66,7 @@ namespace GridInfect.Game
             Buttons.Add(UiButton.Make(Root.transform, "MENU", L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
             _todayChip = UiButton.Make(Root.transform, "TODAY", new Vector2(-L.BackPos.x, L.BackPos.y), L.BackSize,
-                BoardTheme.ButtonBg, BoardTheme.Text, () => Go(TodayMonth));
+                BoardTheme.ButtonBg, BoardTheme.Text, () => { Go(TodayMonth); Select(_todayDate); });
             Buttons.Add(_todayChip);
 
             // Month row: an arrow chip each side, the year as silkscreen over the name.
@@ -109,9 +113,10 @@ namespace GridInfect.Game
             var well = Ui.MakeGlass("well", Root.transform, new Vector2(_wellW, _wellH), GlassStyle.Well(palette), 5);
             Ui.SetPos(well, 0f, _wellY);
 
-            // Today's board in a tray slot (§8) with the one lit control.
+            // The selected day's board in a tray slot (§8) with the one lit control.
             BuildTray(h, palette);
             BuildPage();
+            Select(_todayDate);
         }
 
         // ---- month page ----
@@ -138,7 +143,7 @@ namespace GridInfect.Game
             _next.Enabled = _month < TodayMonth;
             SetChipDim(_prev, !_prev.Enabled);
             SetChipDim(_next, !_next.Enabled);
-            SetChipDim(_todayChip, _month == TodayMonth);
+            SetChipDim(_todayChip, _month == TodayMonth && _selected == _todayDate);
 
             var palette = BoardPalette.Default;
             var profile = App.State.Profile;
@@ -193,7 +198,7 @@ namespace GridInfect.Game
                     var padDot = Ui.MakeGlass("pad", tile.transform, new Vector2(dot, dot), padStyle, 12);
                     Ui.SetPos(padDot, _cell * 0.36f, -_cell * 0.36f);
                 }
-                _tiles.Add((new Rect(x - _cell / 2f, y - _cell / 2f, _cell, _cell), date));
+                _tiles.Add((new Rect(x - _cell / 2f, y - _cell / 2f, _cell, _cell), new Vector2(x, y), date));
             }
 
             // Readouts (§7 counter style): the streak, and solved over playable this month.
@@ -204,6 +209,33 @@ namespace GridInfect.Game
             // The month's unplayed days go to the worker, newest first, behind
             // today's board and the recent archive.
             Warmup.ForMonth(LevelCache.Shared, year, month, _todayDate, profile);
+            ShowSelection();
+        }
+
+        // The selected day: a lit ring on its tile (today's copper ring says
+        // it already), and the slot read from it. Its board goes to the
+        // front of the worker's queue so the slot fills in and BEGIN is instant.
+        void Select(DateTime date)
+        {
+            _selected = date;
+            LevelCache.Shared.Prefetch(DailySpec.For(date.DayOfWeek), DailySpec.SeedFor(date), -1);
+            ShowSelection();
+            RefreshSlot();
+            SetChipDim(_todayChip, _month == TodayMonth && _selected == _todayDate);
+        }
+
+        void ShowSelection()
+        {
+            if (_selection != null) UnityEngine.Object.Destroy(_selection);
+            _selection = null;
+            if (_selected == _todayDate) return;
+            foreach (var (bounds, centre, date) in _tiles)
+            {
+                if (date != _selected) continue;
+                _selection = Ui.MakeGlass("selected", _page.transform, new Vector2(_cell + S.Px(4f), _cell + S.Px(4f)), SelectedStyle(BoardPalette.Default), 9);
+                Ui.SetPos(_selection, centre.x, centre.y);
+                return;
+            }
         }
 
         GameObject Tile(string name, float x, float y, GlassStyle style, string label, Color textColor)
@@ -235,62 +267,71 @@ namespace GridInfect.Game
             chip.Label.color = dim ? BoardTheme.TextDim : BoardTheme.Text;
         }
 
-        // ---- today's slot ----
+        // ---- the selected day's slot ----
 
         void BuildTray(float h, BoardPalette palette)
         {
             float slot = S.Px(S.TraySlot);
             float y = -h / 2f + S.Px(112f);
             float slotX = -L.ContentWidth / 2f + slot / 2f + S.Px(8f);
-            bool solved = Queries.IsDailySolved(App.State.Profile, _today);
 
             var glass = Ui.MakeGlass("slot", Root.transform, new Vector2(slot, slot), GlassStyle.TraySlot(palette, true), 5);
             Ui.SetPos(glass, slotX, y);
-            var number = Ui.MakeText("today", Root.transform, _todayDate.Day.ToString(), slot * 0.42f, BoardTheme.TextOnAccent, 6);
-            Ui.SetPos(number.gameObject, slotX, y);
-            var slotCaption = Ui.MakeText("slot:caption", Root.transform, "TODAY", S.Px(S.TrayCaption), BoardTheme.TextDim, 6, mono: true);
-            Ui.SetPos(slotCaption.gameObject, slotX, y - slot / 2f - S.Px(12f));
+            _slotNumber = Ui.MakeText("slot:day", Root.transform, "", slot * 0.42f, BoardTheme.TextOnAccent, 6);
+            Ui.SetPos(_slotNumber.gameObject, slotX, y);
+            _slotCaption = Ui.MakeText("slot:caption", Root.transform, "", S.Px(S.TrayCaption), BoardTheme.TextDim, 6, mono: true);
+            Ui.SetPos(_slotCaption.gameObject, slotX, y - slot / 2f - S.Px(12f));
 
             float infoX = slotX + slot / 2f + S.Px(22f);
-            var dateLine = Ui.MakeText("date", Root.transform,
-                $"{DayNames[((int)_todayDate.DayOfWeek + 6) % 7]} {_todayDate.Day:00} {MonthNames[_todayDate.Month - 1].Substring(0, 3)}",
-                S.Px(16f), BoardTheme.Text, 6, anchor: TextAnchor.MiddleLeft);
-            Ui.SetPos(dateLine.gameObject, infoX, y + S.Px(24f));
+            _dateLine = Ui.MakeText("date", Root.transform, "", S.Px(16f), BoardTheme.Text, 6, anchor: TextAnchor.MiddleLeft);
+            Ui.SetPos(_dateLine.gameObject, infoX, y + S.Px(24f));
             _infoLine = Ui.MakeText("band", Root.transform, "", S.Px(11f), BoardTheme.Text, 6, mono: true, anchor: TextAnchor.MiddleLeft);
             Ui.SetPos(_infoLine.gameObject, infoX, y + S.Px(8f));
-            _parLabel = Ui.MakeText("par", Root.transform, "", S.Px(11f), BoardTheme.Text, 6, mono: true, anchor: TextAnchor.MiddleLeft);
-            Ui.SetPos(_parLabel.gameObject, infoX, y - S.Px(8f));
+            _bestLine = Ui.MakeText("best", Root.transform, "", S.Px(11f), BoardTheme.Text, 6, mono: true, anchor: TextAnchor.MiddleLeft);
+            Ui.SetPos(_bestLine.gameObject, infoX, y - S.Px(8f));
 
-            var chipSize = new Vector2(L.ContentWidth * 0.36f, L.BarHeight);
-            _play = UiButton.Make(Root.transform, solved ? "PLAY AGAIN" : "BEGIN",
-                new Vector2(infoX + chipSize.x / 2f, y - S.Px(32f)), chipSize,
-                solved ? BoardTheme.ButtonBg : BoardTheme.Primary, solved ? BoardTheme.Text : BoardTheme.TextOnAccent,
-                () => Play(_todayDate));
-            Buttons.Add(_play);
-            RefreshTodayInfo();
+            _playSize = new Vector2(L.ContentWidth * 0.36f, L.BarHeight);
+            _playCentre = new Vector2(infoX + _playSize.x / 2f, y - S.Px(32f));
         }
 
-        // The slot's readout follows the cache: the band is known at once,
-        // the bug count and the par once the board exists.
-        void RefreshTodayInfo()
+        // The slot reads the selected day: the date, its band, the bug and
+        // cell counts once the board exists (the cache is on it), the best
+        // time if it has been solved, and BEGIN or PLAY AGAIN.
+        void RefreshSlot()
         {
-            var band = DailyCalendar.Band(_todayDate.DayOfWeek);
+            string dateUtc = DailySpec.Format(_selected);
+            bool solved = Queries.IsDailySolved(App.State.Profile, dateUtc);
+            long best = Queries.DailyBestMs(App.State.Profile, dateUtc);
+            var band = DailyCalendar.Band(_selected.DayOfWeek);
             string grade = band.min == band.max ? $"G{(int)band.min}" : $"G{(int)band.min}-{(int)band.max}";
-            long best = Queries.DailyBestMs(App.State.Profile, _today);
-            if (DailyCalendar.IsReady(_todayDate))
+
+            _slotNumber.text = _selected.Day.ToString();
+            _slotCaption.text = _selected == _todayDate ? "TODAY" : "PAST";
+            _dateLine.text = $"{DayNames[((int)_selected.DayOfWeek + 6) % 7]} {_selected.Day:00} {MonthNames[_selected.Month - 1].Substring(0, 3)}";
+            if (DailyCalendar.IsReady(_selected))
             {
-                var level = DailyCalendar.For(_todayDate);
+                var level = DailyCalendar.For(_selected);
                 _infoLine.text = $"{grade} · {level.Def.Specs.Length} BUGS · {CellsToInfect(level)} CELLS";
-                _parLabel.text = best > 0 ? $"BEST {Queries.FormatDuration(best)}"
-                    : $"PAR {Queries.FormatDuration(DailySpec.ParMs(level))}";
-                _parPending = false;
+                _infoPending = false;
             }
             else
             {
                 _infoLine.text = grade;
-                _parLabel.text = best > 0 ? $"BEST {Queries.FormatDuration(best)}" : "GENERATING...";
-                _parPending = true;
+                _infoPending = true;
             }
+            _bestLine.text = solved ? $"BEST {Queries.FormatTime(best)}" : _infoPending ? "GENERATING" : "UNPLAYED";
+
+            // BEGIN is the one lit control; PLAY AGAIN is plain glass. The
+            // chip is rebuilt rather than restyled, so it is always one object.
+            if (_play != null)
+            {
+                Buttons.Remove(_play);
+                UnityEngine.Object.Destroy(_play.Root);
+            }
+            _play = UiButton.Make(Root.transform, solved ? "PLAY AGAIN" : "BEGIN", _playCentre, _playSize,
+                solved ? BoardTheme.ButtonBg : BoardTheme.Primary, solved ? BoardTheme.Text : BoardTheme.TextOnAccent,
+                () => Play(_selected));
+            Buttons.Add(_play);
         }
 
         static int CellsToInfect(PlayableLevel level)
@@ -302,7 +343,7 @@ namespace GridInfect.Game
 
         public override void Tick(float dt)
         {
-            if (_parPending && DailyCalendar.IsReady(_todayDate)) RefreshTodayInfo();
+            if (_infoPending && DailyCalendar.IsReady(_selected)) RefreshSlot();
         }
 
         // ---- input: a tap opens a day, a swipe pages the month ----
@@ -325,9 +366,9 @@ namespace GridInfect.Game
                 return;
             }
             if ((world - _press).magnitude > _cell * 0.5f) return;
-            foreach (var (bounds, date) in _tiles)
+            foreach (var (bounds, centre, date) in _tiles)
             {
-                if (bounds.Contains(world)) { Play(date); return; }
+                if (bounds.Contains(world)) { Select(date); return; }
             }
         }
 
@@ -379,6 +420,13 @@ namespace GridInfect.Game
             Border = Black(p, 0.1f), BorderPx = 1f,
         };
 
+        // The selected day's ring: lit glass, so it reads apart from today's copper.
+        static GlassStyle SelectedStyle(BoardPalette p) => new GlassStyle
+        {
+            FillTop = White(p, 0.85f), FillBottom = White(p, 0.85f), Radius = S.TileRadius + 2f,
+            Glow = White(p, 0.5f), GlowPx = 8f,
+        };
+
         // Today's ring: copper, a point of it, glowing.
         static GlassStyle RingStyle(BoardPalette p) => new GlassStyle
         {
@@ -427,11 +475,11 @@ namespace GridInfect.Game
     // sink keeps it local.
     public interface IDailyScoreSink
     {
-        void Submit(string dateUtc, long elapsedMs, long parMs);
+        void Submit(string dateUtc, long elapsedMs);
     }
 
     public sealed class LocalDailyScoreSink : IDailyScoreSink
     {
-        public void Submit(string dateUtc, long elapsedMs, long parMs) { }
+        public void Submit(string dateUtc, long elapsedMs) { }
     }
 }

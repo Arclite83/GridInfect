@@ -4,8 +4,8 @@ namespace GridInfect.Core.Solving
     // the solve needed sets the band's floor, the peak number of undecided
     // pieces the player had to hold at once moves within it. Piece types
     // the player must translate first (diagonals, the blot, relays) are a
-    // constant reading cost, not lookahead: they go to par (Translation),
-    // never to the grade. Thresholds are documented
+    // constant reading cost, not lookahead: counted as a stat on the level
+    // (Translation), never in the grade. Thresholds are documented
     // in docs/GENERATOR_V2.md §Solver and locked by the classic-level table
     // in SolverTests.
     public enum Grade
@@ -40,8 +40,8 @@ namespace GridInfect.Core.Solving
         }
 
         // Piece types the player must translate before the line rules
-        // apply: diagonal arms, the area blot, relays. One layer each; the
-        // par clock pays for them (DailySpec.ParMs), the grade does not.
+        // apply: diagonal arms, the area blot, relays. One layer each, a
+        // stat on the level; the grade does not count them.
         public static int Translation(LevelDef def)
         {
             bool diagonal = false, area = false;

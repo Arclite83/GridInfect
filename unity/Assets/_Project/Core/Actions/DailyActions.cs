@@ -42,7 +42,6 @@ namespace GridInfect.Core
                 StartedMs = input.Long("nowMs"),
                 TraceLength = level.TraceLength,
                 Grade = level.Grade,
-                ParMs = DailySpec.ParMs(level),
             };
             state.Solution = level.Solution;
             // Locks before publication: SessionChanged builds the board view,

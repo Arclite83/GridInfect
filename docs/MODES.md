@@ -249,12 +249,14 @@ actions and tests stay so old logs replay. Two modes replace it.
   past and future, so it bumps the version.
 - Any date from the epoch up to the clock's own UTC date opens: the
   calendar (`DailyScreen`) shows a month at a time, solved days marked,
-  today ringed, future days out of bounds. A date before the epoch or
+  today ringed, future days out of bounds; a tap selects a day, whose
+  slot shows the band, the board's counts once cached, the best time,
+  and the one control that opens it. A date before the epoch or
   after today is rejected.
-- The clock is a stat, not a rule: elapsed is shown in the HUD; par =
-  `10 s + 15 s × trace length × (3 + grade) / 4 + 20 s × translation
-  layers` (diagonals, blot, relays: one each); the personal best per date
-  is kept in the profile.
+- The clock is a stat, not a rule: elapsed is shown in the HUD and the
+  personal best per date is kept in the profile. There is no par: a
+  target time was arbitrary, and what a time is worth waits on real
+  play data.
 - `daily.complete { nowMs }`: rejects a backward clock and an unsolved
   board. Streak = consecutive dates solved on the day: it moves only when
   the run's date is the clock's own UTC date, and once per date

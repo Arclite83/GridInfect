@@ -221,8 +221,8 @@ escape-room and logic-grid generators: **depth** is the lookahead the
 solve needed, **peak open** is how many undecided pieces the player held
 at once. Piece types the player must translate before the line rules
 apply (diagonal arms, the area blot, relays; `Grader.Translation`, one
-layer each) are a constant reading cost, not lookahead: they add to par
-(`DailySpec.ParMs`, twenty seconds a layer) and never to the grade, so a
+layer each) are a constant reading cost, not lookahead: they are a stat
+on the level (`GeneratedLevel.Translation`) and never in the grade, so a
 board with a blot in it grades on its deduction alone. The constructor
 rejects anything past `Depth.Max` of solver depth (`TooDeep`).
 
@@ -433,7 +433,7 @@ unless symmetric tiles are allowed). A diagonal arm with no cell to reach
 from the piece's corner is dropped; a piece left with no arms, or a
 duplicate of a piece already sampled, falls back to its tile. Carve and
 constructor are direction-agnostic. Solver: the two diagonal families
-join the line map; a diagonal arm is one translation layer in par.
+join the line map; a diagonal arm is one translation layer (a stat, not graded).
 World `w16 Diagonals` (pieces 3–5, G2–G4, chance 14/20); daily: Fridays.
 
 ### Relay cells (`Element.Relays`, stage 12)
@@ -446,6 +446,6 @@ the relay's arms are carved as runs, so the
 sampled solution lights the relay and covers what it spreads to.
 Constructor: every relay arm must reach a cell; no given ever lands on a
 relay cell. Solver: static coverage follows relay chains, and forbidden
-legality does too; a relay is one translation layer in par. World `w17 Relays` (pieces 3–5,
+legality does too; a relay is one translation layer (a stat, not graded). World `w17 Relays` (pieces 3–5,
 G2–G4, chance 14/20); daily: Saturdays; Sundays mix forbidden cells and
 diagonals.

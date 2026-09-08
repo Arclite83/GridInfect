@@ -81,17 +81,6 @@ namespace GridInfect.Core
         // cache: at once when it is there, otherwise generated now.
         public static PlayableLevel FirstAccepted(GenSpec spec, ulong seed) => LevelCache.Shared.Get(spec, seed);
 
-        // Par: a deduction step every fifteen seconds, more for the harder
-        // grades, a look at the board, and twenty seconds for each piece
-        // type the player has to read first (Grader.Translation).
-        public const long TranslationParMs = 20_000;
-
-        public static long ParMs(int traceLength, Grade grade, int translation) =>
-            10_000 + traceLength * 15_000L * (4 + (int)grade - 1) / 4 + translation * TranslationParMs;
-
-        public static long ParMs(PlayableLevel level) =>
-            ParMs(level.TraceLength, level.Grade, Grader.Translation(level.Def));
-
         // The Endless spec per grade: the same piece bands the worlds use.
         public static GenSpec Endless(Grade grade)
         {
@@ -117,7 +106,6 @@ namespace GridInfect.Core
         public long CompletedMs;       // 0 while running
         public int TraceLength;
         public Solving.Grade Grade;
-        public long ParMs;
         public bool StreakGrantDue;    // set by daily.complete when the streak hit a multiple of 7
         public bool Completed => CompletedMs != 0;
     }

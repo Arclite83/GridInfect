@@ -158,8 +158,8 @@ identically.
   the loader covers a miss). Same board for everyone. Any date from the
   epoch to today plays from the calendar (`DailyScreen`); the streak
   counts dates solved on the day.
-- Timer as a stat only: elapsed shown, par = f(trace length, grade),
-  personal best per date. Streak counter, `+1 lock every 7` (stage 5 wires
+- Timer as a stat only: elapsed shown, personal best per date (par was
+  tried and dropped as arbitrary). Streak counter, `+1 lock every 7` (stage 5 wires
   the grant). `daily.complete { nowMs }` rejects a backward clock.
 - Endless: `endless.begin { grade, seed }`, `endless.advance`, no clock,
   streak = solves without a reset. Seed logged so runs replay.

@@ -448,10 +448,11 @@ namespace GridInfect.Game
             else if (App.State.Mode == GameMode.Daily)
             {
                 var run = App.State.DailyRun;
+                long before = Queries.DailyBestMs(App.State.Profile, run.DateUtc);
                 if (!run.Completed)
                 {
                     App.Do(GridInfectActions.DailyComplete, Inputs.Now(GameApp.NowMs()));
-                    App.DailyScores.Submit(run.DateUtc, Queries.ElapsedMs(run, GameApp.NowMs()), run.ParMs);
+                    App.DailyScores.Submit(run.DateUtc, Queries.ElapsedMs(run, GameApp.NowMs()));
                     if (run.StreakGrantDue)
                     {
                         App.Do(GridInfectActions.LocksGrant, Inputs.LocksGrant(1, "streak")); // +1 lock every 7-day streak
@@ -459,10 +460,15 @@ namespace GridInfect.Game
                 }
                 long elapsed = Queries.ElapsedMs(run, GameApp.NowMs());
                 long best = Queries.DailyBestMs(App.State.Profile, run.DateUtc);
-                // A past day solved from the calendar sets a best, never the streak.
-                string third = run.DateUtc == GameApp.TodayUtc() ? $"STREAK {App.State.Profile.DailyStreak}" : "ARCHIVE";
-                OpenPopup($"SOLVED IN {Queries.FormatDuration(elapsed)}\nPAR {Queries.FormatDuration(run.ParMs)}   BEST {Queries.FormatDuration(best)}\n{third}");
-                AddPopupButton("MENU", new Vector2(0f, -Short * 0.06f),
+                // Three short lines a person would say: the time, how it
+                // compares, and the streak (a past day solved from the
+                // calendar sets a best, never the streak, so it says so).
+                string compare = before <= 0 ? "First solve" : elapsed <= best ? "New best" : $"Best {Queries.FormatTime(best)}";
+                int streak = App.State.Profile.DailyStreak;
+                string third = run.DateUtc != GameApp.TodayUtc() ? "Played from the calendar"
+                    : streak <= 1 ? "Streak started" : $"{streak} days in a row";
+                OpenPopup($"Solved in {Queries.FormatTime(elapsed)}\n{compare}\n{third}");
+                AddPopupButton("CALENDAR", new Vector2(0f, -Short * 0.06f),
                     new Vector2(L.ContentWidth / 3f, L.BarHeight), () => App.Screens.Show(new DailyScreen()));
             }
             else if (App.State.Mode == GameMode.Endless)
@@ -527,7 +533,7 @@ namespace GridInfect.Game
                 if (daily == null || daily.Completed) return;
                 long elapsedDaily = Queries.ElapsedMs(daily, GameApp.NowMs());
                 if (elapsedDaily < 0) elapsedDaily = 0; // a backward clock is refused at daily.complete
-                _caption.text = $"{Queries.FormatDuration(elapsedDaily)}   PAR {Queries.FormatDuration(daily.ParMs)}";
+                _caption.text = Queries.FormatTime(elapsedDaily);
                 return;
             }
             if (App.State.Mode == GameMode.Endless)
