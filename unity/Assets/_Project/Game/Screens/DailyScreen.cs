@@ -3,6 +3,7 @@ using GridInfect.Core;
 using UnityEngine;
 using L = GridInfect.Game.PresentationConfig.Layout;
 using S = GridInfect.Game.PresentationConfig.Style;
+using Grid = GridInfect.Core.Grid;
 
 namespace GridInfect.Game
 {
