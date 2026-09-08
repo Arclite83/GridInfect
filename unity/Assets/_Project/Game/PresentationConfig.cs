@@ -23,7 +23,8 @@ namespace GridInfect.Game
         // screen that replaced the one it was aimed at; the debounce is one
         // button activation per window, so a double-tap navigates once.
         public const float PostTransitionInputBlock = 0.15f;
-        public const float ButtonDebounce = 0.25f;
+        public const float ButtonDebounce = 0.25f;  // after a chip's handler returns, not before it runs
+        public const float SolveCooldown = 0.6f;    // the hint: its handler runs the deducer and lands a piece
 
         // The largest frame delta animation is allowed to see. A synchronous
         // level generation can stall the main thread for seconds; without a

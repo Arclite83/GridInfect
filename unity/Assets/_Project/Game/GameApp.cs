@@ -184,13 +184,18 @@ namespace GridInfect.Game
                     {
                         screen.OnPress(world);   // the board: never debounced, it is a drag
                     }
-                    else if (Time.unscaledTime >= _clickBlockedUntil)
+                    else if (Time.realtimeSinceStartup >= _clickBlockedUntil)
                     {
-                        // One button press per debounce window, whichever
-                        // button: a double-tap on a menu row must not both
-                        // navigate and fire again on whatever replaces it.
-                        _clickBlockedUntil = Time.unscaledTime + PresentationConfig.ButtonDebounce;
+                        // One button press per cooldown, whichever button: a
+                        // double-tap on a menu row must not both navigate and
+                        // fire again on whatever replaces it. The window is
+                        // stamped from the wall clock *after* the handler
+                        // returns: a handler that stalls the frame (the hint
+                        // runs the deducer) must not spend its own window, or
+                        // the second tap of a double-tap lands the moment the
+                        // frame resumes.
                         hit.OnClick?.Invoke();
+                        _clickBlockedUntil = Time.realtimeSinceStartup + hit.Cooldown;
                     }
                 }
             }

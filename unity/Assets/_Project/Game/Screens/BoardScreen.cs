@@ -75,6 +75,7 @@ namespace GridInfect.Game
             _lockButton = UiButton.Make(Root.transform, "",
                 new Vector2(w / 2f - S.Px(S.HudInset) - badge.x / 2f, badgeY), badge,
                 GlassStyle.Badge(BoardPalette.Default), BoardTheme.Copper, LockPiece, 20, pads: false, padAlpha: 1f, mono: true);
+            _lockButton.Cooldown = PresentationConfig.SolveCooldown;
             Buttons.Add(_lockButton);
 
             // The mono caption shares the badge's row, left-aligned under
@@ -356,7 +357,10 @@ namespace GridInfect.Game
         void LockPiece()
         {
             if (_bound == null || _popupOpen || _beginCover != null) return;
-            App.FastForwardResolve();
+            // A press inside the 0.3 s beat lands the pending placement and
+            // stops there: one hint per press, never one per tap of a
+            // double-tap. The cooldown on the chip covers the rest.
+            if (App.FastForwardResolve()) return;
             _board.BeginWave(0, 0);
             var result = App.Do(GridInfectActions.PieceLock);
             _board.EndBatch(result.Applied);
