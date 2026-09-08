@@ -341,7 +341,10 @@ namespace GridInfect.Game
                 }
             }
             // Illegal drop: back to the tray slot (the piece was already
-            // cleared on touch, so board state is consistent).
+            // cleared on touch, so board state is consistent). A drop the
+            // forbidden cells refused shows which arm would have reached which
+            // cell, so the refusal reads as a rule, not a miss.
+            if (i >= 0 && RulesV2.WouldHitForbidden(_bound, index, i, j)) _board.FlashForbidden(index, i, j);
             ReturnToTray(index, PresentationConfig.TrayReturn);
         }
 
@@ -473,11 +476,13 @@ namespace GridInfect.Game
                 // Three short lines a person would say: the time, how it
                 // compares, and the streak (a past day solved from the
                 // calendar sets a best, never the streak, so it says so).
-                string compare = before <= 0 ? "First solve" : elapsed <= best ? "New best" : $"Best {Queries.FormatTime(best)}";
+                // The comparison line only once there is something to compare to.
+                string compare = before <= 0 ? null : elapsed <= best ? "New best" : $"Best {Queries.FormatTime(best)}";
                 int streak = App.State.Profile.DailyStreak;
                 string third = run.DateUtc != GameApp.TodayUtc() ? "Played from the calendar"
                     : streak <= 1 ? "Streak started" : $"{streak} days in a row";
-                OpenPopup($"Solved in {Queries.FormatTime(elapsed)}\n{compare}\n{third}");
+                OpenPopup(compare == null ? $"Solved in {Queries.FormatTime(elapsed)}\n{third}"
+                    : $"Solved in {Queries.FormatTime(elapsed)}\n{compare}\n{third}");
                 AddPopupButton("CALENDAR", new Vector2(0f, -Short * 0.06f),
                     new Vector2(L.ContentWidth / 3f, L.BarHeight), () => App.Screens.Show(new DailyScreen()));
             }

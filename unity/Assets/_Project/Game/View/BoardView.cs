@@ -55,6 +55,8 @@ namespace GridInfect.Game
         // preview's bookkeeping.
         readonly System.Collections.Generic.List<GameObject> _glyphs = new System.Collections.Generic.List<GameObject>();
         readonly System.Collections.Generic.List<int> _previewLocs = new System.Collections.Generic.List<int>();
+        readonly System.Collections.Generic.List<int> _conflictLocs = new System.Collections.Generic.List<int>();
+        float _conflictUntil;
         Core.Solving.LineMap _lines;
         int _previewI = -1, _previewJ = -1;
         int _previewPiece = -1;
@@ -435,6 +437,7 @@ namespace GridInfect.Game
         public void Tick(float dt)
         {
             _boardTime += dt;
+            if (_conflictLocs.Count > 0 && _boardTime >= _conflictUntil) SettleConflicts();
             if (_material != null) PushFrameMaterialState();
             _audio.Enabled = HopAudio;
             _audio.Tick(_boardTime);
@@ -452,6 +455,81 @@ namespace GridInfect.Game
         }
 
         public void Flush() => _state.Flush();
+
+        // A drop the rules refused because the piece's spread would touch a
+        // forbidden cell: show why. Each offending arm is overprinted in the
+        // conflict colour from the drop cell out to the forbidden cell it
+        // would reach, one hop at a time, and the board shakes as it does
+        // for a tripped trap; a blot's own ring does the same for the
+        // forbidden cells inside it. The overprint decays on its own and the
+        // texels settle back once it has (Tick). Relay chains are not traced.
+        public void FlashForbidden(int piece, int i0, int j0)
+        {
+            if (_session == null || !Grid.InBounds(i0, j0)) return;
+            PieceSpec spec = _session.Def.Specs[piece];
+            bool any = false;
+            if (spec.Area)
+            {
+                for (int di = -1; di <= 1; di++)
+                {
+                    for (int dj = -1; dj <= 1; dj++)
+                    {
+                        if (di == 0 && dj == 0) continue;
+                        int ai = i0 + di, aj = j0 + dj;
+                        if (Grid.InBounds(ai, aj) && _session.Board[Grid.Loc(ai, aj)] == Cell.Forbidden)
+                        {
+                            Conflict(ai, aj, _boardTime + Vfx.Hop);
+                            any = true;
+                        }
+                    }
+                }
+            }
+            for (int d = 0; d < 8; d++)
+            {
+                var dir = (Dir)d;
+                if (!spec.Has(dir)) continue;
+                int hit = -1;
+                for (int offset = 1; offset <= Grid.SpreadRange; offset++)
+                {
+                    int i = i0 + TileArms.Di(dir) * offset;
+                    int j = j0 + TileArms.Dj(dir) * offset;
+                    if (!Grid.InBounds(i, j)) continue;
+                    byte value = _session.Board[Grid.Loc(i, j)];
+                    if (value == Cell.Wall || value == Cell.RepelSwitch || value == Cell.ResetTrap) break;
+                    if (value == Cell.Forbidden) { hit = offset; break; }
+                }
+                if (hit < 0) continue;
+                any = true;
+                for (int offset = 1; offset <= hit; offset++)
+                {
+                    int i = i0 + TileArms.Di(dir) * offset;
+                    int j = j0 + TileArms.Dj(dir) * offset;
+                    if (!Grid.InBounds(i, j) || _session.Board[Grid.Loc(i, j)] == Cell.Void) continue;
+                    Conflict(i, j, _boardTime + offset * Vfx.Hop);
+                }
+            }
+            if (any) Shake(Vfx.ConflictShakeDur);
+        }
+
+        void Conflict(int i, int j, float at)
+        {
+            int loc = Grid.Loc(i, j);
+            _state.Set(i, j, _session.Board[loc], at, BoardStateTexture.SeedDir, BoardStateTexture.Kind.Conflict);
+            if (!_conflictLocs.Contains(loc)) _conflictLocs.Add(loc);
+            float until = at + Vfx.ConflictFlashDur;
+            if (until > _conflictUntil) _conflictUntil = until;
+        }
+
+        void SettleConflicts()
+        {
+            foreach (int loc in _conflictLocs)
+            {
+                int i = loc / Grid.Width, j = loc % Grid.Width;
+                if (_state.KindAt(i, j) == BoardStateTexture.Kind.Conflict)
+                    _state.SetSettled(i, j, _session.Board[loc], BoardStateTexture.IsPieceCell(_session, i, j));
+            }
+            _conflictLocs.Clear();
+        }
 
         void Shake(float duration)
         {
