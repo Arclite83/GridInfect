@@ -361,7 +361,13 @@ namespace GridInfect.Game
             // stops there: one hint per press, never one per tap of a
             // double-tap. The cooldown on the chip covers the rest.
             if (App.FastForwardResolve()) return;
-            _board.BeginWave(0, 0);
+            // The wave is seeded at the cell the hint will land on, exactly as
+            // a drop is seeded at its cell: the same chooser the action runs,
+            // asked first, so the spread bleeds out from the piece and not
+            // from the corner of the board.
+            var target = Lock.ChooseTarget(App.State);
+            if (target == null) return;
+            _board.BeginWave(target.Value.cell / GridInfect.Core.Grid.Width, target.Value.cell % GridInfect.Core.Grid.Width);
             var result = App.Do(GridInfectActions.PieceLock);
             _board.EndBatch(result.Applied);
             if (!result.Applied) return;

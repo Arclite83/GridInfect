@@ -306,6 +306,7 @@ namespace UnityEngine
     public static class Time
     {
         public static float unscaledTime => 0f;
+        public static float realtimeSinceStartup => 0f;
         public static float unscaledDeltaTime => 0f;
     }
 
