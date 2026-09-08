@@ -54,7 +54,7 @@ glyph each, never a colour alone:
 
 | Element | Colour | Notes |
 |---|---|---|
-| Repel switch | `#7C8A99` | slate tint, diamond glyph |
+| Repel switch | `#4F5BFF` | indigo tint, diamond glyph |
 | Reset trap | `#0D0D12` | near-black tint, X glyph |
 | Conflict overprint | `#4DE3FF` | on the ray that tripped a trap, plus the X; a warned arm in the drop preview; a refused drop. Ice, never red: red is the infection |
 | Forbidden cell | copper | the bare pad with a copper ring: nothing may sit on it |

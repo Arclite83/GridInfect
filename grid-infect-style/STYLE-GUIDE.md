@@ -16,7 +16,7 @@ Mask color plus infection hue is a skin layer. Everything else is constant. Valu
 
 Neutrals: lit tips and highlights #ffffff, blocker body #cfd8e0, blocker edge #4d565f, board well rgba(0,0,0,.36).
 
-Conflict (a tripped trap, a warned arm, a refused drop): ice #4de3ff, never red. Red is the infection, so a warning is the cold opposite of it. The repel switch is slate #7c8a99: a plain component with the diamond doing the work, never a cousin of the infection.
+Conflict (a tripped trap, a warned arm, a refused drop): ice #4de3ff, never red. Red is the infection, so a warning is the cold opposite of it. The repel switch is indigo #4f5bff: cool and far from every red, and still not the ice, so a switch is never a cousin of the infection or of a warning.
 
 Rule: gold appears only as points (pads, vias, mounting holes, HUD chip pads), never as lines.
 

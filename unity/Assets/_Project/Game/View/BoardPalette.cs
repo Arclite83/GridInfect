@@ -50,7 +50,7 @@ namespace GridInfect.Game
         // Grid Infect ships a repel switch, a reset trap and a forbidden cell
         // alongside empty / infected / blocker. They are tints on the guide's
         // component glass plus a shape glyph each (R-1001), never a literal.
-        public Color RepelSwitch = Hex("#7C8A99");  // slate tint, diamond glyph: a plain component, never a cousin of the infection
+        public Color RepelSwitch = Hex("#4F5BFF");  // indigo tint, diamond glyph: cool, far from every red, still not the ice
         public Color ResetTrap = Hex("#0D0D12");    // near-black tint, X glyph
         public Color Conflict = Hex("#4DE3FF");     // ice overprint on a tripped ray, a warned arm, a refused drop: never red, red is infection
 
