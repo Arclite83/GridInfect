@@ -10,11 +10,13 @@ Mask color plus infection hue is a skin layer. Everything else is constant. Valu
 
 | skin | mask | copper | infection | note |
 |---|---|---|---|---|
-| default | green #7fae66 | gold #c9a648 | magenta #ff2d95 | ship default |
+| default | green #7fae66 | gold #c9a648 | red #ff3030 | ship default. Red is infection, and infection is success; placeholder values until the palette is final |
 | blue | #2e5aa8 | gold | amber #ff8a00 | unlockable |
 | breadboard | cream #e9dcb8 | bare copper #c46a3a | red #ff2d3a | unlockable |
 
 Neutrals: lit tips and highlights #ffffff, blocker body #cfd8e0, blocker edge #4d565f, board well rgba(0,0,0,.36).
+
+Conflict (a tripped trap, a warned arm, a refused drop): ice #4de3ff, never red. Red is the infection, so a warning is the cold opposite of it.
 
 Rule: gold appears only as points (pads, vias, mounting holes, HUD chip pads), never as lines.
 

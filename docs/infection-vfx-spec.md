@@ -38,7 +38,7 @@ constant. New skins are a palette swap.
 | Copper | `#C9A648` | `#D9A441` | `#C46A3A` |
 | Copper highlight | `#F3E2A8` | `#FFE08A` | `#F0A878` |
 | Copper shadow | `#7D6120` | `#7A5410` | `#7A3A18` |
-| Infection | `#FF2D95` | `#FF8A00` | `#FF2D3A` |
+| Infection | `#FF3030` | `#FF8A00` | `#FF2D3A` |
 | Infection highlight | `#FF7CC4` | `#FFB347` | `#FF6B6B` |
 | Infection shadow | `#B3086A` | `#C25A00` | `#B3101C` |
 | Glyph edge | `#5A0033` | `#4A2600` | `#5A0008` |
@@ -56,7 +56,7 @@ glyph each, never a colour alone:
 |---|---|---|
 | Repel switch | `#8A5CFF` | violet tint, diamond glyph |
 | Reset trap | `#0D0D12` | near-black tint, X glyph |
-| Conflict overprint | `#FF3B30` | on the ray that tripped a trap, plus the X |
+| Conflict overprint | `#4DE3FF` | on the ray that tripped a trap, plus the X; a warned arm in the drop preview; a refused drop. Ice, never red: red is the infection |
 | Forbidden cell | copper | the bare pad with a copper ring: nothing may sit on it |
 
 ## Architecture
@@ -156,7 +156,7 @@ Each is an independent bool on the board controller, default on unless noted.
 | Edge sparks | Up to 8 single-block particles ejected from the edge band, cyan, 200 ms life |
 | Trace dim | Trace holds at 30% after its cell settles, then cools with it |
 | Hop audio | Click per hop, pitch +1 semitone per ray depth, capped at +7 |
-| Ghost trail (off) | Magenta ghost persists 200 ms after fill completes |
+| Ghost trail (off) | Infection-colour ghost persists 200 ms after fill completes |
 
 ## Acceptance criteria
 

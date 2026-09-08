@@ -28,13 +28,15 @@ namespace GridInfect.Game
         public Color CopperHi = Hex("#F3E2A8");
         public Color CopperLo = Hex("#7D6120");
 
-        // ---- skin: infection. The only strong emissive element on screen ----
-        public Color Infect = Hex("#FF2D95");
-        public Color InfectHi = Hex("#FF7CC4");
-        public Color InfectLo = Hex("#B3086A");
-        public Color InfectGlow = Alpha(Hex("#FF2D95"), 0.55f);
-        public Color GlyphEdge = Hex("#5A0033");    // leads, body outline
-        public Color GlyphWire = Hex("#3A0B22");    // bond wires, stubs, pads
+        // ---- skin: infection. The only strong emissive element on screen.
+        // Red: infection is success. (Placeholder values until the palette
+        // is final; the hue direction is the decision.) ----
+        public Color Infect = Hex("#FF3030");
+        public Color InfectHi = Hex("#FF7A7A");
+        public Color InfectLo = Hex("#B00E1A");
+        public Color InfectGlow = Alpha(Hex("#FF3030"), 0.55f);
+        public Color GlyphEdge = Hex("#5A0008");    // leads, body outline
+        public Color GlyphWire = Hex("#3A0008");    // bond wires, stubs, pads
 
         // ---- neutrals, constant across skins ----
         public Color Tip = Hex("#FFFFFF");          // lit lead tips, highlights, core dot
@@ -49,7 +51,7 @@ namespace GridInfect.Game
         // component glass plus a shape glyph each (R-1001), never a literal.
         public Color RepelSwitch = Hex("#8A5CFF");  // violet tint, diamond glyph
         public Color ResetTrap = Hex("#0D0D12");    // near-black tint, X glyph
-        public Color Conflict = Hex("#FF3B30");     // red overprint on a tripped ray
+        public Color Conflict = Hex("#4DE3FF");     // ice overprint on a tripped ray, a warned arm, a refused drop: never red, red is infection
 
         // ---- emission / bloom ----
         // Colours are sRGB hex as authored; Unity converts on SetColor. An
@@ -100,9 +102,9 @@ namespace GridInfect.Game
                     default:
                         p.Mask = Hex("#7FAE66"); p.MaskHi = Hex("#97C27C"); p.MaskLo = Hex("#5F8B4A"); p.Ink = Hex("#1D3316");
                         p.Copper = Hex("#C9A648"); p.CopperHi = Hex("#F3E2A8"); p.CopperLo = Hex("#7D6120");
-                        p.Infect = Hex("#FF2D95"); p.InfectHi = Hex("#FF7CC4"); p.InfectLo = Hex("#B3086A");
-                        p.InfectGlow = Alpha(Hex("#FF2D95"), 0.55f);
-                        p.GlyphEdge = Hex("#5A0033"); p.GlyphWire = Hex("#3A0B22");
+                        p.Infect = Hex("#FF3030"); p.InfectHi = Hex("#FF7A7A"); p.InfectLo = Hex("#B00E1A");
+                        p.InfectGlow = Alpha(Hex("#FF3030"), 0.55f);
+                        p.GlyphEdge = Hex("#5A0008"); p.GlyphWire = Hex("#3A0008");
                         break;
                 }
             }

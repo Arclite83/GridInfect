@@ -20,7 +20,7 @@ The bug is the "nucleus" glyph: a hexagonal IC body with one lit squared lead pe
 ## Colors (default skin)
 | role | hex |
 |---|---|
-| body fill | #ff2d95 |
+| body fill | #ff3030 |
 | lead / outline | #5a0033 |
 | wires, stubs, pads | #3a0b22 |
 | tips, core dot | #ffffff |
