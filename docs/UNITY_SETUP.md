@@ -102,7 +102,7 @@ unity/
 Conventions: new runtime code goes under an existing asmdef (or a new one
 under `_Project/`); the `_Project` prefix keeps our tree sorted above any
 imported third-party folders; module boundaries (what may reference what)
-are enforced by `ArchitectureGateTests` and documented in `ARCHITECTURE.md`.
+are enforced by the asmdefs and the `src/` mirror build, and documented in `ARCHITECTURE.md`.
 
 ## 6. First run: what to check, in order
 

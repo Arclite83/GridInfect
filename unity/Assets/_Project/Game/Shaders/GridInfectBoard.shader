@@ -149,6 +149,7 @@ Shader "GridInfect/Board"
             #define TR_RECEDE    2
             #define TR_CONFLICT  3
             #define TR_PREVIEW   4
+            #define TR_WARN      5
 
             #define SPARK_COUNT  8
 
@@ -531,14 +532,19 @@ Shader "GridInfect/Board"
 
                     CoreDot(pm, q, _ColCopperHi.rgb, 0.9, 1.0);
 
-                    if (kind == TR_PREVIEW)
+                    if (kind == TR_PREVIEW || kind == TR_WARN)
                     {
                         // Pending trace: where the piece under the finger would
                         // reach. Radial glow to transparent at 70%, 1 px ring.
+                        // A warned cell (the arm runs into a forbidden cell or
+                        // a trap) takes the conflict colour instead and pulses.
                         float fade = saturate((_BoardTime - startTime) / max(_PreviewFade, 1e-4));
                         float r = length(q) / (halfTile.x * 1.41421356 * 0.7);
-                        Over(pm, _ColInfectGlow.rgb, _ColInfectGlow.a * (1.0 - saturate(r)) * Inside(d) * fade);
-                        Over(pm, _ColInfect.rgb, 0.5 * InsetRing(d, s) * fade);
+                        float3 glow = kind == TR_WARN ? _ColConflict.rgb : _ColInfectGlow.rgb;
+                        float3 ring = kind == TR_WARN ? _ColConflict.rgb : _ColInfect.rgb;
+                        float pulse = kind == TR_WARN ? 0.7 + 0.3 * sin(_BoardTime * 9.0) : 1.0;
+                        Over(pm, glow, _ColInfectGlow.a * (1.0 - saturate(r)) * Inside(d) * fade * pulse);
+                        Over(pm, ring, 0.5 * InsetRing(d, s) * fade);
                     }
                 }
                 else if (value == CELL_INFECT)
@@ -630,6 +636,14 @@ Shader "GridInfect/Board"
                 {
                     float flash = saturate(1.0 - (_BoardTime - startTime) / max(_ConflictDur, 1e-4));
                     Over(pm, _ColConflict.rgb * _HotEmission, flash * 0.85 * Inside(d));
+                }
+                // The warned cell the arm runs into (a forbidden cell, a trap):
+                // the same overprint, held and pulsing while the finger is there.
+                if (kind == TR_WARN && value != CELL_ACTIVE)
+                {
+                    float fadeW = saturate((_BoardTime - startTime) / max(_PreviewFade, 1e-4));
+                    float pulseW = 0.55 + 0.45 * sin(_BoardTime * 9.0);
+                    Over(pm, _ColConflict.rgb * _HotEmission, 0.7 * pulseW * fadeW * Inside(d));
                 }
 
                 // Traces last, so a beam crosses the gutters. Each trace runs

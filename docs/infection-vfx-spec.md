@@ -38,11 +38,11 @@ constant. New skins are a palette swap.
 | Copper | `#C9A648` | `#D9A441` | `#C46A3A` |
 | Copper highlight | `#F3E2A8` | `#FFE08A` | `#F0A878` |
 | Copper shadow | `#7D6120` | `#7A5410` | `#7A3A18` |
-| Infection | `#FF2D95` | `#FF8A00` | `#FF2D3A` |
+| Infection | `#D9204F` | `#FF8A00` | `#FF2D3A` |
 | Infection highlight | `#FF7CC4` | `#FFB347` | `#FF6B6B` |
 | Infection shadow | `#B3086A` | `#C25A00` | `#B3101C` |
-| Glyph edge | `#5A0033` | `#4A2600` | `#5A0008` |
-| Glyph wire | `#3A0B22` | `#3A1D00` | `#3A0008` |
+| Glyph edge | `#4A0018` | `#4A2600` | `#5A0008` |
+| Glyph wire | `#300010` | `#3A1D00` | `#3A0008` |
 
 Neutrals, constant across skins: lit tips and highlights `#FFFFFF`, blocker
 body `#CFD8E0`, blocker edge `#4D565F`, board well black at 36%, shadows
@@ -54,9 +54,9 @@ glyph each, never a colour alone:
 
 | Element | Colour | Notes |
 |---|---|---|
-| Repel switch | `#8A5CFF` | violet tint, diamond glyph |
+| Repel switch | `#4F5BFF` | indigo tint, diamond glyph |
 | Reset trap | `#0D0D12` | near-black tint, X glyph |
-| Conflict overprint | `#FF3B30` | on the ray that tripped a trap, plus the X |
+| Conflict overprint | `#4DE3FF` | on the ray that tripped a trap, plus the X; a warned arm in the drop preview; a refused drop. Ice, never red: red is the infection |
 | Forbidden cell | copper | the bare pad with a copper ring: nothing may sit on it |
 
 ## Architecture
@@ -156,7 +156,7 @@ Each is an independent bool on the board controller, default on unless noted.
 | Edge sparks | Up to 8 single-block particles ejected from the edge band, cyan, 200 ms life |
 | Trace dim | Trace holds at 30% after its cell settles, then cools with it |
 | Hop audio | Click per hop, pitch +1 semitone per ray depth, capped at +7 |
-| Ghost trail (off) | Magenta ghost persists 200 ms after fill completes |
+| Ghost trail (off) | Infection-colour ghost persists 200 ms after fill completes |
 
 ## Acceptance criteria
 
@@ -185,8 +185,8 @@ the drop preview), `View/GlyphRaster.cs` + `View/BugGlyph.cs` (the bug glyph
 grammar, rasterised at runtime), `View/Substrate.cs`, `Ui/Glass.cs`,
 `View/BoardBloom.cs`, `Audio/HopClickAudio.cs`. The locked parameters live in
 `PresentationConfig.Infection`, the style guide's px tokens in
-`PresentationConfig.Style`; `InfectionVfxSpecTests` fails if this document
-and those tables stop agreeing.
+`PresentationConfig.Style`; keep this document and those tables in step by
+hand (there is no gate test).
 
 Where the build deviates from the spec above, and why.
 
@@ -223,6 +223,11 @@ The guide replaced the look, not the machinery. What changed on the board:
 - **Drop preview.** New: while a piece is over a cell it could go on, every
   cell it would light gets the guide's "pending trace" look. The reach comes
   from the solver's `LineMap.Coverage`, which already mirrors the stop set.
+  An arm that would run into a forbidden cell (the drop would be refused) or
+  a trap (the board would reset) is shown in the conflict colour out to that
+  cell instead, and the cell itself pulses under the same overprint while the
+  finger is there (transition kind 5, `Warn`); a refused drop then flashes
+  the same cells once (kind 3) as it returns to the tray.
 - **Chrome.** Every screen sits on the substrate quad (mask gradient, 24 and
   12 px grids, sheen, tone-on-tone margin traces, corner holes, vignette,
   silkscreen). Buttons are glass chips with a copper pad each side; the lock

@@ -16,7 +16,7 @@ board states extracted from the 2014 code.
 |---|---|
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | The baseline: schema, action registry, module graph, gates. Start here |
 | [`unity/`](unity/) | The Unity project (Unity 6). All C# lives here, once |
-| [`unity/Assets/_Project/Engine/`](unity/Assets/_Project/Engine/) | `Bloodhound.Engine` — reusable, game-agnostic kernel (actions, log, RNG, JSON) |
+| [`unity/Assets/_Project/Engine/`](unity/Assets/_Project/Engine/) | `Bloodhound.Engine` — reusable, game-agnostic kernel (actions, log, RNG, JSON, background work) |
 | [`unity/Assets/_Project/Core/`](unity/Assets/_Project/Core/) | `GridInfect.Core` — rules, actions, generator, levels, save model. Pure C#, zero UnityEngine |
 | [`unity/Assets/_Project/Game/`](unity/Assets/_Project/Game/) | Unity adapter: procedural UI, input, the 0.3 s beat. No game logic |
 | [`unity/Assets/_Project/Tests/EditMode/`](unity/Assets/_Project/Tests/EditMode/) | NUnit suites (vector replay, undo fixtures, generator goldens, gates) |
@@ -24,8 +24,8 @@ board states extracted from the 2014 code.
 | [`docs/`](docs/) | The port specification extracted from the original (rules, generator, modes, assets, requirements, dependencies) + `test_vectors.json` |
 | [`docs/NEXT_PASS.md`](docs/NEXT_PASS.md), [`docs/EXECUTION_PLAN.md`](docs/EXECUTION_PLAN.md) | The next-pass decisions and the staged plan with its status table |
 | [`docs/GENERATOR_V2.md`](docs/GENERATOR_V2.md), [`docs/RULES_V2.md`](docs/RULES_V2.md) | The deduction solver, trace grader, sampler and constructor (solution-first, subtractive, minimal); the rules every generated level runs on |
-| [`docs/worlds/`](docs/worlds/), [`docs/daily/`](docs/daily/) | The shipped worlds and the seven Daily pools as JSONL (one header line with the generator spec, one level per line), baked into `WorldData.g.cs` / `DailyData.g.cs` |
-| [`src/GenLevels/`](src/GenLevels/) | The offline level generator behind `tools/gen_levels`, `tools/gen_worlds.sh` and `tools/gen_daily.sh` |
+| [`docs/worlds/`](docs/worlds/) | The shipped worlds as JSONL (one header line with the generator spec, one level per line), baked into `WorldData.g.cs`. The Daily and Endless have no baked content: their boards are seed math, generated on the device into `LevelCache` ahead of the player |
+| [`src/GenLevels/`](src/GenLevels/) | The offline level generator behind `tools/gen_levels` and `tools/gen_worlds.sh` |
 | [`grid-infect-style/`](grid-infect-style/) | The locked visual style (`STYLE-GUIDE.md`): bugs on a printed circuit board. Tokens, the vector asset generator, the reference mockups |
 | [`grid-infect-bug-glyph/`](grid-infect-bug-glyph/) | The bug glyph grammar (`BUG-GLYPH-SPEC.md`) and its generator; the Unity rasteriser (`View/BugGlyph.cs`) is a port of it |
 | [`docs/infection-vfx-spec.md`](docs/infection-vfx-spec.md) | The infection animation and its locked parameters, plus an "As built" section recording every deviation, including the style pass |
@@ -36,7 +36,7 @@ board states extracted from the 2014 code.
 
 ```sh
 cd src
-dotnet test    # golden vector replay (128 levels), undo cross-check, generator goldens, gates
+dotnet test    # golden vector replay (128 levels), undo cross-check, solver oracle, generator goldens, save
 ```
 
 Requires a .NET 8 SDK. The same tests run inside Unity's edit-mode runner.
@@ -60,8 +60,8 @@ Full first-open walkthrough (what to commit, folder layout, asset policy):
 4. Tests: Window → General → Test Runner → EditMode → Run All. Headless:
    `Unity -batchmode -runTests -testPlatform EditMode -projectPath unity`.
    The suite is a deliberately limited, load-bearing subset (golden replay,
-   undo cross-check, generator goldens, gates) — mirror-run by CI on every
-   push.
+   undo cross-check, solver oracle, generator goldens, save) — mirror-run
+   by CI on every push.
 
 Presentation is still 100% procedural — no imported art, no serialized scene
 content — and it is now the locked style (`grid-infect-style/STYLE-GUIDE.md`):

@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Bake level pools into C# tables (EXECUTION_PLAN stage 3, and the Daily).
+"""Bake level pools into C# tables (EXECUTION_PLAN stage 3).
 
 docs/worlds/*.jsonl -> unity/.../Levels/WorldData.g.cs   (the worlds, PLAY)
-docs/daily/*.jsonl  -> unity/.../Levels/DailyData.g.cs   (one pool per weekday)
 
 Each file starts with a header line {"world": {id, name, elements, seed,
 spec}} followed by one gen_levels row per level. Levels are ordered by
@@ -113,7 +112,6 @@ def bake(source, cls, lo, hi):
 
 def main():
     bake("worlds", "WorldData", 20, 25)
-    bake("daily", "DailyData", 20, 60)
 
 
 if __name__ == "__main__":

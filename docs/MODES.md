@@ -228,30 +228,53 @@ actions and tests stay so old logs replay. Two modes replace it.
 ### 5.1 Daily
 
 - `daily.begin { dateUtc, nowMs }`: `dateUtc` is `yyyy-MM-dd` in UTC, so
-  every device gets the same board. The board comes from the weekday's
-  baked pool (`docs/daily/d1..d7.jsonl`, generated offline by
-  `tools/gen_daily.sh` from the weekday specs in `DailySpec.For` — Monday
-  3 pieces G1–G2 up to Sunday 5 pieces G4–G5, plain walls Monday and
-  Tuesday, one element per weekday from Wednesday, the weekend stacked —
-  and baked into `DailyData.g.cs`): pool index = weeks since
-  `DailyPool.Epoch` (Monday 2026-01-05) modulo the pool size, so 52 levels
-  a pool is a year without a repeat and nothing is generated on the
-  device. A level's locked pieces are placed at load.
-- The clock is a stat, not a rule: elapsed is shown in the HUD; par =
-  `10 s + 15 s × trace length × (3 + grade) / 4`; the personal best per
-  date is kept in the profile.
+  every device gets the same board. The board is the date's seed math:
+  the weekday's spec (`DailySpec.For` — the ramp is pieces and grade,
+  Monday 4 pieces G1–G2 up to Sunday 6 pieces G4–G5; every element is on
+  every day at low per-piece chances, and reading them is par, not grade)
+  at the date's seed range
+  (`DailySpec.SeedFor`: `2 000 000 + 10 000 × days since the epoch`, the
+  epoch being Monday 2026-01-05), first accepted seed wins. Nothing is
+  pregenerated. `LevelCache` memoises that function on the device and
+  has the kernel's `Work` scheduler run it ahead of time, one job at a
+  time in priority order, each job scanning its seed range across the
+  cores and taking the lowest accepted seed (`Warmup`: today's board at
+  boot, then the recent unsolved days, then Endless's opening boards; the
+  calendar's visible month while it is open); a board the cache has not
+  reached yet generates behind the LOADING card, or the loader waits for
+  the job already on it. The cache persists
+  (`gridinfect_levels.json`) and is dropped whole when
+  `LevelCache.GeneratorVersion` changes, which is the generator's
+  versioning rule: a change to its output is a change to every daily,
+  past and future, so it bumps the version.
+- Any date from the epoch up to the clock's own UTC date opens: the
+  calendar (`DailyScreen`) shows a month at a time, solved days marked,
+  today ringed, future days out of bounds; a tap selects a day, whose
+  slot shows the band, the board's counts once cached, the best time,
+  and the one control that opens it. A date before the epoch or
+  after today is rejected.
+- The clock is a stat, not a rule: elapsed is shown in the HUD and the
+  personal best per date is kept in the profile. There is no par: a
+  target time was arbitrary, and what a time is worth waits on real
+  play data.
 - `daily.complete { nowMs }`: rejects a backward clock and an unsolved
-  board. Streak = consecutive completed dates (completing today's board
-  again improves the best, never the streak); every 7th day sets
-  `StreakGrantDue`, which stage 5 turns into `locks.grant { 1, "streak" }`.
+  board. Streak = consecutive dates solved on the day: it moves only when
+  the run's date is the clock's own UTC date, and once per date
+  (completing today's board again improves the best, never the streak; a
+  past day solved from the calendar sets its best and its mark, never the
+  streak); every 7th day sets `StreakGrantDue`, which stage 5 turns into
+  `locks.grant { 1, "streak" }`.
 - Friends leaderboard: out of stage 4. `IDailyScoreSink` in
   `GridInfect.Game` is the hook; the shipped sink is local.
 
 ### 5.2 Endless
 
 - `endless.begin { grade, seed }`: a grade G1–G5 and a seed (the adapter
-  picks the wall clock; it enters the log). Level n of the run is the
-  first accepted seed from `seed + n × 100000` under `DailySpec.Endless`.
+  picks it at boot from the wall clock; it enters the log). Level n of the
+  run is the first accepted seed from `seed + n × 100000` under
+  `DailySpec.Endless`, through `LevelCache`: the opening board per grade is
+  warmed from boot, and during a run the next board is warmed while the
+  current one is played (`Warmup.AfterAction`).
 - `endless.advance`: the current board is solved; streak +1 if the board
   saw no full reset (`LevelSession.Resets == 0`), else back to 1; best
   streak per grade in the profile; next board loads at once.

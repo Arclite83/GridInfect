@@ -220,10 +220,11 @@ The grade is read off the trace on two axes, the model from the
 escape-room and logic-grid generators: **depth** is the lookahead the
 solve needed, **peak open** is how many undecided pieces the player held
 at once. Piece types the player must translate before the line rules
-apply count as depth (`Grader.Translation`: diagonal arms +1, the area
-blot +1, relays +1);
-`Grader.EffectiveDepth` is solver depth plus translation, and the
-constructor rejects anything past `Depth.Max` (`TooDeep`).
+apply (diagonal arms, the area blot, relays; `Grader.Translation`, one
+layer each) are a constant reading cost, not lookahead: they are a stat
+on the level (`GeneratedLevel.Translation`) and never in the grade, so a
+board with a blot in it grades on its deduction alone. The constructor
+rejects anything past `Depth.Max` of solver depth (`TooDeep`).
 
 | Depth \ peak open | 0–1 | 2–3 | 4+ |
 |---|---|---|---|
@@ -353,7 +354,7 @@ worlds were four (w11 3,359 seeds for 20 levels, w12 3,281 for 20).
 ### Locks at load
 
 A level's locks travel with it (`GeneratedLevel.Locks`, JSONL `locks`,
-`WorldData.Locks` / `DailyData.Locks`) and the loading action places them
+`WorldData.Locks`, the level cache) and the loading action places them
 through the rules before play (`Locked.Apply`, from `world.load`,
 `daily.begin`, `endless.begin` and `endless.advance`): the piece sits on
 the board locked, cannot be lifted, and survives a full reset, exactly as
@@ -361,17 +362,13 @@ a Lock-tool placement does. Stored solutions list locked pieces first;
 solvers and counters take them as `placed` (`Locked.Placed`).
 
 **No shipped level uses one.** `GenSpec.MaxLocks` is 0, so the worlds, the
-Daily pools and Endless (which generates on the device from the same
-`GenSpec`) never hand the player a piece they cannot move: a sample whose
+Daily and Endless (which generate on the device through `LevelCache` from
+`DailySpec`) never hand the player a piece they cannot move: a sample whose
 ambiguity only a lock could break is rejected as `NotUnique` and the
 generator takes the next seed. Everything above stays — the given kind,
 the discriminator's fallback to it, `Locked.Apply` and the load path — so
 raising the budget is one field, and a level that does carry a lock still
-loads correctly. `GivensAndHintsTests` holds both halves:
-`NoShippedLevelPreplacesAPiece` over every world level, every Daily pool
-and the Endless and Daily specs, and
-`LockedApplyStillPlacesInfectsAndSurvivesAFullReset` over the load path
-itself, so the budgeted-out mechanism cannot rot.
+loads correctly, through the same path the Lock tool's placements take.
 
 The Lock *tool* is unaffected: a piece the player spends a lock on is
 placed and locked the same way, and that is a placement they asked for.
@@ -387,8 +384,11 @@ field (`--max-givens`, `--max-locks`, `--max-forbidden`, `--max-traps`
 bound the pools); `--daily Monday` takes the weekday's spec from
 `DailySpec`; `--threads N` generates seed chunks in parallel and consumes
 them in seed order, so the output is independent of N.
-`tools/gen_worlds.sh` regenerates the worlds, `tools/gen_daily.sh` the
-seven Daily pools; `tools/bake_worlds.py` bakes both.
+`tools/gen_worlds.sh` regenerates the worlds and `tools/bake_worlds.py`
+bakes them. The Daily and Endless are not batch content: the device runs
+the same `GeneratorV2.Generate` for the date's (or the run's) seed range
+through `LevelCache` (`docs/MODES.md` §5); `--daily Monday` reproduces a
+weekday's spec for inspection.
 
 ## Elements (stages 9–12)
 
@@ -433,7 +433,7 @@ unless symmetric tiles are allowed). A diagonal arm with no cell to reach
 from the piece's corner is dropped; a piece left with no arms, or a
 duplicate of a piece already sampled, falls back to its tile. Carve and
 constructor are direction-agnostic. Solver: the two diagonal families
-join the line map; a diagonal arm is one translation layer in the grade.
+join the line map; a diagonal arm is one translation layer (a stat, not graded).
 World `w16 Diagonals` (pieces 3–5, G2–G4, chance 14/20); daily: Fridays.
 
 ### Relay cells (`Element.Relays`, stage 12)
@@ -446,6 +446,6 @@ the relay's arms are carved as runs, so the
 sampled solution lights the relay and covers what it spreads to.
 Constructor: every relay arm must reach a cell; no given ever lands on a
 relay cell. Solver: static coverage follows relay chains, and forbidden
-legality does too; a relay is one translation layer in the grade. World `w17 Relays` (pieces 3–5,
+legality does too; a relay is one translation layer (a stat, not graded). World `w17 Relays` (pieces 3–5,
 G2–G4, chance 14/20); daily: Saturdays; Sundays mix forbidden cells and
 diagonals.

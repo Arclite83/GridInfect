@@ -39,7 +39,7 @@ pre-fixed pieces) using the oracle's alternative solutions to pick each
 one, then withdraws every given the uniqueness proof does not need, then
 grades off the solver trace (lookahead depth capped at two, peak open
 pieces) instead of weighted rule firings. Every world regenerated; the
-Daily moved to baked weekday pools. The lock as a *given* (a piece
+Daily is the date's seed math, generated on the device into a cache. The lock as a *given* (a piece
 pre-placed by the level) is new: it is the only thing that breaks a
 mirror-pair swap. It is now budgeted to **zero** (`GenSpec.MaxLocks`):
 play showed that a piece the player cannot pick up reads as a broken

@@ -10,8 +10,8 @@ export const tokens = {
   skins: {
     default: { mask:"#7fae66", maskHi:"#97c27c", maskLo:"#5f8b4a", ink:"#1d3316",
                copper:"#c9a648", copperHi:"#f3e2a8", copperLo:"#7d6120",
-               infect:"#ff2d95", infectHi:"#ff7cc4", infectLo:"#b3086a", infectGlow:"rgba(255,45,149,.55)",
-               glyphEdge:"#5a0033", glyphWire:"#3a0b22" },
+               infect:"#d9204f", infectHi:"#ff6e93", infectLo:"#8f0a32", infectGlow:"rgba(217,32,79,.55)",
+               glyphEdge:"#4a0018", glyphWire:"#300010" },
     blue:    { mask:"#2e5aa8", maskHi:"#3f70c4", maskLo:"#1f3f7a", ink:"#e6efff",
                copper:"#d9a441", copperHi:"#ffe08a", copperLo:"#7a5410",
                infect:"#ff8a00", infectHi:"#ffb347", infectLo:"#c25a00", infectGlow:"rgba(255,138,0,.55)",

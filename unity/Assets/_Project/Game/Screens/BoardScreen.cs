@@ -75,6 +75,7 @@ namespace GridInfect.Game
             _lockButton = UiButton.Make(Root.transform, "",
                 new Vector2(w / 2f - S.Px(S.HudInset) - badge.x / 2f, badgeY), badge,
                 GlassStyle.Badge(BoardPalette.Default), BoardTheme.Copper, LockPiece, 20, pads: false, padAlpha: 1f, mono: true);
+            _lockButton.Cooldown = PresentationConfig.SolveCooldown;
             Buttons.Add(_lockButton);
 
             // The mono caption shares the badge's row, left-aligned under
@@ -340,7 +341,10 @@ namespace GridInfect.Game
                 }
             }
             // Illegal drop: back to the tray slot (the piece was already
-            // cleared on touch, so board state is consistent).
+            // cleared on touch, so board state is consistent). A drop the
+            // forbidden cells refused shows which arm would have reached which
+            // cell, so the refusal reads as a rule, not a miss.
+            if (i >= 0 && RulesV2.WouldHitForbidden(_bound, index, i, j)) _board.FlashForbidden(index, i, j);
             ReturnToTray(index, PresentationConfig.TrayReturn);
         }
 
@@ -356,8 +360,17 @@ namespace GridInfect.Game
         void LockPiece()
         {
             if (_bound == null || _popupOpen || _beginCover != null) return;
-            App.FastForwardResolve();
-            _board.BeginWave(0, 0);
+            // A press inside the 0.3 s beat lands the pending placement and
+            // stops there: one hint per press, never one per tap of a
+            // double-tap. The cooldown on the chip covers the rest.
+            if (App.FastForwardResolve()) return;
+            // The wave is seeded at the cell the hint will land on, exactly as
+            // a drop is seeded at its cell: the same chooser the action runs,
+            // asked first, so the spread bleeds out from the piece and not
+            // from the corner of the board.
+            var target = Lock.ChooseTarget(App.State);
+            if (target == null) return;
+            _board.BeginWave(target.Value.cell / GridInfect.Core.Grid.Width, target.Value.cell % GridInfect.Core.Grid.Width);
             var result = App.Do(GridInfectActions.PieceLock);
             _board.EndBatch(result.Applied);
             if (!result.Applied) return;
@@ -448,10 +461,11 @@ namespace GridInfect.Game
             else if (App.State.Mode == GameMode.Daily)
             {
                 var run = App.State.DailyRun;
+                long before = Queries.DailyBestMs(App.State.Profile, run.DateUtc);
                 if (!run.Completed)
                 {
                     App.Do(GridInfectActions.DailyComplete, Inputs.Now(GameApp.NowMs()));
-                    App.DailyScores.Submit(run.DateUtc, Queries.ElapsedMs(run, GameApp.NowMs()), run.ParMs);
+                    App.DailyScores.Submit(run.DateUtc, Queries.ElapsedMs(run, GameApp.NowMs()));
                     if (run.StreakGrantDue)
                     {
                         App.Do(GridInfectActions.LocksGrant, Inputs.LocksGrant(1, "streak")); // +1 lock every 7-day streak
@@ -459,8 +473,17 @@ namespace GridInfect.Game
                 }
                 long elapsed = Queries.ElapsedMs(run, GameApp.NowMs());
                 long best = Queries.DailyBestMs(App.State.Profile, run.DateUtc);
-                OpenPopup($"SOLVED IN {Queries.FormatDuration(elapsed)}\nPAR {Queries.FormatDuration(run.ParMs)}   BEST {Queries.FormatDuration(best)}\nSTREAK {App.State.Profile.DailyStreak}");
-                AddPopupButton("MENU", new Vector2(0f, -Short * 0.06f),
+                // Three short lines a person would say: the time, how it
+                // compares, and the streak (a past day solved from the
+                // calendar sets a best, never the streak, so it says so).
+                // The comparison line only once there is something to compare to.
+                string compare = before <= 0 ? null : elapsed <= best ? "New best" : $"Best {Queries.FormatTime(best)}";
+                int streak = App.State.Profile.DailyStreak;
+                string third = run.DateUtc != GameApp.TodayUtc() ? "Played from the calendar"
+                    : streak <= 1 ? "Streak started" : $"{streak} days in a row";
+                OpenPopup(compare == null ? $"Solved in {Queries.FormatTime(elapsed)}\n{third}"
+                    : $"Solved in {Queries.FormatTime(elapsed)}\n{compare}\n{third}");
+                AddPopupButton("CALENDAR", new Vector2(0f, -Short * 0.06f),
                     new Vector2(L.ContentWidth / 3f, L.BarHeight), () => App.Screens.Show(new DailyScreen()));
             }
             else if (App.State.Mode == GameMode.Endless)
@@ -525,7 +548,7 @@ namespace GridInfect.Game
                 if (daily == null || daily.Completed) return;
                 long elapsedDaily = Queries.ElapsedMs(daily, GameApp.NowMs());
                 if (elapsedDaily < 0) elapsedDaily = 0; // a backward clock is refused at daily.complete
-                _caption.text = $"{Queries.FormatDuration(elapsedDaily)}   PAR {Queries.FormatDuration(daily.ParMs)}";
+                _caption.text = Queries.FormatTime(elapsedDaily);
                 return;
             }
             if (App.State.Mode == GameMode.Endless)

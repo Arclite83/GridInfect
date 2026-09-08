@@ -5,9 +5,11 @@ using GridInfect.Core.Solving;
 namespace GridInfect.Core
 {
     // daily.begin { dateUtc, nowMs }: the board is a pure function of the
-    // date (the weekday's baked pool, indexed by the week), the clock is a
-    // stat. The adapter supplies both (wall clock via input), so a log
-    // replays to the same board and the same times.
+    // date (the weekday's spec at the date's seed, through the level cache),
+    // the clock is a stat. The adapter supplies both (wall clock via input), so
+    // a log replays to the same board and the same times. Any date from the
+    // epoch up to the clock's own UTC date opens (the archive); tomorrow's
+    // is not out yet.
     public sealed class BeginDailyAction : GameAction<GameState>
     {
         public override string Name => "daily.begin";
@@ -15,14 +17,17 @@ namespace GridInfect.Core
         public override string Validate(GameState state, ActionInput input)
         {
             string dateUtc = input.Str("dateUtc");
-            if (!DailySpec.TryParseDate(dateUtc, out _)) return $"dateUtc '{dateUtc}' is not {DailySpec.DateFormat}";
-            input.Long("nowMs");
+            if (!DailySpec.TryParseDate(dateUtc, out DateTime date)) return $"dateUtc '{dateUtc}' is not {DailySpec.DateFormat}";
+            long nowMs = input.Long("nowMs");
+            if (date < DailyCalendar.Epoch) return $"no daily before {DailySpec.Format(DailyCalendar.Epoch)}";
+            if (date > DailySpec.DateOf(nowMs)) return $"the daily for {dateUtc} is not out yet";
             return null;
         }
 
         public override void Execute(GameState state, ActionInput input)
         {
             string dateUtc = input.Str("dateUtc");
+            DailySpec.TryParseDate(dateUtc, out DateTime date);
             var level = DailySpec.Build(dateUtc) ?? throw new InvalidOperationException($"no daily board for {dateUtc}");
             state.Mode = GameMode.Daily;
             state.ClassicLevelId = -1;
@@ -33,11 +38,10 @@ namespace GridInfect.Core
             {
                 DateUtc = dateUtc,
                 Seed = level.Seed,
-                PoolIndex = level.Index,
+                Day = DailyCalendar.DayIndex(date),
                 StartedMs = input.Long("nowMs"),
                 TraceLength = level.TraceLength,
                 Grade = level.Grade,
-                ParMs = DailySpec.ParMs(level.TraceLength, level.Grade),
             };
             state.Solution = level.Solution;
             // Locks before publication: SessionChanged builds the board view,
@@ -50,7 +54,9 @@ namespace GridInfect.Core
 
     // daily.complete { nowMs }: elapsed, personal best per date, streak.
     // Rejects a backward clock. Completing the same date again records a
-    // better time but never moves the streak.
+    // better time but never moves the streak, and neither does a date solved
+    // from the archive: the streak counts dates solved on the day, so only a
+    // run whose date is the clock's own UTC date can extend it.
     public sealed class CompleteDailyAction : GameAction<GameState>
     {
         public override string Name => "daily.complete";
@@ -76,7 +82,8 @@ namespace GridInfect.Core
                 profile.DailyBestMs[run.DateUtc] = elapsed;
             }
 
-            if (profile.DailyLastDate != run.DateUtc)
+            bool onTheDay = run.DateUtc == DailySpec.Format(DailySpec.DateOf(run.CompletedMs));
+            if (onTheDay && profile.DailyLastDate != run.DateUtc)
             {
                 DailySpec.TryParseDate(run.DateUtc, out DateTime today);
                 bool consecutive = DailySpec.TryParseDate(profile.DailyLastDate, out DateTime last)
@@ -91,7 +98,9 @@ namespace GridInfect.Core
 
     // endless.begin { grade, seed }: no clock; level n of the run is the
     // first accepted seed from seed + n * EndlessRun stride, so the whole
-    // run replays from the log.
+    // run replays from the log. Boards come through the level cache: the
+    // adapter warms the opening board per grade and the next board during
+    // play (Warmup), and the loader covers a miss.
     public sealed class BeginEndlessAction : GameAction<GameState>
     {
         public const ulong Stride = 100_000;

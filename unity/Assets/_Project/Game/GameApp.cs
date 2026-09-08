@@ -26,6 +26,7 @@ namespace GridInfect.Game
 
         Camera _camera;
         SavePort _save;
+        LevelCachePort _levels;
         float _resolveAt = -1f;
 
         // Touch gating. A transition swallows input outright; the two cool-
@@ -40,6 +41,20 @@ namespace GridInfect.Game
 
         // The Daily's date: UTC, so every device gets the same board.
         public static string TodayUtc() => DailySpec.Format(System.DateTime.UtcNow);
+
+        // The seed the next Endless run will start from. Picked ahead of
+        // time so the cache can have its opening boards ready before the
+        // player asks (Warmup); TakeEndlessSeed hands it over and picks the
+        // one after.
+        public ulong EndlessSeed { get; private set; }
+
+        public ulong TakeEndlessSeed()
+        {
+            ulong seed = EndlessSeed;
+            EndlessSeed = (ulong)NowMs() ^ (seed << 7);
+            Warmup.EndlessOpeners(LevelCache.Shared, EndlessSeed, 30);
+            return seed;
+        }
 
         // Local until a friends board lands (stage 4 leaves the hook).
         public IDailyScoreSink DailyScores { get; set; } = new LocalDailyScoreSink();
@@ -72,7 +87,21 @@ namespace GridInfect.Game
             Dispatcher = GridInfectActions.CreateDispatcher();
             _save = new SavePort(Application.persistentDataPath);
             State.Profile = _save.Load();
-            Dispatcher.Applied += _ => _save.SaveIfDirty(State.Profile);
+
+            // The level cache: what the device has generated so far, and the
+            // worker that generates ahead of the player. Today's daily first,
+            // then the recent archive, then Endless's opening boards; in
+            // Endless, the next board while the current one is played.
+            _levels = new LevelCachePort(Application.persistentDataPath);
+            _levels.Load(LevelCache.Shared);
+            EndlessSeed = (ulong)NowMs();
+            Warmup.AtBoot(LevelCache.Shared, System.DateTime.UtcNow, State.Profile, EndlessSeed);
+
+            Dispatcher.Applied += _ =>
+            {
+                _save.SaveIfDirty(State.Profile);
+                Warmup.AfterAction(LevelCache.Shared, State);
+            };
 
             Ads = AdGate.Create();
             Ads.Start();
@@ -111,6 +140,8 @@ namespace GridInfect.Game
             float dt = Mathf.Min(Time.unscaledDeltaTime, PresentationConfig.MaxFrameDelta);
             Tweens.Update(dt);
             Screens.Update(dt);
+            Work.Shared.Pump();                        // completions of background jobs land here
+            _levels.SaveIfDirty(LevelCache.Shared);   // a board landed on the worker: keep it
 
             var session = State.Session;
             if (session != null && session.ResolutionPending && Time.unscaledTime >= _resolveAt)
@@ -153,13 +184,18 @@ namespace GridInfect.Game
                     {
                         screen.OnPress(world);   // the board: never debounced, it is a drag
                     }
-                    else if (Time.unscaledTime >= _clickBlockedUntil)
+                    else if (Time.realtimeSinceStartup >= _clickBlockedUntil)
                     {
-                        // One button press per debounce window, whichever
-                        // button: a double-tap on a menu row must not both
-                        // navigate and fire again on whatever replaces it.
-                        _clickBlockedUntil = Time.unscaledTime + PresentationConfig.ButtonDebounce;
+                        // One button press per cooldown, whichever button: a
+                        // double-tap on a menu row must not both navigate and
+                        // fire again on whatever replaces it. The window is
+                        // stamped from the wall clock *after* the handler
+                        // returns: a handler that stalls the frame (the hint
+                        // runs the deducer) must not spend its own window, or
+                        // the second tap of a double-tap lands the moment the
+                        // frame resumes.
                         hit.OnClick?.Invoke();
+                        _clickBlockedUntil = Time.realtimeSinceStartup + hit.Cooldown;
                     }
                 }
             }
@@ -171,6 +207,16 @@ namespace GridInfect.Game
             {
                 if (Time.unscaledTime >= _inputBlockedUntil) screen.OnRelease(ToWorld(Input.mousePosition));
             }
+        }
+
+        void OnApplicationPause(bool paused)
+        {
+            if (paused) _levels?.SaveIfDirty(LevelCache.Shared);
+        }
+
+        void OnApplicationQuit()
+        {
+            _levels?.SaveIfDirty(LevelCache.Shared);
         }
 
         public Vector2 ToWorld(Vector3 screenPos)

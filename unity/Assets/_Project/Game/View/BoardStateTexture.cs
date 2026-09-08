@@ -28,6 +28,7 @@ namespace GridInfect.Game
             public const float Receding = 2f;
             public const float Conflict = 3f;
             public const float Preview = 4f;   // the drop preview: where the piece under the finger would reach
+            public const float Warn = 5f;      // the drop preview where the reach is a problem: an arm to a forbidden cell or a trap, and that cell
         }
 
         public const int SeedDir = 4;   // (dr, dc) = (0, 0)
@@ -70,7 +71,7 @@ namespace GridInfect.Game
         // `seed` is the placement marker, not a formality: the shader draws an
         // emissive ring on the cell border of any infected cell carrying
         // SeedDir. Every resync used to claim it, so lifting one piece painted
-        // a magenta border around every cell still infected by the others.
+        // an infection-coloured border around every cell still infected by the others.
         // Only a cell a piece actually sits on is a seed.
         public void SetSettled(int i, int j, byte value, bool seed)
         {

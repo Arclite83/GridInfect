@@ -1,9 +1,11 @@
 namespace GridInfect.Core.Solving
 {
     // Six bands. The grade is read off the solve trace: the lookahead depth
-    // the solve needed (plus the translation layers the board's piece types
-    // add) sets the band's floor, the peak number of undecided pieces the
-    // player had to hold at once moves within it. Thresholds are documented
+    // the solve needed sets the band's floor, the peak number of undecided
+    // pieces the player had to hold at once moves within it. Piece types
+    // the player must translate first (diagonals, the blot, relays) are a
+    // constant reading cost, not lookahead: counted as a stat on the level
+    // (Translation), never in the grade. Thresholds are documented
     // in docs/GENERATOR_V2.md §Solver and locked by the classic-level table
     // in SolverTests.
     public enum Grade
@@ -37,9 +39,9 @@ namespace GridInfect.Core.Solving
                    + t5 * Contradiction2Weight;
         }
 
-        // A piece type the player must translate before the line rules
-        // apply counts as a lookahead layer: diagonal arms, the area blot,
-        // relays.
+        // Piece types the player must translate before the line rules
+        // apply: diagonal arms, the area blot, relays. One layer each, a
+        // stat on the level; the grade does not count them.
         public static int Translation(LevelDef def)
         {
             bool diagonal = false, area = false;
@@ -50,9 +52,6 @@ namespace GridInfect.Core.Solving
             }
             return (diagonal ? 1 : 0) + (area ? 1 : 0) + (def.HasRelays ? 1 : 0);
         }
-
-        // The solve's depth plus the board's translation layers.
-        public static int EffectiveDepth(SolveResult r, LevelDef def) => r.Depth + Translation(def);
 
         // Band by (depth, peak open pieces); peak is clamped to the last
         // column. Read: G1 is read off the board, G2 holds two or three
@@ -67,8 +66,6 @@ namespace GridInfect.Core.Solving
         };
 
         public static Solving.Grade Grade(SolveResult r) => Band(r, r?.Depth ?? 0);
-
-        public static Solving.Grade Grade(SolveResult r, LevelDef def) => Band(r, r == null ? 0 : EffectiveDepth(r, def));
 
         static Solving.Grade Band(SolveResult r, int depth)
         {

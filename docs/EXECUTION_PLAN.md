@@ -152,11 +152,14 @@ identically.
 
 ## Stage 4 — Daily and Endless
 
-- `daily.begin { dateUtc, nowMs }`: seed = stable hash of the UTC date,
-  `GeneratorV2` with the daily `GenSpec` (rotating element set per weekday
-  once elements exist; cardinal-only at launch). Same board for everyone.
-- Timer as a stat only: elapsed shown, par = f(trace length, grade),
-  personal best per date. Streak counter, `+1 lock every 7` (stage 5 wires
+- `daily.begin { dateUtc, nowMs }`: the board is the weekday's `GenSpec`
+  at the date's seed range (`DailySpec.SeedFor`), first accepted seed,
+  through the on-device `LevelCache` (warmed in the background at boot,
+  the loader covers a miss). Same board for everyone. Any date from the
+  epoch to today plays from the calendar (`DailyScreen`); the streak
+  counts dates solved on the day.
+- Timer as a stat only: elapsed shown, personal best per date (par was
+  tried and dropped as arbitrary). Streak counter, `+1 lock every 7` (stage 5 wires
   the grant). `daily.complete { nowMs }` rejects a backward clock.
 - Endless: `endless.begin { grade, seed }`, `endless.advance`, no clock,
   streak = solves without a reset. Seed logged so runs replay.
@@ -165,9 +168,8 @@ identically.
 - Friends leaderboard via Play Games Services v2 is **out of this stage**:
   local only. Leave the hook (`IDailyScoreSink`) in `GridInfect.Game`.
 
-**Acceptance.** Two devices, same date, same board (test: two fresh states,
-same input, same `LevelDef` hash). Replay test for a full daily run from its
-log.
+**Acceptance.** Two devices, same date, same board. A full daily run
+replays from its log.
 
 ## Stage 5 — Lock tool
 

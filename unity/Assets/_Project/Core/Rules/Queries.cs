@@ -79,6 +79,12 @@ namespace GridInfect.Core
         public static long DailyBestMs(Profile profile, string dateUtc) =>
             profile.DailyBestMs.TryGetValue(dateUtc ?? "", out long ms) ? ms : 0;
 
+        // A date is solved once it has a best time, on the day or from the archive.
+        public static bool IsDailySolved(Profile profile, string dateUtc) => DailyBestMs(profile, dateUtc) > 0;
+
+        // The grade band a weekday's dailies fall in (the calendar's column header).
+        public static (Solving.Grade min, Solving.Grade max) DailyBand(System.DayOfWeek day) => DailyCalendar.Band(day);
+
         // The streak as of `dateUtc`: intact if the last completed date is
         // today or yesterday, otherwise broken (shown as 0 until today's solve).
         public static int DailyStreakOn(Profile profile, string dateUtc)
@@ -86,6 +92,18 @@ namespace GridInfect.Core
             if (!DailySpec.TryParseDate(dateUtc, out System.DateTime today)) return 0;
             if (!DailySpec.TryParseDate(profile.DailyLastDate, out System.DateTime last)) return 0;
             return last == today || last.AddDays(1) == today ? profile.DailyStreak : 0;
+        }
+
+        // A time the way a person says it: "48s", "1m 12s", "1h 03m".
+        public static string FormatTime(long ms)
+        {
+            if (ms < 0) ms = 0;
+            long seconds = (ms + 500) / 1000;
+            long minutes = seconds / 60;
+            long hours = minutes / 60;
+            if (hours > 0) return $"{hours}h {minutes % 60:00}m";
+            if (minutes > 0) return $"{minutes}m {seconds % 60:00}s";
+            return $"{seconds}s";
         }
 
         public static string FormatDuration(long ms)

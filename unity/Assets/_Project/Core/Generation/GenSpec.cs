@@ -195,7 +195,8 @@ namespace GridInfect.Core.Generation
         public Deduction[] Trace;
         public Grade Grade;
         public int Effort;                         // rule firings, weighted: orders levels within a band
-        public int Depth;                          // lookahead the solve needed plus the board's translation layers
+        public int Depth;                          // lookahead the solve needed
+        public int Translation;                    // piece types to read first (diagonals, blot, relays): par, not grade
         public int PeakOpen;                       // most undecided pieces held at once
         public ulong Seed;
         public string Hash;                        // canonical under the board's symmetry group
@@ -220,6 +221,6 @@ namespace GridInfect.Core.Generation
         Decoy,          // a piece is not needed
         Grade,          // outside the grade band
         Unwinnable,     // the sample's own solution does not win (an arm blinded, a relay loop)
-        TooDeep,        // solvable, but past the lookahead cap once translation layers count
+        TooDeep,        // solvable, but past the lookahead cap
     }
 }

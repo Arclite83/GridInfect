@@ -145,6 +145,10 @@ namespace GridInfect.Game
         public Rect Bounds;               // world coords (pixels, origin center-screen)
         public System.Action OnClick;
         public bool Enabled = true;
+        // Seconds no chip answers after this one's handler returns. The
+        // default covers a double-tap; a control whose handler does real
+        // work (the hint) asks for more.
+        public float Cooldown = PresentationConfig.ButtonDebounce;
 
         public bool HitTest(Vector2 worldPoint) => Enabled && Bounds.Contains(worldPoint);
 
