@@ -223,6 +223,11 @@ The guide replaced the look, not the machinery. What changed on the board:
 - **Drop preview.** New: while a piece is over a cell it could go on, every
   cell it would light gets the guide's "pending trace" look. The reach comes
   from the solver's `LineMap.Coverage`, which already mirrors the stop set.
+  An arm that would run into a forbidden cell (the drop would be refused) or
+  a trap (the board would reset) is shown in the conflict colour out to that
+  cell instead, and the cell itself pulses under the same overprint while the
+  finger is there (transition kind 5, `Warn`); a refused drop then flashes
+  the same cells once (kind 3) as it returns to the tray.
 - **Chrome.** Every screen sits on the substrate quad (mask gradient, 24 and
   12 px grids, sheen, tone-on-tone margin traces, corner holes, vignette,
   silkscreen). Buttons are glass chips with a copper pad each side; the lock

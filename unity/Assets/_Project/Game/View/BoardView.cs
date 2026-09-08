@@ -209,6 +209,60 @@ namespace GridInfect.Game
                 _state.Set(ti, tj, Cell.Active, _boardTime, BoardStateTexture.SeedDir, BoardStateTexture.Kind.Preview);
                 _previewLocs.Add(target);
             }
+            WarnPreview(_session.Def.Specs[piece], i, j);
+        }
+
+        // The part of the preview that is a warning: an arm that would run
+        // into a forbidden cell (the drop would be refused) or a trap (the
+        // board would reset) is shown in the conflict colour out to that
+        // cell, and the cell itself pulses, while the finger is still there.
+        // A blot's ring warns the forbidden cells inside it. Relay chains are
+        // not traced. Same walk as the rules: walls and switches stop an arm,
+        // voids and the edge are passed over.
+        void WarnPreview(PieceSpec spec, int i0, int j0)
+        {
+            if (spec.Area)
+            {
+                for (int di = -1; di <= 1; di++)
+                {
+                    for (int dj = -1; dj <= 1; dj++)
+                    {
+                        if (di == 0 && dj == 0) continue;
+                        int ai = i0 + di, aj = j0 + dj;
+                        if (Grid.InBounds(ai, aj) && _session.Board[Grid.Loc(ai, aj)] == Cell.Forbidden) Warn(ai, aj);
+                    }
+                }
+            }
+            for (int d = 0; d < 8; d++)
+            {
+                var dir = (Dir)d;
+                if (!spec.Has(dir)) continue;
+                int hit = -1;
+                for (int offset = 1; offset <= Grid.SpreadRange; offset++)
+                {
+                    int i = i0 + TileArms.Di(dir) * offset;
+                    int j = j0 + TileArms.Dj(dir) * offset;
+                    if (!Grid.InBounds(i, j)) continue;
+                    byte value = _session.Board[Grid.Loc(i, j)];
+                    if (value == Cell.Wall || value == Cell.RepelSwitch) break;
+                    if (value == Cell.Forbidden || value == Cell.ResetTrap) { hit = offset; break; }
+                }
+                if (hit < 0) continue;
+                for (int offset = 1; offset <= hit; offset++)
+                {
+                    int i = i0 + TileArms.Di(dir) * offset;
+                    int j = j0 + TileArms.Dj(dir) * offset;
+                    if (!Grid.InBounds(i, j) || _session.Board[Grid.Loc(i, j)] == Cell.Void) continue;
+                    Warn(i, j);
+                }
+            }
+        }
+
+        void Warn(int i, int j)
+        {
+            int loc = Grid.Loc(i, j);
+            _state.Set(i, j, _session.Board[loc], _boardTime, BoardStateTexture.SeedDir, BoardStateTexture.Kind.Warn);
+            if (!_previewLocs.Contains(loc)) _previewLocs.Add(loc);
         }
 
         public void ClearPreview()
@@ -216,7 +270,8 @@ namespace GridInfect.Game
             foreach (int loc in _previewLocs)
             {
                 int i = loc / Grid.Width, j = loc % Grid.Width;
-                if (_state.KindAt(i, j) == BoardStateTexture.Kind.Preview)
+                float kind = _state.KindAt(i, j);
+                if (kind == BoardStateTexture.Kind.Preview || kind == BoardStateTexture.Kind.Warn)
                     _state.SetSettled(i, j, _session.Board[loc], BoardStateTexture.IsPieceCell(_session, i, j));
             }
             _previewLocs.Clear();
