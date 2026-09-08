@@ -11,11 +11,10 @@
 #
 # Each world: id, name, level count, seed start, gen_levels flags. Grades
 # ramp within a world (the bake orders by grade, then trace length) and
-# across worlds. Launch content is cardinal arms plus walls (stage 3);
-# later stages add one element per world.
+# across worlds.
 set -e
 cd "$(dirname "$0")/.."
-THREADS=3
+THREADS=4
 ONLY=""
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -36,28 +35,33 @@ world() {
   $GEN --count "$count" --seed "$seed" --threads "$THREADS" "$@" >> "$out"
 }
 
+# The progression is linear on pieces and grade with one element entering
+# at a time, each in its own world at three or four pieces and then in the
+# pool of every world after it: forbidden cells first (no reading cost),
+# the blot (local), diagonals (new line families), relays (chains). Ids
+# stay in order (w13 is retired) so saved progress keeps its keys.
 ELEMENTS='["walls"]'
 world w01 "First Steps"  20 100000 --pieces 2-2 --grade G1 --max-run 4
 world w02 "Two Lines"    22 110000 --pieces 2-3 --grade G1
 world w03 "Corners"      22 120000 --pieces 3-3 --grade G1
 world w04 "Crossings"    22 130000 --pieces 3-4 --grade G2
-world w05 "Counting"     22 140000 --pieces 4-4 --grade G2
-world w06 "Walls"        22 150000 --pieces 4-4 --grade G3
-world w07 "Corridors"    22 160000 --pieces 4-5 --grade G3 --max-run 3
-world w08 "Four Arms"    22 170000 --pieces 5-5 --grade G3
-world w09 "Long Reach"   22 180000 --pieces 5-5 --grade G4 --max-run 5
-world w10 "Tight"        22 190000 --pieces 5-5 --grade G4 --max-run 3
-world w11 "Suppose"      20 200000 --pieces 5-5 --grade G5
-world w12 "Mastery"      20 210000 --pieces 5-6 --grade G5
 
-# One element per world from here (stages 9-12). w13 was the short-arm
-# world; per-arm reach is gone (the blot is the one short-range piece) and
-# the id is retired so saved world progress keeps its keys.
-ELEMENTS='["walls","area"]'
-world w14 "Blots"        22 230000 --pieces 3-5 --grades G2-G4 --elements walls,area --area-chance 8
 ELEMENTS='["walls","forbidden"]'
-world w15 "Keep Clean"   22 240000 --pieces 3-5 --grades G2-G4 --elements walls,forbidden --max-forbidden 4
-ELEMENTS='["walls","diagonals"]'
-world w16 "Diagonals"    22 250000 --pieces 3-5 --grades G2-G4 --elements walls,diagonals --diagonal-chance 14
-ELEMENTS='["walls","relays"]'
-world w17 "Relays"       22 260000 --pieces 3-5 --grades G2-G4 --elements walls,relays --relay-chance 14
+world w05 "Keep Clean"   22 140000 --pieces 3-4 --grade G2 --elements walls,forbidden --max-forbidden 4
+world w06 "Counting"     22 150000 --pieces 4-4 --grade G2 --elements walls,forbidden --max-forbidden 3
+world w07 "Corridors"    22 160000 --pieces 4-4 --grade G3 --elements walls,forbidden --max-forbidden 3 --max-run 3
+
+ELEMENTS='["walls","forbidden","area"]'
+world w08 "Blots"        22 170000 --pieces 3-4 --grades G2-G3 --elements walls,forbidden,area --area-chance 8 --max-forbidden 2
+world w09 "Long Reach"   22 180000 --pieces 4-5 --grade G3 --elements walls,forbidden,area --area-chance 5 --max-forbidden 3
+world w10 "Four Arms"    22 190000 --pieces 5-5 --grade G3 --elements walls,forbidden,area --area-chance 5 --max-forbidden 3
+
+ELEMENTS='["walls","forbidden","area","diagonals"]'
+world w11 "Diagonals"    22 200000 --pieces 4-4 --grades G2-G3 --elements walls,forbidden,area,diagonals --diagonal-chance 14 --area-chance 3 --max-forbidden 2
+world w12 "Tight"        22 210000 --pieces 5-5 --grade G4 --elements walls,forbidden,area,diagonals --diagonal-chance 8 --area-chance 4 --max-forbidden 3 --max-run 3
+
+ELEMENTS='["walls","forbidden","area","diagonals","relays"]'
+world w14 "Relays"       22 230000 --pieces 4-4 --grade G3 --elements walls,forbidden,area,diagonals,relays --relay-chance 14 --diagonal-chance 4 --area-chance 3 --max-forbidden 2
+world w15 "Crosstalk"    22 240000 --pieces 5-5 --grade G4 --elements walls,forbidden,area,diagonals,relays --relay-chance 8 --diagonal-chance 8 --area-chance 4 --max-forbidden 3
+world w16 "Suppose"      20 250000 --pieces 5-5 --grade G5 --elements walls,forbidden,area,diagonals,relays --relay-chance 6 --diagonal-chance 6 --area-chance 4 --max-forbidden 4
+world w17 "Mastery"      20 260000 --pieces 5-6 --grade G5 --elements walls,forbidden,area,diagonals,relays --relay-chance 6 --diagonal-chance 6 --area-chance 4 --max-forbidden 4

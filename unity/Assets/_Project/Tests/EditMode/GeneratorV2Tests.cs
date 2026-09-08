@@ -39,7 +39,7 @@ namespace GridInfect.Core.Tests
                 var solve = Deducer.Solve(def, placed);
                 Assert.That(solve.Solved, Is.True, $"seed {level.Seed}: not solved by deduction");
                 Assert.That(solve.Guesses, Is.EqualTo(0), $"seed {level.Seed}: guessed");
-                Assert.That(Grader.EffectiveDepth(solve, def), Is.LessThanOrEqualTo(Depth.Max), $"seed {level.Seed}: depth");
+                Assert.That(solve.Depth, Is.LessThanOrEqualTo(Depth.Max), $"seed {level.Seed}: depth");
                 Assert.That(solve.Placements.Length, Is.EqualTo(def.Pieces.Length), $"seed {level.Seed}: decoy piece");
                 Assert.That(level.Solution.Length, Is.EqualTo(def.Pieces.Length), $"seed {level.Seed}: stored solution size");
                 for (int n = 0; n < level.Locks.Length; n++)
@@ -47,7 +47,7 @@ namespace GridInfect.Core.Tests
                     Assert.That(level.Solution[n], Is.EqualTo(level.Locks[n]), $"seed {level.Seed}: locked pieces lead the solution");
                 }
                 Assert.That(SolutionCounter.Wins(def, level.Solution), Is.True, $"seed {level.Seed}: stored solution does not win");
-                Assert.That(Grader.Grade(solve, def), Is.EqualTo(level.Grade), $"seed {level.Seed}: grade");
+                Assert.That(Grader.Grade(solve), Is.EqualTo(level.Grade), $"seed {level.Seed}: grade");
                 Assert.That(level.Hash, Is.EqualTo(Canonical.Hash(def, level.Locks)), $"seed {level.Seed}: hash");
             }
         }

@@ -117,9 +117,10 @@ namespace GridInfect.Core.Generation
             // 3. Trace: the human solver must finish within the depth cap.
             var def = puzzle.Def;
             var solve = Deducer.Solve(def, puzzle.Placed());
-            int depth = Grader.EffectiveDepth(solve, def);
-            var grade = Grader.Grade(solve, def);
-            log?.Add($"  solved={solve.Solved} depth={solve.Depth}+{Grader.Translation(def)} peak={solve.PeakOpen} grade={grade} effort={Grader.Effort(solve)} tiers={string.Join(",", solve.TierCounts)} [{watch.ElapsedMilliseconds} ms]");
+            int depth = solve.Depth;
+            int translation = Grader.Translation(def);
+            var grade = Grader.Grade(solve);
+            log?.Add($"  solved={solve.Solved} depth={depth} translation={translation} peak={solve.PeakOpen} grade={grade} effort={Grader.Effort(solve)} tiers={string.Join(",", solve.TierCounts)} [{watch.ElapsedMilliseconds} ms]");
             if (!solve.Solved) { rejection = Rejection.NotDeducible; return null; }
             if (depth > Depth.Max) { rejection = Rejection.TooDeep; return null; }
             if (spec.RequireAllPieces && solve.Placements.Length != n) { rejection = Rejection.Decoy; return null; }
@@ -138,6 +139,7 @@ namespace GridInfect.Core.Generation
                 Grade = grade,
                 Effort = Grader.Effort(solve),
                 Depth = depth,
+                Translation = translation,
                 PeakOpen = solve.PeakOpen,
                 Seed = seed,
                 Hash = Canonical.Hash(def, locks),

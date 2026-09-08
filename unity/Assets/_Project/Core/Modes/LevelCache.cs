@@ -43,7 +43,7 @@ namespace GridInfect.Core
     {
         // Bump when the generator's output changes: every cached board is
         // then stale and the file is dropped on load.
-        public const int GeneratorVersion = 1;
+        public const int GeneratorVersion = 2;   // 2: translation left the grade; every element in the daily
         public const int Capacity = 120;
         public const int MaxSeedTries = 4000;
 

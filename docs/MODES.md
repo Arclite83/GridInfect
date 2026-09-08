@@ -229,9 +229,10 @@ actions and tests stay so old logs replay. Two modes replace it.
 
 - `daily.begin { dateUtc, nowMs }`: `dateUtc` is `yyyy-MM-dd` in UTC, so
   every device gets the same board. The board is the date's seed math:
-  the weekday's spec (`DailySpec.For` — Monday 3 pieces G1–G2 up to Sunday
-  5 pieces G4–G5, plain walls Monday and Tuesday, one element per weekday
-  from Wednesday, the weekend stacked) at the date's seed range
+  the weekday's spec (`DailySpec.For` — the ramp is pieces and grade,
+  Monday 4 pieces G1–G2 up to Sunday 6 pieces G4–G5; every element is on
+  every day at low per-piece chances, and reading them is par, not grade)
+  at the date's seed range
   (`DailySpec.SeedFor`: `2 000 000 + 10 000 × days since the epoch`, the
   epoch being Monday 2026-01-05), first accepted seed wins. Nothing is
   pregenerated. `LevelCache` memoises that function on the device and
@@ -251,8 +252,9 @@ actions and tests stay so old logs replay. Two modes replace it.
   today ringed, future days out of bounds. A date before the epoch or
   after today is rejected.
 - The clock is a stat, not a rule: elapsed is shown in the HUD; par =
-  `10 s + 15 s × trace length × (3 + grade) / 4`; the personal best per
-  date is kept in the profile.
+  `10 s + 15 s × trace length × (3 + grade) / 4 + 20 s × translation
+  layers` (diagonals, blot, relays: one each); the personal best per date
+  is kept in the profile.
 - `daily.complete { nowMs }`: rejects a backward clock and an unsolved
   board. Streak = consecutive dates solved on the day: it moves only when
   the run's date is the clock's own UTC date, and once per date

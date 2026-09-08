@@ -31,37 +31,41 @@ namespace GridInfect.Core
 
         public static string Format(DateTime date) => date.ToString(DateFormat, CultureInfo.InvariantCulture);
 
-        // The element set rotates with the weekday (one element per day as
-        // the stages land): Monday and Tuesday are plain walls (Tuesday one
-        // grade up), the weekend stacks them.
-        public static Element ElementsFor(DayOfWeek day)
-        {
-            switch (day)
-            {
-                case DayOfWeek.Wednesday: return Element.Walls | Element.Area;
-                case DayOfWeek.Thursday: return Element.Walls | Element.Forbidden;
-                case DayOfWeek.Friday: return Element.Walls | Element.Diagonals;
-                case DayOfWeek.Saturday: return Element.Walls | Element.Relays;
-                case DayOfWeek.Sunday: return Element.Walls | Element.Forbidden | Element.Diagonals;
-                default: return Element.Walls;
-            }
-        }
+        // Every element, every day: a daily is the whole game. The per-piece
+        // chances are kept low so a board carries one or two exotic pieces,
+        // not a tray of them, and since reading them is par, not grade, a
+        // Monday with a blot in it is still a Monday.
+        public static Element ElementsFor(DayOfWeek day) =>
+            Element.Walls | Element.Area | Element.Forbidden | Element.Diagonals | Element.Relays;
+
+        public const int DailyAreaChance = 4;        // of 20, per piece
+        public const int DailyDiagonalChance = 6;
+        public const int DailyRelayChance = 6;
+        public const int DailyMaxForbidden = 4;
 
         public static GenSpec For(DateTime date) => For(date.DayOfWeek);
 
-        // The week ramps: Monday is a warm-up, the weekend is the hard one.
+        // The week ramps on pieces and grade alone: Monday is a warm-up, the
+        // weekend is the hard one. Board size follows piece count.
         public static GenSpec For(DayOfWeek day)
         {
-            var spec = new GenSpec { Elements = ElementsFor(day) };
+            var spec = new GenSpec
+            {
+                Elements = ElementsFor(day),
+                AreaChance = DailyAreaChance,
+                DiagonalChance = DailyDiagonalChance,
+                RelayChance = DailyRelayChance,
+                MaxForbidden = DailyMaxForbidden,
+            };
             switch (day)
             {
-                case DayOfWeek.Monday: spec.MinPieces = 3; spec.MaxPieces = 3; spec.MinGrade = Grade.G1; spec.MaxGrade = Grade.G2; break;
-                case DayOfWeek.Tuesday: spec.MinPieces = 3; spec.MaxPieces = 4; spec.MinGrade = Grade.G2; spec.MaxGrade = Grade.G2; break;
-                case DayOfWeek.Wednesday: spec.MinPieces = 4; spec.MaxPieces = 4; spec.MinGrade = Grade.G2; spec.MaxGrade = Grade.G3; break;
-                case DayOfWeek.Thursday: spec.MinPieces = 4; spec.MaxPieces = 5; spec.MinGrade = Grade.G3; spec.MaxGrade = Grade.G3; break;
+                case DayOfWeek.Monday: spec.MinPieces = 4; spec.MaxPieces = 4; spec.MinGrade = Grade.G1; spec.MaxGrade = Grade.G2; break;
+                case DayOfWeek.Tuesday: spec.MinPieces = 4; spec.MaxPieces = 4; spec.MinGrade = Grade.G2; spec.MaxGrade = Grade.G2; break;
+                case DayOfWeek.Wednesday: spec.MinPieces = 4; spec.MaxPieces = 5; spec.MinGrade = Grade.G2; spec.MaxGrade = Grade.G3; break;
+                case DayOfWeek.Thursday: spec.MinPieces = 5; spec.MaxPieces = 5; spec.MinGrade = Grade.G3; spec.MaxGrade = Grade.G3; break;
                 case DayOfWeek.Friday: spec.MinPieces = 5; spec.MaxPieces = 5; spec.MinGrade = Grade.G3; spec.MaxGrade = Grade.G4; break;
-                case DayOfWeek.Saturday: spec.MinPieces = 5; spec.MaxPieces = 5; spec.MinGrade = Grade.G4; spec.MaxGrade = Grade.G4; break;
-                default: spec.MinPieces = 5; spec.MaxPieces = 5; spec.MinGrade = Grade.G4; spec.MaxGrade = Grade.G5; break;
+                case DayOfWeek.Saturday: spec.MinPieces = 5; spec.MaxPieces = 6; spec.MinGrade = Grade.G4; spec.MaxGrade = Grade.G4; break;
+                default: spec.MinPieces = 6; spec.MaxPieces = 6; spec.MinGrade = Grade.G4; spec.MaxGrade = Grade.G5; break;
             }
             return spec;
         }
@@ -78,9 +82,15 @@ namespace GridInfect.Core
         public static PlayableLevel FirstAccepted(GenSpec spec, ulong seed) => LevelCache.Shared.Get(spec, seed);
 
         // Par: a deduction step every fifteen seconds, more for the harder
-        // grades, plus a look at the board.
-        public static long ParMs(int traceLength, Grade grade) =>
-            10_000 + traceLength * 15_000L * (4 + (int)grade - 1) / 4;
+        // grades, a look at the board, and twenty seconds for each piece
+        // type the player has to read first (Grader.Translation).
+        public const long TranslationParMs = 20_000;
+
+        public static long ParMs(int traceLength, Grade grade, int translation) =>
+            10_000 + traceLength * 15_000L * (4 + (int)grade - 1) / 4 + translation * TranslationParMs;
+
+        public static long ParMs(PlayableLevel level) =>
+            ParMs(level.TraceLength, level.Grade, Grader.Translation(level.Def));
 
         // The Endless spec per grade: the same piece bands the worlds use.
         public static GenSpec Endless(Grade grade)

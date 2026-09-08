@@ -85,12 +85,13 @@ namespace GridInfect.Game
             _cell = (_wellW - 2f * pad - (Columns - 1) * _gap) / Columns;
             _pitch = _cell + _gap;
             _wellH = 2f * pad + Rows * _cell + (Rows - 1) * _gap;
-            _headerY = monthY - S.Px(58f);
-            float wellTop = _headerY - S.Px(24f);
+            _headerY = monthY - S.Px(54f);
+            float wellTop = _headerY - S.Px(22f);
             _wellY = wellTop - _wellH / 2f;
             _badgeY = wellTop - _wellH - S.Px(28f);
 
-            // Weekday bands: three silkscreen lines per column.
+            // Weekday bands: the day and its grade band as silkscreen. Every
+            // element is in every daily, so the band is the whole header.
             for (int c = 0; c < Columns; c++)
             {
                 var day = (DayOfWeek)((c + 1) % 7);   // Monday first
@@ -100,9 +101,7 @@ namespace GridInfect.Game
                 var name = Ui.MakeText($"wk:{c}", Root.transform, DayNames[c], S.Px(10f), BoardTheme.Text, 2, mono: true);
                 Ui.SetPos(name.gameObject, x, _headerY + S.Px(12f));
                 var gradeText = Ui.MakeText($"band:{c}", Root.transform, grade, S.Px(11f), palette.CopperLo, 2, mono: true);
-                Ui.SetPos(gradeText.gameObject, x, _headerY);
-                var element = Ui.MakeText($"el:{c}", Root.transform, ElementTag(day), S.Px(8f), BoardTheme.TextDim, 2, mono: true);
-                Ui.SetPos(element.gameObject, x, _headerY - S.Px(11f));
+                Ui.SetPos(gradeText.gameObject, x, _headerY - S.Px(2f));
             }
 
             // The well (§4).
@@ -271,27 +270,33 @@ namespace GridInfect.Game
         }
 
         // The slot's readout follows the cache: the band is known at once,
-        // the par (and the bug count) once the board exists.
+        // the bug count and the par once the board exists.
         void RefreshTodayInfo()
         {
             var band = DailyCalendar.Band(_todayDate.DayOfWeek);
             string grade = band.min == band.max ? $"G{(int)band.min}" : $"G{(int)band.min}-{(int)band.max}";
-            string elements = ElementTag(_todayDate.DayOfWeek);
             long best = Queries.DailyBestMs(App.State.Profile, _today);
             if (DailyCalendar.IsReady(_todayDate))
             {
                 var level = DailyCalendar.For(_todayDate);
-                _infoLine.text = $"{grade} · {(elements.Length > 0 ? elements : "WALLS")} · {level.Def.Specs.Length} BUGS";
+                _infoLine.text = $"{grade} · {level.Def.Specs.Length} BUGS · {CellsToInfect(level)} CELLS";
                 _parLabel.text = best > 0 ? $"BEST {Queries.FormatDuration(best)}"
-                    : $"PAR {Queries.FormatDuration(DailySpec.ParMs(level.TraceLength, level.Grade))}";
+                    : $"PAR {Queries.FormatDuration(DailySpec.ParMs(level))}";
                 _parPending = false;
             }
             else
             {
-                _infoLine.text = $"{grade} · {(elements.Length > 0 ? elements : "WALLS")}";
+                _infoLine.text = grade;
                 _parLabel.text = best > 0 ? $"BEST {Queries.FormatDuration(best)}" : "GENERATING...";
                 _parPending = true;
             }
+        }
+
+        static int CellsToInfect(PlayableLevel level)
+        {
+            int n = 0;
+            for (int loc = 0; loc < Grid.Cells; loc++) if (level.Def.BoardAt(loc) == Cell.Active) n++;
+            return n;
         }
 
         public override void Tick(float dt)
@@ -379,22 +384,6 @@ namespace GridInfect.Game
             FillTop = p.CopperHi, FillBottom = p.CopperHi, Radius = S.TileRadius + 2f,
             Glow = BoardPalette.Alpha(p.CopperHi, 0.8f), GlowPx = 10f,
         };
-
-        // The weekday's element, as silkscreen: one tag, or the first
-        // letters of each when the weekend stacks them.
-        static string ElementTag(DayOfWeek day)
-        {
-            var e = DailySpec.ElementsFor(day);
-            var tags = new System.Collections.Generic.List<string>();
-            if ((e & Core.Generation.Element.Area) != 0) tags.Add("AREA");
-            if ((e & Core.Generation.Element.Forbidden) != 0) tags.Add("CLEAN");
-            if ((e & Core.Generation.Element.Diagonals) != 0) tags.Add("DIAG");
-            if ((e & Core.Generation.Element.Relays) != 0) tags.Add("RELAY");
-            if (tags.Count == 0) return "";
-            if (tags.Count == 1) return tags[0];
-            for (int n = 0; n < tags.Count; n++) tags[n] = tags[n].Substring(0, 3);
-            return string.Join("+", tags);
-        }
     }
 
     // Endless: pick a grade, no clock, a streak of solves without a reset.
