@@ -38,9 +38,9 @@ namespace GridInfect.Core
         public static Element ElementsFor(DayOfWeek day) =>
             Element.Walls | Element.Area | Element.Forbidden | Element.Diagonals | Element.Relays;
 
-        public const int DailyAreaChance = 4;        // of 20, per piece
-        public const int DailyDiagonalChance = 6;
-        public const int DailyRelayChance = 6;
+        public const int DailyAreaChance = 3;        // of 20, per piece
+        public const int DailyDiagonalChance = 4;
+        public const int DailyRelayChance = 4;
         public const int DailyMaxForbidden = 4;
 
         public static GenSpec For(DateTime date) => For(date.DayOfWeek);
