@@ -24,7 +24,7 @@ namespace GridInfect.Game
     // repel and a trap do, and a tile of the same name fought it.
     public sealed class RulesScreen : AppScreen
     {
-        enum Mark { Empty, Infected, Gap, Wall, Repel, Trap, Avoid, Relay, Bug, Diagonal, Blot, Locked }
+        enum Mark { Empty, Infected, Gap, Wall, Repel, Trap, Avoid, Relay }
 
         const int Pages = 2;
         const float PagerPct = 0.42f;
@@ -67,9 +67,7 @@ namespace GridInfect.Game
 
         void Flip(int delta)
         {
-            int page = Mathf.Clamp(_page + delta, 0, Pages - 1);
-            if (page == _page) return;
-            _page = page;
+            _page = (_page + delta + Pages) % Pages;
             BuildPage();
         }
 
@@ -106,7 +104,7 @@ namespace GridInfect.Game
 
             top = Diagram(top, (top - bottom) * 0.30f);
 
-            float note = S.Px(30f);
+            float note = S.Px(48f);
             _pitch = Mathf.Min(RowPitch, (top - bottom - note) / BoardRows);
             float y = top - _pitch / 2f;
 
@@ -118,11 +116,16 @@ namespace GridInfect.Game
             Row(new[] { Mark.Relay }, "RELAY", "Fires its own rays when hit.", ref y);
             Row(new[] { Mark.Avoid }, "AVOID", "Rays must not touch it.", ref y);
 
-            // What the last row feels like in the hand, which is the part a
-            // legend cannot show: the chips above it answer a ray, and this
-            // one is never reached at all — the move is refused before
-            // anything resolves (RulesV2.CanPlace).
-            Line("note", "A drop that would hit one bounces back.", 0f, bottom + note / 2f, L.BodyText * 0.95f);
+            // The two things a legend cannot show, both about the rows above.
+            // The win check runs before either a repel or a trap fires
+            // (RULES §4.1), so a placement that finishes the board is free of
+            // both — the original shipped that as its level 26 tutorial. And
+            // an avoid cell is never reached at all: the move is refused
+            // before anything resolves (RulesV2.CanPlace).
+            Line("note1", "Win on a repel or trap and it still counts.",
+                0f, bottom + note * 0.72f, L.BodyText * 0.95f);
+            Line("note2", "A drop that would hit AVOID bounces back.",
+                0f, bottom + note * 0.28f, L.BodyText * 0.95f);
         }
 
         // A ray runs the width of the board and steps over a gap on the way:
@@ -160,23 +163,75 @@ namespace GridInfect.Game
 
         void BuildBugPage()
         {
-            float y = L.TopBarY - S.Px(34f);
-            Line("intro", "Drag one onto any cell.", 0f, y, L.BodyText);
-            Line("intro2", "Its rays do the rest.", 0f, y - S.Px(16f), L.BodyText);
+            float top = L.TopBarY - S.Px(30f);
+            float bottom = -UnityEngine.Screen.height * PagerPct + L.BarHeight;
 
-            // Four rows and three lines, centred in the band: hung off the
-            // title like page 1 they would leave half a screen of nothing.
-            _pitch = RowPitch;
-            y = S.Px(96f);
-            Row(new[] { Mark.Bug }, "RAYS", "Each ray infects to the edge.", ref y);
-            Row(new[] { Mark.Diagonal }, "DIAGONAL", "Same, corner to corner.", ref y);
-            Row(new[] { Mark.Blot }, "BLOT", "Takes the eight around it.", ref y);
-            Row(new[] { Mark.Locked }, "LOCKED", "A hint placed it. It won't lift.", ref y);
+            Line("intro", "Drag a bug onto any cell.", 0f, top, L.BodyText);
+            top -= S.Px(26f);
 
-            y -= S.Px(12f);
-            Line("f1", "Pick a bug up any time. It's free.", 0f, y, L.BodyText * 0.95f);
-            Line("f2", "Nothing stops a blot. Not a wall.", 0f, y - S.Px(17f), L.BodyText * 0.95f);
-            Line("f3", "Win on a trap and it still counts.", 0f, y - S.Px(34f), L.BodyText * 0.95f);
+            // One little board per family, each showing the bug and what it
+            // lights. A piece needs no name here: the picture is the whole of
+            // what there is to say about it.
+            float band = (top - bottom) / 3f;
+            Spread(top, band, "LRUD", "Rays run to the edge.");
+            Spread(top - band, band, "ul+ur+dl+dr", "Or corner to corner.");
+            Spread(top - band * 2f, band, "A", "A blot takes the eight around it.");
+        }
+
+        const int SpreadRows = 3;
+        const int SpreadCols = 5;
+
+        // A 5 x 3 board with the bug in the middle and its spread lit, worked
+        // out from the same PieceSpec the glyph is drawn from — so the
+        // picture cannot drift from the piece, and the rays that leave the
+        // little board are the ones that would run to the edge of a real one.
+        void Spread(float slotTop, float band, string spec, string line)
+        {
+            var piece = Core.PieceSpec.Parse(spec);
+            float cell = Mathf.Clamp((band - S.Px(26f)) / SpreadRows - S.Px(4f), S.Px(12f), S.Px(26f));
+            float pitch = cell + S.Px(4f);
+            float left = -L.ContentWidth / 2f + S.Px(8f) + cell / 2f;
+            // Centred in its own third of the band: the cell is capped, so
+            // stacking the three from the top left the page top-heavy with a
+            // screen of nothing under it.
+            float y = slotTop - (band - (SpreadRows - 1) * pitch - cell) / 2f - cell / 2f;
+
+            int ci = SpreadRows / 2, cj = SpreadCols / 2;
+            for (int i = 0; i < SpreadRows; i++)
+            {
+                for (int j = 0; j < SpreadCols; j++)
+                {
+                    Draw(Lit(piece, i - ci, j - cj) ? Mark.Infected : Mark.Empty,
+                        left + j * pitch, y - i * pitch, cell);
+                }
+            }
+            Sprite(BugGlyph.Piece(piece, BoardPalette.Default, Mathf.RoundToInt(cell * 0.84f)),
+                left + cj * pitch, y - ci * pitch);
+
+            float middle = y - (SpreadRows - 1) * pitch / 2f;
+            float textX = left + SpreadCols * pitch + S.Px(10f);
+            Line($"spread:{spec}", line, textX, middle, L.BodyText * 0.95f, TextAnchor.MiddleLeft);
+        }
+
+        // Whether the bug at the origin infects the cell `di` rows and `dj`
+        // columns away: its own cell, the eight around it if it is a blot,
+        // and every cell along each arm (TileArms.Di/Dj, the same steps the
+        // rules walk).
+        static bool Lit(Core.PieceSpec piece, int di, int dj)
+        {
+            if (di == 0 && dj == 0) return true;
+            if (piece.Area && Mathf.Abs(di) <= 1 && Mathf.Abs(dj) <= 1) return true;
+            for (int d = 0; d < 8; d++)
+            {
+                var dir = (Core.Dir)d;
+                if (!piece.Has(dir)) continue;
+                int si = Core.TileArms.Di(dir), sj = Core.TileArms.Dj(dir);
+                for (int k = 1; k <= SpreadCols; k++)
+                {
+                    if (si * k == di && sj * k == dj) return true;
+                }
+            }
+            return false;
         }
 
         // ---- rows ----
@@ -223,15 +278,6 @@ namespace GridInfect.Game
                 case Mark.Avoid:
                     // No tile: that is the point of it.
                     Sprite(BugGlyph.Avoid(p, glyphPx), x, y);
-                    return;
-                case Mark.Bug:
-                case Mark.Diagonal:
-                case Mark.Blot:
-                case Mark.Locked:
-                    Tile(BoardTheme.CellEmpty(), box, x, y);
-                    Sprite(BugGlyph.Piece(Core.PieceSpec.Parse(
-                        mark == Mark.Diagonal ? "ul+ur+dl+dr" : mark == Mark.Blot ? "A" : "LRUD"), p, glyphPx), x, y);
-                    if (mark == Mark.Locked) Sprite(BugGlyph.Lock(p, glyphPx), x, y);
                     return;
                 case Mark.Gap:
                     Tile(BoardTheme.CellGap(), box, x, y);
