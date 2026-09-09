@@ -124,7 +124,7 @@ namespace GridInfect.Game
             // before anything resolves (RulesV2.CanPlace).
             Line("note1", "Win on a repel or trap and it still counts.",
                 0f, bottom + note * 0.72f, L.BodyText * 0.95f);
-            Line("note2", "A drop that would hit AVOID bounces back.",
+            Line("note2", "Hit an avoid cell and the drop bounces back.",
                 0f, bottom + note * 0.28f, L.BodyText * 0.95f);
         }
 
@@ -188,13 +188,21 @@ namespace GridInfect.Game
         void Spread(float slotTop, float band, string spec, string line)
         {
             var piece = Core.PieceSpec.Parse(spec);
-            float cell = Mathf.Clamp((band - S.Px(26f)) / SpreadRows - S.Px(4f), S.Px(12f), S.Px(26f));
+
+            // The line sits under the board rather than beside it, so the
+            // board is as wide as the content and not as wide as whatever the
+            // type left over. Height is what bounds the cell now.
+            // The gutter is reserved before the cell is sized, or the board
+            // grows until the three of them touch and read as one picture.
+            float caption = S.Px(30f);
+            float gutter = S.Px(18f);
+            float cell = Mathf.Clamp((band - caption - gutter) / SpreadRows - S.Px(4f), S.Px(14f), S.Px(46f));
             float pitch = cell + S.Px(4f);
-            float left = -L.ContentWidth / 2f + S.Px(8f) + cell / 2f;
-            // Centred in its own third of the band: the cell is capped, so
-            // stacking the three from the top left the page top-heavy with a
-            // screen of nothing under it.
-            float y = slotTop - (band - (SpreadRows - 1) * pitch - cell) / 2f - cell / 2f;
+            float grid = (SpreadRows - 1) * pitch + cell;
+            float left = -(SpreadCols - 1) * pitch / 2f;
+
+            // Board and line together, centred in this third of the band.
+            float y = slotTop - (band - grid - caption) / 2f - cell / 2f;
 
             int ci = SpreadRows / 2, cj = SpreadCols / 2;
             for (int i = 0; i < SpreadRows; i++)
@@ -208,9 +216,7 @@ namespace GridInfect.Game
             Sprite(BugGlyph.Piece(piece, BoardPalette.Default, Mathf.RoundToInt(cell * 0.84f)),
                 left + cj * pitch, y - ci * pitch);
 
-            float middle = y - (SpreadRows - 1) * pitch / 2f;
-            float textX = left + SpreadCols * pitch + S.Px(10f);
-            Line($"spread:{spec}", line, textX, middle, L.BodyText * 0.95f, TextAnchor.MiddleLeft);
+            Line($"spread:{spec}", line, 0f, y - grid + cell / 2f - caption / 2f, L.BodyText * 0.95f);
         }
 
         // Whether the bug at the origin infects the cell `di` rows and `dj`
