@@ -1,0 +1,66 @@
+# Android build on demand (Actions -> Mobile build -> Run workflow). Not on
+# push: a Unity player build takes tens of minutes and needs a Unity
+# licence, which the push CI (ci.yml, dotnet mirror) does not.
+#
+# Secrets to add under Settings -> Secrets -> Actions before the first run:
+#   UNITY_LICENSE   the .ulf from `Unity -batchmode -manualLicenseFile` or
+#                   the GameCI activation page (Personal licence works)
+#   UNITY_EMAIL / UNITY_PASSWORD   the account the licence is on
+# Optional, for a Play-uploadable AAB (otherwise it is debug-signed):
+#   GI_KEYSTORE_B64 the .keystore file base64-encoded, plus
+#   GI_KEYSTORE_PASS, GI_KEYALIAS, GI_KEYALIAS_PASS
+#
+# The editor image is picked from ProjectSettings/ProjectVersion.txt; if
+# GameCI has no image for that exact patch yet, pin the nearest one that
+# exists with `unityVersion:`.
+name: Mobile build
+
+on:
+  workflow_dispatch:
+    inputs:
+      format:
+        description: "aab (Play) or apk (device)"
+        default: apk
+        type: choice
+        options: [apk, aab]
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore the Library cache
+        uses: actions/cache@v4
+        with:
+          path: unity/Library
+          key: library-android-${{ hashFiles('unity/Packages/manifest.json', 'unity/ProjectSettings/ProjectVersion.txt') }}
+
+      - name: Decode the keystore
+        if: ${{ env.GI_KEYSTORE_B64 != '' }}
+        env:
+          GI_KEYSTORE_B64: ${{ secrets.GI_KEYSTORE_B64 }}
+        run: echo "$GI_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+
+      - name: Build
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          GI_KEYSTORE: ${{ secrets.GI_KEYSTORE_B64 != '' && format('{0}/release.keystore', runner.temp) || '' }}
+          GI_KEYSTORE_PASS: ${{ secrets.GI_KEYSTORE_PASS }}
+          GI_KEYALIAS: ${{ secrets.GI_KEYALIAS }}
+          GI_KEYALIAS_PASS: ${{ secrets.GI_KEYALIAS_PASS }}
+        with:
+          projectPath: unity
+          targetPlatform: Android
+          buildMethod: ${{ inputs.format == 'aab' && 'GridInfect.EditorTools.MobileBuild.Android' || 'GridInfect.EditorTools.MobileBuild.AndroidApk' }}
+          allowDirtyBuild: true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gridinfect-android-${{ inputs.format }}
+          path: unity/Builds/gridinfect.${{ inputs.format }}
+          if-no-files-found: error

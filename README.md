@@ -101,6 +101,15 @@ python3 docs/tools/verify_test_vectors.py   # sanity: vectors self-verify
 - Visual style pass (PCB, glass, bug glyphs): written against the locked
   guide; the glyph rasteriser is verified against the SVG sheet headlessly,
   the three shaders have not been compiled by Unity yet.
+- Title and icons: the locked wordmark (`grid-infect-style/STYLE-GUIDE.md`
+  §12) is drawn at runtime from the font's outlines (`View/TitleRaster.cs`,
+  generated `LogoGlyphs.g.cs`), and the monogram exports are wired in as
+  the app icons by the build script.
+- Mobile builds: `docs/UNITY_SETUP.md` §8. Player settings are set (IL2CPP,
+  ARM64, API 36, iOS 15, portrait, app id), `Editor/MobileBuild.cs` builds
+  APK/AAB/Xcode from the menu or `-executeMethod`, and a manual GitHub
+  workflow builds Android once the Unity licence secrets are added. No
+  build has been made yet.
 - **Nothing has been through the Unity editor yet.** The adapter is
   compile-checked against API stubs (`src/`) and the shader has never been
   compiled by Unity. `docs/UNITY_SETUP.md` §6 is the first-run checklist,

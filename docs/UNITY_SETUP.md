@@ -120,6 +120,7 @@ so work down it rather than judging the whole thing at once.
 | 5 | **Colour space is Linear and HDR is on.** Already set in `ProjectSettings`; `ProjectRendersLinear` gates it. | If the board looks washed out or double-dark, check `BoardView.SetPaletteColor` — it must hand sRGB values over untouched, because Unity already converts `Color` shader properties on `SetColor`. |
 | 6 | **Portrait, 1080×2340 game view.** All four screens should compose without anything off-screen or overlapping. | Every screen measures from `PresentationConfig.Layout`; fix the metric, not the screen. |
 | 7 | **Audio.** One click per hop, pitched up per ray depth. Synthesised at runtime. | Level is a guess (`volume = 0.35`); it has never been heard. |
+| 7b | **The title.** GRID in dense glass, the bug, INFECT lit, one line across the content width; on the first menu of a launch the bug lands and INFECT lights left to right. | The letters are rasterised on the main thread the first time the menu builds (`View/TitleRaster.cs`, ~0.3 s at 1080 wide on a desktop core; cached after). If the hitch shows on a phone, move the canvases onto `Work.Shared` and keep the sprite creation on the main thread. `tools/style-bench/glyphs` renders the same mark headlessly (`dotnet run -- title 2.77 out.png`) if it looks wrong. |
 | 8 | **On device.** `RGBAFloat` sampling, HDR buffer cost, and the fragment loop (8 sparks + 5 state taps) are the three things a phone will judge differently from an editor. | |
 
 Three acceptance criteria in `docs/infection-vfx-spec.md` are runtime
@@ -157,3 +158,63 @@ LFS**. Enforced by `.gitignore` and by review.
   exports) is an open item — likely a small custom sync/bake step alongside
   `tools/`, not LFS. Until then, source art is per-machine and exports are
   what's shared.
+
+## 8. Mobile builds
+
+Everything a player build needs that is not in `ProjectSettings/` is applied
+from code in `Assets/_Project/Editor/MobileBuild.cs`, so a fresh clone builds
+the same way from the menu and headless. The settings themselves follow
+`docs/DEPENDENCIES.md` §8 (IL2CPP, ARM64 only, target API 36, iOS 15,
+portrait, linear).
+
+**Menu:** `Grid Infect ▸ Build ▸ Android (APK for a device)` for a local
+install, `… Android (AAB for Play)` for the store, `… iOS (Xcode project)`
+on a Mac. `Grid Infect ▸ Apply player settings and icons` does the settings
+and icon assignment without building (run it once after the first open and
+commit what it changes in `ProjectSettings/ProjectSettings.asset`, which is
+where the icon slots are serialized).
+
+**Headless:**
+
+```sh
+Unity -batchmode -quit -projectPath unity -executeMethod GridInfect.EditorTools.MobileBuild.AndroidApk
+Unity -batchmode -quit -projectPath unity -executeMethod GridInfect.EditorTools.MobileBuild.Android      # AAB
+Unity -batchmode -quit -projectPath unity -executeMethod GridInfect.EditorTools.MobileBuild.IOS
+```
+
+Output lands in `unity/Builds/` (git-ignored). The Android and iOS Build
+Support modules must be installed with the editor in Hub; Android also needs
+Hub's bundled OpenJDK, SDK and NDK ticked.
+
+What the script does on every build:
+
+- Creates `Assets/_Project/Scenes/Main.unity` (empty) if it is missing and
+  makes it the only scene in the list. A player needs one scene; the game
+  needs nothing in it (§2).
+- Assigns the icons under `Assets/_Project/Art/Icon/` to every icon slot the
+  installed platform module exposes: `icon_1024.png` (the monogram, on the
+  substrate) everywhere, and for Android's adaptive icon the background
+  substrate under the 62% foreground. These are exports of
+  `grid-infect-style/gen-logo.mjs --png`; regenerate there, copy here.
+- Signs Android from the environment, never from the repo:
+  `GI_KEYSTORE` (path), `GI_KEYSTORE_PASS`, `GI_KEYALIAS`, `GI_KEYALIAS_PASS`.
+  Unset, the build is debug-signed: installable, not uploadable.
+  `*.keystore` / `*.jks` are git-ignored.
+
+**Before the first Play upload** (R-1201, R-1203): confirm the application
+identifier `com.bloodhoundstudios.gridinfect` is yours on Play Console and
+App Store Connect, or change `MobileBuild.AppId` and the two entries in
+`ProjectSettings.asset`; create the upload key (`keytool -genkey -v
+-keystore release.keystore -alias gridinfect -keyalg RSA -keysize 2048
+-validity 10000`) and keep it outside the repo; bump `bundleVersion` and
+`AndroidBundleVersionCode` per upload. The AdMob plugin (DEPENDENCIES §4)
+is still not imported, so this build serves no ads.
+
+**CI:** `.github/workflows/mobile-build.yml` builds Android on demand
+(Actions ▸ Mobile build ▸ Run workflow) through GameCI. It needs
+`UNITY_LICENSE`, `UNITY_EMAIL` and `UNITY_PASSWORD` as repository secrets
+(a Personal licence is fine) and, for a Play-ready AAB, the keystore as
+`GI_KEYSTORE_B64` plus its three passwords. It is not part of the push CI
+and has not been run yet: the first run will tell you whether GameCI has an
+image for the pinned editor patch (pin `unityVersion:` to the nearest one
+that exists if not).

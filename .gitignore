@@ -79,6 +79,13 @@ sysinfo.txt
 *.aab
 *.unitypackage
 
+# Signing keys never enter the repo: MobileBuild reads GI_KEYSTORE et al.
+# from the environment (docs/UNITY_SETUP.md §8)
+*.keystore
+*.jks
+*.p12
+*.mobileprovision
+
 # ---------------------------------------------------------------------------
 # Asset policy: no heavy files in the repo, no LFS (docs/UNITY_SETUP.md).
 # unity/Assets/_Local/ is a git-ignored staging area — heavy WIP and source
