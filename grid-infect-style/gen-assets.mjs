@@ -38,7 +38,7 @@ const rot=a=>`transform="rotate(${a} 20 20)"`;
 const lead =a=>`<g ${rot(a)}><rect x="17" y="2" width="6" height="12" rx="1" fill="${E}"/><rect x="18" y="2" width="4" height="5" fill="${T}"/></g>`;
 const bond =a=>`<g ${rot(a)} fill="none" stroke="${W}" stroke-width="1"><path d="M14.5 14 L14.5 7 Q14.5 4.5 17 4.5"/><path d="M25.5 14 L25.5 7 Q25.5 4.5 23 4.5"/></g>`;
 const stubs=a=>`<g ${rot(a)} stroke="${W}" stroke-width="1" fill="${W}"><line x1="25.5" y1="7.5" x2="28.5" y2="7.5"/><circle cx="29.1" cy="7.5" r="1.1"/><line x1="14.5" y1="7.5" x2="11.5" y2="7.5"/><circle cx="10.9" cy="7.5" r="1.1"/></g>`;
-const diag =a=>`<g ${rot(a)}><line x1="20" y1="14" x2="20" y2="6" stroke="${E}" stroke-width="2.4"/><circle cx="20" cy="5" r="2.6" fill="${E}"/><circle cx="20" cy="5" r="1.3" fill="${T}"/></g>`;
+const diag =a=>`<g ${rot(a)}><line x1="20" y1="14" x2="20" y2="6" stroke="${E}" stroke-width="2.4"/><circle cx="20" cy="5" r="3" fill="${E}"/><circle cx="20" cy="5" r="2" fill="${T}"/></g>`;
 const pin=(a,t,len,pad)=>`<g transform="rotate(${a} 20 20) translate(${t} 0)" stroke="${W}" stroke-width="1.1" fill="${W}"><line x1="20" y1="10.5" x2="20" y2="${10.5-len}"/>${pad?`<circle cx="20" cy="${10.5-len-0.6}" r="1.1"/>`:""}</g>`;
 const core=(fill=F,edge=E,center=`<circle cx="20" cy="20" r="3" fill="${T}"/>`)=>`<polygon points="20,9 30,14.5 30,25.5 20,31 10,25.5 10,14.5" fill="${fill}" stroke="${edge}" stroke-width="1.6" stroke-linejoin="round"/><polygon points="20,11 28,15.5 20,20 12,15.5" fill="rgba(255,255,255,.4)"/>${center}`;
 
@@ -58,7 +58,7 @@ export function area(){
   const arcs=[0,90,180,270];
   return arcs.map(a=>`<g ${rot(a)} fill="none" stroke="${E}" stroke-width="2" stroke-linecap="round"><path d="M12 8 Q20 3 28 8"/></g>`).join("")
    + arcs.map(a=>`<g ${rot(a)} fill="none" stroke="${W}" stroke-width="1.2" stroke-linecap="round"><path d="M14.5 12 Q20 9 25.5 12"/></g>`).join("")
-   + arcs.map(a=>`<g ${rot(a)}><circle cx="20" cy="3.5" r="1.6" fill="${T}"/></g>`).join("") + core();
+   + core();
 }
 export function blocker(){
   const n=tokens.neutrals;

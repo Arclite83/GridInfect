@@ -211,14 +211,18 @@ namespace GridInfect.Game
             c.Circle(10.9f, 7.5f, 1.1f, p.GlyphWire);
         }
 
-        // Diagonal lead: line 20,14 -> 20,6 at 2.4, tip circle r 2.6 with a
-        // r 1.3 white centre.
+        // Diagonal lead: line 20,14 -> 20,6 at 2.4, tip circle r 3 with a
+        // r 2 white centre. The lit tip is the arm's only bright element and
+        // it has to read at 40 px on a queued piece: at the spec's r 1.3 it
+        // is three pixels of white inside a dark disc, so the disc grows a
+        // little and the white grows a lot. Still the same ring of edge
+        // around it, just thinner.
         static void Diag(GlyphCanvas c, float a, BoardPalette p)
         {
             c.SetTransform(a);
             c.Stroke(new[] { 20f, 14f, 20f, 6f }, 2.4f, p.GlyphEdge);
-            c.Circle(20f, 5f, 2.6f, p.GlyphEdge);
-            c.Circle(20f, 5f, 1.3f, p.Tip);
+            c.Circle(20f, 5f, 3f, p.GlyphEdge);
+            c.Circle(20f, 5f, 2f, p.Tip);
         }
 
         // A body pin: rotate(a 20 20) translate(t 0), line from y 10.5 up
@@ -260,8 +264,11 @@ namespace GridInfect.Game
             c.Polygon(new[] { 20f, 11f, 28f, 15.5f, 20f, 20f, 12f, 15.5f }, BoardPalette.Alpha(p.Tip, 0.4f));
         }
 
-        // Area bug: four outer arcs, four inner arcs, four rim dots, core
-        // unchanged.
+        // Area bug: four outer arcs, four inner arcs, core unchanged. The
+        // spec's four white rim dots are gone: on the blot they sat outside
+        // the body reading as four stray highlights, and the arcs already
+        // describe the 3x3 footprint. White stays for the lit lead tips,
+        // where it means something.
         static void AreaArcs(GlyphCanvas c, BoardPalette p)
         {
             for (int k = 0; k < 4; k++)
@@ -269,7 +276,6 @@ namespace GridInfect.Game
                 c.SetTransform(k * 90f);
                 c.Quad(12f, 8f, 20f, 3f, 28f, 8f, 2f, p.GlyphEdge, true);
                 c.Quad(14.5f, 12f, 20f, 9f, 25.5f, 12f, 1.2f, p.GlyphWire, true);
-                c.Circle(20f, 3.5f, 1.6f, p.Tip);
             }
         }
     }
