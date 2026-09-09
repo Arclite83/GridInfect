@@ -35,6 +35,17 @@ static class Program
         specs.Add(("tile_BLOCKER", BugGlyph.Blocker(p, px)));
         specs.Add(("mark_LOCK", BugGlyph.Lock(p, px)));
         specs.Add(("relay_NESW", BugGlyph.Relay((byte)((1 << (int)Dir.U) | (1 << (int)Dir.R) | (1 << (int)Dir.D) | (1 << (int)Dir.L)), p, px)));
+        specs.Add(("relay_NE", BugGlyph.Relay((byte)((1 << (int)Dir.U) | (1 << (int)Dir.R)), p, px)));
+        specs.Add(("relay_diag", BugGlyph.Relay((byte)((1 << (int)Dir.UL) | (1 << (int)Dir.DR)), p, px)));
+        // The UI marks (ink on a chip) and the cell marks, at the same size.
+        specs.Add(("mark_CHECK", BugGlyph.Check(p, px)));
+        specs.Add(("mark_GEAR", BugGlyph.Gear(p, px)));
+        specs.Add(("mark_QUESTION", BugGlyph.Question(p, px)));
+        specs.Add(("mark_CHEVRON_L", BugGlyph.Chevron(p, px, true)));
+        specs.Add(("mark_CHEVRON_R", BugGlyph.Chevron(p, px, false)));
+        specs.Add(("mark_REPEL", BugGlyph.Repel(p, px)));
+        specs.Add(("mark_TRAP", BugGlyph.Trap(p, px)));
+        specs.Add(("mark_AVOID", BugGlyph.Avoid(p, px)));
 
         int cols = 8, rows = (specs.Count + cols - 1) / cols;
         int pitch = px + 8;

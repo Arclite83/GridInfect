@@ -43,11 +43,13 @@ namespace GridInfect.Game
             Glow = BoardPalette.Alpha(p.CopperHi, 0.9f), GlowPx = 4f,
         };
 
-        // Lock counter: mono on black 35%, inset 1 px copperHi 35%.
+        // Lock counter: mono copperHi on black 60%, inset 1 px copperHi 50%.
+        // The guide's black 35% put 13 px copper type at 4.3:1 over the mask
+        // (3.5:1 over MaskHi); 60% is 8:1 and still reads as a recess.
         public static GlassStyle Badge(BoardPalette p) => new GlassStyle
         {
-            FillTop = Black(p, 0.35f), FillBottom = Black(p, 0.35f), Radius = S.ChipRadius,
-            Border = BoardPalette.Alpha(p.CopperHi, 0.35f), BorderPx = 1f,
+            FillTop = Black(p, 0.6f), FillBottom = Black(p, 0.6f), Radius = S.ChipRadius,
+            Border = BoardPalette.Alpha(p.CopperHi, 0.5f), BorderPx = 1f,
         };
 
         // Tray slot: black 30%, ring white 14%, inset 24 px black 50%.

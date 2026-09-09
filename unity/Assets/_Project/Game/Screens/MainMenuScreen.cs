@@ -46,18 +46,23 @@ namespace GridInfect.Game
             // screen puts its one right-hand chip. As a dimmed full-width row
             // at the bottom it was both hard to read and as loud as the four
             // things that actually are the game.
-            var chip = new Vector2(L.BarHeight, L.BarHeight);
-            var gear = UiButton.Make(Root.transform, "", new Vector2(-L.BackPos.x, L.BackPos.y), chip,
-                BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new SettingsScreen()));
-            Ui.MakeSprite("gear", gear.Root.transform,
-                BugGlyph.Gear(BoardPalette.Default, Mathf.RoundToInt(L.BarHeight * 0.8f)), 22);
-            Buttons.Add(gear);
+            //
+            // Both corner chips are icon chips at the icon size (39 px on the
+            // reference screen, 44 to the finger): they were BarHeight
+            // squares, 29 px, and the help mark inside was the label "?" at
+            // 12 px — the smallest thing on the menu, for the button a new
+            // player needs first.
+            var chip = new Vector2(L.IconChip, L.IconChip);
+            int icon = UiButton.IconPx(chip);
+            var palette = BoardPalette.Default;
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "settings", BugGlyph.Gear(palette, icon),
+                new Vector2(-L.BackPos.x, L.BackPos.y), chip, () => App.Screens.Show(new SettingsScreen())));
 
             // The rules sit beside it, reachable before the first tap on
             // anything else — which is when a player wants them.
-            Buttons.Add(UiButton.Make(Root.transform, "?",
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "help", BugGlyph.Question(palette, icon),
                 new Vector2(-L.BackPos.x - chip.x - L.Gap * 0.7f, L.BackPos.y), chip,
-                BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new RulesScreen())));
+                () => App.Screens.Show(new RulesScreen())));
         }
     }
 }
