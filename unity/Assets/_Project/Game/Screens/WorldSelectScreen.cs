@@ -86,6 +86,10 @@ namespace GridInfect.Game
                     pads: false, padAlpha: 1f, mono: false);
                 Buttons.Add(button);
 
+                // The meter takes the bottom of the row, so the type moves off
+                // the row's centre line to sit above it.
+                button.Label.transform.localPosition = new Vector3(0f, L.ButtonHeight * 0.1f, 0f);
+
                 var progress = Ui.MakeText($"progress:{world.Id}", button.Root.transform,
                     $"{done}/{world.Count}", L.LabelText,
                     clear ? BoardTheme.TextOnAccent : BoardTheme.Accent, 22);
