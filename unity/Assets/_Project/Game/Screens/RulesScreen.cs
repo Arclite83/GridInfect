@@ -30,9 +30,12 @@ namespace GridInfect.Game
 
         GameObject _body;
         TextMesh _pageLabel;
+        float _pitch;
 
-        // Swatch box and row pitch in the guide's reference px.
-        static float Swatch => S.Px(38f);
+        // Swatch box and row pitch in the guide's reference px. The swatch
+        // follows the pitch down once the band tightens past it, or the rows
+        // would fit and their pictures would still overlap.
+        float Swatch => Mathf.Min(S.Px(38f), _pitch * 0.72f);
         static float RowPitch => S.Px(54f);
         static float TextX => -L.ContentWidth / 2f + S.Px(100f);
 
@@ -80,16 +83,30 @@ namespace GridInfect.Game
 
         // ---- page 1: what is on the board ----
 
+        const int BoardRows = 7;
+
         void BuildBoardPage()
         {
-            float h = UnityEngine.Screen.height;
-            float y = L.TopBarY - S.Px(34f);
-            Line("goal", "Infect every cell on the board to win.", 0f, y, L.BodyText);
+            // Everything on this page is measured inside one band, from under
+            // the title down to the top of the pager. The rows used to flow
+            // down from the title in width-scaled pitches while the note was
+            // pinned to the bottom of the screen: two different units, so on
+            // any screen shorter than the guide's 390x844 they walked into
+            // each other. Now the diagram takes a share, the note takes a
+            // share, and the rows divide what is left — a short screen
+            // tightens instead of overlapping.
+            float top = L.TopBarY - S.Px(30f);
+            float bottom = -UnityEngine.Screen.height * PagerPct + L.BarHeight;
 
-            y -= S.Px(24f);
-            y = Diagram(y);
+            Line("goal", "Infect every cell on the board to win.", 0f, top, L.BodyText);
+            top -= S.Px(26f);
 
-            y -= S.Px(22f);
+            top = Diagram(top, (top - bottom) * 0.30f);
+
+            float note = S.Px(30f);
+            _pitch = Mathf.Min(RowPitch, (top - bottom - note) / BoardRows);
+            float y = top - _pitch / 2f;
+
             Row(new[] { Mark.Empty, Mark.Infected }, "", "Infect it.", ref y);
             Row(new[] { Mark.Gap }, "GAP", "Not a cell: rays cross it.", ref y);
             Row(new[] { Mark.Wall }, "WALL", "Blocks a ray.", ref y);
@@ -99,17 +116,17 @@ namespace GridInfect.Game
             Row(new[] { Mark.Clear }, "CLEAR", "Can't be hit.", ref y);
 
             // Why the last one looks nothing like the three above it.
-            float footer = -h * PagerPct + L.BarHeight + S.Px(30f);
-            Line("note1", "Those chips react when you hit them.", 0f, footer + S.Px(15f), L.BodyText * 0.95f);
-            Line("note2", "Clear is not a chip. It's bare board.", 0f, footer, L.BodyText * 0.95f);
+            Line("note", "Chips react. Clear is bare board.", 0f, bottom + note / 2f, L.BodyText * 0.95f);
         }
 
         // A ray runs the width of the board and steps over a gap on the way:
         // the one rule that is not guessable from a still board, so it gets
         // the picture rather than a line of type.
-        float Diagram(float top)
+        float Diagram(float top, float maxHeight)
         {
-            float cell = S.Px(30f);
+            // Shrinks with the band so the picture is the part that gives,
+            // not the rows under it.
+            float cell = Mathf.Clamp((maxHeight - S.Px(30f)) / 3f - S.Px(4f), S.Px(15f), S.Px(30f));
             float pitch = cell + S.Px(4f);
             float y = top - cell / 2f;
 
@@ -130,7 +147,7 @@ namespace GridInfect.Game
 
             float bottom = y - 2f * pitch - cell / 2f;
             Line("diagram", "A ray runs to the edge, over gaps.", 0f, bottom - S.Px(16f), L.BodyText * 0.95f);
-            return bottom - S.Px(28f);
+            return bottom - S.Px(30f);
         }
 
         // ---- page 2: what you drop on it ----
@@ -143,6 +160,7 @@ namespace GridInfect.Game
 
             // Four rows and three lines, centred in the band: hung off the
             // title like page 1 they would leave half a screen of nothing.
+            _pitch = RowPitch;
             y = S.Px(96f);
             Row(new[] { Mark.Bug }, "RAYS", "Each ray infects to the edge.", ref y);
             Row(new[] { Mark.Diagonal }, "DIAGONAL", "Same, corner to corner.", ref y);
@@ -177,7 +195,7 @@ namespace GridInfect.Game
             {
                 Line($"line:{line}", line, TextX, y, L.LabelText * 0.9f, TextAnchor.MiddleLeft);
             }
-            y -= RowPitch;
+            y -= _pitch;
         }
 
         void Line(string name, string text, float x, float y, float size,

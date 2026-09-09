@@ -67,6 +67,7 @@ namespace UnityEngine
         public const float PI = 3.14159274f;
         public static float Clamp01(float v) => v < 0f ? 0f : v > 1f ? 1f : v;
         public static int Clamp(int v, int min, int max) => v < min ? min : v > max ? max : v;
+        public static float Clamp(float v, float min, float max) => v < min ? min : v > max ? max : v;
         public static float Abs(float v) => v < 0f ? -v : v;
         public static int Abs(int v) => v < 0 ? -v : v;
         public static float Max(float a, float b) => a > b ? a : b;
