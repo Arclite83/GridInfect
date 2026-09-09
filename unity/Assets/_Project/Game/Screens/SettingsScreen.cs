@@ -75,16 +75,20 @@ namespace GridInfect.Game
         static readonly (BoardPalette.SkinId id, string name, string want)[] Palettes =
         {
             (BoardPalette.SkinId.Default, "GREEN", null),
-            (BoardPalette.SkinId.Blue, "BLUE", "ALL WORLDS"),
-            (BoardPalette.SkinId.Breadboard, "TAN", "ALL LEGACY"),
+            (BoardPalette.SkinId.Blue, "BLUE", "CLEAR\nALL WORLDS"),
+            (BoardPalette.SkinId.Breadboard, "TAN", "CLEAR\nALL LEGACY"),
         };
 
         void BuildSkins(float y)
         {
             float w = (L.ContentWidth - L.Gap * 2f) / 3f;
-            float height = L.ButtonHeight * 0.8f;
+            // The chips give up some height and the row rides up, because
+            // what hangs under a locked one is two lines and it has to clear
+            // both the chip above it and the row below.
+            float height = L.ButtonHeight * 0.72f;
+            float noteText = L.BodyText * 0.62f;
             var box = new Vector2(w, height);
-            y += L.ButtonHeight * 0.16f;   // the notes hang under the row
+            y += L.ButtonHeight * 0.26f;
 
             for (int k = 0; k < Palettes.Length; k++)
             {
@@ -118,9 +122,12 @@ namespace GridInfect.Game
                 {
                     Ui.MakeSprite("locked", chip.Root.transform,
                         BugGlyph.Lock(BoardPalette.Default, Mathf.RoundToInt(height * 0.62f)), 22);
-                    var note = Ui.MakeText($"want:{name}", Root.transform, want, L.BodyText * 0.72f,
+                    // TextMesh centres the whole block, so a two-line note is
+                    // hung by its middle: half of it (1.2 lines) below the
+                    // chip's bottom edge, not its first line.
+                    var note = Ui.MakeText($"want:{name}", Root.transform, want, noteText,
                         BoardTheme.Text, 12);
-                    Ui.SetPos(note.gameObject, x, y - height / 2f - L.BodyText * 0.62f);
+                    Ui.SetPos(note.gameObject, x, y - height / 2f - S.Px(4f) - noteText * 1.2f);
                 }
             }
         }
