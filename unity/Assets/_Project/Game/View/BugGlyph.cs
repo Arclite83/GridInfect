@@ -125,17 +125,78 @@ namespace GridInfect.Game
                     c.Rect(18f, 7f, 4f, 5.5f, 1f, p.Ink);
                 }
                 c.ClearTransform();
-                const int steps = 32;
-                var rim = new float[steps * 2];
-                for (int i = 0; i < steps; i++)
-                {
-                    float a = i * Mathf.PI * 2f / steps;
-                    rim[i * 2] = 20f + Mathf.Cos(a) * 8f;
-                    rim[i * 2 + 1] = 20f + Mathf.Sin(a) * 8f;
-                }
-                c.Stroke(rim, 3.4f, p.Ink, false, true);
+                c.Stroke(Ring(8f), 3.4f, p.Ink, false, true);
                 return c.ToSprite($"mark_GEAR_{sizePx}");
             });
+        }
+
+        // ---- cell marks, for the legend on the rules sheet ----
+        //
+        // The board itself draws these in the shader (GridInfectBoard, the
+        // per-cell branch); these are the same shapes at the same fractions
+        // of a tile, so a swatch and a cell read as the same thing.
+
+        // Repel: the diamond, half-diagonal 0.19 of a tile.
+        public static Sprite Repel(BoardPalette p, int sizePx)
+        {
+            return Cached($"repel:{sizePx}:{p.GlyphKey}", () =>
+            {
+                var c = new GlyphCanvas(sizePx);
+                c.Polygon(new[] { 20f, 12.4f, 27.6f, 20f, 20f, 27.6f, 12.4f, 20f }, p.GlyphEdge);
+                return c.ToSprite($"mark_REPEL_{sizePx}");
+            });
+        }
+
+        // Trap: the ice cross, arms to 0.28 of a tile.
+        public static Sprite Trap(BoardPalette p, int sizePx)
+        {
+            return Cached($"trap:{sizePx}:{p.GlyphKey}", () =>
+            {
+                var c = new GlyphCanvas(sizePx);
+                c.Stroke(new[] { 9f, 9f, 31f, 31f }, 3.2f, p.Conflict);
+                c.Stroke(new[] { 31f, 9f, 9f, 31f }, 3.2f, p.Conflict);
+                return c.ToSprite($"mark_TRAP_{sizePx}");
+            });
+        }
+
+        // Clear: no chip at all. Bare copper — the ring and the pad inside
+        // it — which is the whole of why it cannot be hit.
+        public static Sprite Clear(BoardPalette p, int sizePx)
+        {
+            return Cached($"clear:{sizePx}:{p.GlyphKey}", () =>
+            {
+                var c = new GlyphCanvas(sizePx);
+                c.Stroke(Ring(8.8f), 4f, p.CopperLo, false, true);
+                c.Circle(20f, 20f, 4.1f, p.Copper);
+                c.Circle(20f, 20f, 3.3f, p.CopperHi);
+                return c.ToSprite($"mark_CLEAR_{sizePx}");
+            });
+        }
+
+        // The core dot every component cell carries: gold dormant, white lit
+        // (R-1001 — the shape that stays while the colour changes).
+        public static Sprite CellDot(BoardPalette p, bool lit, int sizePx)
+        {
+            return Cached($"dot:{lit}:{sizePx}:{p.GlyphKey}", () =>
+            {
+                var c = new GlyphCanvas(sizePx);
+                c.Circle(20f, 20f, 3.3f, lit ? p.Tip : p.CopperHi);
+                return c.ToSprite($"mark_DOT_{lit}_{sizePx}");
+            });
+        }
+
+        // A closed polyline circle: the canvas paints over, never through, so
+        // an annulus is a stroke rather than a disc with a hole in it.
+        static float[] Ring(float radius, int steps = 32)
+        {
+            var xy = new float[steps * 2];
+            for (int i = 0; i < steps; i++)
+            {
+                float a = i * Mathf.PI * 2f / steps;
+                xy[i * 2] = 20f + Mathf.Cos(a) * radius;
+                xy[i * 2 + 1] = 20f + Mathf.Sin(a) * radius;
+            }
+            return xy;
         }
 
         // Relay cells (RULES_V2 §12): a hub with one stub and pad per arm,

@@ -59,6 +59,65 @@ namespace GridInfect.Game
             };
         }
 
+        // ---- cell swatches, for the legend on the rules sheet ----
+        //
+        // The board draws its cells in GridInfectBoard.shader; these are the
+        // same stops, rings and top lights at the same alphas, so a swatch on
+        // the rules page and a cell on the board are the same material. If
+        // one moves, move the other.
+
+        // A dormant component: the shader's GlassComponent at tint 0.
+        public static GlassStyle CellEmpty() => new GlassStyle
+        {
+            FillTop = White(0.34f), FillMid = White(0.08f), MidStop = 0.55f, FillBottom = White(0.16f),
+            Radius = S.TileRadius, Border = White(0.25f), BorderPx = 1f, TopLight = White(0.6f),
+        };
+
+        // The same component tinted: the repel chip and the trap chip.
+        public static GlassStyle CellChip(Color tint, float amount)
+        {
+            var g = CellEmpty();
+            g.FillTop = Tinted(g.FillTop, tint, amount);
+            g.FillMid = Tinted(g.FillMid, tint, amount);
+            g.FillBottom = Tinted(g.FillBottom, tint, amount);
+            return g;
+        }
+
+        // Infected: the light inside the glass (GlassInfected).
+        public static GlassStyle CellInfected()
+        {
+            var p = P;
+            return new GlassStyle
+            {
+                FillTop = BoardPalette.Alpha(Color.Lerp(p.InfectHi, p.Tip, 0.45f), 0.9f),
+                FillMid = p.Infect, MidStop = 0.55f, FillBottom = p.InfectLo,
+                Radius = S.TileRadius, Border = White(0.4f), BorderPx = 1f, TopLight = White(0.85f),
+                Glow = BoardPalette.Alpha(p.Infect, 0.45f), GlowPx = 10f,
+            };
+        }
+
+        // A wall (GlassBlocker): brighter glass, a 2 px ring, a full top light.
+        public static GlassStyle CellWall() => new GlassStyle
+        {
+            FillTop = White(0.6f), FillBottom = White(0.2f), Radius = S.TileRadius,
+            Border = White(0.75f), BorderPx = 2f, TopLight = White(1f),
+        };
+
+        // A gap: not a cell at all, just the well showing through.
+        public static GlassStyle CellGap() => new GlassStyle
+        {
+            FillTop = Black(0.05f), FillBottom = Black(0.05f), Radius = S.TileRadius,
+            Border = Black(0.1f), BorderPx = 1f,
+        };
+
+        // The shader's `lerp(fill.rgb, tint, amount)` with alpha to 0.75.
+        static Color Tinted(Color fill, Color tint, float amount)
+        {
+            var c = Color.Lerp(fill, tint, amount);
+            c.a = Mathf.Lerp(fill.a, 0.75f, amount);
+            return c;
+        }
+
         // The track and the fill of an infection meter: how much of a world
         // has gone red. The track is the well's own recess so the meter reads
         // as cut into the row rather than laid on it.

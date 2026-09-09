@@ -42,12 +42,18 @@ namespace GridInfect.Game
             // screen puts its one right-hand chip. As a dimmed full-width row
             // at the bottom it was both hard to read and as loud as the four
             // things that actually are the game.
-            var gear = UiButton.Make(Root.transform, "", new Vector2(-L.BackPos.x, L.BackPos.y),
-                new Vector2(L.BarHeight, L.BarHeight),
+            var chip = new Vector2(L.BarHeight, L.BarHeight);
+            var gear = UiButton.Make(Root.transform, "", new Vector2(-L.BackPos.x, L.BackPos.y), chip,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new SettingsScreen()));
             Ui.MakeSprite("gear", gear.Root.transform,
                 BugGlyph.Gear(BoardPalette.Default, Mathf.RoundToInt(L.BarHeight * 0.8f)), 22);
             Buttons.Add(gear);
+
+            // The rules sit beside it, reachable before the first tap on
+            // anything else — which is when a player wants them.
+            Buttons.Add(UiButton.Make(Root.transform, "?",
+                new Vector2(-L.BackPos.x - chip.x - L.Gap * 0.7f, L.BackPos.y), chip,
+                BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new RulesScreen())));
         }
     }
 }
