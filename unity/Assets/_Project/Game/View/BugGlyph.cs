@@ -109,6 +109,35 @@ namespace GridInfect.Game
             });
         }
 
+        // The settings mark: a toothed ring. Drawn rather than typed — the
+        // display face has no gear in it and a dynamic OS font is not a
+        // promise across phones, so this joins the lock and the tick as one
+        // more primitive shape. Hollow, because there is no way to cut a hole
+        // in a canvas that only paints over: the rim is a stroked circle.
+        public static Sprite Gear(BoardPalette p, int sizePx)
+        {
+            return Cached($"gear:{sizePx}:{p.GlyphKey}", () =>
+            {
+                var c = new GlyphCanvas(sizePx);
+                for (int k = 0; k < 8; k++)
+                {
+                    c.SetTransform(k * 45f);
+                    c.Rect(18f, 7f, 4f, 5.5f, 1f, p.Ink);
+                }
+                c.ClearTransform();
+                const int steps = 32;
+                var rim = new float[steps * 2];
+                for (int i = 0; i < steps; i++)
+                {
+                    float a = i * Mathf.PI * 2f / steps;
+                    rim[i * 2] = 20f + Mathf.Cos(a) * 8f;
+                    rim[i * 2 + 1] = 20f + Mathf.Sin(a) * 8f;
+                }
+                c.Stroke(rim, 3.4f, p.Ink, false, true);
+                return c.ToSprite($"mark_GEAR_{sizePx}");
+            });
+        }
+
         // Relay cells (RULES_V2 §12): a hub with one stub and pad per arm,
         // in the grammar's wire colour.
         public static Sprite Relay(byte arms, BoardPalette p, int sizePx)

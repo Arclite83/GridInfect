@@ -38,11 +38,16 @@ namespace GridInfect.Game
                 new Vector2(0f, L.StackRowY(3, 4, L.ButtonHeight, 0f)), size,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new ClassicSelectScreen())));
 
-            // The dev unlock-all row is gone with the gates it opened: every
-            // level is already open, so there was nothing left for it to do.
-            Buttons.Add(UiButton.Make(Root.transform, "SETTINGS", new Vector2(0f, -h * 0.38f),
-                new Vector2(L.ContentWidth, L.BarHeight),
-                BoardTheme.ButtonBgDisabled, BoardTheme.TextDim, () => App.Screens.Show(new SettingsScreen())));
+            // Settings is a gear in the top-right corner, where every other
+            // screen puts its one right-hand chip. As a dimmed full-width row
+            // at the bottom it was both hard to read and as loud as the four
+            // things that actually are the game.
+            var gear = UiButton.Make(Root.transform, "", new Vector2(-L.BackPos.x, L.BackPos.y),
+                new Vector2(L.BarHeight, L.BarHeight),
+                BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new SettingsScreen()));
+            Ui.MakeSprite("gear", gear.Root.transform,
+                BugGlyph.Gear(BoardPalette.Default, Mathf.RoundToInt(L.BarHeight * 0.8f)), 22);
+            Buttons.Add(gear);
         }
     }
 }

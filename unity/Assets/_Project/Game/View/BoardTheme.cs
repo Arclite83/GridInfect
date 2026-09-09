@@ -27,10 +27,10 @@ namespace GridInfect.Game
         public static Color GlyphLight => P.Tip;
         public static readonly Color PanelDim = new Color(0f, 0f, 0f, 0.55f);
 
-        // Glass fills. Buttons are chips (§7): white 42% to 14%; a disabled
-        // chip is the same glass at a third of the light.
+        // Glass fills. Buttons are chips (§7): white 42% to 14%. There is no
+        // dimmed chip any more — nothing is locked, and the two places that
+        // used one for "secondary" only made it hard to read.
         public static Color ButtonBg => P.Tip;
-        public static Color ButtonBgDisabled => BoardPalette.Alpha(P.Tip, 0.35f);
 
         // A select tile. Dormant glass unsolved, infected glass solved:
         // red is beaten, everywhere it appears — the calendar's days, the

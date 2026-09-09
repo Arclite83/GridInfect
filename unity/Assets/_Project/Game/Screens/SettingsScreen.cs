@@ -42,13 +42,16 @@ namespace GridInfect.Game
                     BoardTheme.ButtonBg, BoardTheme.Text, () => App.Ads.ShowPrivacyOptions(null)));
             }
 
+            // Two lines, and in ink: it was one dimmed line long enough to
+            // run off both edges of the screen, which is a warning nobody
+            // reads. TextMesh does not wrap, so the break is explicit.
             var caption = Ui.MakeText("caption", Root.transform,
-                "ERASES EVERY LEVEL BEATEN AND EVERY SCORE. LOCKS ARE KEPT.",
-                L.BodyText * 0.8f, BoardTheme.TextDim, 2);
-            Ui.SetPos(caption.gameObject, 0f, -h * 0.36f + L.ButtonHeight);
+                "ERASES EVERY LEVEL BEATEN\nAND EVERY SCORE. LOCKS ARE KEPT.",
+                L.BodyText * 0.85f, BoardTheme.Text, 2);
+            Ui.SetPos(caption.gameObject, 0f, -h * 0.36f + L.BarHeight * 1.6f);
             _erase = UiButton.Make(Root.transform, "", new Vector2(0f, -h * 0.36f),
                 new Vector2(L.ContentWidth, L.BarHeight),
-                BoardTheme.ButtonBgDisabled, BoardTheme.TextDim, Erase);
+                BoardTheme.ButtonBg, BoardTheme.Text, Erase);
             Buttons.Add(_erase);
             RefreshErase();
         }
@@ -79,8 +82,11 @@ namespace GridInfect.Game
 
         void RefreshErase()
         {
+            // The chip is plain glass either way — legible is the point —
+            // and arming turns the type to the infection, which is the one
+            // colour on this screen that means anything.
             _erase.Label.text = _armed ? "TAP AGAIN TO ERASE" : "RESET PROGRESS";
-            _erase.Label.color = _armed ? BoardTheme.Primary : BoardTheme.TextDim;
+            _erase.Label.color = _armed ? BoardTheme.Primary : BoardTheme.Text;
         }
     }
 }
