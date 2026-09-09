@@ -4,7 +4,9 @@ A Unity/C# rebuild of Grid Infect (Bloodhound Studios, 2014 — originally
 cocos2d-x). Drag pieces onto a 6-wide, 11-tall grid; each piece infects along its arms;
 infect every cell to win. The 128 shipped classic levels
 live on as Legacy; play is 17 generated worlds (unique, deduction-solvable,
-graded), a Daily (same board for everyone) and Endless by grade.
+graded), a Daily (same board for everyone) and Endless by grade. A ten-step
+tutorial (one mechanic, one sentence, one solution per board, the solution
+marked) is offered on first open and linked from the menu.
 
 The rebuild is mechanically equivalent to the original by construction: the
 rules engine replays all 128 shipped levels' solutions against per-step golden

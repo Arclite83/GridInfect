@@ -1,5 +1,6 @@
 using GridInfect.Core;
 using UnityEngine;
+using Grid = GridInfect.Core.Grid;
 using L = GridInfect.Game.PresentationConfig.Layout;
 using S = GridInfect.Game.PresentationConfig.Style;
 
@@ -30,6 +31,18 @@ namespace GridInfect.Game
         GameObject _beginCover;
         int _dragIndex = -1;
         bool _popupOpen;
+
+        // The tutorial's chrome: the one sentence over the board, the two
+        // chevrons that walk the series, the ghost of each bug on the cell
+        // it belongs on, and the beat after a solve that lets the wave land
+        // before the next step slides in.
+        TextMesh _lesson;
+        UiButton _prevButton, _nextButton;
+        SpriteRenderer[] _marks;
+        System.Action _advance;
+        float _advanceAt;
+
+        bool Tutorial => App.State.Mode == GameMode.Tutorial;
 
         static float ScreenW => UnityEngine.Screen.width;
         static float ScreenH => UnityEngine.Screen.height;
@@ -86,6 +99,8 @@ namespace GridInfect.Game
             Ui.SetPos(_caption.gameObject, -w / 2f + S.Px(S.HudInset), badgeY);
             RefreshLockLabel();
 
+            if (Tutorial) BuildTutorialChrome(badgeY);
+
             App.State.SessionChanged += OnSessionChanged;
             Bind(App.State.Session);
 
@@ -100,6 +115,97 @@ namespace GridInfect.Game
             App.State.SessionChanged -= OnSessionChanged;
             Unbind();
             Substrate.SetLevel(null);
+        }
+
+        // ---- tutorial chrome ----
+
+        // No hint: the marks are the hint. The sentence takes the badge row
+        // at the body size, centred and in ink, where the whole content
+        // width is free once the SOLVE badge and the mono caption are gone;
+        // the step count goes where the level number goes. The chevrons sit
+        // at the ends of the tray band, the same icon chips as every other
+        // pager, and back is always open while forward opens only as far
+        // as has been beaten (progress gating is presentation policy).
+        void BuildTutorialChrome(float lessonY)
+        {
+            _lockButton.Enabled = false;
+            _lockButton.Root.SetActive(false);
+            _caption.text = "";
+
+            _lesson = Ui.MakeText("lesson", Root.transform, "", L.BodyText * 0.95f, BoardTheme.Text, 2);
+            Ui.SetPos(_lesson.gameObject, 0f, lessonY);
+
+            var chip = new Vector2(L.BarHeight, L.BarHeight);
+            int arrow = UiButton.IconPx(chip);
+            float x = ScreenW / 2f - S.Px(S.HudInset) - chip.x / 2f;
+            float y = -ScreenH / 2f + S.Px(S.TrayHeight) / 2f;
+            _prevButton = UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Chevron(BoardPalette.Default, arrow, true),
+                new Vector2(-x, y), chip, () => StepTo(App.State.TutorialIndex - 1));
+            _nextButton = UiButton.MakeIcon(Root.transform, "next", BugGlyph.Chevron(BoardPalette.Default, arrow, false),
+                new Vector2(x, y), chip, () => StepTo(App.State.TutorialIndex + 1));
+            Buttons.Add(_prevButton);
+            Buttons.Add(_nextButton);
+        }
+
+        void RefreshTutorialChrome()
+        {
+            if (!Tutorial || _prevButton == null) return;
+            int index = App.State.TutorialIndex;
+            bool prev = index > 0;
+            bool next = index + 1 < TutorialLevels.Count && index < App.State.Profile.TutorialStep;
+            _prevButton.Enabled = prev && !_popupOpen;
+            _nextButton.Enabled = next && !_popupOpen;
+            _prevButton.SetDim(!prev);
+            _nextButton.SetDim(!next);
+        }
+
+        void StepTo(int index)
+        {
+            if (index < 0 || index >= TutorialLevels.Count || _advance != null) return;
+            App.Screens.Show(new BoardScreen(),
+                prepare: () => App.Do(GridInfectActions.TutorialLoad, Inputs.Tutorial(index)).Applied);
+        }
+
+        // Each bug's ghost on the cell the stored solution puts it on: the
+        // same glyph at the tile size, faint, breathing. It is the whole of
+        // the instruction, so it names the bug and not just the cell — on a
+        // two-bug board there is no reading a ring. It goes once its bug
+        // sits on it and comes back if the bug is lifted.
+        void BuildMarks()
+        {
+            _marks = new SpriteRenderer[_bound.Pieces.Length];
+            foreach (var (piece, cell) in App.State.Solution)
+            {
+                int i = cell / Grid.Width, j = cell % Grid.Width;
+                Vector2 at = _board.CellCenter(i, j);
+                var mark = Ui.MakeSprite($"mark:{piece}", Root.transform,
+                    BugGlyph.Piece(_bound.Def.Specs[piece], BoardPalette.Default, _board.GlyphPx), 5);
+                mark.transform.localPosition = new Vector3(at.x, at.y, 0f);
+                mark.color = new Color(1f, 1f, 1f, PresentationConfig.TutorialMarkAlpha);
+                _marks[piece] = mark;
+            }
+        }
+
+        void RefreshMarks()
+        {
+            if (_marks == null || _bound == null) return;
+            foreach (var (piece, cell) in App.State.Solution)
+            {
+                if (_marks[piece] == null) continue;
+                PieceState state = _bound.Pieces[piece];
+                bool home = state.Placed && Grid.Loc(state.I, state.J) == cell;
+                _marks[piece].gameObject.SetActive(!home);
+            }
+        }
+
+        void PulseMarks(float time)
+        {
+            if (_marks == null) return;
+            float a = PresentationConfig.TutorialMarkAlpha + PresentationConfig.TutorialMarkPulse * Mathf.Sin(time * PresentationConfig.TutorialMarkRate);
+            foreach (var mark in _marks)
+            {
+                if (mark != null) mark.color = new Color(1f, 1f, 1f, a);
+            }
         }
 
         // ---- session binding ----
@@ -134,6 +240,7 @@ namespace GridInfect.Game
                 Ui.SetPos(socket, at.x, at.y);
                 _pieces[k] = new PieceView(Root.transform, k, session.Def.Specs[k], slot, trayGlyph, at);
             }
+            if (Tutorial) BuildMarks();
             SyncPieces();   // givens are already on the board
             session.LevelSolved += OnSolved;
             session.PiecesUnbound += OnPiecesUnbound;
@@ -141,6 +248,15 @@ namespace GridInfect.Game
             string level;
             switch (App.State.Mode)
             {
+                case GameMode.Tutorial:
+                {
+                    int index = App.State.TutorialIndex;
+                    _title.text = $"TUTORIAL {index + 1}/{TutorialLevels.Count}";
+                    if (_lesson != null) _lesson.text = TutorialLevels.Get(index).Line;
+                    level = $"T{index + 1:00}";
+                    RefreshTutorialChrome();
+                    break;
+                }
                 case GameMode.Classic:
                     _caption.text = "LEGACY";
                     _title.text = $"LEVEL {App.State.ClassicLevelId + 1}";
@@ -206,6 +322,7 @@ namespace GridInfect.Game
                     _pieces[k].SetPos(to);
                 }
             }
+            RefreshMarks();
         }
 
         void Unbind()
@@ -228,6 +345,14 @@ namespace GridInfect.Game
             }
             if (_tray != null) Object.Destroy(_tray);
             _tray = null;
+            if (_marks != null)
+            {
+                foreach (var mark in _marks)
+                {
+                    if (mark != null) Object.Destroy(mark.gameObject);
+                }
+                _marks = null;
+            }
             _dragIndex = -1;
         }
 
@@ -261,7 +386,7 @@ namespace GridInfect.Game
 
         public override bool OnPress(Vector2 world)
         {
-            if (_popupOpen || _beginCover != null || _bound == null) return true;
+            if (_popupOpen || _beginCover != null || _bound == null || _advance != null) return true;
 
             for (int k = _pieces.Length - 1; k >= 0; k--)
             {
@@ -282,6 +407,7 @@ namespace GridInfect.Game
                     var clear = App.Do(GridInfectActions.PieceClear, Inputs.PieceClear(k));
                     _board.EndBatch();
                     if (!clear.Applied) return true;
+                    RefreshMarks();
                 }
                 _dragIndex = k;
                 App.Tweens.Cancel(_pieces[k].Root.transform);
@@ -328,7 +454,7 @@ namespace GridInfect.Game
                 // The wave is open across the dispatch: every CellChanged the
                 // spread raises inside it is scheduled off this seed, and the
                 // action is still applied on the frame the touch landed.
-                _board.BeginWave(i, j);
+                _board.BeginWave(i, j, _bound.Def.Specs[index]);
                 var place = App.Do(GridInfectActions.PiecePlace, Inputs.PiecePlace(index, i, j));
                 _board.EndBatch(place.Applied);
                 if (place.Applied)
@@ -336,6 +462,7 @@ namespace GridInfect.Game
                     Vector2 center = _board.CellCenter(i, j);
                     App.Tweens.MoveTo(_pieces[index].Root.transform,
                         new Vector3(center.x, center.y, 0f), PresentationConfig.DropSnap);
+                    RefreshMarks();
                     App.ScheduleResolve();
                     return;
                 }
@@ -370,7 +497,8 @@ namespace GridInfect.Game
             // from the corner of the board.
             var target = Lock.ChooseTarget(App.State);
             if (target == null) return;
-            _board.BeginWave(target.Value.cell / GridInfect.Core.Grid.Width, target.Value.cell % GridInfect.Core.Grid.Width);
+            _board.BeginWave(target.Value.cell / GridInfect.Core.Grid.Width, target.Value.cell % GridInfect.Core.Grid.Width,
+                _bound.Def.Specs[target.Value.piece]);
             var result = App.Do(GridInfectActions.PieceLock);
             _board.EndBatch(result.Applied);
             if (!result.Applied) return;
@@ -388,7 +516,7 @@ namespace GridInfect.Game
         // charge — and stays live at wallet 0.
         void RefreshLockLabel()
         {
-            if (_lockButton?.Label == null) return;
+            if (_lockButton?.Label == null || Tutorial) return;
             bool replay = Queries.IsReplay(App.State);
             int locks = App.State.Profile.Locks;
             bool rewarded = !replay && locks == 0 && App.Ads.RewardedAvailable;
@@ -479,6 +607,33 @@ namespace GridInfect.Game
                 AddPopupButton("CALENDAR", new Vector2(0f, -Short * 0.06f),
                     new Vector2(L.ContentWidth / 3f, L.BarHeight), () => App.Screens.Show(new DailyScreen()));
             }
+            else if (Tutorial)
+            {
+                // A step beaten: the next one slides in on its own, and the
+                // last one ends on the one popup, whose PLAY is world 1
+                // level 1. Neither happens on the spot: the wave that won
+                // is the lesson (the relay chain most of all), so the
+                // screen holds until it has landed, and no touch gets in
+                // meanwhile — the board is done and the popup is not up.
+                int index = App.State.TutorialIndex;
+                App.Do(GridInfectActions.TutorialSolved, Inputs.Tutorial(index));
+                RefreshTutorialChrome();
+                if (index + 1 < TutorialLevels.Count)
+                {
+                    HoldThen(() => StepTo(index + 1));
+                }
+                else
+                {
+                    HoldThen(() =>
+                    {
+                        OpenPopup("TUTORIAL COMPLETE");
+                        AddPopupButton("PLAY", new Vector2(0f, -Short * 0.06f),
+                            new Vector2(L.ContentWidth / 3f, L.BarHeight),
+                            () => App.Screens.Show(new BoardScreen(), prepare: () =>
+                                App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(Worlds.First.Id, 0)).Applied));
+                    });
+                }
+            }
             else if (App.State.Mode == GameMode.Endless)
             {
                 // No popup between Endless levels — the streak is in the HUD —
@@ -505,6 +660,16 @@ namespace GridInfect.Game
                     ShowCompletedPopup();
                 }
             }
+        }
+
+        void HoldThen(System.Action then)
+        {
+            _advance = then;
+            // From the end of the wave, or from now if it has already
+            // landed (the resolve beat is longer than a short board's wave).
+            _advanceAt = Mathf.Max(_board.WaveEnd, _board.BoardTime) + PresentationConfig.TutorialHold;
+            _prevButton.Enabled = _nextButton.Enabled = false;
+            _resetButton.Enabled = false;
         }
 
         // ---- free play chrome ----
@@ -536,6 +701,18 @@ namespace GridInfect.Game
             {
                 _board.Muted = App.State.Profile.Muted;
                 _board.Tick(dt);
+            }
+
+            if (Tutorial)
+            {
+                PulseMarks(_board != null ? _board.BoardTime : 0f);
+                if (_advance != null && _board != null && _board.BoardTime >= _advanceAt)
+                {
+                    var then = _advance;
+                    _advance = null;
+                    then();
+                }
+                return;
             }
 
             if (App.State.Mode == GameMode.Endless)
@@ -596,6 +773,7 @@ namespace GridInfect.Game
             _backButton.Enabled = false;
             _resetButton.Enabled = false;
             _lockButton.Enabled = false;
+            if (_prevButton != null) _prevButton.Enabled = _nextButton.Enabled = false;
 
             _popup = new GameObject("popup");
             _popup.transform.SetParent(Root.transform, false);
@@ -634,10 +812,11 @@ namespace GridInfect.Game
             _resetButton.Enabled = true;
             RefreshLockLabel();
             Buttons.RemoveAll(b => b.Root == null ||
-                (b != _backButton && b != _resetButton && b != _lockButton));
+                (b != _backButton && b != _resetButton && b != _lockButton && b != _prevButton && b != _nextButton));
             if (_popup != null) Object.Destroy(_popup);
             _popup = null;
             _popupPanel = null;
+            RefreshTutorialChrome();
         }
 
         // ---- top bar ----
@@ -662,6 +841,10 @@ namespace GridInfect.Game
                 App.Do(GridInfectActions.EndlessAbort);
                 App.Screens.Show(new EndlessScreen());
             }
+            else if (Tutorial)
+            {
+                App.Screens.Show(new MainMenuScreen());
+            }
             else
             {
                 App.Screens.Show(new ClassicSelectScreen());
@@ -681,6 +864,10 @@ namespace GridInfect.Game
                 else if (App.State.Mode == GameMode.World)
                 {
                     App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(App.State.WorldId, App.State.WorldIndex));
+                }
+                else if (Tutorial)
+                {
+                    App.Do(GridInfectActions.TutorialLoad, Inputs.Tutorial(App.State.TutorialIndex));
                 }
             }
             else

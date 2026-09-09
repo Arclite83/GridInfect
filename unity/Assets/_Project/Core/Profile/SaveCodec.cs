@@ -12,9 +12,11 @@ namespace GridInfect.Core
     // v4 save has no solved record, so one is derived from its gates on load
     // (solving N is what opened N + 1) and a returning player keeps their red.
     // v6: + skin (board colours; absent = the ship green).
+    // v7: + tutorialSeen, tutorialStep (the first-open offer answered; the
+    // highest tutorial step beaten plus one).
     public static class SaveCodec
     {
-        public const int Version = 6;
+        public const int Version = 7;
 
         public static string Save(Profile profile)
         {
@@ -76,6 +78,8 @@ namespace GridInfect.Core
                 ["dailyLast"] = profile.DailyLastDate ?? "",
                 ["endlessBest"] = endless,
                 ["locks"] = profile.Locks,
+                ["tutorialSeen"] = profile.TutorialSeen,
+                ["tutorialStep"] = profile.TutorialStep,
             });
         }
 
@@ -142,6 +146,12 @@ namespace GridInfect.Core
             if (root.TryGetValue("skin", out object sk) && sk is long skin && skin >= 0 && skin < SetSkinAction.Count)
             {
                 profile.Skin = (int)skin;
+            }
+
+            if (root.TryGetValue("tutorialSeen", out object ts) && ts is bool tutorialSeen) profile.TutorialSeen = tutorialSeen;
+            if (root.TryGetValue("tutorialStep", out object tp) && tp is long tutorialStep && tutorialStep >= 0)
+            {
+                profile.TutorialStep = (int)System.Math.Min(tutorialStep, TutorialLevels.Count);
             }
 
             bool hasSolved = false;

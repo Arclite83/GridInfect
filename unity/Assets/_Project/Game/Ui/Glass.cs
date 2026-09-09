@@ -69,6 +69,18 @@ namespace GridInfect.Game
             Shadow = Black(p, 0.38f), ShadowOffset = new Vector2(0f, -7f), ShadowBlur = 16f,
         };
 
+        // A solid panel: the mask itself, top to bottom, under the panel's
+        // ring, top light and shadow. For a popup that sits over type and
+        // chips rather than over the well — on the menu, glass let the
+        // title and the four rows through and the message sat on top of
+        // them. Ink on the mask is the contrast every menu row already has.
+        public static GlassStyle Plate(BoardPalette p) => new GlassStyle
+        {
+            FillTop = p.MaskHi, FillBottom = p.Mask, Radius = S.PanelRadius,
+            Border = White(p, 0.3f), BorderPx = 1f, TopLight = White(p, 0.7f),
+            Shadow = Black(p, 0.38f), ShadowOffset = new Vector2(0f, -7f), ShadowBlur = 16f,
+        };
+
         // A recessed cover over the board area: the well's own material.
         public static GlassStyle Well(BoardPalette p) => new GlassStyle
         {
