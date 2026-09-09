@@ -19,20 +19,20 @@ MonoBehaviour:
   Copper: {r: 0.788235, g: 0.65098, b: 0.282353, a: 1}
   CopperHi: {r: 0.952941, g: 0.886275, b: 0.658824, a: 1}
   CopperLo: {r: 0.490196, g: 0.380392, b: 0.12549, a: 1}
-  Infect: {r: 1, g: 0.176471, b: 0.584314, a: 1}
-  InfectHi: {r: 1, g: 0.486275, b: 0.768627, a: 1}
-  InfectLo: {r: 0.701961, g: 0.031373, b: 0.415686, a: 1}
-  InfectGlow: {r: 1, g: 0.176471, b: 0.584314, a: 0.55}
-  GlyphEdge: {r: 0.352941, g: 0, b: 0.2, a: 1}
-  GlyphWire: {r: 0.227451, g: 0.043137, b: 0.133333, a: 1}
+  Infect: {r: 0.85098, g: 0.12549, b: 0.309804, a: 1}
+  InfectHi: {r: 1, g: 0.431373, b: 0.576471, a: 1}
+  InfectLo: {r: 0.560784, g: 0.039216, b: 0.196078, a: 1}
+  InfectGlow: {r: 0.85098, g: 0.12549, b: 0.309804, a: 0.55}
+  GlyphEdge: {r: 0.290196, g: 0, b: 0.094118, a: 1}
+  GlyphWire: {r: 0.188235, g: 0, b: 0.062745, a: 1}
   Tip: {r: 1, g: 1, b: 1, a: 1}
   BlockerBody: {r: 0.811765, g: 0.847059, b: 0.878431, a: 1}
   BlockerEdge: {r: 0.301961, g: 0.337255, b: 0.372549, a: 1}
   WellBg: {r: 0, g: 0, b: 0, a: 0.36}
   Shade: {r: 0, g: 0, b: 0, a: 1}
-  RepelSwitch: {r: 0.541176, g: 0.360784, b: 1, a: 1}
+  RepelSwitch: {r: 0.309804, g: 0.356863, b: 1, a: 1}
   ResetTrap: {r: 0.05098, g: 0.05098, b: 0.070588, a: 1}
-  Conflict: {r: 1, g: 0.231373, b: 0.188235, a: 1}
+  Conflict: {r: 0.301961, g: 0.890196, b: 1, a: 1}
   HotEmission: 2.2
   RestEmission: 1.15
   BloomThreshold: 1

@@ -24,10 +24,12 @@ jobs:
           python3 tools/gen_undo_fixtures.py
           python3 tools/gen_level_metrics_golden.py
           python3 tools/bake_worlds.py
+          python3 tools/sync_palette_asset.py
           git diff --exit-code -- unity/Assets/_Project/Core/Levels/ClassicLevelData.g.cs \
                                   unity/Assets/_Project/Core/Levels/WorldData.g.cs \
                                   unity/Assets/_Project/Tests/EditMode/UndoFixtures.g.cs \
-                                  docs/level_metrics_classic.json
+                                  docs/level_metrics_classic.json \
+                                  unity/Assets/_Project/Resources/BoardPalette.asset
 
       - name: Build and test (mirror of Unity edit-mode suite)
         run: dotnet test src/Tests.Mirror/GridInfect.Core.Tests.Mirror.csproj --nologo

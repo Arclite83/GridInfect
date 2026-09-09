@@ -12,6 +12,11 @@ namespace GridInfect.Game
     // it by eye. The defaults are the ship skin; Skins.Apply swaps in blue or
     // breadboard. CreateInstance gives the defaults, so the game still boots
     // on a fresh clone with no asset in Resources.
+    //
+    // Default loads Resources first, so Resources/BoardPalette.asset is what
+    // the game actually draws: it is generated from these defaults by
+    // tools/sync_palette_asset.py and CI diffs it. Change a colour here and
+    // run the tool, or the screen keeps the old one.
     [CreateAssetMenu(menuName = "Grid Infect/Board Palette", fileName = "BoardPalette")]
     public sealed class BoardPalette : ScriptableObject
     {
