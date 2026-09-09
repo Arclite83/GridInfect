@@ -89,10 +89,11 @@ namespace GridInfect.Game
                 prepare: () => App.Do(GridInfectActions.TutorialLoad, Inputs.Tutorial(index)).Applied);
         }
 
-        // The first open: one offer, answered once either way (tutorial.seen),
-        // in the same glass panel every popup in the game uses. The menu
-        // under it is shut off until it is answered, as the board is under
-        // the COMPLETE popup.
+        // The first open: one offer, answered once either way (tutorial.seen).
+        // A solid plate, not the board popup's glass: here it sits over the
+        // title and the four rows, and through glass they were the
+        // message's background. The menu under it is shut off until it is
+        // answered, as the board is under the COMPLETE popup.
         GameObject _offer;
         GameObject _offerPanel;
 
@@ -109,8 +110,8 @@ namespace GridInfect.Game
             var panel = new GameObject("panel");
             panel.transform.SetParent(_offer.transform, false);
             _offerPanel = panel;
-            Ui.MakeGlass("bg", panel.transform, new Vector2(L.ContentWidth, short_ * 0.40f), GlassStyle.Panel(BoardPalette.Default), 41);
-            var title = Ui.MakeText("title", panel.transform, "FIRST TIME?", L.HeadingText, BoardTheme.Text, 42);
+            Ui.MakeGlass("bg", panel.transform, new Vector2(L.ContentWidth, short_ * 0.40f), GlassStyle.Plate(BoardPalette.Default), 41);
+            var title = Ui.MakeText("title", panel.transform, "FIRST TIME?", L.HeadingText, BoardTheme.Text, 42, bold: true);
             Ui.SetPos(title.gameObject, 0f, short_ * 0.10f);
             var line = Ui.MakeText("line", panel.transform, "Learn the basics in a minute.", L.BodyText, BoardTheme.Text, 42);
             Ui.SetPos(line.gameObject, 0f, short_ * 0.03f);
