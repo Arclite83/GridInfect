@@ -105,3 +105,6 @@ tools/style-bench/shaders.js
 tools/style-bench/*.png
 tools/style-bench/glyphs/bin/
 tools/style-bench/glyphs/obj/
+
+# node deps for the style generators (grid-infect-style/package.json)
+node_modules/

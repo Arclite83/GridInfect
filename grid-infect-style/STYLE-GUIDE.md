@@ -1,4 +1,4 @@
-# Grid Infect visual style guide (locked 2026-09-04, chrome retuned 2026-09-05, legibility floor 2026-09-09)
+# Grid Infect visual style guide (locked 2026-09-04, chrome retuned 2026-09-05, legibility floor, logo and breadboard infection 2026-09-09)
 
 Everything below is the decision. Regenerate vector assets with `node gen-assets.mjs out`.
 
@@ -12,7 +12,7 @@ Mask color plus infection hue is a skin layer. Everything else is constant. Valu
 |---|---|---|---|---|
 | default | green #7fae66 | gold #c9a648 | deep rose red #d9204f | ship default. Red is infection, and infection is success. Ink #0c190a (was #1d3316: 3.4:1 on the mask shadow; now 4.5:1, §11) |
 | blue | #2e5aa8 | gold | amber #ff8a00 | unlockable |
-| breadboard | cream #e9dcb8 | bare copper #c46a3a | red #ff2d3a | unlockable |
+| breadboard | cream #e9dcb8 | bare copper #c46a3a | lime #7fd100 | unlockable. Lime over red (2026-09-09): on a cream mask the red read as paint, and a light lime read as a stain. This lime keeps enough depth in the core that the white tips still register as the bright element. Edge #1e2e00, wire #141f00 |
 
 Neutrals: lit tips and highlights #ffffff, blocker body #cfd8e0, blocker edge #4d565f, board well rgba(0,0,0,.36).
 
@@ -107,4 +107,21 @@ The board is meant to be read on a phone in daylight, in a moving vehicle, by so
 | UI marks | drawn shapes, never font glyphs; stroke ≥ 4.4 viewBox units in a chip, ≥ 2.6 over a glyph; the relay's leads 3.0 with a pad, copper points in the hub and pads | "?" was the label face at 12px; "◀" is not in Chakra Petch; the relay's 1.4-unit stubs were a 1.5px line on the board |
 
 Not done, and known: no reduce-motion switch (R-1004), no text scaling with the OS setting (TextMesh, R-1003), no screen-reader labels. Each is a settings or platform pass, not a chrome pass.
+
+## 12. Logo (locked 2026-09-09)
+Regenerate with `node gen-logo.mjs` (add `--png` for raster exports; needs playwright, see `tools/style-bench/README.md`). Source of truth is `gen-logo.mjs`; Chakra Petch Bold is vendored in `fonts/` (OFL) and outlined to paths, so the SVGs have no font dependency.
+
+Concept: the wordmark is two components in two states on the board. GRID is dormant glass, INFECT is lit, and the bug between them is the source with its lit tip on the I. The logo is green-skin only; it does not reskin.
+
+Wordmark (`out/logo/wordmark.svg`, transparent; `wordmark_board.svg` framed on the substrate for banners):
+- Chakra Petch 700, 92 px, letter-spacing 2 px. GRID, a 96 px gap, INFECT. Bug is bug_E at 56 px centred in the gap on the x-height midline.
+- GRID: dense glass. Linear 160°: white 66% → white 30% (55%) → white 44%. Rim white 90% 1.4 px. Drop shadow 0 5px blur 6 black 38%. Dense, not component density: the component fill (§5) vanishes below 48 px and a mark has to hold at 48.
+- INFECT: lit. Linear 160°: white 92% → infectHi (12%) → infect (55%) → infectLo. Rim white 60% 1.3 px. Glow two passes, both infect: blur 14 at 75% and blur 7 at 50%. Tight passes, so the glow stays on the type.
+- Bug: the glyph from §6 with a 35% infect backing glow, exactly as on a tile.
+
+Monogram (`out/logo/monogram.svg`, 1024 square, no corner rounding; platforms mask it): the wordmark's first and fifth letters under the same rules. G dense glass at 70% of the side, lit I, bug_E between them at 27% of the side with its tip on the I. `monogram_adaptive.svg` is the same mark at 62% for Android adaptive-icon foregrounds. Raster sizes: 1024, 512, 192, 96, 48 and adaptive 1024, 432.
+
+Title screen: the wordmark composites on the live substrate. Motion: GRID present at rest, the bug lands, tip lights, INFECT fills one letter per hop left to right, the same hop timing as board spread. Half-lit frames are animation only; the static mark is fully lit.
+
+Rejected and why (all three rounds are in `reference/logo-rounds.html`): trace-drawn letters in the 2013 manner, disciplined to 45° routing (loses the glass system and reads as etched circuitry, not a mark); pixel-font letters as tiles on a board well (needs two lines, reads as a menu); silkscreen Chakra Petch (interchangeable with any title); dark-glass "well" G and solid-ink G for the monogram (dark glass reads solid but changes the concept from components to well, solid ink is paint).
 
