@@ -105,8 +105,12 @@ namespace GridInfect.Game
         public static GameObject MakeGlass(string name, Transform parent, Vector2 boxPx, GlassStyle style, int sortingOrder)
             => Glass.Make(name, parent, boxPx, style, sortingOrder);
 
+        // `bold` is the display face's 700 weight (the bench loads Chakra
+        // Petch 500 and 700). Chip labels take it: 12-13 px uppercase on
+        // glass over a photographed-looking board is where thin type goes
+        // first in glare. The mono face has no bold and never asks for one.
         public static TextMesh MakeText(string name, Transform parent, string text, float heightPx, Color color, int sortingOrder,
-            bool mono = false, TextAnchor anchor = TextAnchor.MiddleCenter)
+            bool mono = false, TextAnchor anchor = TextAnchor.MiddleCenter, bool bold = false)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -114,6 +118,7 @@ namespace GridInfect.Game
             var font = mono ? MonoFont : UiFont;
             mesh.font = font;
             mesh.text = text;
+            mesh.fontStyle = bold && !mono ? FontStyle.Bold : FontStyle.Normal;
             mesh.fontSize = 64;
             mesh.characterSize = heightPx * 10f / 64f;
             mesh.anchor = anchor;
@@ -134,8 +139,8 @@ namespace GridInfect.Game
         public static void MarkSolved(Transform tile, float tilePx)
         {
             var check = MakeSprite("solved", tile, BugGlyph.Check(BoardPalette.Default,
-                Mathf.RoundToInt(tilePx * 0.32f)), 24);
-            check.transform.localPosition = new Vector3(tilePx * 0.28f, -tilePx * 0.28f, 0f);
+                Mathf.RoundToInt(tilePx * 0.36f)), 24);
+            check.transform.localPosition = new Vector3(tilePx * 0.27f, -tilePx * 0.27f, 0f);
         }
 
         public static void SetPos(GameObject go, float x, float y)
@@ -153,7 +158,8 @@ namespace GridInfect.Game
     {
         public GameObject Root;
         public TextMesh Label;
-        public Rect Bounds;               // world coords (pixels, origin center-screen)
+        public SpriteRenderer Icon;       // an icon chip's mark, when it has one instead of a label
+        public Rect Bounds;               // world coords (pixels, origin center-screen): the drawn box
         public System.Action OnClick;
         public bool Enabled = true;
         // Seconds no chip answers after this one's handler returns. The
@@ -161,7 +167,47 @@ namespace GridInfect.Game
         // work (the hint) asks for more.
         public float Cooldown = PresentationConfig.ButtonDebounce;
 
-        public bool HitTest(Vector2 worldPoint) => Enabled && Bounds.Contains(worldPoint);
+        // What the finger gets: the drawn box grown to at least MinTouch
+        // (44 reference px) on each axis, centred. A 29 px pager chip or a
+        // 31 px HUD chip stays the size the guide drew it and still takes a
+        // thumb. Neighbours can overlap in the slop; GameApp's last-wins
+        // pick settles a press in the seam the way z-order would.
+        public Rect HitBounds
+        {
+            get
+            {
+                float min = S.Px(S.MinTouch);
+                float w = Mathf.Max(Bounds.width, min), h = Mathf.Max(Bounds.height, min);
+                return new Rect(Bounds.x + Bounds.width / 2f - w / 2f, Bounds.y + Bounds.height / 2f - h / 2f, w, h);
+            }
+        }
+
+        public bool HitTest(Vector2 worldPoint) => Enabled && HitBounds.Contains(worldPoint);
+
+        // Dim is for a control that cannot act right now (a pager at its end,
+        // TODAY while today is showing). It is the one place type is allowed
+        // under the contrast floor, because it is telling you not to press.
+        public void SetDim(bool dim)
+        {
+            if (Label != null) Label.color = dim ? BoardTheme.TextDisabled : BoardTheme.Text;
+            if (Icon != null) Icon.color = dim ? new Color(1f, 1f, 1f, 0.45f) : Color.white;
+        }
+
+        // A chip carrying a drawn mark instead of a word: the gear, the help
+        // mark, a pager chevron. A glyph is a shape that the OS font cannot
+        // take away, and it is drawn at a stroke that survives glare, which
+        // a 12 px "?" or a "◀" from whatever face is installed did not.
+        public static UiButton MakeIcon(Transform parent, string name, Sprite icon, Vector2 center, Vector2 sizePx,
+            System.Action onClick, int sortingOrder = 20)
+        {
+            var button = Make(parent, "", center, sizePx, BoardTheme.ButtonBg, BoardTheme.Text, onClick, sortingOrder);
+            button.Root.name = "btn:" + name;
+            button.Icon = Ui.MakeSprite("icon", button.Root.transform, icon, sortingOrder + 2);
+            return button;
+        }
+
+        // The mark inside an icon chip: 72% of the chip's short side.
+        public static int IconPx(Vector2 chipSize) => Mathf.RoundToInt(Mathf.Min(chipSize.x, chipSize.y) * 0.72f);
 
         public static UiButton Make(Transform parent, string label, Vector2 center, Vector2 sizePx,
             Color background, Color textColor, System.Action onClick, int sortingOrder = 20)
@@ -192,7 +238,7 @@ namespace GridInfect.Game
             }
 
             float textPx = Mathf.Min(sizePx.y * 0.42f, S.Px(S.ChipText) * 1.4f);
-            var text = Ui.MakeText("label", root.transform, label, textPx, textColor, sortingOrder + 1, mono);
+            var text = Ui.MakeText("label", root.transform, label, textPx, textColor, sortingOrder + 1, mono, bold: true);
             return new UiButton
             {
                 Root = root,

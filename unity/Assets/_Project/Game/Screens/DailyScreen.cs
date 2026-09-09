@@ -73,14 +73,15 @@ namespace GridInfect.Game
 
             // Month row: an arrow chip each side, the year as silkscreen over the name.
             float monthY = L.TopBarY - S.Px(70f);
-            var arrow = new Vector2(S.Px(34f), S.Px(30f));
-            _prev = UiButton.Make(Root.transform, "◀", new Vector2(-L.ContentWidth / 2f + arrow.x / 2f, monthY), arrow,
-                BoardTheme.ButtonBg, BoardTheme.Text, () => Go(_month - 1));
-            _next = UiButton.Make(Root.transform, "▶", new Vector2(L.ContentWidth / 2f - arrow.x / 2f, monthY), arrow,
-                BoardTheme.ButtonBg, BoardTheme.Text, () => Go(_month + 1));
+            var arrow = new Vector2(S.Px(40f), S.Px(34f));
+            int arrowPx = UiButton.IconPx(arrow);
+            _prev = UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Chevron(palette, arrowPx, true),
+                new Vector2(-L.ContentWidth / 2f + arrow.x / 2f, monthY), arrow, () => Go(_month - 1));
+            _next = UiButton.MakeIcon(Root.transform, "next", BugGlyph.Chevron(palette, arrowPx, false),
+                new Vector2(L.ContentWidth / 2f - arrow.x / 2f, monthY), arrow, () => Go(_month + 1));
             Buttons.Add(_prev);
             Buttons.Add(_next);
-            _yearLabel = Ui.MakeText("year", Root.transform, "", S.Px(10f), BoardTheme.TextDim, 2, mono: true);
+            _yearLabel = Ui.MakeText("year", Root.transform, "", S.Px(S.SmallText), BoardTheme.TextDim, 2, mono: true);
             Ui.SetPos(_yearLabel.gameObject, 0f, monthY + S.Px(15f));
             _monthLabel = Ui.MakeText("month", Root.transform, "", L.HeadingText * 1.1f, BoardTheme.Text, 2);
             Ui.SetPos(_monthLabel.gameObject, 0f, monthY - S.Px(4f));
@@ -105,9 +106,13 @@ namespace GridInfect.Game
                 float x = (c - (Columns - 1) / 2f) * _pitch;
                 var band = DailyCalendar.Band(day);
                 string tier = Queries.TierBand(band.min, band.max);
-                var name = Ui.MakeText($"wk:{c}", Root.transform, DayNames[c], S.Px(10f), BoardTheme.Text, 2, mono: true);
+                var name = Ui.MakeText($"wk:{c}", Root.transform, DayNames[c], S.Px(S.SmallText), BoardTheme.Text, 2, mono: true);
                 Ui.SetPos(name.gameObject, x, _headerY + S.Px(12f));
-                var tierText = Ui.MakeText($"band:{c}", Root.transform, tier, S.Px(11f), palette.CopperLo, 2, mono: true);
+                // The tier was CopperLo, 2.3:1 on the mask at 11 px: the
+                // one number that says how hard the day is, in the least
+                // legible ink on the screen. Ink now; the day name above it
+                // is what carries the header's second tone.
+                var tierText = Ui.MakeText($"band:{c}", Root.transform, tier, S.Px(12f), BoardTheme.Text, 2, mono: true);
                 Ui.SetPos(tierText.gameObject, x, _headerY - S.Px(2f));
             }
 
@@ -143,9 +148,9 @@ namespace GridInfect.Game
             _monthLabel.text = MonthNames[month - 1];
             _prev.Enabled = _month > EpochMonth;
             _next.Enabled = _month < TodayMonth;
-            SetChipDim(_prev, !_prev.Enabled);
-            SetChipDim(_next, !_next.Enabled);
-            SetChipDim(_todayChip, _month == TodayMonth && _selected == _todayDate);
+            _prev.SetDim(!_prev.Enabled);
+            _next.SetDim(!_next.Enabled);
+            _todayChip.SetDim(_month == TodayMonth && _selected == _todayDate);
 
             var palette = BoardPalette.Default;
             var profile = App.State.Profile;
@@ -169,7 +174,10 @@ namespace GridInfect.Game
                 }
                 if (date > _todayDate)
                 {
-                    Tile($"day:{d}", x, y, FutureStyle(palette), d.ToString(), BoardPalette.Alpha(palette.Ink, 0.28f));
+                    // Not pressable, so it may sit under the contrast floor,
+                    // but 28% was a number you had to hunt for. 45% still
+                    // reads as "not yet" next to a full-ink day.
+                    Tile($"day:{d}", x, y, FutureStyle(palette), d.ToString(), BoardPalette.Alpha(palette.Ink, 0.45f));
                     continue;
                 }
                 playable++;
@@ -206,8 +214,11 @@ namespace GridInfect.Game
 
             // Readouts (§7 counter style): the streak, and solved over playable this month.
             int streak = Queries.DailyStreakOn(profile, _today);
-            Badge("streak", $"STREAK {streak:00}", -L.ContentWidth / 2f, true, streak > 0);
-            Badge("month", $"{MonthNames[month - 1].Substring(0, 3)} {solved:00}/{playable:00}", L.ContentWidth / 2f, false, true);
+            // Both readouts in full copper: a zero streak used to dim its
+            // badge to 2:1, which made the fact of a zero streak the thing
+            // you could not read.
+            Badge("streak", $"STREAK {streak:00}", -L.ContentWidth / 2f, true);
+            Badge("month", $"{MonthNames[month - 1].Substring(0, 3)} {solved:00}/{playable:00}", L.ContentWidth / 2f, false);
 
             // The month's unplayed days go to the worker, newest first, behind
             // today's board and the recent archive.
@@ -224,7 +235,7 @@ namespace GridInfect.Game
             LevelCache.Shared.Prefetch(DailySpec.For(date.DayOfWeek), DailySpec.SeedFor(date), -1);
             ShowSelection();
             RefreshSlot();
-            SetChipDim(_todayChip, _month == TodayMonth && _selected == _todayDate);
+            _todayChip.SetDim(_month == TodayMonth && _selected == _todayDate);
         }
 
         void ShowSelection()
@@ -255,19 +266,14 @@ namespace GridInfect.Game
             return root;
         }
 
-        void Badge(string name, string text, float edgeX, bool left, bool lit)
+        void Badge(string name, string text, float edgeX, bool left)
         {
             var size = new Vector2(S.Px(S.BadgePadX * 2f + text.Length * S.BadgeText * 0.62f), S.Px(S.BadgePadY * 2f + S.BadgeText * 1.25f));
             float x = left ? edgeX + size.x / 2f : edgeX - size.x / 2f;
             var badge = UiButton.Make(_page.transform, text, new Vector2(x, _badgeY), size,
-                GlassStyle.Badge(BoardPalette.Default), lit ? BoardTheme.Copper : BoardPalette.Alpha(BoardTheme.Copper, 0.45f),
+                GlassStyle.Badge(BoardPalette.Default), BoardTheme.Copper,
                 null, 20, pads: false, padAlpha: 1f, mono: true);
             badge.Enabled = false;
-        }
-
-        static void SetChipDim(UiButton chip, bool dim)
-        {
-            chip.Label.color = dim ? BoardTheme.TextDim : BoardTheme.Text;
         }
 
         // ---- the selected day's slot ----
@@ -293,9 +299,9 @@ namespace GridInfect.Game
             float infoX = slotX + slot / 2f + S.Px(22f);
             _dateLine = Ui.MakeText("date", Root.transform, "", S.Px(16f), BoardTheme.Text, 6, anchor: TextAnchor.MiddleLeft);
             Ui.SetPos(_dateLine.gameObject, infoX, y + S.Px(24f));
-            _infoLine = Ui.MakeText("band", Root.transform, "", S.Px(11f), BoardTheme.Text, 6, mono: true, anchor: TextAnchor.MiddleLeft);
+            _infoLine = Ui.MakeText("band", Root.transform, "", S.Px(12f), BoardTheme.Text, 6, mono: true, anchor: TextAnchor.MiddleLeft);
             Ui.SetPos(_infoLine.gameObject, infoX, y + S.Px(8f));
-            _bestLine = Ui.MakeText("best", Root.transform, "", S.Px(11f), BoardTheme.Text, 6, mono: true, anchor: TextAnchor.MiddleLeft);
+            _bestLine = Ui.MakeText("best", Root.transform, "", S.Px(12f), BoardTheme.Text, 6, mono: true, anchor: TextAnchor.MiddleLeft);
             Ui.SetPos(_bestLine.gameObject, infoX, y - S.Px(8f));
 
             _playSize = new Vector2(L.ContentWidth * 0.36f, L.BarHeight);

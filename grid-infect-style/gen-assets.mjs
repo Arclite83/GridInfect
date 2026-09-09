@@ -8,7 +8,7 @@ const OUT = process.argv[2] ?? "out";
 // ---------- tokens ----------
 export const tokens = {
   skins: {
-    default: { mask:"#7fae66", maskHi:"#97c27c", maskLo:"#5f8b4a", ink:"#1d3316",
+    default: { mask:"#7fae66", maskHi:"#97c27c", maskLo:"#5f8b4a", ink:"#0c190a",
                copper:"#c9a648", copperHi:"#f3e2a8", copperLo:"#7d6120",
                infect:"#d9204f", infectHi:"#ff6e93", infectLo:"#8f0a32", infectGlow:"rgba(217,32,79,.55)",
                glyphEdge:"#4a0018", glyphWire:"#300010" },

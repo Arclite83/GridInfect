@@ -16,7 +16,15 @@ namespace GridInfect.Game
         public static Color Background => P.MaskLo;
 
         public static Color Text => P.Ink;
-        public static Color TextDim => BoardPalette.Alpha(P.Ink, 0.7f);
+        // There is no dim ink any more. At 70% alpha the ink sat at 3.1:1 on
+        // the mask and 2.4:1 on its dark end — the HUD caption, the page
+        // counter and every mono readout were the least legible type on
+        // screen. Hierarchy is carried by size and by the mono face; the
+        // name stays so a caller reads as "secondary", and gets full ink.
+        public static Color TextDim => P.Ink;
+        // The one legitimate low-contrast state: a control that cannot be
+        // pressed right now (a pager at its last page). WCAG exempts it.
+        public static Color TextDisabled => BoardPalette.Alpha(P.Ink, 0.45f);
         public static Color TextOnAccent => P.Tip;
         public static Color Accent => P.Ink;             // stats and readouts: ink, like the level label
         public static Color Copper => P.CopperHi;        // the lock counter's mono type on its black badge
@@ -153,8 +161,11 @@ namespace GridInfect.Game
             else if (tint.r != P.Tip.r || tint.g != P.Tip.g || tint.b != P.Tip.b)
             {
                 // A coloured chip: the infection (or any accent) lit from
-                // inside, the way an infected tile is.
-                g.FillTop = BoardPalette.Alpha(Color.Lerp(tint, P.Tip, 0.35f), 0.95f);
+                // inside, the way an infected tile is. The top stop leans
+                // toward white only a little: at 0.35 the white label sat at
+                // 3.0:1 against the top of the chip and 4.0:1 at its centre;
+                // at 0.12 it clears 4.5:1 where the type is.
+                g.FillTop = BoardPalette.Alpha(Color.Lerp(tint, P.Tip, 0.12f), 0.95f);
                 g.FillBottom = BoardPalette.Alpha(tint, 0.9f);
                 g.Glow = BoardPalette.Alpha(tint, 0.45f);
                 g.GlowPx = 14f;

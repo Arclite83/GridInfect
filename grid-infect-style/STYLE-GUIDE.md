@@ -1,4 +1,4 @@
-# Grid Infect visual style guide (locked 2026-09-04, chrome retuned 2026-09-05)
+# Grid Infect visual style guide (locked 2026-09-04, chrome retuned 2026-09-05, legibility floor 2026-09-09)
 
 Everything below is the decision. Regenerate vector assets with `node gen-assets.mjs out`.
 
@@ -10,7 +10,7 @@ Mask color plus infection hue is a skin layer. Everything else is constant. Valu
 
 | skin | mask | copper | infection | note |
 |---|---|---|---|---|
-| default | green #7fae66 | gold #c9a648 | deep rose red #d9204f | ship default. Red is infection, and infection is success |
+| default | green #7fae66 | gold #c9a648 | deep rose red #d9204f | ship default. Red is infection, and infection is success. Ink #0c190a (was #1d3316: 3.4:1 on the mask shadow; now 4.5:1, §11) |
 | blue | #2e5aa8 | gold | amber #ff8a00 | unlockable |
 | breadboard | cream #e9dcb8 | bare copper #c46a3a | red #ff2d3a | unlockable |
 
@@ -73,10 +73,10 @@ Invariant: lit tips are the only long bright elements. No stub or wire exceeds l
 Files: `out/glyphs/bug_<DIRS>.svg` (DIRS canonical order N E S W NE SE SW NW), `bug_AREA.svg`, `tile_BLOCKER.svg`, `glyph_sheet.svg` (8 per row, 44px pitch, each in `<g id>`).
 
 ## 7. HUD
-Height 56px, items bottom-aligned: the two chips and the level label, nothing else. Level label Chakra Petch 26px ink color, 0.06em tracking. A second row at 52px from the top carries the Share Tech Mono 11px caption (`GI-REV B`) left-aligned under MENU and the counter badge right-aligned under RESET; the caption sits there rather than above the label so the HUD band costs one text line, not two. Buttons are glass chips: 12px 0.1em uppercase, padding 8×14, radius 7, glass fill white 42%→14%, one 5px copperHi pad on each side outside the chip. Solve counter: Share Tech Mono 13px copperHi on black 35%, radius 7, inset 1px copperHi 35%, sized for eight characters (`SOLVE 03`, `+1 SOLVE`).
+Height 56px, items bottom-aligned: the two chips and the level label, nothing else. Level label Chakra Petch 26px ink color, 0.06em tracking. A second row at 52px from the top carries the Share Tech Mono 12px caption (`GI-REV B`) left-aligned under MENU and the counter badge right-aligned under RESET; the caption sits there rather than above the label so the HUD band costs one text line, not two. Buttons are glass chips: 12px 0.1em uppercase at weight 700, padding 8×14, radius 7, glass fill white 42%→14%, one 5px copperHi pad on each side outside the chip. The one lit chip (BEGIN, PLAY) is the infection with its top stop leaned 12% toward white, not 35% (§11). Solve counter: Share Tech Mono 13px copperHi on black 60%, radius 7, inset 1px copperHi 50%, sized for eight characters (`SOLVE 03`, `+1 SOLVE`). Icon chips (gear, help, pager chevrons) are 39px squares carrying a drawn mark at 72% of the chip, never a font glyph.
 
 ## 8. Tray
-Bottom 96px. Three slots, 30px gap. Next slot 74px radius 12, black 30% with inset 24px black 50%, plus infect glow 22px 45%, glyph at 58px, caption `NEXT` Share Tech Mono 10px ink 75%. Queued slots 54px at 75% opacity, glyph at 40px.
+Bottom 96px. Three slots, 30px gap. Next slot 74px radius 12, black 30% with inset 24px black 50%, plus infect glow 22px 45%, glyph at 58px, caption `NEXT` Share Tech Mono 11px ink. Queued slots 54px at 75% opacity, glyph at 40px.
 
 ## 9. Motion
 - Placement: bug lands, lead tips light in sequence, then infection propagates out of the tips.
@@ -88,3 +88,23 @@ Bottom 96px. Three slots, 30px gap. Next slot 74px radius 12, black 30% with ins
 
 ## 10. Rendered sprite pipeline
 Tiles and bug bodies share one frosted-glass material with an emissive channel. Leads, wires, stubs are opaque dark. Export two LODs from the same source: board sprite (44px glyph) and tray/hero sprite (58px+). Skin swap changes material color inputs only.
+
+## 11. Legibility floor (2026-09-09)
+The board is meant to be read on a phone in daylight, in a moving vehicle, by someone who does not see colour the way the palette assumes. Everything above stays; these are the limits it has to clear. Measured as WCAG 2.x contrast against the composited background the element actually sits on (the mask gradient, the chip glass over it, the well), sRGB blend as the glass shader does it.
+
+| rule | value | why |
+|---|---|---|
+| Informational type | ≥ 4.5:1 at any size under 24px; ≥ 3:1 at 24px and up | ink #1d3316 was 5.3:1 on the mask and 3.4:1 on the mask shadow; #0c190a is 7.0 and 4.5 |
+| Dimmed type | none. Hierarchy is size and the mono face, never alpha | ink at 70% was 3.1:1 on the mask, 2.4 on its shadow; it carried the HUD mode readout and every page counter |
+| Disabled controls | ink 45%, the one exempt state (a pager at its end, TODAY while today shows) | WCAG exempts an inactive control; the dim is the message |
+| Decorative silkscreen | 9px white 55% stays | studio name, copyright, `GI-06 REV B`: decorative, exempt |
+| Type size | ≥ 11px reference for anything that says something; body 14.4px (0.037 of the short edge) | 10px weekday names, 10px tray caption and the 11px HUD caption all rise; the silkscreen alone stays at 9 |
+| Chip labels | weight 700 | 12px uppercase on glass is where thin type goes first in glare |
+| Copper on the badge | black 60% under it | black 35% put 13px copperHi at 4.3:1 (3.5 on the mask highlight); 60% is 8:1. A zero streak is no longer dimmed to 2:1 |
+| White on the lit chip | top stop lerp(infect, white, .12), not .35 | .35 was 3.0:1 at the top of the chip and 4.0 at the label; .12 clears 4.5 |
+| Colour is never the only cue (R-1001) | unchanged: infected carries the white dot and the fill, repel the diamond, trap the X, avoid the copper ring, wall the shield, solved the tick, locked the padlock | |
+| Touch targets | every pressable chip answers a 44×44px reference square about its centre (`UiButton.HitBounds`), whatever it draws; top-bar chips 33px tall, icon chips 39px | 29px chips were under both the Android 48dp and iOS 44pt guidance |
+| UI marks | drawn shapes, never font glyphs; stroke ≥ 4.4 viewBox units in a chip, ≥ 2.6 over a glyph; the relay's leads 3.0 with a pad, copper points in the hub and pads | "?" was the label face at 12px; "◀" is not in Chakra Petch; the relay's 1.4-unit stubs were a 1.5px line on the board |
+
+Not done, and known: no reduce-motion switch (R-1004), no text scaling with the OS setting (TextMesh, R-1003), no screen-reader labels. Each is a settings or platform pass, not a chrome pass.
+

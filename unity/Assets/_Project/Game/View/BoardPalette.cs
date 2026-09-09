@@ -26,7 +26,7 @@ namespace GridInfect.Game
         public Color Mask = Hex("#7FAE66");
         public Color MaskHi = Hex("#97C27C");
         public Color MaskLo = Hex("#5F8B4A");
-        public Color Ink = Hex("#1D3316");          // silkscreen-adjacent type on the mask
+        public Color Ink = Hex("#0C190A");          // type on the mask: 4.5:1 on MaskLo (was #1D3316 at 3.4:1)
 
         // ---- skin: copper. Points only (pads, vias, holes), never lines ----
         public Color Copper = Hex("#C9A648");
@@ -106,7 +106,7 @@ namespace GridInfect.Game
                         p.GlyphEdge = Hex("#5A0008"); p.GlyphWire = Hex("#3A0008");
                         break;
                     default:
-                        p.Mask = Hex("#7FAE66"); p.MaskHi = Hex("#97C27C"); p.MaskLo = Hex("#5F8B4A"); p.Ink = Hex("#1D3316");
+                        p.Mask = Hex("#7FAE66"); p.MaskHi = Hex("#97C27C"); p.MaskLo = Hex("#5F8B4A"); p.Ink = Hex("#0C190A");
                         p.Copper = Hex("#C9A648"); p.CopperHi = Hex("#F3E2A8"); p.CopperLo = Hex("#7D6120");
                         p.Infect = Hex("#D9204F"); p.InfectHi = Hex("#FF6E93"); p.InfectLo = Hex("#8F0A32");
                         p.InfectGlow = Alpha(Hex("#D9204F"), 0.55f);

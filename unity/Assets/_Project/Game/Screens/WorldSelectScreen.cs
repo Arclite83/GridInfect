@@ -36,12 +36,11 @@ namespace GridInfect.Game
 
             float pagerY = -h * PagerPct;
             var pagerSize = new Vector2(L.ShortEdgeUnit * 0.20f, L.BarHeight);
-            Buttons.Add(UiButton.Make(Root.transform, "◀",
-                new Vector2(-L.ContentWidth / 2f + pagerSize.x / 2f, pagerY), pagerSize,
-                BoardTheme.ButtonBg, BoardTheme.Text, () => Flip(-1)));
-            Buttons.Add(UiButton.Make(Root.transform, "▶",
-                new Vector2(L.ContentWidth / 2f - pagerSize.x / 2f, pagerY), pagerSize,
-                BoardTheme.ButtonBg, BoardTheme.Text, () => Flip(1)));
+            int arrow = UiButton.IconPx(pagerSize);
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Chevron(BoardPalette.Default, arrow, true),
+                new Vector2(-L.ContentWidth / 2f + pagerSize.x / 2f, pagerY), pagerSize, () => Flip(-1)));
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "next", BugGlyph.Chevron(BoardPalette.Default, arrow, false),
+                new Vector2(L.ContentWidth / 2f - pagerSize.x / 2f, pagerY), pagerSize, () => Flip(1)));
             _pageLabel = Ui.MakeText("page", Root.transform, "", L.BodyText, BoardTheme.TextDim, 2);
             Ui.SetPos(_pageLabel.gameObject, 0f, pagerY);
 

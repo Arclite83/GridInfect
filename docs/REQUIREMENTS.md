@@ -132,7 +132,7 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 | ID | Pri | Requirement | Trace |
 |---|---|---|---|
 | R-1001 | MVP | Cell states distinguishable by shape/glyph/pattern, never color alone — the original's pure blue/red/yellow/purple/black coding fails colorblind players. Baked into the new tile art from the start (retrofit is dearer). | **NEW — needs approval** |
-| R-1002 | LATER | Touch targets: board cells and tray pieces ≥ 48 dp effective hit area (original cells at 11 % of screen height already clear this on phones; verify on small devices). | **NEW**; layout baseline ASSETS §6 |
+| R-1002 | LATER | Touch targets: board cells and tray pieces ≥ 48 dp effective hit area (original cells at 11 % of screen height already clear this on phones; verify on small devices). Chrome is done: every `UiButton` answers at least a 44 px reference square about its centre (`HitBounds`), STYLE-GUIDE §11. | **NEW**; layout baseline ASSETS §6 |
 | R-1003 | LATER | All text is real, scalable TextMeshPro text — no text baked into bitmaps (pairs with R-204). | **NEW** |
 | R-1004 | LATER | If the overhaul adds motion/flash effects, a reduce-motion toggle in settings. | **NEW** |
 
