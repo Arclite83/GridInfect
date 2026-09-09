@@ -127,6 +127,17 @@ namespace GridInfect.Game
             return mesh;
         }
 
+        // The solved mark on a select tile: the same lit tick the calendar
+        // puts on a solved day, in the same corner. Infected glass says
+        // "beaten" at a glance and the tick says it again without colour
+        // (R-1001), which is the whole reason the calendar has one.
+        public static void MarkSolved(Transform tile, float tilePx)
+        {
+            var check = MakeSprite("solved", tile, BugGlyph.Check(BoardPalette.Default,
+                Mathf.RoundToInt(tilePx * 0.32f)), 24);
+            check.transform.localPosition = new Vector3(tilePx * 0.28f, -tilePx * 0.28f, 0f);
+        }
+
         public static void SetPos(GameObject go, float x, float y)
         {
             go.transform.localPosition = new Vector3(x, y, 0f);

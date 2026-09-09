@@ -190,9 +190,7 @@ namespace GridInfect.Game
                     done ? BoardTheme.TextOnAccent : BoardTheme.Text);
                 if (done)
                 {
-                    int px = Mathf.RoundToInt(_cell * 0.32f);
-                    var check = Ui.MakeSprite("check", tile.transform, BugGlyph.Check(palette, px), 12);
-                    check.transform.localPosition = new Vector3(_cell * 0.28f, -_cell * 0.28f, 0f);
+                    Ui.MarkSolved(tile.transform, _cell);
                 }
                 else
                 {

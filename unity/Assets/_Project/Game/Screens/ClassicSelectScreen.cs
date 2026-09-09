@@ -93,13 +93,15 @@ namespace GridInfect.Game
                 float y = centreY + ((Rows - 1) / 2f - n / Columns) * pitchY;
 
                 int captured = levelId;
-                Buttons.Add(UiButton.Make(_grid.transform, (levelId + 1).ToString(),
+                var button = UiButton.Make(_grid.transform, (levelId + 1).ToString(),
                     new Vector2(x, y), size,
                     solved ? BoardTheme.TileSolved() : BoardTheme.TileOpen(),
                     solved ? BoardTheme.TextOnAccent : BoardTheme.Text,
                     () => App.Screens.Show(new BoardScreen(), prepare: () =>
                         App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(captured)).Applied),
-                    20, pads: false, padAlpha: 1f, mono: false));
+                    20, pads: false, padAlpha: 1f, mono: false);
+                if (solved) Ui.MarkSolved(button.Root.transform, tile);
+                Buttons.Add(button);
             }
         }
     }

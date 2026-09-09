@@ -156,12 +156,14 @@ namespace GridInfect.Game
                 float x = (n % Columns - (Columns - 1) / 2f) * pitchX;
                 float y = centreY + ((rows - 1) / 2f - n / Columns) * pitchY;
                 int captured = n;
-                Buttons.Add(UiButton.Make(Root.transform, (n + 1).ToString(), new Vector2(x, y), size,
+                var button = UiButton.Make(Root.transform, (n + 1).ToString(), new Vector2(x, y), size,
                     solved ? BoardTheme.TileSolved() : BoardTheme.TileOpen(),
                     solved ? BoardTheme.TextOnAccent : BoardTheme.Text,
                     () => App.Screens.Show(new BoardScreen(), prepare: () =>
                         App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(_worldId, captured)).Applied),
-                    20, pads: false, padAlpha: 1f, mono: false));
+                    20, pads: false, padAlpha: 1f, mono: false);
+                if (solved) Ui.MarkSolved(button.Root.transform, tile);
+                Buttons.Add(button);
             }
         }
     }

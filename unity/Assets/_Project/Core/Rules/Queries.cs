@@ -94,18 +94,7 @@ namespace GridInfect.Core
             return last == today || last.AddDays(1) == today ? profile.DailyStreak : 0;
         }
 
-        // A time the way a person says it: "48s", "1m 12s", "1h 03m".
-        public static string FormatTime(long ms)
-        {
-            if (ms < 0) ms = 0;
-            long seconds = (ms + 500) / 1000;
-            long minutes = seconds / 60;
-            long hours = minutes / 60;
-            if (hours > 0) return $"{hours}h {minutes % 60:00}m";
-            if (minutes > 0) return $"{minutes}m {seconds % 60:00}s";
-            return $"{seconds}s";
-        }
-
+        // Free Play's clock, the one place a time is still shown: "1:07:420".
         public static string FormatDuration(long ms)
         {
             if (ms < 0) ms = 0;

@@ -57,8 +57,8 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 
 | ID | Pri | Requirement | Trace |
 |---|---|---|---|
-| R-201 | MVP | 128 levels; level 1 always playable; solving level N unlocks N+1 only; unlocks persist immediately. | MODES §1.1 |
-| R-202 | MVP | Level-select screen shows all 128 levels with locked/unlocked state (the original's 4×32 paging is presentation; the overhaul may re-lay it out). | MODES §1.1 |
+| R-201 | CUT | Chain unlock dropped: all 128 Legacy levels are playable from a fresh install, and so is every world and world level. Solving still advances to the next level for a player who does not want to pick. (Original gated each level behind the one before it.) | MODES §1.1; **changed from original** |
+| R-202 | MVP | Level-select shows all 128 levels with solved state — an infected tile carrying the solved tick (R-1001: never colour alone), not a padlock. World select carries an infection meter per world. Solved levels persist immediately. (The original's 4×32 paging is presentation; the overhaul re-laid it out 4×8.) | MODES §1.1 |
 | R-203 | MVP | Solved popup with Menu / Replay / Next actions; Next absent on level 128; Replay on a solved level reloads fresh. | MODES §1.1 |
 | R-204 | LATER | Tutorial guidance on level ids 0, 2, 4, 9, 25, 28, re-authored as real text (copy verbatim from ASSETS §7 — "bugs" fiction included); the baked message bitmaps are not reused. | MODES §1.1; ASSETS §7 |
 | R-205 | LATER | The five Classic achievement triggers (ids 4, 9, 28, 63, 127) re-mapped to a live service — Google Play Games Services v2 on Android, Game Center on iOS. Old GPGS IDs are dead. | MODES §1.2; PORT_NOTES §3; service choice **NEW — needs approval** |
@@ -87,7 +87,7 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 
 | ID | Pri | Requirement | Trace |
 |---|---|---|---|
-| R-501 | MVP | Persist: unlocked level set (MVP) plus, when their features land, per-difficulty best times and completion counts, and audio preference. Write-through on every change. | MODES §4 |
+| R-501 | MVP | Persist: the solved set — Legacy ids and world indices (MVP) — plus, when their features land, per-difficulty best times and completion counts, and audio preference. Write-through on every change. A settings control clears all of it; the lock wallet survives. | MODES §4 |
 | R-502 | MVP | Format: a versioned JSON file in `Application.persistentDataPath`. **No import of the old `GridInfectSave.txt`** — the original was device-local and 12 years old; its parsing quirks die here. | **NEW — needs approval** (replaces MODES §4 format) |
 | R-503 | LATER | Remove-ads entitlement cached in the save and revalidated against store receipts on launch. | **NEW — needs approval** |
 
