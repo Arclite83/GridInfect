@@ -3,7 +3,10 @@
 // node gen-assets.mjs [outDir]  ->  glyph SVGs, board background SVG, tokens.json
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 const OUT = process.argv[2] ?? "out";
+// gen-logo.mjs imports bug() and tokens from here; only emit when run directly.
+const MAIN = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 
 // ---------- tokens ----------
 export const tokens = {
@@ -18,8 +21,8 @@ export const tokens = {
                glyphEdge:"#4a2600", glyphWire:"#3a1d00" },
     breadboard: { mask:"#e9dcb8", maskHi:"#f4ead0", maskLo:"#cdbb8c", ink:"#3c2e12",
                copper:"#c46a3a", copperHi:"#f0a878", copperLo:"#7a3a18",
-               infect:"#ff2d3a", infectHi:"#ff6b6b", infectLo:"#b3101c", infectGlow:"rgba(255,45,58,.5)",
-               glyphEdge:"#5a0008", glyphWire:"#3a0008" },
+               infect:"#7fd100", infectHi:"#c8ff55", infectLo:"#3f7300", infectGlow:"rgba(127,209,0,.5)",
+               glyphEdge:"#1e2e00", glyphWire:"#141f00" },
   },
   neutrals: { tip:"#ffffff", blockerBody:"#cfd8e0", blockerEdge:"#4d565f", wellBg:"rgba(0,0,0,.36)" },
   layout: { screen:[390,844], boardTop:138, cell:54, gap:5, wellPad:14, wellRadius:12, tileRadius:6,
@@ -94,6 +97,7 @@ ${ends.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="4" fill="rgba(0,0,0,.18)"/><
 }
 
 // ---------- emit ----------
+if (MAIN) {
 const gdir=join(OUT,"glyphs"); mkdirSync(gdir,{recursive:true});
 const subsets=(names)=>{const r=[];for(let m=1;m<(1<<names.length);m++)r.push(names.filter((_,i)=>m&(1<<i)));return r;};
 const files=[];
@@ -108,3 +112,4 @@ writeFileSync(join(OUT,"glyph_sheet.svg"),`<svg xmlns="http://www.w3.org/2000/sv
 writeFileSync(join(OUT,"board_background.svg"),boardBackground());
 writeFileSync(join(OUT,"tokens.json"),JSON.stringify(tokens,null,2));
 console.log(`wrote ${files.length} glyphs, glyph_sheet.svg, board_background.svg, tokens.json -> ${OUT}/`);
+}

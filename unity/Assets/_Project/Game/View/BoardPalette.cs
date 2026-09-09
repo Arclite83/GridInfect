@@ -101,9 +101,9 @@ namespace GridInfect.Game
                     case SkinId.Breadboard:
                         p.Mask = Hex("#E9DCB8"); p.MaskHi = Hex("#F4EAD0"); p.MaskLo = Hex("#CDBB8C"); p.Ink = Hex("#3C2E12");
                         p.Copper = Hex("#C46A3A"); p.CopperHi = Hex("#F0A878"); p.CopperLo = Hex("#7A3A18");
-                        p.Infect = Hex("#FF2D3A"); p.InfectHi = Hex("#FF6B6B"); p.InfectLo = Hex("#B3101C");
-                        p.InfectGlow = Alpha(Hex("#FF2D3A"), 0.5f);
-                        p.GlyphEdge = Hex("#5A0008"); p.GlyphWire = Hex("#3A0008");
+                        p.Infect = Hex("#7FD100"); p.InfectHi = Hex("#C8FF55"); p.InfectLo = Hex("#3F7300");
+                        p.InfectGlow = Alpha(Hex("#7FD100"), 0.5f);
+                        p.GlyphEdge = Hex("#1E2E00"); p.GlyphWire = Hex("#141F00");
                         break;
                     default:
                         p.Mask = Hex("#7FAE66"); p.MaskHi = Hex("#97C27C"); p.MaskLo = Hex("#5F8B4A"); p.Ink = Hex("#1D3316");

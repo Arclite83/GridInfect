@@ -38,11 +38,11 @@ constant. New skins are a palette swap.
 | Copper | `#C9A648` | `#D9A441` | `#C46A3A` |
 | Copper highlight | `#F3E2A8` | `#FFE08A` | `#F0A878` |
 | Copper shadow | `#7D6120` | `#7A5410` | `#7A3A18` |
-| Infection | `#D9204F` | `#FF8A00` | `#FF2D3A` |
-| Infection highlight | `#FF7CC4` | `#FFB347` | `#FF6B6B` |
-| Infection shadow | `#B3086A` | `#C25A00` | `#B3101C` |
-| Glyph edge | `#4A0018` | `#4A2600` | `#5A0008` |
-| Glyph wire | `#300010` | `#3A1D00` | `#3A0008` |
+| Infection | `#D9204F` | `#FF8A00` | `#7FD100` |
+| Infection highlight | `#FF7CC4` | `#FFB347` | `#C8FF55` |
+| Infection shadow | `#B3086A` | `#C25A00` | `#3F7300` |
+| Glyph edge | `#4A0018` | `#4A2600` | `#1E2E00` |
+| Glyph wire | `#300010` | `#3A1D00` | `#141F00` |
 
 Neutrals, constant across skins: lit tips and highlights `#FFFFFF`, blocker
 body `#CFD8E0`, blocker edge `#4D565F`, board well black at 36%, shadows

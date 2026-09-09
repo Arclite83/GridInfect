@@ -1,0 +1,9 @@
+{
+  "name": "grid-infect-style",
+  "private": true,
+  "type": "module",
+  "description": "Grid Infect visual asset generators. node gen-assets.mjs out; node gen-logo.mjs [--png]",
+  "dependencies": {
+    "opentype.js": "^2.0.0"
+  }
+}
