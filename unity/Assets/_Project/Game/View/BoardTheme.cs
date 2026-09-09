@@ -1,4 +1,5 @@
 using UnityEngine;
+using S = GridInfect.Game.PresentationConfig.Style;
 
 namespace GridInfect.Game
 {
@@ -30,6 +31,55 @@ namespace GridInfect.Game
         // chip is the same glass at a third of the light.
         public static Color ButtonBg => P.Tip;
         public static Color ButtonBgDisabled => BoardPalette.Alpha(P.Tip, 0.35f);
+
+        // A select tile. Dormant glass unsolved, infected glass solved:
+        // red is beaten, everywhere it appears — the calendar's days, the
+        // Legacy rack, a world's rack. Lives here rather than on a screen so
+        // the three cannot drift apart.
+        public static GlassStyle TileOpen()
+        {
+            var p = P;
+            return new GlassStyle
+            {
+                FillTop = White(0.62f), FillMid = White(0.28f), MidStop = 0.55f, FillBottom = White(0.4f),
+                Radius = S.TileRadius, Border = White(0.35f), BorderPx = 1f, TopLight = White(0.85f),
+                Shadow = Black(0.38f), ShadowOffset = new UnityEngine.Vector2(0f, -7f), ShadowBlur = 16f,
+            };
+        }
+
+        public static GlassStyle TileSolved()
+        {
+            var p = P;
+            return new GlassStyle
+            {
+                FillTop = BoardPalette.Alpha(p.InfectHi, 0.95f), FillMid = p.Infect, MidStop = 0.55f, FillBottom = p.InfectLo,
+                Radius = S.TileRadius, Border = White(0.4f), BorderPx = 1f, TopLight = White(0.85f),
+                Glow = BoardPalette.Alpha(p.Infect, 0.5f), GlowPx = 14f,
+                Shadow = Black(0.38f), ShadowOffset = new UnityEngine.Vector2(0f, -7f), ShadowBlur = 16f,
+            };
+        }
+
+        // The track and the fill of an infection meter: how much of a world
+        // has gone red. The track is the well's own recess so the meter reads
+        // as cut into the row rather than laid on it.
+        public static GlassStyle MeterTrack() => new GlassStyle
+        {
+            FillTop = Black(0.3f), FillBottom = Black(0.3f), Radius = 3f,
+            Border = White(0.12f), BorderPx = 1f,
+        };
+
+        public static GlassStyle MeterFill()
+        {
+            var p = P;
+            return new GlassStyle
+            {
+                FillTop = p.InfectHi, FillBottom = p.Infect, Radius = 3f,
+                Glow = BoardPalette.Alpha(p.Infect, 0.55f), GlowPx = 8f,
+            };
+        }
+
+        static UnityEngine.Color White(float a) => BoardPalette.Alpha(P.Tip, a);
+        static UnityEngine.Color Black(float a) => BoardPalette.Alpha(P.Shade, a);
 
         public static GlassStyle Chip(Color tint)
         {

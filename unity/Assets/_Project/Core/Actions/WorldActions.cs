@@ -64,6 +64,38 @@ namespace GridInfect.Core
         }
     }
 
+    // progress.solvedWorld { worldId, index }: a world level has been
+    // beaten. The world's row draws its infection meter off the count of
+    // these, and its tile off the one.
+    public sealed class SolveWorldLevelAction : GameAction<GameState>
+    {
+        public override string Name => "progress.solvedWorld";
+
+        public override string Validate(GameState state, ActionInput input)
+        {
+            string worldId = input.Str("worldId");
+            World w = Worlds.Get(worldId);
+            if (w == null) return $"unknown world '{worldId}'";
+            int index = input.Int("index");
+            if (index < 0 || index >= w.Count) return $"index {index} out of range for world '{worldId}'";
+            return null;
+        }
+
+        public override void Execute(GameState state, ActionInput input)
+        {
+            string worldId = input.Str("worldId");
+            var solved = state.Profile.SolvedWorld;
+            if (!solved.TryGetValue(worldId, out var levels))
+            {
+                solved[worldId] = levels = new System.Collections.Generic.HashSet<int>();
+            }
+            if (levels.Add(input.Int("index")))
+            {
+                state.Profile.Dirty = true;
+            }
+        }
+    }
+
     // Level `index` of a world becomes playable; index == Count marks the
     // world finished. Solving level N dispatches this for N+1.
     public sealed class UnlockWorldLevelAction : GameAction<GameState>

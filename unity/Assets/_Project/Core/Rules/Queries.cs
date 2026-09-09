@@ -4,65 +4,53 @@ namespace GridInfect.Core
 {
     public static class Queries
     {
-        public static bool IsUnlocked(Profile profile, int levelId) =>
-            levelId == 0 || profile.Unlocked.Contains(levelId);
-
+        // Every level is open. Legacy and the worlds both start unlocked and
+        // unsolved: a player may look at any board they like, and the record
+        // of progress is the solved set — the red on a select tile — rather
+        // than a gate. The unlock actions and the profile fields they write
+        // remain (a logged contract, and what a v4 save migrates from); no
+        // query reads them.
         public static int NextClassicId(int levelId) =>
             levelId + 1 < ClassicLevels.Count ? levelId + 1 : -1;
 
-        // Levels playable in a world: the first world always offers its first
-        // level; anything else needs progress.unlockWorld / unlockWorldLevel.
-        public static int WorldLevelsUnlocked(Profile profile, string worldId)
+        public static bool IsClassicSolved(Profile profile, int levelId) =>
+            profile.SolvedClassic.Contains(levelId);
+
+        public static bool IsWorldLevelSolved(Profile profile, string worldId, int index) =>
+            profile.SolvedWorld.TryGetValue(worldId ?? "", out var solved) && solved.Contains(index);
+
+        public static int WorldLevelsSolved(Profile profile, string worldId) =>
+            profile.SolvedWorld.TryGetValue(worldId ?? "", out var solved) ? solved.Count : 0;
+
+        // How far the infection has spread through a world, 0..1: what the
+        // meter on its row fills to.
+        public static float WorldInfection(Profile profile, string worldId)
         {
-            int n = profile.WorldUnlocked.TryGetValue(worldId ?? "", out int v) ? v : 0;
-            if (n == 0 && Worlds.Count > 0 && worldId == Worlds.First.Id) n = 1;
-            World w = Worlds.Get(worldId);
-            return w != null && n > w.Count ? w.Count : n;
+            World world = Worlds.Get(worldId);
+            if (world == null || world.Count == 0) return 0f;
+            return (float)WorldLevelsSolved(profile, worldId) / world.Count;
         }
 
-        public static bool IsWorldUnlocked(Profile profile, string worldId) => WorldLevelsUnlocked(profile, worldId) > 0;
-
-        public static bool IsWorldLevelUnlocked(Profile profile, string worldId, int index) =>
-            index >= 0 && index < WorldLevelsUnlocked(profile, worldId);
-
-        public static bool IsWorldFinished(Profile profile, string worldId)
+        public static bool IsWorldSolved(Profile profile, string worldId)
         {
-            World w = Worlds.Get(worldId);
-            return w != null && profile.WorldUnlocked.TryGetValue(worldId, out int v) && v > w.Count;
-        }
-
-        // Whether progress.unlockAll has already been run (the dev row reads
-        // it to say so rather than offer the press again).
-        public static bool EverythingUnlocked(Profile profile)
-        {
-            if (profile.Unlocked.Count < ClassicLevels.Count) return false;
-            foreach (World world in Worlds.All)
-            {
-                if (!IsWorldFinished(profile, world.Id)) return false;
-            }
-            return true;
+            World world = Worlds.Get(worldId);
+            return world != null && world.Count > 0 && WorldLevelsSolved(profile, worldId) >= world.Count;
         }
 
         // A replay: the level in play has already been beaten once, so the
         // Lock tool is on the house (a hint cannot cost what the player has
-        // already paid). Read off progression rather than a second record —
-        // solving N is what opens N + 1. The one blind spot is the last
-        // Legacy level, which opens nothing and so never reads as replayed.
+        // already paid). Read straight off the solved set now that one
+        // exists — the old proxy was progression, which could not see the
+        // last Legacy level because it opens nothing.
         public static bool IsReplay(GameState state)
         {
             if (state == null) return false;
             switch (state.Mode)
             {
                 case GameMode.Classic:
-                    int next = NextClassicId(state.ClassicLevelId);
-                    return next >= 0 && state.Profile.Unlocked.Contains(next);
+                    return IsClassicSolved(state.Profile, state.ClassicLevelId);
                 case GameMode.World:
-                    // A later level is open, or the world is finished — the
-                    // last level's unlock lands past Count, where the clamp in
-                    // WorldLevelsUnlocked can no longer see it.
-                    return state.WorldIndex >= 0 &&
-                           (WorldLevelsUnlocked(state.Profile, state.WorldId) > state.WorldIndex + 1 ||
-                            IsWorldFinished(state.Profile, state.WorldId));
+                    return IsWorldLevelSolved(state.Profile, state.WorldId, state.WorldIndex);
                 case GameMode.Daily:
                     return state.DailyRun != null && DailyBestMs(state.Profile, state.DailyRun.DateUtc) > 0;
                 default:

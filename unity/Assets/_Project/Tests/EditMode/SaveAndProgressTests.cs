@@ -38,6 +38,104 @@ namespace GridInfect.Core.Tests
         }
 
         [Test]
+        public void SolvedLevelsRoundTripThroughSave()
+        {
+            var profile = new Profile();
+            profile.SolvedClassic.Add(0);
+            profile.SolvedClassic.Add(31);
+            string worldId = Worlds.First.Id;
+            profile.SolvedWorld[worldId] = new System.Collections.Generic.HashSet<int> { 0, 2 };
+
+            var loaded = SaveCodec.Load(SaveCodec.Save(profile));
+
+            Assert.That(loaded.SolvedClassic, Is.EquivalentTo(new[] { 0, 31 }));
+            Assert.That(loaded.SolvedWorld[worldId], Is.EquivalentTo(new[] { 0, 2 }));
+            Assert.That(Queries.WorldLevelsSolved(loaded, worldId), Is.EqualTo(2));
+        }
+
+        // A save written before solving was recorded still has to show a
+        // returning player their red: solving N is what opened N + 1, so the
+        // gates the old save did keep say what was beaten.
+        [Test]
+        public void V4SaveDerivesSolvedFromItsGates()
+        {
+            string worldId = Worlds.First.Id;
+            string v4 = "{\"v\":4,\"unlocked\":[1,2,3],\"bestMs\":[0,0,0,0,0],\"counts\":[0,0,0,0,0]," +
+                        "\"muted\":false,\"worlds\":{\"" + worldId + "\":3}}";
+
+            var migrated = SaveCodec.Load(v4);
+
+            Assert.That(migrated.SolvedClassic, Is.EquivalentTo(new[] { 0, 1, 2 }));
+            Assert.That(migrated.SolvedWorld[worldId], Is.EquivalentTo(new[] { 0, 1 }));
+        }
+
+        // The finished marker is Count + 1, which means every level beaten.
+        [Test]
+        public void V4FinishedWorldMigratesToEveryLevelSolved()
+        {
+            World world = Worlds.First;
+            string v4 = "{\"v\":4,\"worlds\":{\"" + world.Id + "\":" + (world.Count + 1) + "}}";
+
+            var migrated = SaveCodec.Load(v4);
+
+            Assert.That(Queries.WorldLevelsSolved(migrated, world.Id), Is.EqualTo(world.Count));
+            Assert.That(Queries.IsWorldSolved(migrated, world.Id), Is.True);
+            Assert.That(Queries.WorldInfection(migrated, world.Id), Is.EqualTo(1f));
+        }
+
+        // A v5 save with nothing solved is a real record, not a missing one:
+        // it must not fall back to deriving from the gates it still carries.
+        [Test]
+        public void EmptySolvedRecordIsNotRederived()
+        {
+            string worldId = Worlds.First.Id;
+            string v5 = "{\"v\":5,\"unlocked\":[1,2],\"solved\":[],\"solvedWorlds\":{}," +
+                        "\"worlds\":{\"" + worldId + "\":3}}";
+
+            var loaded = SaveCodec.Load(v5);
+
+            Assert.That(loaded.SolvedClassic, Is.Empty);
+            Assert.That(loaded.SolvedWorld, Is.Empty);
+        }
+
+        [Test]
+        public void SolveActionsRecordProgressAndResetClearsIt()
+        {
+            var dispatcher = GridInfectActions.CreateDispatcher();
+            string worldId = Worlds.First.Id;
+            Assert.That(dispatcher.Dispatch(GridInfectActions.ProgressSolved, Inputs.Solved(4)).Applied);
+            Assert.That(dispatcher.Dispatch(GridInfectActions.ProgressSolvedWorld, Inputs.SolvedWorld(worldId, 1)).Applied);
+            var profile = dispatcher.State.Profile;
+            profile.DailyBestMs["2026-09-07"] = 61_000;
+            profile.EndlessBest[1] = 4;
+
+            Assert.That(Queries.IsClassicSolved(profile, 4), Is.True);
+            Assert.That(Queries.IsWorldLevelSolved(profile, worldId, 1), Is.True);
+
+            int locks = profile.Locks;
+            Assert.That(dispatcher.Dispatch(GridInfectActions.ProgressReset).Applied);
+
+            Assert.That(profile.SolvedClassic, Is.Empty);
+            Assert.That(profile.SolvedWorld, Is.Empty);
+            Assert.That(profile.DailyBestMs, Is.Empty);
+            Assert.That(profile.EndlessBest[1], Is.EqualTo(0));
+            Assert.That(profile.Locks, Is.EqualTo(locks), "the wallet is earned, not progress");
+        }
+
+        [Test]
+        public void SolveActionsRejectOutOfRange()
+        {
+            var dispatcher = GridInfectActions.CreateDispatcher();
+            Assert.That(dispatcher.Dispatch(GridInfectActions.ProgressSolved, Inputs.Solved(-1)).Applied, Is.False);
+            Assert.That(dispatcher.Dispatch(GridInfectActions.ProgressSolved,
+                Inputs.Solved(ClassicLevels.Count)).Applied, Is.False);
+            Assert.That(dispatcher.Dispatch(GridInfectActions.ProgressSolvedWorld,
+                Inputs.SolvedWorld("nope", 0)).Applied, Is.False);
+            Assert.That(dispatcher.Dispatch(GridInfectActions.ProgressSolvedWorld,
+                Inputs.SolvedWorld(Worlds.First.Id, Worlds.First.Count)).Applied, Is.False);
+        }
+
+        [Test]
         public void FreePlayRunRecordsBestTimeAndCount()
         {
             var dispatcher = GridInfectActions.CreateDispatcher();

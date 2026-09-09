@@ -15,6 +15,9 @@ namespace GridInfect.Core
         public const string BoardResolve = "board.resolve";
         public const string ProgressUnlock = "progress.unlock";
         public const string ProgressUnlockAll = "progress.unlockAll";
+        public const string ProgressSolved = "progress.solved";
+        public const string ProgressSolvedWorld = "progress.solvedWorld";
+        public const string ProgressReset = "progress.reset";
         public const string SettingsMute = "settings.mute";
         public const string FreePlayBegin = "freeplay.begin";
         public const string FreePlayAdvance = "freeplay.advance";
@@ -41,6 +44,9 @@ namespace GridInfect.Core
             registry.Register(new ResolveBoardAction());
             registry.Register(new UnlockLevelAction());
             registry.Register(new UnlockEverythingAction());
+            registry.Register(new SolveLevelAction());
+            registry.Register(new SolveWorldLevelAction());
+            registry.Register(new ResetProgressAction());
             registry.Register(new SetMutedAction());
             registry.Register(new BeginFreePlayAction());
             registry.Register(new AdvanceFreePlayAction());
@@ -82,6 +88,12 @@ namespace GridInfect.Core
 
         public static Dictionary<string, object> Unlock(int levelId) =>
             new Dictionary<string, object> { ["levelId"] = levelId };
+
+        public static Dictionary<string, object> Solved(int levelId) =>
+            new Dictionary<string, object> { ["levelId"] = levelId };
+
+        public static Dictionary<string, object> SolvedWorld(string worldId, int index) =>
+            new Dictionary<string, object> { ["worldId"] = worldId, ["index"] = index };
 
         public static Dictionary<string, object> Muted(bool muted) =>
             new Dictionary<string, object> { ["muted"] = muted };

@@ -50,13 +50,23 @@ namespace GridInfect.Core
 
     public sealed class Profile
     {
+        // Levels beaten. Every level is open from a fresh install, so this is
+        // the whole of progression: it is what paints a select tile infected
+        // and what makes a hint free on a second visit. Legacy by id, worlds
+        // by index per world id.
+        public readonly System.Collections.Generic.HashSet<int> SolvedClassic =
+            new System.Collections.Generic.HashSet<int>();
+        public readonly System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<int>> SolvedWorld =
+            new System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<int>>(System.StringComparer.Ordinal);
+
+        // Retired gates. Nothing reads these: they are still written by the
+        // unlock actions, which are a logged contract, and a v4 save's solved
+        // sets are derived from them on load.
         public readonly System.Collections.Generic.HashSet<int> Unlocked =
             new System.Collections.Generic.HashSet<int>();
 
         public readonly long[] BestTimesMs = new long[5];
 
-        // World progression: levels playable per world id (0 or absent =
-        // locked, except the first world, which is always open at level 0).
         public readonly System.Collections.Generic.Dictionary<string, int> WorldUnlocked =
             new System.Collections.Generic.Dictionary<string, int>(System.StringComparer.Ordinal);
 

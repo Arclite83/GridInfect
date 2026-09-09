@@ -425,10 +425,7 @@ namespace GridInfect.Game
             {
                 int levelId = App.State.ClassicLevelId;
                 int next = Queries.NextClassicId(levelId);
-                if (next >= 0)
-                {
-                    App.Do(GridInfectActions.ProgressUnlock, Inputs.Unlock(next));
-                }
+                App.Do(GridInfectActions.ProgressSolved, Inputs.Solved(levelId));
                 ShowSolvedPopup(next >= 0
                     ? () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(next))
                     : (System.Action)null,
@@ -436,12 +433,12 @@ namespace GridInfect.Game
             }
             else if (App.State.Mode == GameMode.World)
             {
-                // Solving level N unlocks N+1; the last level finishes the
-                // world (index == Count) and opens the next one.
+                // Nothing to unlock: NEXT is simply the level after this one,
+                // and the world after that when this was the last.
                 string worldId = App.State.WorldId;
                 int index = App.State.WorldIndex;
                 World world = Worlds.Get(worldId);
-                App.Do(GridInfectActions.ProgressUnlockWorldLevel, Inputs.UnlockWorldLevel(worldId, index + 1));
+                App.Do(GridInfectActions.ProgressSolvedWorld, Inputs.SolvedWorld(worldId, index));
                 System.Action next = null;
                 if (index + 1 < world.Count)
                 {
@@ -452,7 +449,6 @@ namespace GridInfect.Game
                     World following = Worlds.Next(worldId);
                     if (following != null)
                     {
-                        App.Do(GridInfectActions.ProgressUnlockWorld, Inputs.UnlockWorld(following.Id));
                         next = () => App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(following.Id, 0));
                     }
                 }

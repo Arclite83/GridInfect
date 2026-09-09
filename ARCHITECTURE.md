@@ -59,7 +59,7 @@ files, touches) into these types at the boundary.
 | `PieceSpec` | arms of one family — cardinal (L/R/U/D) or diagonal (UL/UR/DL/DR), never both — every arm to the edge; optional 3×3 area | text form `LRD`, `ul+dr`, `A`; a classic tile is the cardinal case; the blot is the only short-range piece; the constructor rejects a mixed piece (`docs/RULES_V2.md` §1) |
 | `LevelSession` | working board, `PieceState[]` (tile, placed, cell, `Locked`), repel queue, `ResetTripped`, `ResolutionPending`, `Solved`, `Resets` (stat), and its `Rules` (`IRules`: the frozen classic `Rules` via `RulesV1` for V1 definitions, `RulesV2` for V2) | mutated only through `Rules`, called only by actions; a locked piece cannot be lifted and survives a full reset (re-propagated in index order) |
 | `World` | id, name, element set, ordered levels (board, pieces, stored solution, grade, seed, canonical hash) | baked from `docs/worlds/*.jsonl` into `WorldData.g.cs` by `tools/bake_worlds.py`; every level has exactly one solution and solves by deduction |
-| `Profile` | unlocked set, best times ms[5], run counts[5], muted, world progress {id → levels open}, daily bests {date → ms}, daily streak and last date, endless best streak[5], lock wallet (start 5, free grants capped at 10) | pure data; serialization only via `SaveCodec` (versioned JSON, expand/contract; v2 added `worlds`, v3 the daily/endless fields, v4 `locks`) |
+| `Profile` | solved Legacy ids and solved world indices {id → set} — the whole of progression — plus best times ms[5], run counts[5], muted, daily bests {date → ms}, daily streak and last date, endless best streak[5], lock wallet (start 5, free grants capped at 10), and the two retired gate fields nothing reads | pure data; serialization only via `SaveCodec` (versioned JSON, expand/contract; v2 added `worlds`, v3 the daily/endless fields, v4 `locks`, v5 the solved sets — a v4 save derives them from its gates, since solving N is what opened N+1) |
 | `DailyRun` / `EndlessRun` | daily: UTC date, level seed and day number, start/complete ms; endless: grade, run seed, index, streak, level seed | boards are pure functions of the logged inputs (the daily from its weekday's spec at the date's seed range, `DailyCalendar`; endless from its run seed), both through `LevelCache`, which memoises the generator on the device and has the kernel's `Work` run it ahead of the player, each seed scan fanned across the cores; the daily clock is a stat, never a rule |
 | `GameState` | mode (Classic / FreePlay / World / Daily / Endless) + classic id / free-play run / world id and index / daily run / endless run + `Session` + `Profile` + the level's stored `Solution` (vector for Legacy, generator's otherwise) | wall-clock time enters **only** through action inputs |
 
@@ -84,16 +84,19 @@ live in `Queries` and carry zero rules.
 | `piece.place` | `piece, i, j` | BoardActions | legality per RULES §3, spread per §4; leaves resolution pending |
 | `board.resolve` | — | BoardActions | RULES §4.1 order: win check first, else reset if tripped, else repels in queue order |
 | `piece.clear` | `piece` | BoardActions | undo per RULES §7 (99 marking, re-propagation, queue accumulation) |
-| `progress.unlock` | `levelId` | ProfileActions | solving id N unlocks N+1; dispatched by the adapter on solve, so replay reproduces progression |
-| `progress.unlockAll` | — | ProfileActions | development affordance (offered only in a debug build): every Legacy level, world and world level open at once |
+| `progress.solved` | `levelId` | ProfileActions | a Legacy level has been beaten; dispatched by the adapter on solve. The whole record of progress — every level is open, so nothing is gated on it |
+| `progress.solvedWorld` | `worldId, index` | WorldActions | a world level has been beaten; the world row's infection meter counts these |
+| `progress.reset` | — | ProfileActions | forget every level beaten and every score (settings). The lock wallet survives: locks are earned or paid for |
+| `progress.unlock` | `levelId` | ProfileActions | *retired gate.* Registered and replayable, dispatched by nothing: unlock gating is gone |
+| `progress.unlockAll` | — | ProfileActions | *retired gate.* The dev row that dispatched it is gone with the gates it opened |
 | `settings.mute` | `muted` | ProfileActions | audio preference |
 | `freeplay.begin` | `nowMs` | FreePlayActions | BEGIN pressed; run clock starts (wall clock via input) |
 | `freeplay.advance` | — | FreePlayActions | next generated level, clock keeps running |
 | `freeplay.complete` | `nowMs` | FreePlayActions | 5th solve: best time iff lower, count++, rejects a backward clock |
 | `freeplay.abort` | — | FreePlayActions | leave a run; nothing recorded |
 | `world.load` | `worldId, index` | WorldActions | enter a baked world level (unlock gating is presentation policy) |
-| `progress.unlockWorld` | `worldId` | WorldActions | a world opens at its first level; dispatched by the adapter when the previous world's last level is solved |
-| `progress.unlockWorldLevel` | `worldId, index` | WorldActions | level `index` opens (`index == Count` marks the world finished); dispatched by the adapter on solve for `index + 1` |
+| `progress.unlockWorld` | `worldId` | WorldActions | *retired gate.* |
+| `progress.unlockWorldLevel` | `worldId, index` | WorldActions | *retired gate.* |
 | `daily.begin` | `dateUtc, nowMs` | DailyActions | the board for that UTC date (the weekday's spec at the date's seed range, `DailyCalendar`, through `LevelCache`); any date from the epoch to the clock's own UTC date, so past days play from the calendar; places the level's locks; clock starts |
 | `daily.complete` | `nowMs` | DailyActions | solved: elapsed, personal best per date; the streak counts dates solved on the day, so it moves only when the run's date is the clock's own UTC date (`StreakGrantDue` every 7th); rejects a backward clock |
 | `endless.begin` | `grade, seed` | DailyActions | start an Endless run: no clock, boards from the logged seed |
@@ -101,6 +104,14 @@ live in `Queries` and carry zero rules.
 | `endless.abort` | — | DailyActions | leave a run |
 | `piece.lock` | — | LockActions | spend one lock: the deducer's next forced placement from the player's correct pieces (fallback: largest-coverage unplaced piece of the stored solution), evicting a player piece on that cell, placed and locked; rejects at wallet 0 or nothing left. Free on a replay (`Queries.IsReplay`): an already-beaten level never charges for a hint |
 | `locks.grant` | `amount, reason` | LockActions | `"rewarded"` (an ad) is uncapped; other reasons (`"streak"`, dispatched by the adapter on every 7th daily) top up to the cap |
+
+Nothing is locked. Legacy and the worlds all start open and unsolved: a
+player may look at any board they like, and solving still advances on its
+own for one who does not want to choose. What a select screen draws is the
+solved set — an infected tile, and an infection meter per world row — so
+progress reads as spread rather than as permission. The unlock actions and
+the two profile fields they wrote stay registered and replayable (a logged
+contract is never broken in place), dispatched by nothing.
 
 Adding a capability = a new action (or a new version of one); never an
 in-place break of a logged contract. Rejections are answers, not errors: a

@@ -8,6 +8,10 @@ namespace GridInfect.Game
     // of 8 and 4, so the page count is unchanged and a tile is a thumb target
     // rather than a sliver. Paging moved off the right edge to a bar at the
     // bottom, where a thumb already is.
+    //
+    // Every level is open. The chain unlock is gone: a player who wants to
+    // poke at level 90 may, and solving still advances on its own for one
+    // who does not. Red is beaten.
     public sealed class ClassicSelectScreen : AppScreen
     {
         const int Columns = 4;
@@ -79,29 +83,23 @@ namespace GridInfect.Game
             var size = new Vector2(tile, tile);
             float centreY = (top + bottom) / 2f;
 
+            // Every level is open, so the rack carries one distinction and
+            // it is legible across the page: a beaten level is infected.
             for (int n = 0; n < PerPage; n++)
             {
                 int levelId = _page * PerPage + n;
-                bool unlocked = Queries.IsUnlocked(App.State.Profile, levelId);
+                bool solved = Queries.IsClassicSolved(App.State.Profile, levelId);
                 float x = (n % Columns - (Columns - 1) / 2f) * pitchX;
                 float y = centreY + ((Rows - 1) / 2f - n / Columns) * pitchY;
 
                 int captured = levelId;
-                var button = UiButton.Make(_grid.transform, (levelId + 1).ToString(),
+                Buttons.Add(UiButton.Make(_grid.transform, (levelId + 1).ToString(),
                     new Vector2(x, y), size,
-                    unlocked ? BoardTheme.ButtonBg : BoardTheme.ButtonBgDisabled,
-                    unlocked ? BoardTheme.Text : BoardTheme.TextDim,
+                    solved ? BoardTheme.TileSolved() : BoardTheme.TileOpen(),
+                    solved ? BoardTheme.TextOnAccent : BoardTheme.Text,
                     () => App.Screens.Show(new BoardScreen(), prepare: () =>
-                        App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(captured)).Applied));
-                button.Enabled = unlocked;
-                if (!unlocked)
-                {
-                    // The padlock mark (R-1001), over the tile's lower half.
-                    var lockGlyph = Ui.MakeSprite("lock", button.Root.transform,
-                        BugGlyph.Lock(BoardPalette.Default, Mathf.RoundToInt(tile * 0.9f)), 22);
-                    lockGlyph.transform.localPosition = new Vector3(0f, -tile * 0.12f, 0f);
-                }
-                Buttons.Add(button);
+                        App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(captured)).Applied),
+                    20, pads: false, padAlpha: 1f, mono: false));
             }
         }
     }

@@ -1,11 +1,18 @@
 using GridInfect.Core;
 using UnityEngine;
 using L = GridInfect.Game.PresentationConfig.Layout;
+using S = GridInfect.Game.PresentationConfig.Style;
 
 namespace GridInfect.Game
 {
     // The world layer of level select: one full-width row per world with
-    // its progress on the right, a page of six rows at a time.
+    // its infection meter across the bottom of the row and the count on the
+    // right, a page of six rows at a time.
+    //
+    // Every world is open. Progress is how far the red has spread: a meter
+    // cut into each row, and the row itself infected once the world is
+    // clear. Nothing is padlocked, so the page reads as a map of what is
+    // left rather than a list of what is refused.
     public sealed class WorldSelectScreen : AppScreen
     {
         const int PerPage = 6;
@@ -67,28 +74,50 @@ namespace GridInfect.Game
             for (int n = 0; n < count; n++)
             {
                 World world = Worlds.All[first + n];
-                bool unlocked = Queries.IsWorldUnlocked(profile, world.Id);
+                int done = Queries.WorldLevelsSolved(profile, world.Id);
+                bool clear = Queries.IsWorldSolved(profile, world.Id);
                 float y = L.StackRowY(n, PerPage, L.ButtonHeight, 0f);
                 string captured = world.Id;
                 var button = UiButton.Make(_list.transform, $"{world.Index + 1}  {world.Name.ToUpperInvariant()}",
                     new Vector2(0f, y), size,
-                    unlocked ? BoardTheme.ButtonBg : BoardTheme.ButtonBgDisabled,
-                    unlocked ? BoardTheme.Text : BoardTheme.TextDim,
-                    () => App.Screens.Show(new WorldLevelSelectScreen(captured)));
-                button.Enabled = unlocked;
+                    clear ? BoardTheme.TileSolved() : BoardTheme.TileOpen(),
+                    clear ? BoardTheme.TextOnAccent : BoardTheme.Text,
+                    () => App.Screens.Show(new WorldLevelSelectScreen(captured)), 20,
+                    pads: false, padAlpha: 1f, mono: false);
                 Buttons.Add(button);
 
-                int done = Queries.IsWorldFinished(profile, world.Id) ? world.Count
-                    : System.Math.Max(0, Queries.WorldLevelsUnlocked(profile, world.Id) - 1);
-                var progress = Ui.MakeText($"progress:{world.Id}", _list.transform,
-                    unlocked ? $"{done}/{world.Count}" : "", L.LabelText, BoardTheme.Accent, 2);
-                Ui.SetPos(progress.gameObject, L.ContentWidth / 2f - L.Gap * 2.5f, y);
+                var progress = Ui.MakeText($"progress:{world.Id}", button.Root.transform,
+                    $"{done}/{world.Count}", L.LabelText,
+                    clear ? BoardTheme.TextOnAccent : BoardTheme.Accent, 22);
+                Ui.SetPos(progress.gameObject, L.ContentWidth / 2f - L.Gap * 2.5f, L.ButtonHeight * 0.1f);
+
+                Meter(button.Root.transform, size, Queries.WorldInfection(profile, world.Id));
             }
+        }
+
+        // The infection meter: a track cut across the bottom of the row with
+        // the solved fraction filled in. A world with nothing done shows the
+        // empty track, so the row still says how much there is to do.
+        static void Meter(Transform parent, Vector2 row, float fraction)
+        {
+            float inset = L.Gap * 0.6f;
+            float width = row.x - inset * 2f;
+            float height = S.Px(5f);
+            float y = -row.y / 2f + inset + height / 2f;
+
+            var track = Ui.MakeGlass("meter", parent, new Vector2(width, height), BoardTheme.MeterTrack(), 21);
+            Ui.SetPos(track, 0f, y);
+            if (fraction <= 0f) return;
+
+            float filled = Mathf.Max(height, width * Mathf.Clamp01(fraction));
+            var fill = Ui.MakeGlass("meter:fill", parent, new Vector2(filled, height), BoardTheme.MeterFill(), 22);
+            Ui.SetPos(fill, -width / 2f + filled / 2f, y);
         }
     }
 
     // The level layer for one world: a rack of square tiles like the Legacy
-    // select, sized from the shared layout so it stays a thumb target.
+    // select, sized from the shared layout so it stays a thumb target. Open
+    // throughout; a beaten level is infected.
     public sealed class WorldLevelSelectScreen : AppScreen
     {
         const int Columns = 5;
@@ -123,23 +152,16 @@ namespace GridInfect.Game
             var profile = App.State.Profile;
             for (int n = 0; n < world.Count; n++)
             {
-                bool unlocked = Queries.IsWorldLevelUnlocked(profile, _worldId, n);
+                bool solved = Queries.IsWorldLevelSolved(profile, _worldId, n);
                 float x = (n % Columns - (Columns - 1) / 2f) * pitchX;
                 float y = centreY + ((rows - 1) / 2f - n / Columns) * pitchY;
                 int captured = n;
-                var button = UiButton.Make(Root.transform, (n + 1).ToString(), new Vector2(x, y), size,
-                    unlocked ? BoardTheme.ButtonBg : BoardTheme.ButtonBgDisabled,
-                    unlocked ? BoardTheme.Text : BoardTheme.TextDim,
+                Buttons.Add(UiButton.Make(Root.transform, (n + 1).ToString(), new Vector2(x, y), size,
+                    solved ? BoardTheme.TileSolved() : BoardTheme.TileOpen(),
+                    solved ? BoardTheme.TextOnAccent : BoardTheme.Text,
                     () => App.Screens.Show(new BoardScreen(), prepare: () =>
-                        App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(_worldId, captured)).Applied));
-                button.Enabled = unlocked;
-                if (!unlocked)
-                {
-                    var lockGlyph = Ui.MakeSprite("lock", button.Root.transform,
-                        BugGlyph.Lock(BoardPalette.Default, Mathf.RoundToInt(tile * 0.9f)), 22);
-                    lockGlyph.transform.localPosition = new Vector3(0f, -tile * 0.12f, 0f);
-                }
-                Buttons.Add(button);
+                        App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(_worldId, captured)).Applied),
+                    20, pads: false, padAlpha: 1f, mono: false));
             }
         }
     }

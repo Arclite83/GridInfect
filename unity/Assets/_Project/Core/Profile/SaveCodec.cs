@@ -7,9 +7,13 @@ namespace GridInfect.Core
     // v1: unlocked, bestMs, counts, muted. v2 (stage 3): + worlds {id: levels unlocked}.
     // v3 (stage 4): + dailyBest {date: ms}, dailyStreak, dailyLast, endlessBest[5].
     // v4 (stage 5): + locks (wallet; absent = the starting 5).
+    // v5: + solved (Legacy ids) and solvedWorlds {id: [index]}. Every level
+    // is open now, so what a menu draws is these, not the unlock fields; a
+    // v4 save has no solved record, so one is derived from its gates on load
+    // (solving N is what opened N + 1) and a returning player keeps their red.
     public static class SaveCodec
     {
-        public const int Version = 4;
+        public const int Version = 5;
 
         public static string Save(Profile profile)
         {
@@ -38,9 +42,28 @@ namespace GridInfect.Core
             var endless = new List<object>(5);
             for (int g = 0; g < 5; g++) endless.Add(profile.EndlessBest[g]);
 
+            var solved = new List<object>(profile.SolvedClassic.Count);
+            var solvedIds = new List<int>(profile.SolvedClassic);
+            solvedIds.Sort();
+            foreach (int id in solvedIds) solved.Add(id);
+
+            var solvedWorlds = new Dictionary<string, object>();
+            var solvedWorldIds = new List<string>(profile.SolvedWorld.Keys);
+            solvedWorldIds.Sort(System.StringComparer.Ordinal);
+            foreach (string id in solvedWorldIds)
+            {
+                var indices = new List<int>(profile.SolvedWorld[id]);
+                indices.Sort();
+                var row = new List<object>(indices.Count);
+                foreach (int index in indices) row.Add(index);
+                solvedWorlds[id] = row;
+            }
+
             return MiniJson.Write(new Dictionary<string, object>
             {
                 ["v"] = Version,
+                ["solved"] = solved,
+                ["solvedWorlds"] = solvedWorlds,
                 ["unlocked"] = unlocked,
                 ["bestMs"] = best,
                 ["counts"] = counts,
@@ -114,7 +137,59 @@ namespace GridInfect.Core
                 }
             }
             if (root.TryGetValue("locks", out object lk) && lk is long locks && locks >= 0) profile.Locks = (int)locks;
+
+            bool hasSolved = false;
+            if (root.TryGetValue("solved", out object sv) && sv is List<object> solvedList)
+            {
+                hasSolved = true;
+                foreach (object item in solvedList)
+                {
+                    if (item is long id && id >= 0 && id < ClassicLevels.Count) profile.SolvedClassic.Add((int)id);
+                }
+            }
+            if (root.TryGetValue("solvedWorlds", out object sw) && sw is Dictionary<string, object> solvedWorlds)
+            {
+                hasSolved = true;
+                foreach (var kv in solvedWorlds)
+                {
+                    World world = Worlds.Get(kv.Key);
+                    if (world == null || !(kv.Value is List<object> indices)) continue;
+                    foreach (object item in indices)
+                    {
+                        if (item is long index && index >= 0 && index < world.Count) MarkWorld(profile, kv.Key, (int)index);
+                    }
+                }
+            }
+            if (!hasSolved) DeriveSolvedFromGates(profile);
             return profile;
+        }
+
+        static void MarkWorld(Profile profile, string worldId, int index)
+        {
+            if (!profile.SolvedWorld.TryGetValue(worldId, out var levels))
+            {
+                profile.SolvedWorld[worldId] = levels = new HashSet<int>();
+            }
+            levels.Add(index);
+        }
+
+        // A save from before solving was recorded: read it back out of the
+        // gates it did keep. Solving N unlocked N + 1, so an open id means
+        // the one below it was beaten; a world open to n levels means n - 1
+        // beaten, and the finished marker (n > Count) means all of them.
+        static void DeriveSolvedFromGates(Profile profile)
+        {
+            foreach (int id in profile.Unlocked)
+            {
+                if (id > 0) profile.SolvedClassic.Add(id - 1);
+            }
+            foreach (var kv in profile.WorldUnlocked)
+            {
+                World world = Worlds.Get(kv.Key);
+                if (world == null) continue;
+                int beaten = System.Math.Min(kv.Value > world.Count ? world.Count : kv.Value - 1, world.Count);
+                for (int index = 0; index < beaten; index++) MarkWorld(profile, kv.Key, index);
+            }
         }
 
         static void ReadLongArray(Dictionary<string, object> root, string key, long[] target)
