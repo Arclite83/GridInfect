@@ -457,7 +457,6 @@ namespace GridInfect.Game
             else if (App.State.Mode == GameMode.Daily)
             {
                 var run = App.State.DailyRun;
-                long before = Queries.DailyBestMs(App.State.Profile, run.DateUtc);
                 if (!run.Completed)
                 {
                     App.Do(GridInfectActions.DailyComplete, Inputs.Now(GameApp.NowMs()));
@@ -467,18 +466,16 @@ namespace GridInfect.Game
                         App.Do(GridInfectActions.LocksGrant, Inputs.LocksGrant(1, "streak")); // +1 lock every 7-day streak
                     }
                 }
-                long elapsed = Queries.ElapsedMs(run, GameApp.NowMs());
-                long best = Queries.DailyBestMs(App.State.Profile, run.DateUtc);
-                // Three short lines a person would say: the time, how it
-                // compares, and the streak (a past day solved from the
-                // calendar sets a best, never the streak, so it says so).
-                // The comparison line only once there is something to compare to.
-                string compare = before <= 0 ? null : elapsed <= best ? "New best" : $"Best {Queries.FormatTime(best)}";
+                // The same word every other mode uses: COMPLETE. No clock —
+                // the daily is scored on solving it, and a stopwatch on the
+                // popup only ever made a casual solve feel slow. A day played
+                // from the archive says nothing extra; it just says complete.
+                // The streak line stays where the run actually moved it.
                 int streak = App.State.Profile.DailyStreak;
-                string third = run.DateUtc != GameApp.TodayUtc() ? "Played from the calendar"
-                    : streak <= 1 ? "Streak started" : $"{streak} days in a row";
-                OpenPopup(compare == null ? $"Solved in {Queries.FormatTime(elapsed)}\n{third}"
-                    : $"Solved in {Queries.FormatTime(elapsed)}\n{compare}\n{third}");
+                bool onTheDay = run.DateUtc == GameApp.TodayUtc();
+                OpenPopup(!onTheDay ? "COMPLETE"
+                    : streak <= 1 ? "COMPLETE\nStreak started"
+                    : $"COMPLETE\n{streak} days in a row");
                 AddPopupButton("CALENDAR", new Vector2(0f, -Short * 0.06f),
                     new Vector2(L.ContentWidth / 3f, L.BarHeight), () => App.Screens.Show(new DailyScreen()));
             }
@@ -501,8 +498,7 @@ namespace GridInfect.Game
                 else
                 {
                     App.Do(GridInfectActions.FreePlayComplete, Inputs.Now(GameApp.NowMs()));
-                    long duration = Queries.ElapsedMs(App.State.FreePlayRun, GameApp.NowMs());
-                    ShowCompletedPopup(duration);
+                    ShowCompletedPopup();
                 }
             }
         }
@@ -538,15 +534,6 @@ namespace GridInfect.Game
                 _board.Tick(dt);
             }
 
-            if (App.State.Mode == GameMode.Daily)
-            {
-                var daily = App.State.DailyRun;
-                if (daily == null || daily.Completed) return;
-                long elapsedDaily = Queries.ElapsedMs(daily, GameApp.NowMs());
-                if (elapsedDaily < 0) elapsedDaily = 0; // a backward clock is refused at daily.complete
-                _caption.text = Queries.FormatTime(elapsedDaily);
-                return;
-            }
             if (App.State.Mode == GameMode.Endless)
             {
                 var endless = App.State.EndlessRun;
@@ -585,9 +572,9 @@ namespace GridInfect.Game
             }
         }
 
-        void ShowCompletedPopup(long durationMs)
+        void ShowCompletedPopup()
         {
-            OpenPopup($"COMPLETED IN:\n{Queries.FormatDuration(durationMs)}");
+            OpenPopup("COMPLETE");
             AddPopupButton("MENU", new Vector2(0f, -Short * 0.06f),
                 new Vector2(L.ContentWidth / 3f, L.BarHeight),
                 () => App.Screens.Show(new FreePlayMenuScreen()));

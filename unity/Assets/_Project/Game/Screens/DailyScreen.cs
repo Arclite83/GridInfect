@@ -31,6 +31,8 @@ namespace GridInfect.Game
         readonly System.Collections.Generic.List<(Rect bounds, Vector2 centre, DateTime date)> _tiles =
             new System.Collections.Generic.List<(Rect, Vector2, DateTime)>();
         Vector2 _playCentre, _playSize;
+        GameObject _slotGlass;
+        float _slotX, _slotY, _slotSize;
 
         string _today;
         DateTime _todayDate;
@@ -178,10 +180,13 @@ namespace GridInfect.Game
                     // The copper ring: a pad-coloured plate one ring wider under the tile, and a pointer above.
                     var ring = Ui.MakeGlass("ring", _page.transform, new Vector2(_cell + S.Px(4f), _cell + S.Px(4f)), RingStyle(palette), 9);
                     Ui.SetPos(ring, x, y);
-                    var pointer = Ui.MakeGlass("pointer", _page.transform, new Vector2(S.Px(6f), S.Px(6f)), GlassStyle.Pad(palette), 9);
+                    var pointerStyle = GlassStyle.Pad(palette);
+                    pointerStyle.FillTop = pointerStyle.FillBottom = BoardPalette.Alpha(palette.Copper, 0.8f);
+                    pointerStyle.Glow = Color.clear;
+                    var pointer = Ui.MakeGlass("pointer", _page.transform, new Vector2(S.Px(6f), S.Px(6f)), pointerStyle, 9);
                     Ui.SetPos(pointer, x, y + _cell / 2f + S.Px(6f));
                 }
-                var tile = Tile($"day:{d}", x, y, done ? SolvedStyle(palette) : OpenStyle(palette), d.ToString(),
+                var tile = Tile($"day:{d}", x, y, done ? BoardTheme.TileSolved() : BoardTheme.TileOpen(), d.ToString(),
                     done ? BoardTheme.TextOnAccent : BoardTheme.Text);
                 if (done)
                 {
@@ -275,9 +280,14 @@ namespace GridInfect.Game
             float y = -h / 2f + S.Px(112f);
             float slotX = -L.ContentWidth / 2f + slot / 2f + S.Px(8f);
 
-            var glass = Ui.MakeGlass("slot", Root.transform, new Vector2(slot, slot), GlassStyle.TraySlot(palette, true), 5);
-            Ui.SetPos(glass, slotX, y);
-            _slotNumber = Ui.MakeText("slot:day", Root.transform, "", slot * 0.42f, BoardTheme.TextOnAccent, 6);
+            // The slot is the selected day, so it is that day's tile at
+            // size: the same glass the calendar draws, infected once solved.
+            // It used to be the tray's black recess, which read as a hole
+            // punched in the screen next to thirty pieces of light glass.
+            _slotX = slotX;
+            _slotY = y;
+            _slotSize = slot;
+            _slotNumber = Ui.MakeText("slot:day", Root.transform, "", slot * 0.42f, BoardTheme.Text, 8);
             Ui.SetPos(_slotNumber.gameObject, slotX, y);
             _slotCaption = Ui.MakeText("slot:caption", Root.transform, "", S.Px(S.TrayCaption), BoardTheme.TextDim, 6, mono: true);
             Ui.SetPos(_slotCaption.gameObject, slotX, y - slot / 2f - S.Px(12f));
@@ -294,17 +304,22 @@ namespace GridInfect.Game
             _playCentre = new Vector2(infoX + _playSize.x / 2f, y - S.Px(32f));
         }
 
-        // The slot reads the selected day: the date, its band, the bug and
-        // cell counts once the board exists (the cache is on it), the best
-        // time if it has been solved, and BEGIN or PLAY AGAIN.
+        // The slot reads the selected day: the date, its tier band, the bug
+        // and cell counts once the board exists (the cache is on it), whether
+        // it is done, and BEGIN or PLAY AGAIN. No clock: the daily is scored
+        // on solving it, and most people play this game with a cup of tea.
         void RefreshSlot()
         {
             string dateUtc = DailySpec.Format(_selected);
             bool solved = Queries.IsDailySolved(App.State.Profile, dateUtc);
-            long best = Queries.DailyBestMs(App.State.Profile, dateUtc);
             var band = DailyCalendar.Band(_selected.DayOfWeek);
             string tier = Queries.TierBand(band.min, band.max);
 
+            if (_slotGlass != null) UnityEngine.Object.Destroy(_slotGlass);
+            _slotGlass = Ui.MakeGlass("slot", Root.transform, new Vector2(_slotSize, _slotSize),
+                solved ? BoardTheme.TileSolved() : BoardTheme.TileOpen(), 5);
+            Ui.SetPos(_slotGlass, _slotX, _slotY);
+            _slotNumber.color = solved ? BoardTheme.TextOnAccent : BoardTheme.Text;
             _slotNumber.text = _selected.Day.ToString();
             _slotCaption.text = _selected == _todayDate ? "TODAY" : "PAST";
             _dateLine.text = $"{DayNames[((int)_selected.DayOfWeek + 6) % 7]} {_selected.Day:00} {MonthNames[_selected.Month - 1].Substring(0, 3)}";
@@ -319,7 +334,7 @@ namespace GridInfect.Game
                 _infoLine.text = tier;
                 _infoPending = true;
             }
-            _bestLine.text = solved ? $"BEST {Queries.FormatTime(best)}" : _infoPending ? "GENERATING" : "UNPLAYED";
+            _bestLine.text = solved ? "COMPLETE" : _infoPending ? "GENERATING" : "UNPLAYED";
 
             // BEGIN is the one lit control; PLAY AGAIN is plain glass. The
             // chip is rebuilt rather than restyled, so it is always one object.
@@ -389,23 +404,6 @@ namespace GridInfect.Game
         static Color White(BoardPalette p, float a) => BoardPalette.Alpha(p.Tip, a);
         static Color Black(BoardPalette p, float a) => BoardPalette.Alpha(p.Shade, a);
 
-        // A past, unplayed day: the dormant component.
-        static GlassStyle OpenStyle(BoardPalette p) => new GlassStyle
-        {
-            FillTop = White(p, 0.62f), FillMid = White(p, 0.28f), MidStop = 0.55f, FillBottom = White(p, 0.4f), Radius = S.TileRadius,
-            Border = White(p, 0.35f), BorderPx = 1f, TopLight = White(p, 0.85f),
-            Shadow = Black(p, 0.38f), ShadowOffset = new Vector2(0f, -7f), ShadowBlur = 16f,
-        };
-
-        // A solved day: infected glass, the light inside the tile.
-        static GlassStyle SolvedStyle(BoardPalette p) => new GlassStyle
-        {
-            FillTop = BoardPalette.Alpha(p.InfectHi, 0.95f), FillMid = p.Infect, MidStop = 0.55f, FillBottom = p.InfectLo, Radius = S.TileRadius,
-            Border = White(p, 0.4f), BorderPx = 1f, TopLight = White(p, 0.85f),
-            Glow = BoardPalette.Alpha(p.Infect, 0.5f), GlowPx = 14f,
-            Shadow = Black(p, 0.38f), ShadowOffset = new Vector2(0f, -7f), ShadowBlur = 16f,
-        };
-
         // A day not out yet: out of bounds, one shade deeper than the well.
         static GlassStyle FutureStyle(BoardPalette p) => new GlassStyle
         {
@@ -427,11 +425,15 @@ namespace GridInfect.Game
             Glow = White(p, 0.5f), GlowPx = 8f,
         };
 
-        // Today's ring: copper, a point of it, glowing.
+        // Today's ring: copper, and only copper. It was CopperHi at full
+        // strength under a 10 px glow, which put it level with the lit
+        // selection ring and left the calendar with two things shouting. A
+        // ring says which day is today; the selection is what the screen is
+        // pointing at, and only one of the two needs to glow.
         static GlassStyle RingStyle(BoardPalette p) => new GlassStyle
         {
-            FillTop = p.CopperHi, FillBottom = p.CopperHi, Radius = S.TileRadius + 2f,
-            Glow = BoardPalette.Alpha(p.CopperHi, 0.8f), GlowPx = 10f,
+            FillTop = BoardPalette.Alpha(p.Copper, 0.7f), FillBottom = BoardPalette.Alpha(p.Copper, 0.7f),
+            Radius = S.TileRadius + 2f,
         };
     }
 
