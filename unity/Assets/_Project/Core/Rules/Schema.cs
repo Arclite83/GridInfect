@@ -16,7 +16,7 @@ namespace GridInfect.Core
 
     public enum GameMode : byte
     {
-        Classic, FreePlay, World, Daily, Endless
+        Classic, FreePlay, World, Daily, Endless, Tutorial
     }
 
     // The four cardinal arms are the classic contract (bits 0..3 of TileArms);

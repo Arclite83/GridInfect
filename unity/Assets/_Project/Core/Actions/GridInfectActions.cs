@@ -34,6 +34,9 @@ namespace GridInfect.Core
         public const string EndlessAbort = "endless.abort";
         public const string PieceLock = "piece.lock";
         public const string LocksGrant = "locks.grant";
+        public const string TutorialLoad = "tutorial.load";
+        public const string TutorialSolved = "tutorial.solved";
+        public const string TutorialSeen = "tutorial.seen";
 
         public static void RegisterAll(ActionRegistry<GameState> registry)
         {
@@ -64,6 +67,9 @@ namespace GridInfect.Core
             registry.Register(new AbortEndlessAction());
             registry.Register(new LockPieceAction());
             registry.Register(new GrantLocksAction());
+            registry.Register(new LoadTutorialAction());
+            registry.Register(new SolveTutorialStepAction());
+            registry.Register(new SeeTutorialAction());
         }
 
         public static Dispatcher<GameState> CreateDispatcher()
@@ -123,5 +129,8 @@ namespace GridInfect.Core
 
         public static Dictionary<string, object> LocksGrant(int amount, string reason) =>
             new Dictionary<string, object> { ["amount"] = amount, ["reason"] = reason };
+
+        public static Dictionary<string, object> Tutorial(int index) =>
+            new Dictionary<string, object> { ["index"] = index };
     }
 }

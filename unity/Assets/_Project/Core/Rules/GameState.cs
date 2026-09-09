@@ -16,6 +16,8 @@ namespace GridInfect.Core
         public DailyRun DailyRun;       // GameMode.Daily
         public EndlessRun EndlessRun;   // GameMode.Endless
 
+        public int TutorialIndex = -1;  // GameMode.Tutorial: the step in play
+
         // The current level's stored solution in a winning order: the
         // vector for Legacy, the generator's for everything else. The Lock
         // tool's fallback source; set by every loader.
@@ -87,6 +89,14 @@ namespace GridInfect.Core
         public int Locks = LocksStart;
 
         public bool Muted;
+
+        // The tutorial: whether the first-open offer has been answered (either
+        // way), and the highest step beaten plus one, so the series resumes
+        // where it was left and its forward chevron opens only what is
+        // earned. Neither is progress the erase button forgets: they are
+        // about knowing the game, not beating it.
+        public bool TutorialSeen;
+        public int TutorialStep;
 
         // Board skin: 0 the ship green, 1 blue, 2 breadboard tan
         // (BoardPalette.SkinId). A preference like Muted, not progress.

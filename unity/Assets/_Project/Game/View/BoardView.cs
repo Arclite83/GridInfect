@@ -42,6 +42,12 @@ namespace GridInfect.Game
             set => _audio.Muted = value;
         }
 
+        // The board clock, and when the last cell of the current wave has
+        // been reached on it: what a screen waits on before it takes the
+        // board away from a wave still walking.
+        public float BoardTime => _boardTime;
+        public float WaveEnd { get; private set; }
+
         const string ShaderName = "GridInfect/Board";
         const int NoiseSeed = 20140531;   // the year the original shipped
 
@@ -81,6 +87,20 @@ namespace GridInfect.Game
         int _waveI = -1, _waveJ = -1;
         float _waveTime;
         int _hopsClicked;                    // one click per hop depth, not per cell
+
+        // Where this wave's rays come from: the seed, and every relay lit
+        // along the way (RULES_V2 §12), each with the arms it fires and the
+        // moment it lit. A cell's place in the wave is its earliest arrival
+        // along any source's ray, so a relay chain walks the board hop by
+        // hop from turn to turn instead of landing whole.
+        struct Source
+        {
+            public int I, J;
+            public int Arms;
+            public bool Area;
+            public float Start;
+        }
+        readonly System.Collections.Generic.List<Source> _sources = new System.Collections.Generic.List<Source>();
 
         float _recedeBatchTime = float.NegativeInfinity;
         int _recedeIndex;
@@ -349,13 +369,85 @@ namespace GridInfect.Game
         // landing mid-bleed opens a new wave on the same frame; cells already in
         // flight keep running off their own start times, which is the point of
         // putting the clock in the texture instead of in a tween.
-        public void BeginWave(int i, int j)
+        //
+        // `spec` is the piece being dropped, so the seed's rays are the arms
+        // it actually has; without it every direction is a candidate, which
+        // is only wrong for a cell that a relay lit before the seed's own
+        // ray would have got there.
+        public void BeginWave(int i, int j, PieceSpec? spec = null)
         {
             _batch = Batch.Wave;
             _waveI = i;
             _waveJ = j;
             _waveTime = _boardTime;
             _hopsClicked = 0;
+            WaveEnd = _waveTime;
+            _sources.Clear();
+            int arms = spec.HasValue ? spec.Value.Arms : 0xFF;
+            bool area = !spec.HasValue || spec.Value.Area;
+            _sources.Add(new Source { I = i, J = j, Arms = arms, Area = area, Start = _waveTime });
+            // A relay under the piece fires the moment the piece lands on it.
+            if (Grid.InBounds(i, j))
+            {
+                byte relay = _session.Def.CellDataAt(Grid.Loc(i, j));
+                if (relay != 0) _sources.Add(new Source { I = i, J = j, Arms = relay, Start = _waveTime });
+            }
+        }
+
+        // The earliest a source's ray reaches this cell, one hop per ring,
+        // and the direction it comes in from. A ray is stopped by a wall, a
+        // switch, a trap or an avoid cell between the source and the cell
+        // (the same stop set the rules walk, Rules V2 §3) and passes over
+        // voids and gaps. The seed's own cell arrives at once from nowhere.
+        bool Arrival(int i, int j, out float start, out int dr, out int dc)
+        {
+            start = float.PositiveInfinity;
+            dr = dc = 0;
+            if (i == _waveI && j == _waveJ)
+            {
+                start = _waveTime;
+                return true;
+            }
+            foreach (Source s in _sources)
+            {
+                int di = i - s.I, dj = j - s.J;
+                int adi = System.Math.Abs(di), adj = System.Math.Abs(dj);
+                if (s.Area && adi <= 1 && adj <= 1 && (di != 0 || dj != 0))
+                {
+                    Consider(s.Start + Vfx.Hop, System.Math.Sign(di), System.Math.Sign(dj), ref start, ref dr, ref dc);
+                }
+                // On a ray: same row, same column, or the same diagonal.
+                if (!(di == 0 || dj == 0 || adi == adj)) continue;
+                int sr = System.Math.Sign(di), sc = System.Math.Sign(dj);
+                Dir dir = DirOf(sr, sc);
+                if ((s.Arms & (1 << (int)dir)) == 0) continue;
+                int offset = System.Math.Max(adi, adj);
+                bool blocked = false;
+                for (int o = 1; o < offset && !blocked; o++)
+                {
+                    byte v = _session.Def.BoardAt(Grid.Loc(s.I + sr * o, s.J + sc * o));
+                    blocked = v == Cell.Wall || v == Cell.RepelSwitch || v == Cell.ResetTrap || v == Cell.Forbidden;
+                }
+                if (blocked) continue;
+                Consider(s.Start + offset * Vfx.Hop, sr, sc, ref start, ref dr, ref dc);
+            }
+            return !float.IsPositiveInfinity(start);
+        }
+
+        static void Consider(float at, int sr, int sc, ref float start, ref int dr, ref int dc)
+        {
+            if (at >= start) return;
+            start = at;
+            dr = sr;
+            dc = sc;
+        }
+
+        static Dir DirOf(int sr, int sc)
+        {
+            if (sr == 0) return sc < 0 ? Dir.L : Dir.R;
+            if (sc == 0) return sr < 0 ? Dir.U : Dir.D;
+            if (sr < 0) return sc < 0 ? Dir.UL : Dir.UR;
+            return sc < 0 ? Dir.DL : Dir.DR;
         }
 
         // An undo retracts a piece and re-propagates the rest, then resyncs
@@ -385,19 +477,23 @@ namespace GridInfect.Game
         {
             if (value == Cell.Infected)
             {
-                // A cell on one of the seed's lines (row, column, or — with
-                // diagonal arms — a diagonal) rides the wave; depth is the
-                // ring it sits on, the same for every arm direction.
-                int di = System.Math.Abs(i - _waveI), dj = System.Math.Abs(j - _waveJ);
-                if (_batch == Batch.Wave && (i == _waveI || j == _waveJ || di == dj))
+                // A cell on a ray of the seed, or of a relay this wave has
+                // already lit, rides the wave: its start is its earliest
+                // arrival along any of them, one hop per ring. A relay lit
+                // here becomes a source itself, so the cells its arms take
+                // arrive after it, hop by hop, and a chain reads as a chain.
+                if (_batch == Batch.Wave && Arrival(i, j, out float start, out int dr, out int dc))
                 {
-                    int depth = System.Math.Max(di, dj);
-                    int dr = i == _waveI ? 0 : (i > _waveI ? 1 : -1);
-                    int dc = j == _waveJ ? 0 : (j > _waveJ ? 1 : -1);
-                    float start = _waveTime + depth * Vfx.Hop;
+                    int depth = Mathf.RoundToInt((start - _waveTime) / Vfx.Hop);
+                    if (start + Vfx.Hop > WaveEnd) WaveEnd = start + Vfx.Hop;
                     _state.Set(i, j, value, start, BoardStateTexture.PackDir(dr, dc),
                         BoardStateTexture.Kind.Infecting);
                     ClickHop(depth, start);
+                    if (!(i == _waveI && j == _waveJ))
+                    {
+                        byte relay = _session.Def.CellDataAt(Grid.Loc(i, j));
+                        if (relay != 0) _sources.Add(new Source { I = i, J = j, Arms = relay, Start = start });
+                    }
                     return;
                 }
                 // Re-propagation during an undo, or a board arriving whole.

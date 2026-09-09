@@ -11,6 +11,15 @@ namespace GridInfect.Game
         public const float TrayReturn = 0.15f;      // illegal drop -> tray slot
         public const float SceneFade = 0.50f;       // every navigation
         public const float PopupSlide = 0.15f;      // COMPLETE popup / BEGIN dismiss
+
+        // The tutorial: the beat after a step's winning wave has landed
+        // before the next step (or the last popup) takes the screen, and the
+        // ghost of a bug on its cell — faint, breathing a little so it
+        // reads as an instruction and not as a bug already placed.
+        public const float TutorialHold = 0.6f;
+        public const float TutorialMarkAlpha = 0.42f;
+        public const float TutorialMarkPulse = 0.12f;
+        public const float TutorialMarkRate = 3.2f;     // radians per second
         public const float PageSlide = 0.20f;       // classic level-select paging
 
         // Touching a locked given: it leans this far off its cell and back,
