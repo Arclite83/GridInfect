@@ -15,7 +15,8 @@ namespace GridInfect.Game
     // transform stack mirrors SVG `rotate(a 20 20) translate(t 0)`.
     public sealed class GlyphCanvas
     {
-        public readonly int Size;
+        public readonly int Width, Height;
+        public int Size => Width;              // the square glyphs' side
         readonly float _viewBox;
         readonly float _scale;                 // px per viewBox unit
         readonly float[] _r, _g, _b, _a;       // premultiplied accumulation
@@ -24,13 +25,23 @@ namespace GridInfect.Game
         float _tx, _ty;
 
         public GlyphCanvas(int sizePx, float viewBox = 40f)
+            : this(sizePx, sizePx, Mathf.Max(1, sizePx) / viewBox, viewBox) { }
+
+        // A canvas that is not square: `scale` px per unit, and the rotation
+        // centre stays the glyph convention (half the view box). The title
+        // letters draw this way, one canvas per letter at the size the
+        // screen asks for.
+        public GlyphCanvas(int widthPx, int heightPx, float scale, float viewBox = 40f)
         {
-            Size = Mathf.Max(1, sizePx);
+            Width = Mathf.Max(1, widthPx);
+            Height = Mathf.Max(1, heightPx);
             _viewBox = viewBox;
-            _scale = Size / viewBox;
-            int n = Size * Size;
+            _scale = scale;
+            int n = Width * Height;
             _r = new float[n]; _g = new float[n]; _b = new float[n]; _a = new float[n];
         }
+
+        public float Scale => _scale;
 
         // ---- transform ----
 
@@ -160,7 +171,193 @@ namespace GridInfect.Game
             }
         }
 
+        // ---- paths (several contours, holes by parity) ----
+
+        // A glyph outline: contours as flat x,y lists in the canvas's units,
+        // filled even-odd so counters (the inside of a D) stay open. Computed
+        // once into a field so every layer of a letter (shadow, glow, fill,
+        // rim) reads the same distances: a letter is five passes and the
+        // distance to fifty edges is the expensive part of each.
+        public sealed class Field
+        {
+            public readonly int Width, Height;
+            public readonly float[] Px;            // signed distance in px at each pixel centre
+            public Field(int w, int h) { Width = w; Height = h; Px = new float[w * h]; }
+            public float At(int x, int y)
+            {
+                if (x < 0 || y < 0 || x >= Width || y >= Height) return 1e4f;
+                return Px[y * Width + x];
+            }
+        }
+
+        public Field PathField(float[][] contours, float offsetX = 0f, float offsetY = 0f)
+        {
+            var v = new Vector2[contours.Length][];
+            for (int c = 0; c < contours.Length; c++)
+            {
+                float[] xy = contours[c];
+                v[c] = new Vector2[xy.Length / 2];
+                for (int i = 0; i < v[c].Length; i++) v[c][i] = Apply(xy[i * 2] + offsetX, xy[i * 2 + 1] + offsetY);
+            }
+            // Exact distance is only worth paying for near the outline, where
+            // the hard fill and the rim live. Away from it the field only
+            // feeds a blur of 19 px or more, so a 4 px lattice interpolated
+            // bilinearly is well under a level of error. The band takes the
+            // exact value wherever a lattice corner is within the lattice's
+            // own reach, which bounds the interpolation error outside it.
+            float[] edges = FlattenEdges(v);
+            const int step = 4;
+            int cw = Width / step + 2, ch = Height / step + 2;
+            var coarse = new float[cw * ch];
+            for (int cy = 0; cy < ch; cy++)
+            {
+                for (int cx = 0; cx < cw; cx++)
+                {
+                    coarse[cy * cw + cx] = PathDistance(edges, (cx * step + 0.5f) / _scale, (cy * step + 0.5f) / _scale) * _scale;
+                }
+            }
+            float band = step * 1.5f + 1.5f;
+            var field = new Field(Width, Height);
+            for (int y = 0; y < Height; y++)
+            {
+                int cy = y / step; float fy = (y - cy * step) / (float)step;
+                for (int x = 0; x < Width; x++)
+                {
+                    int cx = x / step; float fx = (x - cx * step) / (float)step;
+                    float d00 = coarse[cy * cw + cx], d10 = coarse[cy * cw + cx + 1];
+                    float d01 = coarse[(cy + 1) * cw + cx], d11 = coarse[(cy + 1) * cw + cx + 1];
+                    float near = Mathf.Min(Mathf.Min(Mathf.Abs(d00), Mathf.Abs(d10)), Mathf.Min(Mathf.Abs(d01), Mathf.Abs(d11)));
+                    float d;
+                    if (near < band)
+                    {
+                        d = PathDistance(edges, (x + 0.5f) / _scale, (y + 0.5f) / _scale) * _scale;
+                    }
+                    else
+                    {
+                        d = Mathf.Lerp(Mathf.Lerp(d00, d10, fx), Mathf.Lerp(d01, d11, fx), fy);
+                    }
+                    field.Px[y * Width + x] = d;
+                }
+            }
+            return field;
+        }
+
+        // Paint a field: `sigmaPx` 0 is a hard edge with the half-pixel
+        // ramp; above 0 it is the shape blurred by a Gaussian of that width
+        // (the coverage of a blurred edge is the normal CDF of the distance),
+        // which is how the guide's feGaussianBlur glows and feDropShadow are
+        // drawn here. `shiftX/Y` move the shape by whole pixels (the shadow's
+        // dy); `rimPx` above 0 paints a stroke of that width centred on the
+        // outline instead of the interior. `colorAt` gives the colour at a
+        // pixel, so a gradient fill is just a function.
+        public void PaintField(Field f, System.Func<int, int, Color> colorAt, float sigmaPx = 0f,
+            int shiftX = 0, int shiftY = 0, float rimPx = 0f)
+        {
+            float reach = sigmaPx > 0f ? sigmaPx * 3f : rimPx * 0.5f + 1f;
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    float d = f.At(x - shiftX, y - shiftY);
+                    if (rimPx > 0f) d = Mathf.Abs(d) - rimPx * 0.5f;
+                    if (d > reach) continue;
+                    float cov = sigmaPx > 0f ? BlurCoverage(d, sigmaPx) : Mathf.Clamp01(0.5f - d);
+                    if (cov <= 0f) continue;
+                    Color col = colorAt(x, y);
+                    cov *= col.a;
+                    if (cov <= 0f) continue;
+                    Blend(y * Width + x, col, cov);
+                }
+            }
+        }
+
+        // The coverage of a solid edge after a Gaussian blur of sigma:
+        // 0.5 * erfc(d / (sigma * sqrt 2)). Abramowitz-Stegun 7.1.26 for erf,
+        // good to 1.5e-7, which is well under one level of eight bits.
+        public static float BlurCoverage(float d, float sigma)
+        {
+            float z = d / (sigma * 1.4142135f);
+            float sign = z < 0f ? -1f : 1f;
+            z = Mathf.Abs(z);
+            float t = 1f / (1f + 0.3275911f * z);
+            float poly = t * (0.254829592f + t * (-0.284496736f + t * (1.421413741f + t * (-1.453152027f + t * 1.061405429f))));
+            float erf = sign * (1f - poly * Mathf.Exp(-z * z));
+            return 0.5f * (1f - erf);
+        }
+
+        void Blend(int n, Color col, float cov)
+        {
+            float keep = 1f - cov;
+            _r[n] = col.r * cov + _r[n] * keep;
+            _g[n] = col.g * cov + _g[n] * keep;
+            _b[n] = col.b * cov + _b[n] * keep;
+            _a[n] = cov + _a[n] * keep;
+        }
+
+        // A rounded rectangle as a field, for the soft backing behind the
+        // title's bug (the tile's 35% infect glow, blur 6).
+        public Field RoundRectField(float x, float y, float w, float h, float rx)
+        {
+            var field = new Field(Width, Height);
+            float cx = x + w / 2f, cy = y + h / 2f, hw = w / 2f, hh = h / 2f;
+            for (int py = 0; py < Height; py++)
+            {
+                for (int px = 0; px < Width; px++)
+                {
+                    float ux = (px + 0.5f) / _scale - cx, uy = (py + 0.5f) / _scale - cy;
+                    float qx = Mathf.Abs(ux) - hw + rx, qy = Mathf.Abs(uy) - hh + rx;
+                    float ox = Mathf.Max(qx, 0f), oy = Mathf.Max(qy, 0f);
+                    field.Px[py * Width + px] = (Mathf.Sqrt(ox * ox + oy * oy) + Mathf.Min(Mathf.Max(qx, qy), 0f) - rx) * _scale;
+                }
+            }
+            return field;
+        }
+
         // ---- distance fields ----
+
+        // Several contours at once: the nearest edge over all of them, the
+        // sign by crossing parity over all of them (even-odd). The edges are
+        // laid out flat once per field (ax, ay, ex, ey, 1/|e|^2) rather than
+        // rebuilt per pixel: this loop runs a few hundred thousand times per
+        // letter.
+        static float[] FlattenEdges(Vector2[][] contours)
+        {
+            int count = 0;
+            foreach (Vector2[] v in contours) count += v.Length;
+            var edges = new float[count * 5];
+            int k = 0;
+            foreach (Vector2[] v in contours)
+            {
+                int n = v.Length;
+                for (int i = 0, j = n - 1; i < n; j = i++)
+                {
+                    float ex = v[j].x - v[i].x, ey = v[j].y - v[i].y;
+                    edges[k++] = v[i].x; edges[k++] = v[i].y;
+                    edges[k++] = ex; edges[k++] = ey;
+                    edges[k++] = 1f / Mathf.Max(ex * ex + ey * ey, 1e-6f);
+                }
+            }
+            return edges;
+        }
+
+        static float PathDistance(float[] edges, float px, float py)
+        {
+            float d = float.MaxValue;
+            float s = 1f;
+            for (int k = 0; k < edges.Length; k += 5)
+            {
+                float ax = edges[k], ay = edges[k + 1], ex = edges[k + 2], ey = edges[k + 3];
+                float wx = px - ax, wy = py - ay;
+                float t = Mathf.Clamp01((wx * ex + wy * ey) * edges[k + 4]);
+                float bx = wx - ex * t, by = wy - ey * t;
+                float dd = bx * bx + by * by;
+                if (dd < d) d = dd;
+                // Edge from v[i] (a) to v[j] (a + e): the parity test of PolygonDistance.
+                bool c0 = py >= ay, c1 = py < ay + ey, c2 = ex * wy > ey * wx;
+                if ((c0 && c1 && c2) || (!c0 && !c1 && !c2)) s = -s;
+            }
+            return s * Mathf.Sqrt(d);
+        }
 
         static float PolygonDistance(Vector2[] v, Vector2 p)
         {
@@ -205,10 +402,10 @@ namespace GridInfect.Game
         {
             if (col.a <= 0f) return;
             float pad = 1.5f / _scale;
-            int x0 = Mathf.Clamp(Mathf.FloorToInt((minX - pad) * _scale), 0, Size - 1);
-            int x1 = Mathf.Clamp(Mathf.CeilToInt((maxX + pad) * _scale), 0, Size - 1);
-            int y0 = Mathf.Clamp(Mathf.FloorToInt((minY - pad) * _scale), 0, Size - 1);
-            int y1 = Mathf.Clamp(Mathf.CeilToInt((maxY + pad) * _scale), 0, Size - 1);
+            int x0 = Mathf.Clamp(Mathf.FloorToInt((minX - pad) * _scale), 0, Width - 1);
+            int x1 = Mathf.Clamp(Mathf.CeilToInt((maxX + pad) * _scale), 0, Width - 1);
+            int y0 = Mathf.Clamp(Mathf.FloorToInt((minY - pad) * _scale), 0, Height - 1);
+            int y1 = Mathf.Clamp(Mathf.CeilToInt((maxY + pad) * _scale), 0, Height - 1);
             for (int y = y0; y <= y1; y++)
             {
                 for (int x = x0; x <= x1; x++)
@@ -217,12 +414,7 @@ namespace GridInfect.Game
                     float dPx = sdf(p) * _scale;
                     float cov = Mathf.Clamp01(0.5f - dPx) * col.a;
                     if (cov <= 0f) continue;
-                    int n = y * Size + x;
-                    float keep = 1f - cov;
-                    _r[n] = col.r * cov + _r[n] * keep;
-                    _g[n] = col.g * cov + _g[n] * keep;
-                    _b[n] = col.b * cov + _b[n] * keep;
-                    _a[n] = cov + _a[n] * keep;
+                    Blend(y * Width + x, col, cov);
                 }
             }
         }
@@ -233,22 +425,22 @@ namespace GridInfect.Game
         // the bottom.
         public Texture2D ToTexture(string name)
         {
-            var texture = new Texture2D(Size, Size, TextureFormat.RGBA32, false)
+            var texture = new Texture2D(Width, Height, TextureFormat.RGBA32, false)
             {
                 name = name,
                 filterMode = FilterMode.Bilinear,
                 wrapMode = TextureWrapMode.Clamp,
                 hideFlags = HideFlags.HideAndDontSave,
             };
-            var pixels = new Color[Size * Size];
-            for (int y = 0; y < Size; y++)
+            var pixels = new Color[Width * Height];
+            for (int y = 0; y < Height; y++)
             {
-                int src = (Size - 1 - y) * Size;
-                for (int x = 0; x < Size; x++)
+                int src = (Height - 1 - y) * Width;
+                for (int x = 0; x < Width; x++)
                 {
                     float a = _a[src + x];
                     float inv = a > 1e-5f ? 1f / a : 0f;
-                    pixels[y * Size + x] = new Color(_r[src + x] * inv, _g[src + x] * inv, _b[src + x] * inv, a);
+                    pixels[y * Width + x] = new Color(_r[src + x] * inv, _g[src + x] * inv, _b[src + x] * inv, a);
                 }
             }
             texture.SetPixels(pixels);
@@ -261,7 +453,7 @@ namespace GridInfect.Game
         public Sprite ToSprite(string name)
         {
             var texture = ToTexture(name);
-            var sprite = Sprite.Create(texture, new Rect(0, 0, Size, Size), new Vector2(0.5f, 0.5f), 1f);
+            var sprite = Sprite.Create(texture, new Rect(0, 0, Width, Height), new Vector2(0.5f, 0.5f), 1f);
             sprite.name = name;
             sprite.hideFlags = HideFlags.HideAndDontSave;
             return sprite;

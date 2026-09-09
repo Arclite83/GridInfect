@@ -8,8 +8,11 @@ using UnityEngine;
 static class Program
 {
     // Sheet: every glyph the game can draw, 8 per row, on the well colour.
+    // Or `title <scale> out.png [dormant]`: the wordmark through TitleRaster
+    // at that many device px per logo px, on the mask, lit or before it lights.
     static void Main(string[] args)
     {
+        if (args.Length > 0 && args[0] == "title") { Title(args); return; }
         int px = int.Parse(args.Length > 0 ? args[0] : "128");
         string outPath = args.Length > 1 ? args[1] : "sheet.png";
         var p = BoardPalette.Default;
@@ -72,6 +75,48 @@ static class Program
         }
         File.WriteAllBytes(outPath, Png(img, W, H));
         Console.WriteLine($"{specs.Count} glyphs -> {outPath} ({W}x{H})");
+    }
+
+    static void Title(string[] args)
+    {
+        float scale = float.Parse(args.Length > 1 ? args[1] : "2", System.Globalization.CultureInfo.InvariantCulture);
+        string outPath = args.Length > 2 ? args[2] : "title.png";
+        bool dormant = args.Length > 3 && args[3] == "dormant";
+        int pad = (int)(60 * scale);
+        int W = (int)(TitleRaster.TotalWidth * scale) + pad * 2, H = (int)(LogoGlyphs.FontPx * 1.3f * scale) + pad * 2;
+        int ox = pad, oy = H / 2;   // the mark's origin: GRID's pen start on the mid line
+        var img = new byte[W * H * 4];
+        for (int i = 0; i < W * H; i++) { img[i * 4] = 0x7f; img[i * 4 + 1] = 0xae; img[i * 4 + 2] = 0x66; img[i * 4 + 3] = 255; }
+
+        void Blit(Sprite s, float cx, float cy)
+        {
+            var tex = s.Tex;
+            int x0 = ox + (int)MathF.Round(cx * scale) - tex.W / 2, y0 = oy + (int)MathF.Round(cy * scale) - tex.H / 2;
+            for (int y = 0; y < tex.H; y++)
+                for (int x = 0; x < tex.W; x++)
+                {
+                    int X = x0 + x, Y = y0 + y;
+                    if (X < 0 || Y < 0 || X >= W || Y >= H) continue;
+                    var c = tex.Pixels[(tex.H - 1 - y) * tex.W + x];
+                    int idx = (Y * W + X) * 4;
+                    float a = c.a;
+                    img[idx] = (byte)(c.r * 255 * a + img[idx] * (1 - a));
+                    img[idx + 1] = (byte)(c.g * 255 * a + img[idx + 1] * (1 - a));
+                    img[idx + 2] = (byte)(c.b * 255 * a + img[idx + 2] * (1 - a));
+                }
+        }
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        for (int i = 0; i < LogoGlyphs.Grid.Length; i++) { var g = TitleRaster.Letter(LogoGlyphs.Grid, i, TitleRaster.Material.Dense, scale); Blit(g.Sprite, g.CenterX, g.CenterY); }
+        for (int i = 0; i < LogoGlyphs.Infect.Length; i++) { var g = TitleRaster.Letter(LogoGlyphs.Infect, i, dormant ? TitleRaster.Material.Dense : TitleRaster.Material.Lit, scale); Blit(g.Sprite, g.CenterX, g.CenterY); }
+        long letters = sw.ElapsedMilliseconds;
+        if (!dormant)
+        {
+            var b = TitleRaster.BugBacking(scale); Blit(b.Sprite, b.CenterX, b.CenterY);
+            Blit(TitleRaster.Bug(scale), TitleRaster.BugX, 0f);
+        }
+        Console.WriteLine($"rasterised in {sw.ElapsedMilliseconds} ms (letters {letters} ms)");
+        File.WriteAllBytes(outPath, Png(img, W, H));
+        Console.WriteLine($"title -> {outPath} ({W}x{H})");
     }
 
     static byte[] Png(byte[] rgba, int w, int h)

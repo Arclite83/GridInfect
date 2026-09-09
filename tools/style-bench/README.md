@@ -16,6 +16,19 @@ dotnet run -c Release -- 96 sheet.png            # 96 px glyphs, well-coloured b
 dotnet run -c Release -- 72 glyphs72.png Blue alpha   # blue skin, transparent (for the board bench)
 ```
 
+## Title
+
+The wordmark through the real `View/TitleRaster.cs` (and the generated
+`LogoGlyphs.g.cs`) at a device scale, on the mask, for checking against
+`grid-infect-style/out/logo/wordmark.svg`. `dormant` is the frame before
+INFECT lights.
+
+```sh
+cd tools/style-bench/glyphs
+dotnet run -c Release -- title 2.77 title.png            # 1080 px wide phone
+dotnet run -c Release -- title 2.77 title_dormant.png dormant
+```
+
 ## Board bench
 
 `port.py` ports the three `.shader` files to GLSL ES 3.00 mechanically;

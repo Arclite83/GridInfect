@@ -130,6 +130,16 @@ namespace GridInfect.Game
 
         public const int TargetFrameRate = 60;      // R-1104
 
+        // The title screen's motion (STYLE-GUIDE §12), once per launch: the
+        // bug lands this long after the menu appears, and INFECT lights one
+        // letter per Infection.Hop after it.
+        public static class Title
+        {
+            public const float BugLandAt = 0.25f;
+            public const float BugLandDur = 0.12f;
+            public const float BugLandScale = 1.6f;     // the bug arrives from this size
+        }
+
         // The visual style (grid-infect-style/STYLE-GUIDE.md, locked
         // 2026-09-04). Every token is a px value on the guide's 390 x 844
         // reference screen; Px() maps it onto this device off the short edge,

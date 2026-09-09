@@ -10,16 +10,19 @@ namespace GridInfect.Game
     // stacking up under the menu.
     public sealed class MainMenuScreen : AppScreen
     {
+        TitleView _title;
 
         protected override void Build()
         {
             float h = UnityEngine.Screen.height;
 
-            var title = Ui.MakeText("title", Root.transform, "GRID INFECT", L.TitleText, BoardTheme.Text, 2);
-            Ui.SetPos(title.gameObject, 0f, h * 0.28f);
+            // The wordmark (STYLE-GUIDE §12) across the content width, the
+            // type capped at the old title size so a wide screen does not
+            // blow it up; the tagline under it, clear of the lit glow.
+            _title = TitleView.Make(Root.transform, L.ContentWidth, L.TitleText * 1.15f, new Vector2(0f, h * 0.28f), 2);
             var subtitle = Ui.MakeText("subtitle", Root.transform, "infect every cell",
                 L.BodyText, BoardTheme.TextDim, 2);
-            Ui.SetPos(subtitle.gameObject, 0f, h * 0.28f - L.TitleText * 0.9f - L.BodyText);
+            Ui.SetPos(subtitle.gameObject, 0f, h * 0.28f - _title.HeightPx * 0.75f - L.BodyText);
 
             // DAILY and ENDLESS replace timed Free Play (stage 4; its actions
             // stay for log replay), and the 128 classic levels live on as
@@ -77,6 +80,11 @@ namespace GridInfect.Game
                 BoardTheme.ButtonBg, BoardTheme.Text, OpenTutorial));
 
             if (!App.State.Profile.TutorialSeen) OfferTutorial();
+        }
+
+        public override void Tick(float dt)
+        {
+            _title?.Tick(dt);
         }
 
         // Where the series is picked up: the step after the last one beaten,
