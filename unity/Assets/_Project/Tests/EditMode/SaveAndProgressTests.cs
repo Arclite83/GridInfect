@@ -180,6 +180,37 @@ namespace GridInfect.Core.Tests
         }
 
         [Test]
+        public void SkinIsAPreferenceThatSurvivesSaveAndReset()
+        {
+            var dispatcher = GridInfectActions.CreateDispatcher();
+            Assert.That(dispatcher.Dispatch(GridInfectActions.SettingsSkin, Inputs.Skin(2)).Applied);
+            var profile = dispatcher.State.Profile;
+            profile.Muted = true;
+            profile.SolvedClassic.Add(3);
+
+            Assert.That(SaveCodec.Load(SaveCodec.Save(profile)).Skin, Is.EqualTo(2));
+
+            // Clearing progress is not clearing preferences.
+            Assert.That(dispatcher.Dispatch(GridInfectActions.ProgressReset).Applied);
+            Assert.That(profile.Skin, Is.EqualTo(2));
+            Assert.That(profile.Muted, Is.True);
+            Assert.That(profile.SolvedClassic, Is.Empty);
+        }
+
+        [Test]
+        public void SkinRejectsAnythingOutsideTheSkinSet()
+        {
+            var dispatcher = GridInfectActions.CreateDispatcher();
+            Assert.That(dispatcher.Dispatch(GridInfectActions.SettingsSkin, Inputs.Skin(-1)).Applied, Is.False);
+            Assert.That(dispatcher.Dispatch(GridInfectActions.SettingsSkin,
+                Inputs.Skin(SetSkinAction.Count)).Applied, Is.False);
+            Assert.That(dispatcher.State.Profile.Skin, Is.EqualTo(0));
+
+            // A save carrying a skin this build does not have falls back.
+            Assert.That(SaveCodec.Load("{\"v\":6,\"skin\":99}").Skin, Is.EqualTo(0));
+        }
+
+        [Test]
         public void FreePlayRunRecordsBestTimeAndCount()
         {
             var dispatcher = GridInfectActions.CreateDispatcher();

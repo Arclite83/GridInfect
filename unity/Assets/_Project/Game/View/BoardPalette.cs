@@ -124,17 +124,57 @@ namespace GridInfect.Game
         static int Quantise(Color c) => ((int)(c.r * 255) << 16) | ((int)(c.g * 255) << 8) | (int)(c.b * 255);
 
         static BoardPalette _default;
+        static BoardPalette[] _previews;
 
-        // Resources first so an artist can restyle without touching code; the
-        // in-code defaults keep the zero-asset boot working.
+        // The skin the game is drawing. Set from the profile at boot and
+        // whenever the player picks one (settings.skin).
+        public static SkinId Skin { get; private set; }
+
+        // Resources first, so the shipped values are the asset's; the in-code
+        // defaults keep the zero-asset boot working.
+        //
+        // Always a *copy* of the asset. Applying a skin writes to the palette,
+        // and in the editor writing to a Resources-loaded ScriptableObject
+        // edits the file on disk — a skin the player tried once would follow
+        // the asset into the next commit.
         public static BoardPalette Default
         {
             get
             {
-                if (_default == null) _default = Resources.Load<BoardPalette>("BoardPalette");
-                if (_default == null) _default = CreateInstance<BoardPalette>();
+                if (_default == null)
+                {
+                    var asset = Resources.Load<BoardPalette>("BoardPalette");
+                    _default = asset != null ? Instantiate(asset) : CreateInstance<BoardPalette>();
+                    _default.hideFlags = HideFlags.HideAndDontSave;
+                }
                 return _default;
             }
+        }
+
+        // The ship skin's values live in Skins.Apply as well as in the field
+        // defaults, and tools/sync_palette_asset.py keeps the asset equal to
+        // the fields, so applying Default is lossless whichever way round the
+        // palette was loaded.
+        public static void SetSkin(SkinId skin)
+        {
+            Skin = skin;
+            Skins.Apply(Default, skin);
+        }
+
+        // A palette for a skin the game is not wearing: what the swatches on
+        // the settings screen are drawn from. Kept rather than rebuilt, and
+        // never the live palette, so reading one cannot restyle the game.
+        public static BoardPalette Preview(SkinId skin)
+        {
+            if (_previews == null) _previews = new BoardPalette[3];
+            int k = (int)skin;
+            if (_previews[k] == null)
+            {
+                _previews[k] = CreateInstance<BoardPalette>();
+                _previews[k].hideFlags = HideFlags.HideAndDontSave;
+                Skins.Apply(_previews[k], skin);
+            }
+            return _previews[k];
         }
     }
 }

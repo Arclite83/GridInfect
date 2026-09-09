@@ -47,7 +47,22 @@ namespace GridInfect.Game
             (225f, Dir.D, Dir.L, Dir.DL), (315f, Dir.L, Dir.U, Dir.UL),
         };
 
-        public static void ClearCache() => Cache.Clear();
+        // Called when the skin changes: every cached glyph was rasterised
+        // against the old colours. The sprites and their textures are
+        // HideAndDontSave, which is neither garbage collected nor reached by
+        // UnloadUnusedAssets, so dropping the references alone would leak the
+        // whole set on every switch. Anything still on screen dies with the
+        // screen that is rebuilt straight after.
+        public static void ClearCache()
+        {
+            foreach (Sprite sprite in Cache.Values)
+            {
+                if (sprite == null) continue;
+                if (sprite.texture != null) UnityEngine.Object.Destroy(sprite.texture);
+                UnityEngine.Object.Destroy(sprite);
+            }
+            Cache.Clear();
+        }
 
         static Sprite Cached(string key, System.Func<Sprite> make)
         {

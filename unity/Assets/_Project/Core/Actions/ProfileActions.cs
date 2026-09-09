@@ -99,6 +99,33 @@ namespace GridInfect.Core
         }
     }
 
+    // settings.skin { skin }: which board skin to draw. The adapter owns
+    // what the numbers mean (BoardPalette.SkinId); the core only keeps the
+    // choice, so a new skin never needs a new action.
+    public sealed class SetSkinAction : GameAction<GameState>
+    {
+        public const int Count = 3;
+
+        public override string Name => "settings.skin";
+
+        public override string Validate(GameState state, ActionInput input)
+        {
+            int skin = input.Int("skin");
+            if (skin < 0 || skin >= Count) return $"skin {skin} out of range";
+            return null;
+        }
+
+        public override void Execute(GameState state, ActionInput input)
+        {
+            int skin = input.Int("skin");
+            if (state.Profile.Skin != skin)
+            {
+                state.Profile.Skin = skin;
+                state.Profile.Dirty = true;
+            }
+        }
+    }
+
     public sealed class SetMutedAction : GameAction<GameState>
     {
         public override string Name => "settings.mute";

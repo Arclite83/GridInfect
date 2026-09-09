@@ -1,6 +1,7 @@
 using GridInfect.Core;
 using UnityEngine;
 using L = GridInfect.Game.PresentationConfig.Layout;
+using S = GridInfect.Game.PresentationConfig.Style;
 
 namespace GridInfect.Game
 {
@@ -33,6 +34,8 @@ namespace GridInfect.Game
             Buttons.Add(_sound);
             RefreshSound();
 
+            BuildSkins(L.StackRowY(row++, 3, L.ButtonHeight, 0f));
+
             // R-802: the privacy options entry, whenever the consent SDK says
             // one is required.
             if (App.Ads.PrivacyOptionsAvailable)
@@ -55,6 +58,78 @@ namespace GridInfect.Game
             Buttons.Add(_erase);
             RefreshErase();
         }
+
+        // The three board skins, each chip wearing its own solder mask with a
+        // bead of its own infection under the name — the two colours that
+        // actually move between skins (STYLE-GUIDE §2). The live one takes a
+        // lit plate behind it, the same mark the calendar puts on the day it
+        // is pointing at.
+        static readonly (BoardPalette.SkinId id, string name)[] Palettes =
+        {
+            (BoardPalette.SkinId.Default, "GREEN"),
+            (BoardPalette.SkinId.Blue, "BLUE"),
+            (BoardPalette.SkinId.Breadboard, "TAN"),
+        };
+
+        void BuildSkins(float y)
+        {
+            float w = (L.ContentWidth - L.Gap * 2f) / 3f;
+            var box = new Vector2(w, L.ButtonHeight);
+            for (int k = 0; k < Palettes.Length; k++)
+            {
+                var (id, name) = Palettes[k];
+                BoardPalette skin = BoardPalette.Preview(id);
+                float x = (k - 1) * (w + L.Gap);
+
+                if (BoardPalette.Skin == id)
+                {
+                    var plate = Ui.MakeGlass("live", Root.transform,
+                        new Vector2(w + S.Px(5f), L.ButtonHeight + S.Px(5f)), LiveStyle(), 8);
+                    Ui.SetPos(plate, x, y);
+                }
+
+                var captured = id;
+                var chip = UiButton.Make(Root.transform, name, new Vector2(x, y), box,
+                    SwatchStyle(skin), skin.Ink, () => Choose(captured), 20,
+                    pads: false, padAlpha: 1f, mono: false);
+                chip.Label.transform.localPosition = new Vector3(0f, L.ButtonHeight * 0.12f, 0f);
+                Buttons.Add(chip);
+
+                var bead = Ui.MakeGlass("infect", chip.Root.transform,
+                    new Vector2(S.Px(9f), S.Px(9f)), BeadStyle(skin), 22);
+                Ui.SetPos(bead, 0f, -L.ButtonHeight * 0.22f);
+            }
+        }
+
+        void Choose(BoardPalette.SkinId skin)
+        {
+            if (BoardPalette.Skin == skin) return;
+            if (!App.Do(GridInfectActions.SettingsSkin, Inputs.Skin((int)skin)).Applied) return;
+            App.ApplySkin();
+            // Every piece of glass on screen baked its colours when it was
+            // made, so the screen is built again rather than repainted. No
+            // fade: this is a repaint, not a navigation.
+            App.Screens.Show(new SettingsScreen(), instant: true);
+        }
+
+        static GlassStyle SwatchStyle(BoardPalette skin) => new GlassStyle
+        {
+            FillTop = skin.MaskHi, FillMid = skin.Mask, MidStop = 0.5f, FillBottom = skin.MaskLo,
+            Radius = S.ChipRadius, Border = BoardPalette.Alpha(skin.Ink, 0.3f), BorderPx = 1f,
+            TopLight = BoardPalette.Alpha(skin.Tip, 0.45f),
+        };
+
+        static GlassStyle BeadStyle(BoardPalette skin) => new GlassStyle
+        {
+            FillTop = skin.InfectHi, FillBottom = skin.Infect, Radius = S.Px(5f),
+            Glow = BoardPalette.Alpha(skin.Infect, 0.6f), GlowPx = 7f,
+        };
+
+        static GlassStyle LiveStyle() => new GlassStyle
+        {
+            FillTop = BoardTheme.GlyphLight, FillBottom = BoardTheme.GlyphLight, Radius = S.ChipRadius + 2f,
+            Glow = BoardPalette.Alpha(BoardPalette.Default.Infect, 0.5f), GlowPx = 12f,
+        };
 
         void ToggleSound()
         {

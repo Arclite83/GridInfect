@@ -19,6 +19,7 @@ namespace GridInfect.Core
         public const string ProgressSolvedWorld = "progress.solvedWorld";
         public const string ProgressReset = "progress.reset";
         public const string SettingsMute = "settings.mute";
+        public const string SettingsSkin = "settings.skin";
         public const string FreePlayBegin = "freeplay.begin";
         public const string FreePlayAdvance = "freeplay.advance";
         public const string FreePlayComplete = "freeplay.complete";
@@ -48,6 +49,7 @@ namespace GridInfect.Core
             registry.Register(new SolveWorldLevelAction());
             registry.Register(new ResetProgressAction());
             registry.Register(new SetMutedAction());
+            registry.Register(new SetSkinAction());
             registry.Register(new BeginFreePlayAction());
             registry.Register(new AdvanceFreePlayAction());
             registry.Register(new CompleteFreePlayAction());
@@ -97,6 +99,9 @@ namespace GridInfect.Core
 
         public static Dictionary<string, object> Muted(bool muted) =>
             new Dictionary<string, object> { ["muted"] = muted };
+
+        public static Dictionary<string, object> Skin(int skin) =>
+            new Dictionary<string, object> { ["skin"] = skin };
 
         public static Dictionary<string, object> Now(long nowMs) =>
             new Dictionary<string, object> { ["nowMs"] = nowMs };

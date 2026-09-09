@@ -132,6 +132,7 @@ namespace UnityEngine
         public string name { get; set; }
         public HideFlags hideFlags { get; set; }
         public static void Destroy(Object obj) { }
+        public static T Instantiate<T>(T original) where T : Object => original;
         public static void DontDestroyOnLoad(Object obj) { }
         public static T FindAnyObjectByType<T>() where T : Object => null;
     }
@@ -256,6 +257,7 @@ namespace UnityEngine
     public sealed class Sprite : Object
     {
         public static Sprite Create(Texture2D texture, Rect rect, Vector2 pivot, float pixelsPerUnit) => null;
+        public Texture2D texture => null;
     }
 
     public sealed class Font : Object
