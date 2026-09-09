@@ -26,7 +26,7 @@ namespace GridInfect.Game
         public Color Mask = Hex("#7FAE66");
         public Color MaskHi = Hex("#97C27C");
         public Color MaskLo = Hex("#5F8B4A");
-        public Color Ink = Hex("#1D3316");          // silkscreen-adjacent type on the mask
+        public Color Ink = Hex("#0C190A");          // type on the mask: 4.5:1 on MaskLo (was #1D3316 at 3.4:1)
 
         // ---- skin: copper. Points only (pads, vias, holes), never lines ----
         public Color Copper = Hex("#C9A648");
@@ -43,6 +43,10 @@ namespace GridInfect.Game
         public Color InfectGlow = Alpha(Hex("#D9204F"), 0.55f);
         public Color GlyphEdge = Hex("#4A0018");    // leads, body outline
         public Color GlyphWire = Hex("#300010");    // bond wires, stubs, pads
+
+        // The glass of a cell still to infect. Not a neutral: it is read
+        // against the solder mask, so it inverts on a light one.
+        public Color Space = Hex("#FFFFFF");
 
         // ---- neutrals, constant across skins ----
         public Color Tip = Hex("#FFFFFF");          // lit lead tips, highlights, core dot
@@ -97,6 +101,7 @@ namespace GridInfect.Game
                         p.Infect = Hex("#FF8A00"); p.InfectHi = Hex("#FFB347"); p.InfectLo = Hex("#C25A00");
                         p.InfectGlow = Alpha(Hex("#FF8A00"), 0.55f);
                         p.GlyphEdge = Hex("#4A2600"); p.GlyphWire = Hex("#3A1D00");
+                        p.Space = Hex("#FFFFFF");
                         break;
                     case SkinId.Breadboard:
                         p.Mask = Hex("#E9DCB8"); p.MaskHi = Hex("#F4EAD0"); p.MaskLo = Hex("#CDBB8C"); p.Ink = Hex("#3C2E12");
@@ -104,13 +109,18 @@ namespace GridInfect.Game
                         p.Infect = Hex("#7FD100"); p.InfectHi = Hex("#C8FF55"); p.InfectLo = Hex("#3F7300");
                         p.InfectGlow = Alpha(Hex("#7FD100"), 0.5f);
                         p.GlyphEdge = Hex("#1E2E00"); p.GlyphWire = Hex("#141F00");
+                        // The one skin whose mask is lighter than its glass:
+                        // white on cream had no cell edge at all, so a space
+                        // is a recess here rather than a highlight.
+                        p.Space = Hex("#4A3A22");
                         break;
                     default:
-                        p.Mask = Hex("#7FAE66"); p.MaskHi = Hex("#97C27C"); p.MaskLo = Hex("#5F8B4A"); p.Ink = Hex("#1D3316");
+                        p.Mask = Hex("#7FAE66"); p.MaskHi = Hex("#97C27C"); p.MaskLo = Hex("#5F8B4A"); p.Ink = Hex("#0C190A");
                         p.Copper = Hex("#C9A648"); p.CopperHi = Hex("#F3E2A8"); p.CopperLo = Hex("#7D6120");
                         p.Infect = Hex("#D9204F"); p.InfectHi = Hex("#FF6E93"); p.InfectLo = Hex("#8F0A32");
                         p.InfectGlow = Alpha(Hex("#D9204F"), 0.55f);
                         p.GlyphEdge = Hex("#4A0018"); p.GlyphWire = Hex("#300010");
+                        p.Space = Hex("#FFFFFF");
                         break;
                 }
             }
@@ -124,17 +134,57 @@ namespace GridInfect.Game
         static int Quantise(Color c) => ((int)(c.r * 255) << 16) | ((int)(c.g * 255) << 8) | (int)(c.b * 255);
 
         static BoardPalette _default;
+        static BoardPalette[] _previews;
 
-        // Resources first so an artist can restyle without touching code; the
-        // in-code defaults keep the zero-asset boot working.
+        // The skin the game is drawing. Set from the profile at boot and
+        // whenever the player picks one (settings.skin).
+        public static SkinId Skin { get; private set; }
+
+        // Resources first, so the shipped values are the asset's; the in-code
+        // defaults keep the zero-asset boot working.
+        //
+        // Always a *copy* of the asset. Applying a skin writes to the palette,
+        // and in the editor writing to a Resources-loaded ScriptableObject
+        // edits the file on disk — a skin the player tried once would follow
+        // the asset into the next commit.
         public static BoardPalette Default
         {
             get
             {
-                if (_default == null) _default = Resources.Load<BoardPalette>("BoardPalette");
-                if (_default == null) _default = CreateInstance<BoardPalette>();
+                if (_default == null)
+                {
+                    var asset = Resources.Load<BoardPalette>("BoardPalette");
+                    _default = asset != null ? Instantiate(asset) : CreateInstance<BoardPalette>();
+                    _default.hideFlags = HideFlags.HideAndDontSave;
+                }
                 return _default;
             }
+        }
+
+        // The ship skin's values live in Skins.Apply as well as in the field
+        // defaults, and tools/sync_palette_asset.py keeps the asset equal to
+        // the fields, so applying Default is lossless whichever way round the
+        // palette was loaded.
+        public static void SetSkin(SkinId skin)
+        {
+            Skin = skin;
+            Skins.Apply(Default, skin);
+        }
+
+        // A palette for a skin the game is not wearing: what the swatches on
+        // the settings screen are drawn from. Kept rather than rebuilt, and
+        // never the live palette, so reading one cannot restyle the game.
+        public static BoardPalette Preview(SkinId skin)
+        {
+            if (_previews == null) _previews = new BoardPalette[3];
+            int k = (int)skin;
+            if (_previews[k] == null)
+            {
+                _previews[k] = CreateInstance<BoardPalette>();
+                _previews[k].hideFlags = HideFlags.HideAndDontSave;
+                Skins.Apply(_previews[k], skin);
+            }
+            return _previews[k];
         }
     }
 }

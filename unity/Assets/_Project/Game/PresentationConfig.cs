@@ -68,13 +68,21 @@ namespace GridInfect.Game
             public static float TopBarY => H * TopBarPct;
 
             public static float ButtonHeight => ShortEdge * 0.11f;
-            public static float BarHeight => ShortEdge * 0.075f;
+            // The top-bar chips. 0.075 was a 29 px chip on the reference
+            // screen: under the 44 px touch minimum and too short for its
+            // own label. 0.085 is 33 px; the hit box (UiButton.HitBounds)
+            // makes up the rest.
+            public static float BarHeight => ShortEdge * 0.085f;
+            // A square icon chip (gear, help, pager arrow): 39 px reference.
+            public static float IconChip => ShortEdge * 0.10f;
             public static float Gap => ShortEdge * 0.035f;
 
             public static float TitleText => ShortEdge * 0.095f;
             public static float HeadingText => ShortEdge * 0.05f;
             public static float LabelText => ShortEdge * 0.04f;
-            public static float BodyText => ShortEdge * 0.035f;
+            // 0.037 is 14.4 px on the reference screen. TextMesh does not
+            // wrap, so the rules sheet's longest line is what caps this.
+            public static float BodyText => ShortEdge * 0.037f;
 
             // A back button lives in the top-left corner on every screen that
             // has one, sized so a thumb can reach it on the tallest phone.
@@ -125,7 +133,7 @@ namespace GridInfect.Game
             public const float HudInset = 22f;         // chips sit 22 px in from the edge
             public const float HudBottomPad = 10f;     // and 10 px up from the band's bottom
             public const float HudLevel = 26f;
-            public const float HudCaption = 11f;
+            public const float HudCaption = 12f;       // the mode readout; was 11
             public const float ChipText = 12f;
             public const float ChipPadX = 14f;
             public const float ChipPadY = 8f;
@@ -143,11 +151,18 @@ namespace GridInfect.Game
             public const float TraySlotQueued = 54f;
             public const float TrayGap = 30f;
             public const float TraySlotRadius = 12f;
-            public const float TrayCaption = 10f;
+            public const float TrayCaption = 11f;      // was 10
 
-            // §3 silkscreen
+            // §3 silkscreen: decorative, the one size allowed under the floor
             public const float Silkscreen = 9f;
             public const float PanelRadius = 12f;
+
+            // §11 legibility floor. No informational type under 11 px on the
+            // reference screen, and every pressable chip answers a 44 px
+            // square around its centre whatever its drawn size — the chip
+            // may stay chip-sized, the finger may not.
+            public const float SmallText = 11f;
+            public const float MinTouch = 44f;
         }
 
         // Infection VFX (docs/infection-vfx-spec.md "Locked parameters").

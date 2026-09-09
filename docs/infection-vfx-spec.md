@@ -34,7 +34,7 @@ constant. New skins are a palette swap.
 | Mask | `#7FAE66` | `#2E5AA8` | `#E9DCB8` |
 | Mask highlight | `#97C27C` | `#3F70C4` | `#F4EAD0` |
 | Mask shadow | `#5F8B4A` | `#1F3F7A` | `#CDBB8C` |
-| Ink (type on the mask) | `#1D3316` | `#E6EFFF` | `#3C2E12` |
+| Ink (type on the mask) | `#0C190A` | `#E6EFFF` | `#3C2E12` |
 | Copper | `#C9A648` | `#D9A441` | `#C46A3A` |
 | Copper highlight | `#F3E2A8` | `#FFE08A` | `#F0A878` |
 | Copper shadow | `#7D6120` | `#7A5410` | `#7A3A18` |

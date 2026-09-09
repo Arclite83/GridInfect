@@ -47,7 +47,22 @@ namespace GridInfect.Game
             (225f, Dir.D, Dir.L, Dir.DL), (315f, Dir.L, Dir.U, Dir.UL),
         };
 
-        public static void ClearCache() => Cache.Clear();
+        // Called when the skin changes: every cached glyph was rasterised
+        // against the old colours. The sprites and their textures are
+        // HideAndDontSave, which is neither garbage collected nor reached by
+        // UnloadUnusedAssets, so dropping the references alone would leak the
+        // whole set on every switch. Anything still on screen dies with the
+        // screen that is rebuilt straight after.
+        public static void ClearCache()
+        {
+            foreach (Sprite sprite in Cache.Values)
+            {
+                if (sprite == null) continue;
+                if (sprite.texture != null) UnityEngine.Object.Destroy(sprite.texture);
+                UnityEngine.Object.Destroy(sprite);
+            }
+            Cache.Clear();
+        }
 
         static Sprite Cached(string key, System.Func<Sprite> make)
         {
@@ -83,29 +98,67 @@ namespace GridInfect.Game
 
         // The lock mark (R-1001: a shape, never colour alone), drawn over a
         // locked piece's core.
+        //
+        // Every mark from here down is a UI mark, not a bug: it has to read
+        // on its own at the size it is drawn, in sunlight, so the floor is
+        // a 2.6 stroke for a mark over a glyph and 4.4 for one in a chip
+        // (viewBox units; on a 28 px chip icon that is a 3 px line).
         public static Sprite Lock(BoardPalette p, int sizePx)
         {
             return Cached($"lock:{sizePx}:{p.GlyphKey}", () =>
             {
                 var c = new GlyphCanvas(sizePx);
-                c.Quad(16.5f, 21f, 16.5f, 14.5f, 20f, 14.5f, 1.6f, p.GlyphEdge, false);
-                c.Quad(20f, 14.5f, 23.5f, 14.5f, 23.5f, 21f, 1.6f, p.GlyphEdge, false);
-                c.Rect(14.5f, 19.5f, 11f, 8f, 1.5f, p.GlyphEdge);
-                c.Circle(20f, 23f, 1.3f, p.Tip);
-                c.Rect(19.4f, 23f, 1.2f, 2.4f, 0f, p.Tip);
+                c.Quad(15.5f, 21f, 15.5f, 13.5f, 20f, 13.5f, 2.6f, p.GlyphEdge, false);
+                c.Quad(20f, 13.5f, 24.5f, 13.5f, 24.5f, 21f, 2.6f, p.GlyphEdge, false);
+                c.Rect(13.5f, 19.5f, 13f, 9.5f, 1.8f, p.GlyphEdge);
+                c.Circle(20f, 23.2f, 1.6f, p.Tip);
+                c.Rect(19.25f, 23.2f, 1.5f, 3f, 0f, p.Tip);
                 return c.ToSprite($"mark_LOCK_{sizePx}");
             });
         }
 
         // The solved mark on a calendar day (R-1001: a shape, never colour
-        // alone): a lit tick.
+        // alone): a lit tick. Drawn at 0.36 of a tile, so the 5-unit stroke
+        // is a 2.4 px line on a 54 px tile.
         public static Sprite Check(BoardPalette p, int sizePx)
         {
             return Cached($"check:{sizePx}:{p.GlyphKey}", () =>
             {
                 var c = new GlyphCanvas(sizePx);
-                c.Stroke(new[] { 9f, 21f, 16f, 28f, 31f, 12f }, 3.4f, p.Tip);
+                c.Stroke(new[] { 8f, 21f, 16f, 29f, 32f, 11f }, 5f, p.Tip, true);
                 return c.ToSprite($"mark_CHECK_{sizePx}");
+            });
+        }
+
+        // The help mark. It was the "?" of whichever face the OS had, at the
+        // chip's 12 px label size: a hairline in a 29 px box. Now it is a
+        // stroked shape at the chip stroke, like the gear beside it.
+        public static Sprite Question(BoardPalette p, int sizePx)
+        {
+            return Cached($"question:{sizePx}:{p.GlyphKey}", () =>
+            {
+                var c = new GlyphCanvas(sizePx);
+                const float w = 4.4f;
+                c.Quad(13.5f, 15.5f, 13.5f, 7.5f, 20f, 7.5f, w, p.Ink, true);
+                c.Quad(20f, 7.5f, 26.5f, 7.5f, 26.5f, 14f, w, p.Ink, true);
+                c.Quad(26.5f, 14f, 26.5f, 20.5f, 20f, 22f, w, p.Ink, true);
+                c.Stroke(new[] { 20f, 22f, 20f, 26.5f }, w, p.Ink, true);
+                c.Circle(20f, 32.5f, 2.8f, p.Ink);
+                return c.ToSprite($"mark_QUESTION_{sizePx}");
+            });
+        }
+
+        // A pager chevron. The pagers were "◀" and "▶" as chip labels,
+        // which is a glyph the display face does not carry and the fallback
+        // draws small; a drawn chevron is the same on every phone.
+        public static Sprite Chevron(BoardPalette p, int sizePx, bool left)
+        {
+            return Cached($"chevron:{left}:{sizePx}:{p.GlyphKey}", () =>
+            {
+                var c = new GlyphCanvas(sizePx);
+                c.SetTransform(left ? 0f : 180f);
+                c.Stroke(new[] { 24f, 10.5f, 14.5f, 20f, 24f, 29.5f }, 4.6f, p.Ink, true);
+                return c.ToSprite($"mark_CHEVRON_{(left ? "L" : "R")}_{sizePx}");
             });
         }
 
@@ -122,10 +175,10 @@ namespace GridInfect.Game
                 for (int k = 0; k < 8; k++)
                 {
                     c.SetTransform(k * 45f);
-                    c.Rect(18f, 7f, 4f, 5.5f, 1f, p.Ink);
+                    c.Rect(17.5f, 6.5f, 5f, 6f, 1f, p.Ink);
                 }
                 c.ClearTransform();
-                c.Stroke(Ring(8f), 3.4f, p.Ink, false, true);
+                c.Stroke(Ring(8f), 4.4f, p.Ink, false, true);
                 return c.ToSprite($"mark_GEAR_{sizePx}");
             });
         }
@@ -199,8 +252,15 @@ namespace GridInfect.Game
             return xy;
         }
 
-        // Relay cells (RULES_V2 §12): a hub with one stub and pad per arm,
-        // in the grammar's wire colour.
+        // Relay cells (RULES_V2 §12): a hub with one lead and pad per arm.
+        //
+        // It was drawn in the bug's wire vocabulary — 1.4-unit stubs with
+        // 1.6 pads — which is a 1.5 px line on a 44 px glyph: the one board
+        // mark that carries a rule (which way it fires) was the thinnest
+        // thing on the board. Now it is drawn at the lead weight: a 3-unit
+        // lead in the edge colour, a pad at the end, and copper points in
+        // the pad and the hub (§2: copper is points, and a pad is a point).
+        // Copper rather than white so a relay never reads as already lit.
         public static Sprite Relay(byte arms, BoardPalette p, int sizePx)
         {
             return Cached($"relay:{arms}:{sizePx}:{p.GlyphKey}", () =>
@@ -210,12 +270,13 @@ namespace GridInfect.Game
                 {
                     if ((arms & (1 << d)) == 0) continue;
                     c.SetTransform(Angle((Dir)d));
-                    c.Stroke(new[] { 20f, 20f, 20f, 10.5f }, 1.4f, p.GlyphWire);
-                    c.Circle(20f, 10f, 1.6f, p.GlyphWire);
+                    c.Stroke(new[] { 20f, 20f, 20f, 9.5f }, 3f, p.GlyphEdge);
+                    c.Circle(20f, 8.5f, 3f, p.GlyphEdge);
+                    c.Circle(20f, 8.5f, 1.6f, p.CopperHi);
                 }
                 c.ClearTransform();
-                c.Circle(20f, 20f, 3.2f, p.GlyphWire);
-                c.Circle(20f, 20f, 1.2f, p.Tip);
+                c.Circle(20f, 20f, 5.2f, p.GlyphEdge);
+                c.Circle(20f, 20f, 2.6f, p.CopperHi);
                 return c.ToSprite($"mark_RELAY_{arms}_{sizePx}");
             });
         }
@@ -301,18 +362,41 @@ namespace GridInfect.Game
             c.Circle(10.9f, 7.5f, 1.1f, p.GlyphWire);
         }
 
-        // Diagonal lead: line 20,14 -> 20,6 at 2.4, tip circle r 3 with a
-        // r 2 white centre. The lit tip is the arm's only bright element and
-        // it has to read at 40 px on a queued piece: at the spec's r 1.3 it
-        // is three pixels of white inside a dark disc, so the disc grows a
-        // little and the white grows a lot. Still the same ring of edge
-        // around it, just thinner.
+        // Diagonal lead: line 20,14.5 -> 20,6.5 at 2.6, and the same wiring
+        // a squared lead gets — two bond wires at x 17.6 / 22.4 running
+        // 13.5 -> 8.5 and hooking in under the tip, a branch stub with a pad
+        // leaving each wire outward at y 9.5 — under a tip circle r 3.2
+        // with a r 2.1 white centre. A bare line and a dot read as a stray
+        // highlight next to a wired squared lead; the wiring is what says
+        // "this is a lead too". The hooks end inside the tip ring, so the
+        // tip is drawn last and the wires go under it.
         static void Diag(GlyphCanvas c, float a, BoardPalette p)
         {
             c.SetTransform(a);
-            c.Stroke(new[] { 20f, 14f, 20f, 6f }, 2.4f, p.GlyphEdge);
-            c.Circle(20f, 5f, 3f, p.GlyphEdge);
-            c.Circle(20f, 5f, 2f, p.Tip);
+            c.Stroke(new[] { 20f, 14.5f, 20f, 6.5f }, 2.6f, p.GlyphEdge);
+            c.Stroke(new[] { 17.6f, 13.5f, 17.6f, 8.5f }, 1f, p.GlyphWire);
+            c.Quad(17.6f, 8.5f, 17.6f, 6.6f, 18.6f, 6.6f, 1f, p.GlyphWire, false);
+            c.Stroke(new[] { 22.4f, 13.5f, 22.4f, 8.5f }, 1f, p.GlyphWire);
+            c.Quad(22.4f, 8.5f, 22.4f, 6.6f, 21.4f, 6.6f, 1f, p.GlyphWire, false);
+            c.Stroke(new[] { 17.6f, 9.5f, 14.6f, 9.5f }, 1f, p.GlyphWire);
+            c.Circle(14f, 9.5f, 1.1f, p.GlyphWire);
+            c.Stroke(new[] { 22.4f, 9.5f, 25.4f, 9.5f }, 1f, p.GlyphWire);
+            c.Circle(26f, 9.5f, 1.1f, p.GlyphWire);
+            c.Circle(20f, 5.5f, 3.2f, p.GlyphEdge);
+            c.Circle(20f, 5.5f, 2.1f, p.Tip);
+        }
+
+        // The diagonal lead that sits clockwise (+45) or anticlockwise (-45)
+        // of an orthogonal edge, for the stubs that give way to it.
+        static Dir DiagAt(float angle)
+        {
+            switch (((int)angle % 360 + 360) % 360)
+            {
+                case 45: return Dir.UR;
+                case 135: return Dir.DR;
+                case 225: return Dir.DL;
+                default: return Dir.UL;
+            }
         }
 
         // A body pin: rotate(a 20 20) translate(t 0), line from y 10.5 up
@@ -325,16 +409,19 @@ namespace GridInfect.Game
         }
 
         // Three stubs on every inactive orthogonal edge, one on every vertex
-        // between two inactive edges that no diagonal lead occupies.
+        // between two inactive edges that no diagonal lead occupies. An
+        // edge's outer stub gives way to an active diagonal lead beside it:
+        // the lead's own branch pad lands exactly where that stub was, and
+        // two pads on top of each other read as a smudge.
         static void Body(GlyphCanvas c, HashSet<Dir> active, BoardPalette p)
         {
             foreach (var dir in Orth)
             {
                 if (active.Contains(dir)) continue;
                 float a = Angle(dir);
-                Pin(c, a, -4f, 3.5f, true, p);
+                if (!active.Contains(DiagAt(a - 45f))) Pin(c, a, -4f, 3.5f, true, p);
                 Pin(c, a, 0f, 2.5f, false, p);
-                Pin(c, a, 4f, 3.5f, true, p);
+                if (!active.Contains(DiagAt(a + 45f))) Pin(c, a, 4f, 3.5f, true, p);
             }
             foreach (var v in Verts)
             {

@@ -11,9 +11,10 @@ namespace GridInfect.Core
     // is open now, so what a menu draws is these, not the unlock fields; a
     // v4 save has no solved record, so one is derived from its gates on load
     // (solving N is what opened N + 1) and a returning player keeps their red.
+    // v6: + skin (board colours; absent = the ship green).
     public static class SaveCodec
     {
-        public const int Version = 5;
+        public const int Version = 6;
 
         public static string Save(Profile profile)
         {
@@ -68,6 +69,7 @@ namespace GridInfect.Core
                 ["bestMs"] = best,
                 ["counts"] = counts,
                 ["muted"] = profile.Muted,
+                ["skin"] = profile.Skin,
                 ["worlds"] = worlds,
                 ["dailyBest"] = dailyBest,
                 ["dailyStreak"] = profile.DailyStreak,
@@ -137,6 +139,10 @@ namespace GridInfect.Core
                 }
             }
             if (root.TryGetValue("locks", out object lk) && lk is long locks && locks >= 0) profile.Locks = (int)locks;
+            if (root.TryGetValue("skin", out object sk) && sk is long skin && skin >= 0 && skin < SetSkinAction.Count)
+            {
+                profile.Skin = (int)skin;
+            }
 
             bool hasSolved = false;
             if (root.TryGetValue("solved", out object sv) && sv is List<object> solvedList)

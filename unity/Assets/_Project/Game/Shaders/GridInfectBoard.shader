@@ -94,6 +94,7 @@ Shader "GridInfect/Board"
         _ColSwitch ("Repel switch tint", Color) = (0, 0, 0, 1)
         _ColTrap ("Reset trap tint", Color) = (0, 0, 0, 1)
         _ColConflict ("Conflict overprint", Color) = (0, 0, 0, 1)
+        _ColSpace ("Uninfected cell glass", Color) = (1, 1, 1, 1)
     }
 
     SubShader
@@ -133,7 +134,7 @@ Shader "GridInfect/Board"
                 float _GhostTrail, _GhostTrailDur;
                 float4 _ColTip, _ColShade, _ColWellBg, _ColCopper, _ColCopperHi, _ColCopperLo;
                 float4 _ColInfect, _ColInfectHi, _ColInfectLo, _ColInfectGlow, _ColGlyphEdge;
-                float4 _ColSwitch, _ColTrap, _ColConflict;
+                float4 _ColSwitch, _ColTrap, _ColConflict, _ColSpace;
             CBUFFER_END
 
             #define CELL_VOID      0
@@ -351,12 +352,16 @@ Shader "GridInfect/Board"
 
             // ---- tile materials --------------------------------------------------
 
-            // Component, placed and dormant: white 34% -> 8% (55%) -> 16% at
-            // 160 degrees, a 1 px top light at 60%, a 1 px ring at 25%.
+            // Component, placed and dormant: the space colour 34% -> 8%
+            // (55%) -> 16% at 160 degrees, a 1 px top light at 60%, a 1 px
+            // ring at 25%. The space colour is white on a dark solder mask
+            // and dark on a light one — an uninfected cell has to read
+            // against the board it sits on, and white glass on breadboard
+            // cream is not a cell, it is a smudge.
             void GlassComponent(inout float4 pm, float2 q, float d, float2 tile, float3 tint, float tintAmount, float alphaScale)
             {
                 float t = Gradient160(q, tile);
-                float4 fill = Stops3(float4(_ColTip.rgb, 0.34), float4(_ColTip.rgb, 0.08), float4(_ColTip.rgb, 0.16), 0.55, t);
+                float4 fill = Stops3(float4(_ColSpace.rgb, 0.34), float4(_ColSpace.rgb, 0.08), float4(_ColSpace.rgb, 0.16), 0.55, t);
                 fill.rgb = lerp(fill.rgb, tint, tintAmount);
                 fill.a = lerp(fill.a, 0.75, tintAmount) * alphaScale;
                 Over(pm, fill.rgb, fill.a * Inside(d));

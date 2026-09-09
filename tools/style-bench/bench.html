@@ -4,7 +4,7 @@
 body{margin:0;background:#111}
 #screen{position:relative;width:780px;height:1688px;overflow:hidden}
 canvas{position:absolute;left:0;top:0}
-.t{position:absolute;font-family:'Chakra Petch',sans-serif;color:#1d3316;white-space:nowrap}
+.t{position:absolute;font-family:'Chakra Petch',sans-serif;color:#0c190a;white-space:nowrap}
 .m{font-family:'Share Tech Mono',monospace}
 .g{position:absolute;width:72px;height:72px;background-image:url(glyphs72.png);background-size:640px auto}
 .g2{position:absolute;width:96px;height:96px;background-image:url(glyphs96.png);background-size:832px auto}
@@ -26,7 +26,7 @@ const cellCenter=(i,j)=>[quadX+margin+(j+0.5)*pitch, quadY+margin+(ROWS-1-i+0.5)
 
 // ---- palette (default skin) ----
 const hex=h=>[1,3,5].map(k=>parseInt(h.substr(k,2),16)/255);
-const P={Mask:hex('#7fae66'),MaskHi:hex('#97c27c'),MaskLo:hex('#5f8b4a'),Ink:hex('#1d3316'),Copper:hex('#c9a648'),CopperHi:hex('#f3e2a8'),CopperLo:hex('#7d6120'),
+const P={Mask:hex('#7fae66'),MaskHi:hex('#97c27c'),MaskLo:hex('#5f8b4a'),Ink:hex('#0c190a'),Copper:hex('#c9a648'),CopperHi:hex('#f3e2a8'),CopperLo:hex('#7d6120'),
  Infect:hex('#ff2d95'),InfectHi:hex('#ff7cc4'),InfectLo:hex('#b3086a'),GlyphEdge:hex('#5a0033'),Tip:[1,1,1],Shade:[0,0,0],Switch:hex('#8a5cff'),Trap:hex('#0d0d12'),Conflict:hex('#ff3b30')};
 // Unity converts sRGB colour properties to linear when the project renders linear and the framebuffer converts back.
 // The bench works in sRGB end to end, which for a look check is the same thing.

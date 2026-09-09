@@ -87,6 +87,7 @@ namespace GridInfect.Game
             Dispatcher = GridInfectActions.CreateDispatcher();
             _save = new SavePort(Application.persistentDataPath);
             State.Profile = _save.Load();
+            ApplySkin();   // the saved colours, before the first screen builds
 
             // The level cache: what the device has generated so far, and the
             // worker that generates ahead of the player. Today's daily first,
@@ -108,6 +109,37 @@ namespace GridInfect.Game
 
             Screens = new ScreenManager(this);
             Screens.Show(new MainMenuScreen(), instant: true);
+        }
+
+        // A skin change touches everything that baked a colour when it was
+        // made: the palette, the glyph sprites cached against it, the
+        // substrate's material and the camera clear. Glass is per-screen and
+        // re-reads the palette on build, so the caller shows a screen after.
+        public void ApplySkin()
+        {
+            // A skin that is no longer earned falls back rather than being
+            // worn anyway: clearing progress takes the reward with it, and it
+            // comes back when the sweep does. The profile keeps the choice.
+            var skin = (BoardPalette.SkinId)State.Profile.Skin;
+            if (!SkinEarned(skin)) skin = BoardPalette.SkinId.Default;
+            BoardPalette.SetSkin(skin);
+            BugGlyph.ClearCache();
+            Substrate.Restyle(BoardPalette.Default);
+            if (_camera != null) _camera.backgroundColor = BoardTheme.Background;
+        }
+
+        // The one thing left in the game behind progress: blue for every
+        // world beaten, breadboard for all 128 Legacy levels. Gating is
+        // presentation policy (ARCHITECTURE §3), so it lives here and not in
+        // settings.skin, which will set anything a test asks for.
+        public bool SkinEarned(BoardPalette.SkinId skin)
+        {
+            switch (skin)
+            {
+                case BoardPalette.SkinId.Blue: return Queries.AllWorldsSolved(State.Profile);
+                case BoardPalette.SkinId.Breadboard: return Queries.AllClassicSolved(State.Profile);
+                default: return true;
+            }
         }
 
         public ActionResult Do(string action, Dictionary<string, object> input = null)

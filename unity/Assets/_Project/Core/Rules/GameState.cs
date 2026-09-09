@@ -88,6 +88,10 @@ namespace GridInfect.Core
 
         public bool Muted;
 
+        // Board skin: 0 the ship green, 1 blue, 2 breadboard tan
+        // (BoardPalette.SkinId). A preference like Muted, not progress.
+        public int Skin;
+
         public bool Dirty;
     }
 }

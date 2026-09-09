@@ -1,6 +1,7 @@
 using GridInfect.Core;
 using UnityEngine;
 using L = GridInfect.Game.PresentationConfig.Layout;
+using S = GridInfect.Game.PresentationConfig.Style;
 
 namespace GridInfect.Game
 {
@@ -33,6 +34,8 @@ namespace GridInfect.Game
             Buttons.Add(_sound);
             RefreshSound();
 
+            BuildSkins(L.StackRowY(row++, 3, L.ButtonHeight, 0f));
+
             // R-802: the privacy options entry, whenever the consent SDK says
             // one is required.
             if (App.Ads.PrivacyOptionsAvailable)
@@ -56,6 +59,116 @@ namespace GridInfect.Game
             RefreshErase();
         }
 
+        // The three board skins, each chip wearing its own solder mask with a
+        // bead of its own infection under the name — the two colours that
+        // actually move between skins (STYLE-GUIDE §2). The live one takes a
+        // lit plate behind it, the same mark the calendar puts on the day it
+        // is pointing at.
+        //
+        // Two are earned: blue for every world beaten, breadboard for all 128
+        // Legacy levels. They are the only thing in the game still behind
+        // progress, and a locked one wears the padlock with what it wants
+        // written under it — a reward nobody can see is not a reward. The
+        // gate is here and not in the action: unlock gating is presentation
+        // policy throughout (ARCHITECTURE §3), so a test or a tool can still
+        // set any skin.
+        static readonly (BoardPalette.SkinId id, string name, string want)[] Palettes =
+        {
+            (BoardPalette.SkinId.Default, "GREEN", null),
+            (BoardPalette.SkinId.Blue, "BLUE", "CLEAR\nALL WORLDS"),
+            (BoardPalette.SkinId.Breadboard, "TAN", "CLEAR\nALL LEGACY"),
+        };
+
+        void BuildSkins(float y)
+        {
+            float w = (L.ContentWidth - L.Gap * 2f) / 3f;
+            // The chips give up some height and the row rides up, because
+            // what hangs under a locked one is two lines and it has to clear
+            // both the chip above it and the row below.
+            float height = L.ButtonHeight * 0.72f;
+            float noteText = L.BodyText * 0.62f;
+            var box = new Vector2(w, height);
+            y += L.ButtonHeight * 0.26f;
+
+            for (int k = 0; k < Palettes.Length; k++)
+            {
+                var (id, name, want) = Palettes[k];
+                BoardPalette skin = BoardPalette.Preview(id);
+                bool earned = App.SkinEarned(id);
+                float x = (k - 1) * (w + L.Gap);
+
+                if (BoardPalette.Skin == id)
+                {
+                    var plate = Ui.MakeGlass("live", Root.transform,
+                        new Vector2(w + S.Px(5f), height + S.Px(5f)), LiveStyle(), 8);
+                    Ui.SetPos(plate, x, y);
+                }
+
+                var captured = id;
+                var chip = UiButton.Make(Root.transform, earned ? name : "", new Vector2(x, y), box,
+                    SwatchStyle(skin, earned), skin.Ink, () => Choose(captured), 20,
+                    pads: false, padAlpha: 1f, mono: false);
+                chip.Enabled = earned;
+                Buttons.Add(chip);
+
+                if (earned)
+                {
+                    chip.Label.transform.localPosition = new Vector3(0f, height * 0.16f, 0f);
+                    var bead = Ui.MakeGlass("infect", chip.Root.transform,
+                        new Vector2(S.Px(9f), S.Px(9f)), BeadStyle(skin), 22);
+                    Ui.SetPos(bead, 0f, -height * 0.26f);
+                }
+                else
+                {
+                    Ui.MakeSprite("locked", chip.Root.transform,
+                        BugGlyph.Lock(BoardPalette.Default, Mathf.RoundToInt(height * 0.62f)), 22);
+                    // TextMesh centres the whole block, so a two-line note is
+                    // hung by its middle: half of it (1.2 lines) below the
+                    // chip's bottom edge, not its first line.
+                    var note = Ui.MakeText($"want:{name}", Root.transform, want, noteText,
+                        BoardTheme.Text, 12);
+                    Ui.SetPos(note.gameObject, x, y - height / 2f - S.Px(4f) - noteText * 1.2f);
+                }
+            }
+        }
+
+        void Choose(BoardPalette.SkinId skin)
+        {
+            if (BoardPalette.Skin == skin || !App.SkinEarned(skin)) return;
+            if (!App.Do(GridInfectActions.SettingsSkin, Inputs.Skin((int)skin)).Applied) return;
+            App.ApplySkin();
+            // Every piece of glass on screen baked its colours when it was
+            // made, so the screen is built again rather than repainted. No
+            // fade: this is a repaint, not a navigation.
+            App.Screens.Show(new SettingsScreen(), instant: true);
+        }
+
+        // A locked skin still shows its colours — muted, so the padlock over
+        // them reads as the point rather than as damage.
+        static GlassStyle SwatchStyle(BoardPalette skin, bool earned)
+        {
+            float a = earned ? 1f : 0.45f;
+            return new GlassStyle
+            {
+                FillTop = BoardPalette.Alpha(skin.MaskHi, a), FillMid = BoardPalette.Alpha(skin.Mask, a),
+                MidStop = 0.5f, FillBottom = BoardPalette.Alpha(skin.MaskLo, a),
+                Radius = S.ChipRadius, Border = BoardPalette.Alpha(skin.Ink, earned ? 0.3f : 0.15f), BorderPx = 1f,
+                TopLight = BoardPalette.Alpha(skin.Tip, earned ? 0.45f : 0.2f),
+            };
+        }
+
+        static GlassStyle BeadStyle(BoardPalette skin) => new GlassStyle
+        {
+            FillTop = skin.InfectHi, FillBottom = skin.Infect, Radius = S.Px(5f),
+            Glow = BoardPalette.Alpha(skin.Infect, 0.6f), GlowPx = 7f,
+        };
+
+        static GlassStyle LiveStyle() => new GlassStyle
+        {
+            FillTop = BoardTheme.GlyphLight, FillBottom = BoardTheme.GlyphLight, Radius = S.ChipRadius + 2f,
+            Glow = BoardPalette.Alpha(BoardPalette.Default.Infect, 0.5f), GlowPx = 12f,
+        };
+
         void ToggleSound()
         {
             App.Do(GridInfectActions.SettingsMute, Inputs.Muted(!App.State.Profile.Muted));
@@ -77,7 +190,11 @@ namespace GridInfect.Game
             }
             App.Do(GridInfectActions.ProgressReset);
             _armed = false;
-            RefreshErase();
+            // The earned skins are gone with the progress that bought them,
+            // so the row has to be drawn again — and the board with it, if
+            // the player was wearing one.
+            App.ApplySkin();
+            App.Screens.Show(new SettingsScreen(), instant: true);
         }
 
         void RefreshErase()

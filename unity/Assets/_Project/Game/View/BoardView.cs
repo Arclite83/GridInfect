@@ -660,6 +660,7 @@ namespace GridInfect.Game
             SetPaletteColor("_ColInfectLo", _palette.InfectLo);
             SetPaletteColor("_ColInfectGlow", _palette.InfectGlow);
             SetPaletteColor("_ColGlyphEdge", _palette.GlyphEdge);
+            SetPaletteColor("_ColSpace", _palette.Space);
             SetPaletteColor("_ColSwitch", _palette.RepelSwitch);
             SetPaletteColor("_ColTrap", _palette.ResetTrap);
             SetPaletteColor("_ColConflict", _palette.Conflict);

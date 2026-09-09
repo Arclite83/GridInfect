@@ -180,6 +180,64 @@ namespace GridInfect.Core.Tests
         }
 
         [Test]
+        public void SkinIsAPreferenceThatSurvivesSaveAndReset()
+        {
+            var dispatcher = GridInfectActions.CreateDispatcher();
+            Assert.That(dispatcher.Dispatch(GridInfectActions.SettingsSkin, Inputs.Skin(2)).Applied);
+            var profile = dispatcher.State.Profile;
+            profile.Muted = true;
+            profile.SolvedClassic.Add(3);
+
+            Assert.That(SaveCodec.Load(SaveCodec.Save(profile)).Skin, Is.EqualTo(2));
+
+            // Clearing progress is not clearing preferences.
+            Assert.That(dispatcher.Dispatch(GridInfectActions.ProgressReset).Applied);
+            Assert.That(profile.Skin, Is.EqualTo(2));
+            Assert.That(profile.Muted, Is.True);
+            Assert.That(profile.SolvedClassic, Is.Empty);
+        }
+
+        // The two clean sweeps the skins are gated on. Nothing else in the
+        // game is behind progress any more, so if these ever went wrong the
+        // reward would silently never arrive.
+        [Test]
+        public void CleanSweepsNeedEveryLevel()
+        {
+            var profile = new Profile();
+            Assert.That(Queries.AllWorldsSolved(profile), Is.False);
+            Assert.That(Queries.AllClassicSolved(profile), Is.False);
+
+            for (int id = 0; id < ClassicLevels.Count - 1; id++) profile.SolvedClassic.Add(id);
+            Assert.That(Queries.AllClassicSolved(profile), Is.False, "one short is not a sweep");
+            profile.SolvedClassic.Add(ClassicLevels.Count - 1);
+            Assert.That(Queries.AllClassicSolved(profile), Is.True);
+
+            foreach (World world in Worlds.All)
+            {
+                var solved = new System.Collections.Generic.HashSet<int>();
+                for (int n = 0; n < world.Count; n++) solved.Add(n);
+                profile.SolvedWorld[world.Id] = solved;
+            }
+            Assert.That(Queries.AllWorldsSolved(profile), Is.True);
+
+            profile.SolvedWorld[Worlds.All[Worlds.Count - 1].Id].Remove(0);
+            Assert.That(Queries.AllWorldsSolved(profile), Is.False, "one level of one world is enough to break it");
+        }
+
+        [Test]
+        public void SkinRejectsAnythingOutsideTheSkinSet()
+        {
+            var dispatcher = GridInfectActions.CreateDispatcher();
+            Assert.That(dispatcher.Dispatch(GridInfectActions.SettingsSkin, Inputs.Skin(-1)).Applied, Is.False);
+            Assert.That(dispatcher.Dispatch(GridInfectActions.SettingsSkin,
+                Inputs.Skin(SetSkinAction.Count)).Applied, Is.False);
+            Assert.That(dispatcher.State.Profile.Skin, Is.EqualTo(0));
+
+            // A save carrying a skin this build does not have falls back.
+            Assert.That(SaveCodec.Load("{\"v\":6,\"skin\":99}").Skin, Is.EqualTo(0));
+        }
+
+        [Test]
         public void FreePlayRunRecordsBestTimeAndCount()
         {
             var dispatcher = GridInfectActions.CreateDispatcher();
