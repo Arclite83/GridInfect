@@ -12,16 +12,19 @@ namespace GridInfect.Game
     // board's own materials and marks (BoardTheme.Cell*, BugGlyph), so the
     // picture beside a line is the thing it describes.
     //
-    // The three chips read as one sentence each and all end the same way:
-    // repel, trap and relay react when hit. Clear is the odd one and says so
-    // — it is not a chip, it is bare board, and a ray may not touch it at
-    // all. That is a real mechanical difference, not a presentation one: a
-    // trap hit on the winning move is free, because the win check runs
-    // first; a clear cell is never hit at all, because the drop that would
-    // hit it is refused before anything resolves (RulesV2.CanPlace).
+    // The chips read as one sentence each and all end the same way: repel,
+    // trap and relay react when hit. Avoid (Cell.Forbidden) is the odd one —
+    // not a chip but bare board, and a ray may not touch it at all. That is
+    // a real mechanical difference, not a presentation one: a trap hit on
+    // the winning move is free, because the win check runs first; an avoid
+    // cell is never hit at all, because the drop that would hit it is
+    // refused before anything resolves (RulesV2.CanPlace).
+    //
+    // It is not called CLEAR: this page uses "clears" as a verb for what a
+    // repel and a trap do, and a tile of the same name fought it.
     public sealed class RulesScreen : AppScreen
     {
-        enum Mark { Empty, Infected, Gap, Wall, Repel, Trap, Clear, Relay, Bug, Diagonal, Blot, Locked }
+        enum Mark { Empty, Infected, Gap, Wall, Repel, Trap, Avoid, Relay, Bug, Diagonal, Blot, Locked }
 
         const int Pages = 2;
         const float PagerPct = 0.42f;
@@ -113,10 +116,13 @@ namespace GridInfect.Game
             Row(new[] { Mark.Repel }, "REPEL", "Clears back when hit.", ref y);
             Row(new[] { Mark.Trap }, "TRAP", "Clears the board when hit.", ref y);
             Row(new[] { Mark.Relay }, "RELAY", "Fires its own rays when hit.", ref y);
-            Row(new[] { Mark.Clear }, "CLEAR", "Can't be hit.", ref y);
+            Row(new[] { Mark.Avoid }, "AVOID", "Rays must not touch it.", ref y);
 
-            // Why the last one looks nothing like the three above it.
-            Line("note", "Chips react. Clear is bare board.", 0f, bottom + note / 2f, L.BodyText * 0.95f);
+            // What the last row feels like in the hand, which is the part a
+            // legend cannot show: the chips above it answer a ray, and this
+            // one is never reached at all — the move is refused before
+            // anything resolves (RulesV2.CanPlace).
+            Line("note", "A drop that would hit one bounces back.", 0f, bottom + note / 2f, L.BodyText * 0.95f);
         }
 
         // A ray runs the width of the board and steps over a gap on the way:
@@ -214,9 +220,9 @@ namespace GridInfect.Game
 
             switch (mark)
             {
-                case Mark.Clear:
+                case Mark.Avoid:
                     // No tile: that is the point of it.
-                    Sprite(BugGlyph.Clear(p, glyphPx), x, y);
+                    Sprite(BugGlyph.Avoid(p, glyphPx), x, y);
                     return;
                 case Mark.Bug:
                 case Mark.Diagonal:

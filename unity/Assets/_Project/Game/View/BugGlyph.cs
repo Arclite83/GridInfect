@@ -159,17 +159,17 @@ namespace GridInfect.Game
             });
         }
 
-        // Clear: no chip at all. Bare copper — the ring and the pad inside
-        // it — which is the whole of why it cannot be hit.
-        public static Sprite Clear(BoardPalette p, int sizePx)
+        // Avoid (Cell.Forbidden): no chip at all. Bare copper — the ring and
+        // the pad inside it — which is the whole of why it cannot be hit.
+        public static Sprite Avoid(BoardPalette p, int sizePx)
         {
-            return Cached($"clear:{sizePx}:{p.GlyphKey}", () =>
+            return Cached($"avoid:{sizePx}:{p.GlyphKey}", () =>
             {
                 var c = new GlyphCanvas(sizePx);
                 c.Stroke(Ring(8.8f), 4f, p.CopperLo, false, true);
                 c.Circle(20f, 20f, 4.1f, p.Copper);
                 c.Circle(20f, 20f, 3.3f, p.CopperHi);
-                return c.ToSprite($"mark_CLEAR_{sizePx}");
+                return c.ToSprite($"mark_AVOID_{sizePx}");
             });
         }
 
