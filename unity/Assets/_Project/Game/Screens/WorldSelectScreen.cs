@@ -89,10 +89,12 @@ namespace GridInfect.Game
                 // the row's centre line to sit above it.
                 button.Label.transform.localPosition = new Vector3(0f, L.ButtonHeight * 0.1f, 0f);
 
+                // Right-anchored: the counts are two widths (9/12, 10/12)
+                // and a centred readout put them in two different places.
                 var progress = Ui.MakeText($"progress:{world.Id}", button.Root.transform,
                     $"{done}/{world.Count}", L.LabelText,
-                    clear ? BoardTheme.TextOnAccent : BoardTheme.Accent, 22);
-                Ui.SetPos(progress.gameObject, L.ContentWidth / 2f - L.Gap * 2.5f, L.ButtonHeight * 0.1f);
+                    clear ? BoardTheme.TextOnAccent : BoardTheme.Accent, 22, anchor: TextAnchor.MiddleRight);
+                Ui.SetPos(progress.gameObject, L.ContentWidth / 2f - L.Gap, L.ButtonHeight * 0.1f);
 
                 Meter(button.Root.transform, size, Queries.WorldInfection(profile, world.Id));
             }

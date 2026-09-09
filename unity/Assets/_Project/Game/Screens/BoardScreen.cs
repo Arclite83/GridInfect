@@ -567,7 +567,13 @@ namespace GridInfect.Game
             OpenPopup("COMPLETE");
             float y = -Short * 0.06f;
             float step = L.ContentWidth / 3f;
-            var size = new Vector2(step * 0.82f, L.BarHeight);
+            // Three chips on a step, so the box is the step less the room a
+            // chip needs beside it: at 0.82 of the step the boxes cleared
+            // each other by 21 px and their copper pads, which want 28
+            // between boxes, sat one on top of the next. It is also what the
+            // haloes want — two lit chips a ChipPadSpan apart meet at the
+            // midpoint rather than glowing through each other.
+            var size = new Vector2(step - L.ChipPadSpan, L.BarHeight);
             AddPopupButton("MENU", new Vector2(-step, y), size, GoBack);
             AddPopupButton("REPLAY", new Vector2(0f, y), size, replay);
             if (next != null)

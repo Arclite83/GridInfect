@@ -173,7 +173,7 @@ namespace GridInfect.Game
                 g.FillTop = BoardPalette.Alpha(Color.Lerp(tint, P.Tip, 0.12f), 0.95f);
                 g.FillBottom = BoardPalette.Alpha(tint, 0.9f);
                 g.Glow = BoardPalette.Alpha(tint, 0.45f);
-                g.GlowPx = 14f;
+                g.GlowPx = S.ChipGlow;
             }
             return g;
         }

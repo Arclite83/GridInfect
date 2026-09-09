@@ -297,15 +297,24 @@ namespace GridInfect.Game
             Ui.SetPos(_slotCaption.gameObject, slotX, y - slot / 2f - S.Px(12f));
 
             float infoX = slotX + slot / 2f + S.Px(22f);
+            float readout = S.Px(12f);
+            float bestY = y - S.Px(8f);
             _dateLine = Ui.MakeText("date", Root.transform, "", S.Px(16f), BoardTheme.Text, 6, anchor: TextAnchor.MiddleLeft);
             Ui.SetPos(_dateLine.gameObject, infoX, y + S.Px(24f));
-            _infoLine = Ui.MakeText("band", Root.transform, "", S.Px(12f), BoardTheme.Text, 6, mono: true, anchor: TextAnchor.MiddleLeft);
+            _infoLine = Ui.MakeText("band", Root.transform, "", readout, BoardTheme.Text, 6, mono: true, anchor: TextAnchor.MiddleLeft);
             Ui.SetPos(_infoLine.gameObject, infoX, y + S.Px(8f));
-            _bestLine = Ui.MakeText("best", Root.transform, "", S.Px(12f), BoardTheme.Text, 6, mono: true, anchor: TextAnchor.MiddleLeft);
-            Ui.SetPos(_bestLine.gameObject, infoX, y - S.Px(8f));
+            _bestLine = Ui.MakeText("best", Root.transform, "", readout, BoardTheme.Text, 6, mono: true, anchor: TextAnchor.MiddleLeft);
+            Ui.SetPos(_bestLine.gameObject, infoX, bestY);
 
+            // BEGIN is a lit chip, and a lit chip is bigger than its box: it
+            // carries L.ChipGlow of halo all the way round. Centred a flat
+            // 32 px down it cleared COMPLETE by two pixels and its halo
+            // cleared nothing at all, so the readout's last line sat inside
+            // the glow. The chip is hung off that line instead: half the
+            // line, the halo, a gap, half the chip.
             _playSize = new Vector2(L.ContentWidth * 0.36f, L.BarHeight);
-            _playCentre = new Vector2(infoX + _playSize.x / 2f, y - S.Px(32f));
+            _playCentre = new Vector2(infoX + _playSize.x / 2f,
+                bestY - readout / 2f - L.ChipGlow - S.Px(S.Gap) - _playSize.y / 2f);
         }
 
         // The slot reads the selected day: the date, its tier band, the bug
@@ -478,9 +487,14 @@ namespace GridInfect.Game
                                 Inputs.EndlessBegin(grade, (long)seed)).Applied,
                             ready: () => LevelCache.Shared.Has(DailySpec.Endless(grade), seed));
                     }));
+                // Hung off the row's right edge, not centred on a fixed x:
+                // a centred readout grows both ways, so BEST 100 reached
+                // past the row that carries it while BEST 7 sat somewhere
+                // else again. Right-anchored, the column is straight and
+                // nothing can walk over the edge.
                 var best = Ui.MakeText($"best:{g}", Root.transform, $"BEST {profile.EndlessBest[g - 1]}",
-                    L.LabelText, BoardTheme.Accent, 2);
-                Ui.SetPos(best.gameObject, L.ContentWidth / 2f - L.Gap * 2.5f, y);
+                    L.LabelText, BoardTheme.Accent, 2, anchor: TextAnchor.MiddleRight);
+                Ui.SetPos(best.gameObject, L.ContentWidth / 2f - L.Gap, y);
             }
         }
     }

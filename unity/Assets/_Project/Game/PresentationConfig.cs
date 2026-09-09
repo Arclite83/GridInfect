@@ -77,14 +77,24 @@ namespace GridInfect.Game
             public static float IconChip => ShortEdge * 0.10f;
             public static float Gap => ShortEdge * 0.035f;
 
-            // Two chips sitting side by side are wider than they look: every
-            // chip wears a copper pad either side, a ChipPadDot dot centred
-            // ChipPadGap out from its edge, so a chip really reaches
-            // ChipPadGap + ChipPadDot/2 past its own box. Centres this far
-            // apart leave a dot's width of dark between the inner two pads
-            // instead of stacking them on top of each other.
-            public static float ChipPitch(float chipWidth) =>
-                chipWidth + Style.Px(2f * (Style.ChipPadGap + Style.ChipPadDot));
+            // A chip is bigger than its box, and nothing placed next to one
+            // may be measured from the box alone.
+            //
+            // Sideways: it wears a copper pad either side, a ChipPadDot dot
+            // centred ChipPadGap out from its edge, so it reaches
+            // ChipPadGap + ChipPadDot/2 past itself. ChipPadSpan is the room
+            // two neighbours must leave between their boxes — it clears both
+            // pads and leaves a dot's width of dark between them, rather than
+            // stacking the two dots on top of each other.
+            //
+            // Above and below: a plain chip stops at its box, but a lit one
+            // (BoardTheme.Chip haloes an accent) throws ChipGlow of light
+            // past it, which is what a line of type above it has to clear.
+            public static float ChipPadSpan => Style.Px(2f * (Style.ChipPadGap + Style.ChipPadDot));
+            public static float ChipGlow => Style.Px(Style.ChipGlow);
+
+            // Centres this far apart for two chips of this width side by side.
+            public static float ChipPitch(float chipWidth) => chipWidth + ChipPadSpan;
 
             public static float TitleText => ShortEdge * 0.095f;
             public static float HeadingText => ShortEdge * 0.05f;
@@ -149,6 +159,7 @@ namespace GridInfect.Game
             public const float ChipRadius = 7f;
             public const float ChipPadDot = 5f;        // the copper pad either side of a chip
             public const float ChipPadGap = 9f;        // pad centre from the chip edge
+            public const float ChipGlow = 14f;         // a lit chip's halo, past its box on every side
             public const float BadgeText = 13f;
             public const float BadgeTop = 52f;
             public const float BadgePadX = 12f;
