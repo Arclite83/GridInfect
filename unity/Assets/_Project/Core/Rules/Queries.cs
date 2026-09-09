@@ -37,6 +37,24 @@ namespace GridInfect.Core
             return world != null && world.Count > 0 && WorldLevelsSolved(profile, worldId) >= world.Count;
         }
 
+        // The two clean-sweep marks. Nothing in the game is gated on
+        // progress any more except the board skins, which are the reward for
+        // one: blue for every world, breadboard for all 128 Legacy levels.
+        // Which skin needs which is the adapter's business (SettingsScreen),
+        // as unlock gating has always been presentation policy.
+        public static bool AllWorldsSolved(Profile profile)
+        {
+            if (Worlds.Count == 0) return false;
+            foreach (World world in Worlds.All)
+            {
+                if (!IsWorldSolved(profile, world.Id)) return false;
+            }
+            return true;
+        }
+
+        public static bool AllClassicSolved(Profile profile) =>
+            profile.SolvedClassic.Count >= ClassicLevels.Count;
+
         // A replay: the level in play has already been beaten once, so the
         // Lock tool is on the house (a hint cannot cost what the player has
         // already paid). Read straight off the solved set now that one

@@ -67,11 +67,16 @@ namespace GridInfect.Game
         // one moves, move the other.
 
         // A dormant component: the shader's GlassComponent at tint 0.
-        public static GlassStyle CellEmpty() => new GlassStyle
+        public static GlassStyle CellEmpty()
         {
-            FillTop = White(0.34f), FillMid = White(0.08f), MidStop = 0.55f, FillBottom = White(0.16f),
-            Radius = S.TileRadius, Border = White(0.25f), BorderPx = 1f, TopLight = White(0.6f),
-        };
+            var space = P.Space;
+            return new GlassStyle
+            {
+                FillTop = BoardPalette.Alpha(space, 0.34f), FillMid = BoardPalette.Alpha(space, 0.08f),
+                MidStop = 0.55f, FillBottom = BoardPalette.Alpha(space, 0.16f),
+                Radius = S.TileRadius, Border = White(0.25f), BorderPx = 1f, TopLight = White(0.6f),
+            };
+        }
 
         // The same component tinted: the repel chip and the trap chip.
         public static GlassStyle CellChip(Color tint, float amount)

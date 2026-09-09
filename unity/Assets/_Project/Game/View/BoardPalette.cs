@@ -44,6 +44,10 @@ namespace GridInfect.Game
         public Color GlyphEdge = Hex("#4A0018");    // leads, body outline
         public Color GlyphWire = Hex("#300010");    // bond wires, stubs, pads
 
+        // The glass of a cell still to infect. Not a neutral: it is read
+        // against the solder mask, so it inverts on a light one.
+        public Color Space = Hex("#FFFFFF");
+
         // ---- neutrals, constant across skins ----
         public Color Tip = Hex("#FFFFFF");          // lit lead tips, highlights, core dot
         public Color BlockerBody = Hex("#CFD8E0");
@@ -97,6 +101,7 @@ namespace GridInfect.Game
                         p.Infect = Hex("#FF8A00"); p.InfectHi = Hex("#FFB347"); p.InfectLo = Hex("#C25A00");
                         p.InfectGlow = Alpha(Hex("#FF8A00"), 0.55f);
                         p.GlyphEdge = Hex("#4A2600"); p.GlyphWire = Hex("#3A1D00");
+                        p.Space = Hex("#FFFFFF");
                         break;
                     case SkinId.Breadboard:
                         p.Mask = Hex("#E9DCB8"); p.MaskHi = Hex("#F4EAD0"); p.MaskLo = Hex("#CDBB8C"); p.Ink = Hex("#3C2E12");
@@ -104,6 +109,10 @@ namespace GridInfect.Game
                         p.Infect = Hex("#FF2D3A"); p.InfectHi = Hex("#FF6B6B"); p.InfectLo = Hex("#B3101C");
                         p.InfectGlow = Alpha(Hex("#FF2D3A"), 0.5f);
                         p.GlyphEdge = Hex("#5A0008"); p.GlyphWire = Hex("#3A0008");
+                        // The one skin whose mask is lighter than its glass:
+                        // white on cream had no cell edge at all, so a space
+                        // is a recess here rather than a highlight.
+                        p.Space = Hex("#4A3A22");
                         break;
                     default:
                         p.Mask = Hex("#7FAE66"); p.MaskHi = Hex("#97C27C"); p.MaskLo = Hex("#5F8B4A"); p.Ink = Hex("#1D3316");
@@ -111,6 +120,7 @@ namespace GridInfect.Game
                         p.Infect = Hex("#D9204F"); p.InfectHi = Hex("#FF6E93"); p.InfectLo = Hex("#8F0A32");
                         p.InfectGlow = Alpha(Hex("#D9204F"), 0.55f);
                         p.GlyphEdge = Hex("#4A0018"); p.GlyphWire = Hex("#300010");
+                        p.Space = Hex("#FFFFFF");
                         break;
                 }
             }

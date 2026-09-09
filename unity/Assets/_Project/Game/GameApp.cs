@@ -117,10 +117,29 @@ namespace GridInfect.Game
         // re-reads the palette on build, so the caller shows a screen after.
         public void ApplySkin()
         {
-            BoardPalette.SetSkin((BoardPalette.SkinId)State.Profile.Skin);
+            // A skin that is no longer earned falls back rather than being
+            // worn anyway: clearing progress takes the reward with it, and it
+            // comes back when the sweep does. The profile keeps the choice.
+            var skin = (BoardPalette.SkinId)State.Profile.Skin;
+            if (!SkinEarned(skin)) skin = BoardPalette.SkinId.Default;
+            BoardPalette.SetSkin(skin);
             BugGlyph.ClearCache();
             Substrate.Restyle(BoardPalette.Default);
             if (_camera != null) _camera.backgroundColor = BoardTheme.Background;
+        }
+
+        // The one thing left in the game behind progress: blue for every
+        // world beaten, breadboard for all 128 Legacy levels. Gating is
+        // presentation policy (ARCHITECTURE §3), so it lives here and not in
+        // settings.skin, which will set anything a test asks for.
+        public bool SkinEarned(BoardPalette.SkinId skin)
+        {
+            switch (skin)
+            {
+                case BoardPalette.SkinId.Blue: return Queries.AllWorldsSolved(State.Profile);
+                case BoardPalette.SkinId.Breadboard: return Queries.AllClassicSolved(State.Profile);
+                default: return true;
+            }
         }
 
         public ActionResult Do(string action, Dictionary<string, object> input = null)

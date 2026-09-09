@@ -57,7 +57,7 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 
 | ID | Pri | Requirement | Trace |
 |---|---|---|---|
-| R-201 | CUT | Chain unlock dropped: all 128 Legacy levels are playable from a fresh install, and so is every world and world level. Solving still advances to the next level for a player who does not want to pick. (Original gated each level behind the one before it.) | MODES §1.1; **changed from original** |
+| R-201 | CUT | Chain unlock dropped: all 128 Legacy levels are playable from a fresh install, and so is every world and world level. Solving still advances to the next level for a player who does not want to pick. The only thing left behind progress is the two earned board skins (R-1002). (Original gated each level behind the one before it.) | MODES §1.1; **changed from original** |
 | R-202 | MVP | Level-select shows all 128 levels with solved state — an infected tile carrying the solved tick (R-1001: never colour alone), not a padlock. World select carries an infection meter per world. Solved levels persist immediately. (The original's 4×32 paging is presentation; the overhaul re-laid it out 4×8.) | MODES §1.1 |
 | R-203 | MVP | Solved popup with Menu / Replay / Next actions; Next absent on level 128; Replay on a solved level reloads fresh. | MODES §1.1 |
 | R-204 | LATER | Tutorial guidance on level ids 0, 2, 4, 9, 25, 28, re-authored as real text (copy verbatim from ASSETS §7 — "bugs" fiction included); the baked message bitmaps are not reused. | MODES §1.1; ASSETS §7 |
@@ -131,6 +131,7 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 
 | ID | Pri | Requirement | Trace |
 |---|---|---|---|
+| R-1002 | MVP | Three board skins, chosen in settings and persisted. Green ships; blue is earned by solving every world, breadboard by solving all 128 Legacy levels. A locked skin shows its colours muted under a padlock with what it wants written under it. A skin no longer earned falls back to green and returns when the sweep does. | STYLE-GUIDE §2 |
 | R-1001 | MVP | Cell states distinguishable by shape/glyph/pattern, never color alone — the original's pure blue/red/yellow/purple/black coding fails colorblind players. Baked into the new tile art from the start (retrofit is dearer). | **NEW — needs approval** |
 | R-1002 | LATER | Touch targets: board cells and tray pieces ≥ 48 dp effective hit area (original cells at 11 % of screen height already clear this on phones; verify on small devices). | **NEW**; layout baseline ASSETS §6 |
 | R-1003 | LATER | All text is real, scalable TextMeshPro text — no text baked into bitmaps (pairs with R-204). | **NEW** |

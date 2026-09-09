@@ -21,13 +21,17 @@ namespace GridInfect.Game
                 L.BodyText, BoardTheme.TextDim, 2);
             Ui.SetPos(subtitle.gameObject, 0f, h * 0.28f - L.TitleText * 0.9f - L.BodyText);
 
-            // PLAY is the worlds (stage 3), DAILY and ENDLESS replace timed
-            // Free Play (stage 4; its actions stay for log replay), and the
-            // 128 classic levels live on as LEGACY: unchanged rules, no hints.
+            // DAILY and ENDLESS replace timed Free Play (stage 4; its actions
+            // stay for log replay), and the 128 classic levels live on as
+            // LEGACY: unchanged rules, no hints. Four ways in, none of them
+            // louder than the others.
             var size = new Vector2(L.ContentWidth, L.ButtonHeight);
-            Buttons.Add(UiButton.Make(Root.transform, "PLAY",
+            // WORLDS, and plain glass: it says where it goes, and the
+            // infection is what a beaten level wears now — a menu row in the
+            // same red reads as one already done.
+            Buttons.Add(UiButton.Make(Root.transform, "WORLDS",
                 new Vector2(0f, L.StackRowY(0, 4, L.ButtonHeight, 0f)), size,
-                BoardTheme.Primary, BoardTheme.TextOnAccent, () => App.Screens.Show(new WorldSelectScreen())));
+                BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new WorldSelectScreen())));
             Buttons.Add(UiButton.Make(Root.transform, "DAILY",
                 new Vector2(0f, L.StackRowY(1, 4, L.ButtonHeight, 0f)), size,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new DailyScreen())));

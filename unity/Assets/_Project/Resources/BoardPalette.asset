@@ -25,6 +25,7 @@ MonoBehaviour:
   InfectGlow: {r: 0.85098, g: 0.12549, b: 0.309804, a: 0.55}
   GlyphEdge: {r: 0.290196, g: 0, b: 0.094118, a: 1}
   GlyphWire: {r: 0.188235, g: 0, b: 0.062745, a: 1}
+  Space: {r: 1, g: 1, b: 1, a: 1}
   Tip: {r: 1, g: 1, b: 1, a: 1}
   BlockerBody: {r: 0.811765, g: 0.847059, b: 0.878431, a: 1}
   BlockerEdge: {r: 0.301961, g: 0.337255, b: 0.372549, a: 1}
