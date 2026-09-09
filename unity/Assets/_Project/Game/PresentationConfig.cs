@@ -77,6 +77,15 @@ namespace GridInfect.Game
             public static float IconChip => ShortEdge * 0.10f;
             public static float Gap => ShortEdge * 0.035f;
 
+            // Two chips sitting side by side are wider than they look: every
+            // chip wears a copper pad either side, a ChipPadDot dot centred
+            // ChipPadGap out from its edge, so a chip really reaches
+            // ChipPadGap + ChipPadDot/2 past its own box. Centres this far
+            // apart leave a dot's width of dark between the inner two pads
+            // instead of stacking them on top of each other.
+            public static float ChipPitch(float chipWidth) =>
+                chipWidth + Style.Px(2f * (Style.ChipPadGap + Style.ChipPadDot));
+
             public static float TitleText => ShortEdge * 0.095f;
             public static float HeadingText => ShortEdge * 0.05f;
             public static float LabelText => ShortEdge * 0.04f;

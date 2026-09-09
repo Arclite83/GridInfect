@@ -59,9 +59,12 @@ namespace GridInfect.Game
                 new Vector2(-L.BackPos.x, L.BackPos.y), chip, () => App.Screens.Show(new SettingsScreen())));
 
             // The rules sit beside it, reachable before the first tap on
-            // anything else — which is when a player wants them.
+            // anything else — which is when a player wants them. ChipPitch,
+            // not a bare gap: at chip.x + Gap * 0.7 the two chips cleared
+            // each other but their copper pads did not, so the help mark and
+            // the gear looked joined by one smear of yellow dots.
             Buttons.Add(UiButton.MakeIcon(Root.transform, "help", BugGlyph.Question(palette, icon),
-                new Vector2(-L.BackPos.x - chip.x - L.Gap * 0.7f, L.BackPos.y), chip,
+                new Vector2(-L.BackPos.x - L.ChipPitch(chip.x), L.BackPos.y), chip,
                 () => App.Screens.Show(new RulesScreen())));
         }
     }
