@@ -135,6 +135,50 @@ namespace GridInfect.Core.Tests
                 Inputs.SolvedWorld(Worlds.First.Id, Worlds.First.Count)).Applied, Is.False);
         }
 
+        // The action that loads an Endless board, the warmer that generates
+        // it ahead of time and the loading card that waits for it all name a
+        // seed. If they ever disagreed the card would wait on a board nobody
+        // was making, so the arithmetic is one method and this pins it.
+        [Test]
+        public void EndlessLevelSeedsFollowTheRunStride()
+        {
+            var run = new EndlessRun { Seed = 4_242, Index = 3 };
+
+            Assert.That(run.SeedAt(0), Is.EqualTo(4_242ul));
+            Assert.That(run.SeedAt(1), Is.EqualTo(4_242ul + EndlessRun.Stride));
+            Assert.That(run.NextSeed, Is.EqualTo(run.SeedAt(4)));
+            Assert.That(EndlessRun.Stride, Is.GreaterThan((ulong)LevelCache.MaxSeedTries),
+                "two levels of a run must never scan into each other");
+        }
+
+        // A run advanced n times must land on the seed the warmer had been
+        // generating for that index all along.
+        [Test]
+        public void EndlessAdvanceLandsOnTheWarmedSeed()
+        {
+            var dispatcher = GridInfectActions.CreateDispatcher();
+            Assert.That(dispatcher.Dispatch(GridInfectActions.EndlessBegin,
+                Inputs.EndlessBegin(Solving.Grade.G1, 777)).Applied);
+            var run = dispatcher.State.EndlessRun;
+            ulong expected = run.NextSeed;
+
+            SolveCurrentEndlessLevel(dispatcher);
+            Assert.That(dispatcher.Dispatch(GridInfectActions.EndlessAdvance).Applied);
+
+            Assert.That(dispatcher.State.EndlessRun.Index, Is.EqualTo(1));
+            Assert.That(dispatcher.State.EndlessRun.SeedAt(1), Is.EqualTo(expected));
+            Assert.That(dispatcher.State.EndlessRun.LevelSeed, Is.GreaterThanOrEqualTo(expected));
+        }
+
+        static void SolveCurrentEndlessLevel(Bloodhound.Engine.Dispatcher<GameState> dispatcher)
+        {
+            foreach (var (piece, cell) in dispatcher.State.Solution)
+            {
+                dispatcher.Dispatch(GridInfectActions.PiecePlace, Inputs.PiecePlace(piece, cell / Grid.Width, cell % Grid.Width));
+                dispatcher.Dispatch(GridInfectActions.BoardResolve);
+            }
+        }
+
         [Test]
         public void FreePlayRunRecordsBestTimeAndCount()
         {

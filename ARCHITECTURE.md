@@ -99,7 +99,7 @@ live in `Queries` and carry zero rules.
 | `progress.unlockWorldLevel` | `worldId, index` | WorldActions | *retired gate.* |
 | `daily.begin` | `dateUtc, nowMs` | DailyActions | the board for that UTC date (the weekday's spec at the date's seed range, `DailyCalendar`, through `LevelCache`); any date from the epoch to the clock's own UTC date, so past days play from the calendar; places the level's locks; clock starts |
 | `daily.complete` | `nowMs` | DailyActions | solved: elapsed, personal best per date; the streak counts dates solved on the day, so it moves only when the run's date is the clock's own UTC date (`StreakGrantDue` every 7th); rejects a backward clock |
-| `endless.begin` | `grade, seed` | DailyActions | start an Endless run: no clock, boards from the logged seed |
+| `endless.begin` | `grade, seed` | DailyActions | start an Endless run: no clock, boards from the logged seed (`EndlessRun.SeedAt` — one definition, shared with the warmer and the loading card) |
 | `endless.advance` | — | DailyActions | solved: streak +1 (or 1 after a reset), best per grade, next board |
 | `endless.abort` | — | DailyActions | leave a run |
 | `piece.lock` | — | LockActions | spend one lock: the deducer's next forced placement from the player's correct pieces (fallback: largest-coverage unplaced piece of the stored solution), evicting a player piece on that cell, placed and locked; rejects at wallet 0 or nothing left. Free on a replay (`Queries.IsReplay`): an already-beaten level never charges for a hint |

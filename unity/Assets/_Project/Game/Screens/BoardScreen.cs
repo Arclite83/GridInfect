@@ -482,12 +482,16 @@ namespace GridInfect.Game
             else if (App.State.Mode == GameMode.Endless)
             {
                 // No popup between Endless levels — the streak is in the HUD —
-                // but the next board is generated here on the device, and the
-                // high grades are seconds of solver work. That goes behind the
-                // transition's LOADING card instead of stopping the frame with
-                // the solved board still on screen.
+                // but the next board is generated on the device, and the high
+                // tiers are seconds of solver work. The card waits for the
+                // worker to land it (Warmup keeps three ahead, so normally it
+                // already has) rather than the main thread doing it.
+                var endlessRun = App.State.EndlessRun;
+                var spec = DailySpec.Endless(endlessRun.Grade);
+                ulong nextSeed = endlessRun.NextSeed;
                 App.Screens.Show(new BoardScreen(),
-                    prepare: () => App.Do(GridInfectActions.EndlessAdvance).Applied);
+                    prepare: () => App.Do(GridInfectActions.EndlessAdvance).Applied,
+                    ready: () => LevelCache.Shared.Has(spec, nextSeed));
             }
             else
             {

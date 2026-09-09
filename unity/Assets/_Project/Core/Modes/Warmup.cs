@@ -10,6 +10,11 @@ namespace GridInfect.Core
     {
         const int RecentDays = 6;
 
+        // How many Endless boards to keep ahead of the player. One was not
+        // enough: a fast solve outruns a one-deep queue, and then the next
+        // board is a wait rather than an instant.
+        public const int EndlessLookahead = 3;
+
         // At boot: today's daily, the recent unsolved dailies (the archive
         // the player reaches for), then Endless's opening board per grade
         // for the run seed the adapter has picked.
@@ -52,13 +57,28 @@ namespace GridInfect.Core
             }
         }
 
-        // After any applied action: in Endless, the next board is the one
-        // thing the player is certainly about to need.
+        // A run the player is about to start: its opening board first, then
+        // the ones after it. Called when the tier is picked, so the worker is
+        // on the board the loading card is waiting for rather than on the
+        // openers of four tiers nobody chose.
+        public static void ForEndlessRun(LevelCache cache, Grade grade, ulong seed)
+        {
+            for (int ahead = 0; ahead < EndlessLookahead; ahead++)
+            {
+                cache.Prefetch(DailySpec.Endless(grade), seed + (ulong)ahead * EndlessRun.Stride, ahead - 1);
+            }
+        }
+
+        // After any applied action: in Endless, the boards the player is
+        // certainly about to need.
         public static void AfterAction(LevelCache cache, GameState state)
         {
             if (state.Mode != GameMode.Endless || state.EndlessRun == null) return;
             var run = state.EndlessRun;
-            cache.Prefetch(DailySpec.Endless(run.Grade), run.Seed + (ulong)(run.Index + 1) * BeginEndlessAction.Stride, 0);
+            for (int ahead = 1; ahead <= EndlessLookahead; ahead++)
+            {
+                cache.Prefetch(DailySpec.Endless(run.Grade), run.SeedAt(run.Index + ahead), ahead - 1);
+            }
         }
     }
 }

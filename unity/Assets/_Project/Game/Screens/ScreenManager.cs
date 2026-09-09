@@ -37,11 +37,21 @@ namespace GridInfect.Game
     // A navigation may carry `prepare` — the dispatch that loads or generates
     // the level the next screen is going to draw. It runs at full black, one
     // presented frame after the LOADING card goes up, so an on-device
-    // generation (Endless G5 is seconds of solver work) is a screen that says
+    // generation (Endless T5 is seconds of solver work) is a screen that says
     // what it is doing rather than a menu that stops answering. Input is shut
     // off for the whole transition (GameApp reads Transitioning), which is
     // what stops a stray tap during the stall landing on whatever button the
     // next screen happens to put under the finger.
+    //
+    // It may also carry `ready`: is the board this navigation needs already
+    // in the cache? While that says no the card simply stays up and the
+    // frame keeps running, so the generation happens on the worker thread
+    // and the main thread never goes away. Without it, entering a mode whose
+    // board had not been warmed blocked the main thread for however long the
+    // solver took — seconds at the top of the ramp, long enough for the OS
+    // to call the app hung. The wait gives up after ReadyTimeout and
+    // generates inline anyway, so a prefetch that failed or was evicted is a
+    // slow entry, never a stuck one.
     public sealed class ScreenManager
     {
         public AppScreen Current { get; private set; }
@@ -49,14 +59,21 @@ namespace GridInfect.Game
 
         enum Phase { None, FadeOut, Working, FadeIn }
 
+        // How long the card will wait on the worker before doing the work
+        // itself. Longer than any board takes to generate on a phone.
+        const float ReadyTimeout = 20f;
+
         readonly GameApp _app;
         readonly SpriteRenderer _fade;
         readonly TextMesh _loading;
+
         Phase _phase = Phase.None;
         float _phaseTime;
+        float _waited;
         int _workFrames;
         AppScreen _next;
         System.Func<bool> _prepare;
+        System.Func<bool> _ready;
 
         public ScreenManager(GameApp app)
         {
@@ -74,8 +91,11 @@ namespace GridInfect.Game
         }
 
         // `prepare` returns false to call the navigation off: the current
-        // screen stays, and the fade simply comes back up on it.
-        public void Show(AppScreen next, bool instant = false, System.Func<bool> prepare = null)
+        // screen stays, and the fade simply comes back up on it. `ready` is
+        // polled under the LOADING card until the work `prepare` needs has
+        // landed on the worker.
+        public void Show(AppScreen next, bool instant = false, System.Func<bool> prepare = null,
+            System.Func<bool> ready = null)
         {
             if (instant || Current == null)
             {
@@ -87,8 +107,10 @@ namespace GridInfect.Game
             }
             _next = next;
             _prepare = prepare;
+            _ready = ready;
             _phase = Phase.FadeOut;
             _phaseTime = 0f;
+            _waited = 0f;
         }
 
         public void Update(float dt)
@@ -97,13 +119,15 @@ namespace GridInfect.Game
 
             if (_phase == Phase.Working)
             {
-                // Frame 0 only puts the card up; the blocking call waits for
-                // frame 1, so the player has actually seen it before the main
-                // thread goes away.
+                // Frame 0 only puts the card up; the call waits for frame 1,
+                // so the player has actually seen it first.
                 if (_workFrames++ == 0) return;
+                _waited += dt;
+                if (_ready != null && _waited < ReadyTimeout && !_ready()) return;
                 _loading.gameObject.SetActive(false);
                 bool ok = _prepare == null || _prepare();
                 _prepare = null;
+                _ready = null;
                 if (ok)
                 {
                     Swap();

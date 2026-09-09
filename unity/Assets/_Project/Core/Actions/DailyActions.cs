@@ -103,8 +103,6 @@ namespace GridInfect.Core
     // play (Warmup), and the loader covers a miss.
     public sealed class BeginEndlessAction : GameAction<GameState>
     {
-        public const ulong Stride = 100_000;
-
         public override string Name => "endless.begin";
 
         public override string Validate(GameState state, ActionInput input)
@@ -158,7 +156,7 @@ namespace GridInfect.Core
                 state.Profile.EndlessBest[g] = run.Streak;
                 state.Profile.Dirty = true;
             }
-            var level = DailySpec.FirstAccepted(DailySpec.Endless(run.Grade), run.Seed + (ulong)run.Index * BeginEndlessAction.Stride)
+            var level = DailySpec.FirstAccepted(DailySpec.Endless(run.Grade), run.SeedAt(run.Index))
                         ?? throw new InvalidOperationException("no endless board from this seed");
             run.LevelSeed = level.Seed;
             state.Solution = level.Solution;

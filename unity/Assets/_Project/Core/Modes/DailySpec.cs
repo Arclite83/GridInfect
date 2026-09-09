@@ -112,10 +112,23 @@ namespace GridInfect.Core
 
     public sealed class EndlessRun
     {
+        // Level n of a run scans from Seed + n * Stride; the stride leaves
+        // the cache's MaxSeedTries room, so two levels never share a seed.
+        public const ulong Stride = 100_000;
+
         public Solving.Grade Grade;
-        public ulong Seed;             // run seed; level n starts its seed search at Seed + n * stride
+        public ulong Seed;             // run seed
         public int Index;              // levels solved so far in the run
         public int Streak;             // solves in a row without a reset
         public ulong LevelSeed;        // the accepted seed of the current level
+
+        // Where level `index` of this run starts its seed search. One
+        // definition: the action that loads the board, the warmer that
+        // generates it ahead of time and the loading card that waits for it
+        // all have to name the same seed, or the card waits for a board
+        // nobody is making.
+        public ulong SeedAt(int index) => Seed + (ulong)index * Stride;
+
+        public ulong NextSeed => SeedAt(Index + 1);
     }
 }

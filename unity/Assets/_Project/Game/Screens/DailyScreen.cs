@@ -394,9 +394,15 @@ namespace GridInfect.Game
             // (ScreenManager.Show): a cached board lands at once, an
             // ungenerated one generates there, and a rejection cancels the
             // navigation instead of landing on an empty board.
+            // To the front of the queue, so the card is waiting on something
+            // the worker is actually on: `ready` only ever clears because a
+            // prefetch landed.
             string dateUtc = DailySpec.Format(date);
-            App.Screens.Show(new BoardScreen(), prepare: () =>
-                App.Do(GridInfectActions.DailyBegin, Inputs.DailyBegin(dateUtc, GameApp.NowMs())).Applied);
+            LevelCache.Shared.Prefetch(DailySpec.For(date.DayOfWeek), DailySpec.SeedFor(date), -1);
+            App.Screens.Show(new BoardScreen(),
+                prepare: () => App.Do(GridInfectActions.DailyBegin,
+                    Inputs.DailyBegin(dateUtc, GameApp.NowMs())).Applied,
+                ready: () => DailyCalendar.IsReady(date));
         }
 
         // ---- materials: the guide's tile table, in glass ----
@@ -456,14 +462,17 @@ namespace GridInfect.Game
                 Buttons.Add(UiButton.Make(Root.transform, Queries.TierName(grade), new Vector2(0f, y), size,
                     BoardTheme.ButtonBg, BoardTheme.Text, () =>
                     {
-                        // The run seed was picked at boot and its opening
-                        // boards have been generating since (Warmup); the
-                        // seed enters the log, so the run replays. A board
-                        // the cache has not reached yet generates behind
-                        // the transition's LOADING card rather than freezing
-                        // this menu with its buttons still live.
-                        App.Screens.Show(new BoardScreen(), prepare: () =>
-                            App.Do(GridInfectActions.EndlessBegin, Inputs.EndlessBegin(grade, (long)App.TakeEndlessSeed())).Applied);
+                        // The seed is taken here rather than inside prepare:
+                        // the loading card has to know which board it is
+                        // waiting on, and taking it now also starts the run's
+                        // boards generating a beat earlier. It enters the log,
+                        // so the run still replays.
+                        ulong seed = App.TakeEndlessSeed();
+                        Warmup.ForEndlessRun(LevelCache.Shared, grade, seed);
+                        App.Screens.Show(new BoardScreen(),
+                            prepare: () => App.Do(GridInfectActions.EndlessBegin,
+                                Inputs.EndlessBegin(grade, (long)seed)).Applied,
+                            ready: () => LevelCache.Shared.Has(DailySpec.Endless(grade), seed));
                     }));
                 var best = Ui.MakeText($"best:{g}", Root.transform, $"BEST {profile.EndlessBest[g - 1]}",
                     L.LabelText, BoardTheme.Accent, 2);
