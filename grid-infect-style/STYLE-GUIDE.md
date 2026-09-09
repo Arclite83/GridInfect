@@ -60,9 +60,9 @@ Core: hexagon 20,9 30,14.5 30,25.5 20,31 10,25.5 10,14.5. Fill infect, stroke gl
 
 Orthogonal lead (N, E, S, W): rect 6×12 at (17,2) rx1 glyphEdge, tip rect 4×5 at (18,2) white. Two bond wires glyphWire 1px at x 14.5 and 25.5, straight y14→7, quadratic hook to y4.5 at x17/23. One branch stub per side leaving each bond wire outward at y7.5, length 3, pad r1.1.
 
-Diagonal lead (NE, SE, SW, NW): line x20 y14→6, glyphEdge 2.4; tip circle r3 glyphEdge with r2 white center. The lit tip is the arm's only bright element and has to read at 40 px, so the white carries the disc and the edge is a thin ring around it.
+Diagonal lead (NE, SE, SW, NW): line x20 y14.5→6.5, glyphEdge 2.6, wired like a squared lead: two bond wires glyphWire 1px at x 17.6 and 22.4, straight y13.5→8.5, quadratic hook to y6.6 at x18.6/21.4 (ending under the tip); one branch stub per side leaving each wire outward at y9.5, length 3, pad r1.1. Tip circle r3.2 glyphEdge with r2.1 white center, drawn last. The lit tip is the arm's only bright element and has to read at 40 px, so the white carries the disc and the edge is a thin ring around it; the wiring is what makes it a lead rather than a stray highlight.
 
-Body stubs: every inactive orthogonal edge gets three stubs from y10.5 at offsets -4/0/+4, lengths 3.5/2.5/3.5, pads on the outer two. Each hex vertex between two inactive edges and not occupied by a diagonal lead gets one stub, length 2.5, no pad.
+Body stubs: every inactive orthogonal edge gets three stubs from y10.5 at offsets -4/0/+4, lengths 3.5/2.5/3.5, pads on the outer two. An outer stub is dropped where an active diagonal lead sits beside it (the +4 stub for the lead 45° clockwise, the -4 stub for the one anticlockwise): the lead's branch pad lands on that spot. Each hex vertex between two inactive edges and not occupied by a diagonal lead gets one stub, length 2.5, no pad.
 
 Area bug: no leads. Four outer arcs `M12 8 Q20 3 28 8` glyphEdge 2px and four inner arcs `M14.5 12 Q20 9 25.5 12` glyphWire 1.2px, rotated 0/90/180/270. Core unchanged. No rim dots: white belongs to lit lead tips, and outside the body it read as four stray highlights — the arcs already describe the 3×3 footprint.
 

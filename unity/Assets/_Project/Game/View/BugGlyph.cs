@@ -347,18 +347,41 @@ namespace GridInfect.Game
             c.Circle(10.9f, 7.5f, 1.1f, p.GlyphWire);
         }
 
-        // Diagonal lead: line 20,14 -> 20,6 at 2.4, tip circle r 3 with a
-        // r 2 white centre. The lit tip is the arm's only bright element and
-        // it has to read at 40 px on a queued piece: at the spec's r 1.3 it
-        // is three pixels of white inside a dark disc, so the disc grows a
-        // little and the white grows a lot. Still the same ring of edge
-        // around it, just thinner.
+        // Diagonal lead: line 20,14.5 -> 20,6.5 at 2.6, and the same wiring
+        // a squared lead gets — two bond wires at x 17.6 / 22.4 running
+        // 13.5 -> 8.5 and hooking in under the tip, a branch stub with a pad
+        // leaving each wire outward at y 9.5 — under a tip circle r 3.2
+        // with a r 2.1 white centre. A bare line and a dot read as a stray
+        // highlight next to a wired squared lead; the wiring is what says
+        // "this is a lead too". The hooks end inside the tip ring, so the
+        // tip is drawn last and the wires go under it.
         static void Diag(GlyphCanvas c, float a, BoardPalette p)
         {
             c.SetTransform(a);
-            c.Stroke(new[] { 20f, 14f, 20f, 6f }, 2.4f, p.GlyphEdge);
-            c.Circle(20f, 5f, 3f, p.GlyphEdge);
-            c.Circle(20f, 5f, 2f, p.Tip);
+            c.Stroke(new[] { 20f, 14.5f, 20f, 6.5f }, 2.6f, p.GlyphEdge);
+            c.Stroke(new[] { 17.6f, 13.5f, 17.6f, 8.5f }, 1f, p.GlyphWire);
+            c.Quad(17.6f, 8.5f, 17.6f, 6.6f, 18.6f, 6.6f, 1f, p.GlyphWire, false);
+            c.Stroke(new[] { 22.4f, 13.5f, 22.4f, 8.5f }, 1f, p.GlyphWire);
+            c.Quad(22.4f, 8.5f, 22.4f, 6.6f, 21.4f, 6.6f, 1f, p.GlyphWire, false);
+            c.Stroke(new[] { 17.6f, 9.5f, 14.6f, 9.5f }, 1f, p.GlyphWire);
+            c.Circle(14f, 9.5f, 1.1f, p.GlyphWire);
+            c.Stroke(new[] { 22.4f, 9.5f, 25.4f, 9.5f }, 1f, p.GlyphWire);
+            c.Circle(26f, 9.5f, 1.1f, p.GlyphWire);
+            c.Circle(20f, 5.5f, 3.2f, p.GlyphEdge);
+            c.Circle(20f, 5.5f, 2.1f, p.Tip);
+        }
+
+        // The diagonal lead that sits clockwise (+45) or anticlockwise (-45)
+        // of an orthogonal edge, for the stubs that give way to it.
+        static Dir DiagAt(float angle)
+        {
+            switch (((int)angle % 360 + 360) % 360)
+            {
+                case 45: return Dir.UR;
+                case 135: return Dir.DR;
+                case 225: return Dir.DL;
+                default: return Dir.UL;
+            }
         }
 
         // A body pin: rotate(a 20 20) translate(t 0), line from y 10.5 up
@@ -371,16 +394,19 @@ namespace GridInfect.Game
         }
 
         // Three stubs on every inactive orthogonal edge, one on every vertex
-        // between two inactive edges that no diagonal lead occupies.
+        // between two inactive edges that no diagonal lead occupies. An
+        // edge's outer stub gives way to an active diagonal lead beside it:
+        // the lead's own branch pad lands exactly where that stub was, and
+        // two pads on top of each other read as a smudge.
         static void Body(GlyphCanvas c, HashSet<Dir> active, BoardPalette p)
         {
             foreach (var dir in Orth)
             {
                 if (active.Contains(dir)) continue;
                 float a = Angle(dir);
-                Pin(c, a, -4f, 3.5f, true, p);
+                if (!active.Contains(DiagAt(a - 45f))) Pin(c, a, -4f, 3.5f, true, p);
                 Pin(c, a, 0f, 2.5f, false, p);
-                Pin(c, a, 4f, 3.5f, true, p);
+                if (!active.Contains(DiagAt(a + 45f))) Pin(c, a, 4f, 3.5f, true, p);
             }
             foreach (var v in Verts)
             {

@@ -38,13 +38,18 @@ const rot=a=>`transform="rotate(${a} 20 20)"`;
 const lead =a=>`<g ${rot(a)}><rect x="17" y="2" width="6" height="12" rx="1" fill="${E}"/><rect x="18" y="2" width="4" height="5" fill="${T}"/></g>`;
 const bond =a=>`<g ${rot(a)} fill="none" stroke="${W}" stroke-width="1"><path d="M14.5 14 L14.5 7 Q14.5 4.5 17 4.5"/><path d="M25.5 14 L25.5 7 Q25.5 4.5 23 4.5"/></g>`;
 const stubs=a=>`<g ${rot(a)} stroke="${W}" stroke-width="1" fill="${W}"><line x1="25.5" y1="7.5" x2="28.5" y2="7.5"/><circle cx="29.1" cy="7.5" r="1.1"/><line x1="14.5" y1="7.5" x2="11.5" y2="7.5"/><circle cx="10.9" cy="7.5" r="1.1"/></g>`;
-const diag =a=>`<g ${rot(a)}><line x1="20" y1="14" x2="20" y2="6" stroke="${E}" stroke-width="2.4"/><circle cx="20" cy="5" r="3" fill="${E}"/><circle cx="20" cy="5" r="2" fill="${T}"/></g>`;
+const diag =a=>`<g ${rot(a)}><line x1="20" y1="14.5" x2="20" y2="6.5" stroke="${E}" stroke-width="2.6"/><g fill="none" stroke="${W}" stroke-width="1"><path d="M17.6 13.5 L17.6 8.5 Q17.6 6.6 18.6 6.6"/><path d="M22.4 13.5 L22.4 8.5 Q22.4 6.6 21.4 6.6"/><line x1="17.6" y1="9.5" x2="14.6" y2="9.5"/><line x1="22.4" y1="9.5" x2="25.4" y2="9.5"/></g><circle cx="14" cy="9.5" r="1.1" fill="${W}"/><circle cx="26" cy="9.5" r="1.1" fill="${W}"/><circle cx="20" cy="5.5" r="3.2" fill="${E}"/><circle cx="20" cy="5.5" r="2.1" fill="${T}"/></g>`;
 const pin=(a,t,len,pad)=>`<g transform="rotate(${a} 20 20) translate(${t} 0)" stroke="${W}" stroke-width="1.1" fill="${W}"><line x1="20" y1="10.5" x2="20" y2="${10.5-len}"/>${pad?`<circle cx="20" cy="${10.5-len-0.6}" r="1.1"/>`:""}</g>`;
 const core=(fill=F,edge=E,center=`<circle cx="20" cy="20" r="3" fill="${T}"/>`)=>`<polygon points="20,9 30,14.5 30,25.5 20,31 10,25.5 10,14.5" fill="${fill}" stroke="${edge}" stroke-width="1.6" stroke-linejoin="round"/><polygon points="20,11 28,15.5 20,20 12,15.5" fill="rgba(255,255,255,.4)"/>${center}`;
 
+// An edge's outer stub gives way to an active diagonal lead beside it (its branch pad lands where the stub was).
+const CW={N:"NE",E:"SE",S:"SW",W:"NW"}, CCW={N:"NW",E:"NE",S:"SE",W:"SW"};
 function body(active){
   let o="";
-  for(const d of ORTH){ if(active.has(d)) continue; o+=pin(ANG[d],-4,3.5,true)+pin(ANG[d],0,2.5,false)+pin(ANG[d],4,3.5,true); }
+  for(const d of ORTH){ if(active.has(d)) continue;
+    if(!active.has(CCW[d])) o+=pin(ANG[d],-4,3.5,true);
+    o+=pin(ANG[d],0,2.5,false);
+    if(!active.has(CW[d])) o+=pin(ANG[d],4,3.5,true); }
   for(const v of VERTS){ if(v.s.some(s=>active.has(s))||active.has(v.s.join(""))) continue; o+=pin(v.a,0,2.5,false); }
   return o;
 }
