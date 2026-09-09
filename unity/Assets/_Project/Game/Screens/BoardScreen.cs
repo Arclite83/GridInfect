@@ -157,7 +157,7 @@ namespace GridInfect.Game
                     level = "DAILY";
                     break;
                 case GameMode.Endless:
-                    _caption.text = $"ENDLESS  GRADE {(int)App.State.EndlessRun.Grade}";
+                    _caption.text = $"ENDLESS  {Queries.TierName(App.State.EndlessRun.Grade)}";
                     _title.text = $"LEVEL {App.State.EndlessRun.Index + 1}";
                     level = "ENDLESS";
                     break;

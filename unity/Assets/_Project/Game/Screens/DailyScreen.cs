@@ -95,18 +95,18 @@ namespace GridInfect.Game
             _wellY = wellTop - _wellH / 2f;
             _badgeY = wellTop - _wellH - S.Px(28f);
 
-            // Weekday bands: the day and its grade band as silkscreen. Every
+            // Weekday bands: the day and its tier band as silkscreen. Every
             // element is in every daily, so the band is the whole header.
             for (int c = 0; c < Columns; c++)
             {
                 var day = (DayOfWeek)((c + 1) % 7);   // Monday first
                 float x = (c - (Columns - 1) / 2f) * _pitch;
                 var band = DailyCalendar.Band(day);
-                string grade = band.min == band.max ? $"G{(int)band.min}" : $"G{(int)band.min}-{(int)band.max}";
+                string tier = Queries.TierBand(band.min, band.max);
                 var name = Ui.MakeText($"wk:{c}", Root.transform, DayNames[c], S.Px(10f), BoardTheme.Text, 2, mono: true);
                 Ui.SetPos(name.gameObject, x, _headerY + S.Px(12f));
-                var gradeText = Ui.MakeText($"band:{c}", Root.transform, grade, S.Px(11f), palette.CopperLo, 2, mono: true);
-                Ui.SetPos(gradeText.gameObject, x, _headerY - S.Px(2f));
+                var tierText = Ui.MakeText($"band:{c}", Root.transform, tier, S.Px(11f), palette.CopperLo, 2, mono: true);
+                Ui.SetPos(tierText.gameObject, x, _headerY - S.Px(2f));
             }
 
             // The well (§4).
@@ -303,7 +303,7 @@ namespace GridInfect.Game
             bool solved = Queries.IsDailySolved(App.State.Profile, dateUtc);
             long best = Queries.DailyBestMs(App.State.Profile, dateUtc);
             var band = DailyCalendar.Band(_selected.DayOfWeek);
-            string grade = band.min == band.max ? $"G{(int)band.min}" : $"G{(int)band.min}-{(int)band.max}";
+            string tier = Queries.TierBand(band.min, band.max);
 
             _slotNumber.text = _selected.Day.ToString();
             _slotCaption.text = _selected == _todayDate ? "TODAY" : "PAST";
@@ -311,12 +311,12 @@ namespace GridInfect.Game
             if (DailyCalendar.IsReady(_selected))
             {
                 var level = DailyCalendar.For(_selected);
-                _infoLine.text = $"{grade} · {level.Def.Specs.Length} BUGS · {CellsToInfect(level)} CELLS";
+                _infoLine.text = $"{tier} · {level.Def.Specs.Length} BUGS · {CellsToInfect(level)} CELLS";
                 _infoPending = false;
             }
             else
             {
-                _infoLine.text = grade;
+                _infoLine.text = tier;
                 _infoPending = true;
             }
             _bestLine.text = solved ? $"BEST {Queries.FormatTime(best)}" : _infoPending ? "GENERATING" : "UNPLAYED";
@@ -435,7 +435,7 @@ namespace GridInfect.Game
         };
     }
 
-    // Endless: pick a grade, no clock, a streak of solves without a reset.
+    // Endless: pick a tier, no clock, a streak of solves without a reset.
     public sealed class EndlessScreen : AppScreen
     {
         protected override void Build()
@@ -451,7 +451,7 @@ namespace GridInfect.Game
             {
                 var grade = (Core.Solving.Grade)g;
                 float y = L.StackRowY(g - 1, 5, L.ButtonHeight, 0f);
-                Buttons.Add(UiButton.Make(Root.transform, $"GRADE {g}", new Vector2(0f, y), size,
+                Buttons.Add(UiButton.Make(Root.transform, Queries.TierName(grade), new Vector2(0f, y), size,
                     BoardTheme.ButtonBg, BoardTheme.Text, () =>
                     {
                         // The run seed was picked at boot and its opening
