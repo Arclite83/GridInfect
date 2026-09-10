@@ -19,11 +19,9 @@ namespace GridInfect.Game
 
             // The wordmark (STYLE-GUIDE §12) across the content width, the
             // type capped at the old title size so a wide screen does not
-            // blow it up; the tagline under it, clear of the lit glow.
+            // blow it up. It stands alone: the tagline under it said what
+            // the wordmark and the first level already say.
             _title = TitleView.Make(Root.transform, L.ContentWidth, L.TitleText * 1.15f, new Vector2(0f, h * 0.28f), 2);
-            var subtitle = Ui.MakeText("subtitle", Root.transform, "infect every cell",
-                L.BodyText, BoardTheme.TextDim, 2);
-            Ui.SetPos(subtitle.gameObject, 0f, h * 0.28f - _title.HeightPx * 0.75f - L.BodyText);
 
             // DAILY and ENDLESS replace timed Free Play (stage 4; its actions
             // stay for log replay), and the 128 classic levels live on as
