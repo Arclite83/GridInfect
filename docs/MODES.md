@@ -241,9 +241,12 @@ actions and tests stay so old logs replay. Two modes replace it.
   cores and taking the lowest accepted seed (`Warmup`: today's board at
   boot, then the recent unsolved days, then Endless's opening boards; the
   calendar's visible month while it is open); a board the cache has not
-  reached yet generates behind the LOADING card, or the loader waits for
-  the job already on it. The cache persists
-  (`gridinfect_levels.json`) and is dropped whole when
+  reached yet generates behind the loading card (`LoadingCard`: a row of
+  the board infecting on the scrim, not a progress bar — a seed scan
+  finishes when it finishes), or the loader waits for the job already on
+  it. The cache persists (`gridinfect_levels.json`), is read on the
+  worker at boot rather than in front of the first frame, and is dropped
+  whole when
   `LevelCache.GeneratorVersion` changes, which is the generator's
   versioning rule: a change to its output is a change to every daily,
   past and future, so it bumps the version.
