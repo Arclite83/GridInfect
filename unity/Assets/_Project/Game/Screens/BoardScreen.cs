@@ -545,10 +545,14 @@ namespace GridInfect.Game
         // it before this ran, so the sync leaves it exactly where it is.
         void OnPiecesUnbound() => SyncPieces(animate: true);
 
+        bool IsTutorial => App.State.Mode == GameMode.Tutorial;
+
         void OnSolved()
         {
             if (_popupOpen) return;
-            App.Ads.CountSolve();
+            // The tutorial's ten boards are ad-free and count for nothing:
+            // not toward the first-ad grace, not toward the cadence gates.
+            if (!IsTutorial) App.Ads.CountSolve();
             if (App.State.Mode == GameMode.Classic)
             {
                 int levelId = App.State.ClassicLevelId;
@@ -800,7 +804,7 @@ namespace GridInfect.Game
         {
             var button = UiButton.Make(_popupPanel.transform, label, center, size,
                 BoardTheme.Primary, BoardTheme.TextOnAccent,
-                () => { if (!App.Ads.MaybeShowInterstitial(onClick)) onClick?.Invoke(); }, 43);
+                () => { if (IsTutorial || !App.Ads.MaybeShowInterstitial(onClick)) onClick?.Invoke(); }, 43);
             Buttons.Add(button);
         }
 

@@ -23,5 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Core.Mirror/GridInfect.Core.Mirror.csproj" />
+    <ProjectReference Include="../Services.Mirror/GridInfect.Services.Mirror.csproj" />
   </ItemGroup>
 </Project>
