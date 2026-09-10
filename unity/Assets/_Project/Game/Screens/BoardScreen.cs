@@ -94,7 +94,7 @@ namespace GridInfect.Game
             // The mono caption shares the badge's row, left-aligned under
             // MENU. It doubles as the mode's readout (clock, streak) where a
             // mode has one.
-            _caption = Ui.MakeText("caption", Root.transform, "GI-REV B", S.Px(S.HudCaption), BoardTheme.TextDim, 2,
+            _caption = Ui.MakeText("caption", Root.transform, "", S.Px(S.HudCaption), BoardTheme.TextDim, 2,
                 mono: true, anchor: TextAnchor.MiddleLeft);
             Ui.SetPos(_caption.gameObject, -w / 2f + S.Px(S.HudInset), badgeY);
             RefreshLockLabel();

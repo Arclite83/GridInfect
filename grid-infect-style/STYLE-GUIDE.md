@@ -27,7 +27,7 @@ Rule: gold appears only as points (pads, vias, mounting holes, HUD chip pads), n
 4. Sheen: radial, white 18% at (50%, 12%), r 50%.
 5. Traces: margins only, tone-on-tone. 3px black 14% with a 1px white 10% highlight offset -1.5px. 45° bends. Trace ends: 4px black 18% dot with 1.6px white 35% center.
 6. Mounting holes: four corners, r9 copper 70% over r5 #2a3a24.
-7. Silkscreen: Share Tech Mono 9px, white 55%, letter-spacing 1.5. Top-left studio name, bottom-left copyright, bottom-right `GI-{LEVEL} REV B`.
+7. Silkscreen: Share Tech Mono 9px, white 55%, letter-spacing 1.5. Top-left studio name, bottom-left copyright, bottom-right `GI-{LEVEL}` — the board's part number, blank on a screen with no board on it. As built it was `GI-{LEVEL} REV B`, and `GI-REV B` on the menus; the revision letter named nothing in the game and is gone (the running build is in SETTINGS).
 8. Vignette: radial black 0% to 28% from r60% to r75%.
 
 Trace routing is placeholder art. Production generates routing per level.
@@ -73,7 +73,7 @@ Invariant: lit tips are the only long bright elements. No stub or wire exceeds l
 Files: `out/glyphs/bug_<DIRS>.svg` (DIRS canonical order N E S W NE SE SW NW), `bug_AREA.svg`, `tile_BLOCKER.svg`, `glyph_sheet.svg` (8 per row, 44px pitch, each in `<g id>`).
 
 ## 7. HUD
-Height 56px, items bottom-aligned: the two chips and the level label, nothing else. Level label Chakra Petch 26px ink color, 0.06em tracking. A second row at 52px from the top carries the Share Tech Mono 12px caption (`GI-REV B`) left-aligned under MENU and the counter badge right-aligned under RESET; the caption sits there rather than above the label so the HUD band costs one text line, not two. Buttons are glass chips: 12px 0.1em uppercase at weight 700, padding 8×14, radius 7, glass fill white 42%→14%, one 5px copperHi pad on each side outside the chip. The one lit chip (BEGIN, PLAY) is the infection with its top stop leaned 12% toward white, not 35% (§11). Solve counter: Share Tech Mono 13px copperHi on black 60%, radius 7, inset 1px copperHi 50%, sized for eight characters (`SOLVE 03`, `+1 SOLVE`). Icon chips (gear, help, pager chevrons) are 39px squares carrying a drawn mark at 72% of the chip, never a font glyph.
+Height 56px, items bottom-aligned: the two chips and the level label, nothing else. Level label Chakra Petch 26px ink color, 0.06em tracking. A second row at 52px from the top carries the Share Tech Mono 12px caption (the mode readout: `LEGACY`, `DAILY`, `ENDLESS T3`) left-aligned under MENU and the counter badge right-aligned under RESET; the caption sits there rather than above the label so the HUD band costs one text line, not two. Buttons are glass chips: 12px 0.1em uppercase at weight 700, padding 8×14, radius 7, glass fill white 42%→14%, one 5px copperHi pad on each side outside the chip. The one lit chip (BEGIN, PLAY) is the infection with its top stop leaned 12% toward white, not 35% (§11). Solve counter: Share Tech Mono 13px copperHi on black 60%, radius 7, inset 1px copperHi 50%, sized for eight characters (`SOLVE 03`, `+1 SOLVE`). Icon chips (gear, help, pager chevrons) are 39px squares carrying a drawn mark at 72% of the chip, never a font glyph.
 
 ## 8. Tray
 Bottom 96px. Three slots, 30px gap. Next slot 74px radius 12, black 30% with inset 24px black 50%, plus infect glow 22px 45%, glyph at 58px, caption `NEXT` Share Tech Mono 11px ink. Queued slots 54px at 75% opacity, glyph at 40px.
@@ -97,7 +97,7 @@ The board is meant to be read on a phone in daylight, in a moving vehicle, by so
 | Informational type | ≥ 4.5:1 at any size under 24px; ≥ 3:1 at 24px and up | ink #1d3316 was 5.3:1 on the mask and 3.4:1 on the mask shadow; #0c190a is 7.0 and 4.5 |
 | Dimmed type | none. Hierarchy is size and the mono face, never alpha | ink at 70% was 3.1:1 on the mask, 2.4 on its shadow; it carried the HUD mode readout and every page counter |
 | Disabled controls | ink 45%, the one exempt state (a pager at its end, TODAY while today shows) | WCAG exempts an inactive control; the dim is the message |
-| Decorative silkscreen | 9px white 55% stays | studio name, copyright, `GI-06 REV B`: decorative, exempt |
+| Decorative silkscreen | 9px white 55% stays | studio name, copyright, `GI-06`: decorative, exempt |
 | Type size | ≥ 11px reference for anything that says something; body 14.4px (0.037 of the short edge) | 10px weekday names, 10px tray caption and the 11px HUD caption all rise; the silkscreen alone stays at 9 |
 | Chip labels | weight 700 | 12px uppercase on glass is where thin type goes first in glare |
 | Copper on the badge | black 60% under it | black 35% put 13px copperHi at 4.3:1 (3.5 on the mask highlight); 60% is 8:1. A zero streak is no longer dimmed to 2:1 |

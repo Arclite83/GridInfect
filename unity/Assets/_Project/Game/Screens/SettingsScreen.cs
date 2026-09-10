@@ -57,6 +57,26 @@ namespace GridInfect.Game
                 BoardTheme.ButtonBg, BoardTheme.Text, Erase);
             Buttons.Add(_erase);
             RefreshErase();
+
+            BuildStamp(-h * 0.36f - L.BarHeight / 2f - L.Gap * 1.6f);
+        }
+
+        // Which build is this. The one question a screenshot from the wild
+        // has to answer, and the reason the substrate's bottom-right corner
+        // used to say `GI-REV B` on every screen — a revision letter from
+        // the style mockups that named nothing. The answer belongs here
+        // rather than on the home screen: it is settings data, like the
+        // sound switch and the erase button, not something the game wears.
+        //
+        // buildGUID is the player's own build id and is empty in the editor,
+        // where the question has a different answer.
+        void BuildStamp(float y)
+        {
+            string guid = Application.buildGUID;
+            string build = string.IsNullOrEmpty(guid) ? "EDITOR" : guid.Substring(0, 8).ToUpperInvariant();
+            var stamp = Ui.MakeText("build", Root.transform, $"V{Application.version}   BUILD {build}",
+                S.Px(S.SmallText), BoardTheme.TextDim, 2, mono: true);
+            Ui.SetPos(stamp.gameObject, 0f, y);
         }
 
         // The three board skins, each chip wearing its own solder mask with a

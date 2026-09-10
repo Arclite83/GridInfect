@@ -308,6 +308,8 @@ namespace UnityEngine
     {
         public static int targetFrameRate { get; set; }
         public static string persistentDataPath => "";
+        public static string version => "";
+        public static string buildGUID => "";
     }
 
     public static class Time

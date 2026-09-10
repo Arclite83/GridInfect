@@ -142,7 +142,7 @@ function render(t){
   overlay(`<div class="t" style="left:390px;top:${H-(hudBottom+Px(26)*.55)}px;transform:translate(-50%,-50%);font-size:${Px(26)}px;letter-spacing:.06em">LEVEL 6</div>`);
   const bw=Px(24+8*13*.62),bh=Px(12+13*1.25);glass([W-Px(22)-bw,H-Px(52)-bh,bw,bh],Badge);
   overlay(`<div class="t m" style="left:${W-Px(22)-bw/2}px;top:${Px(52)+bh/2}px;transform:translate(-50%,-50%);font-size:${Px(13)}px;letter-spacing:.12em;color:#f3e2a8">SOLVE 02</div>`);
-  overlay(`<div class="t m" style="left:${Px(22)}px;top:${Px(52)+bh/2}px;transform:translateY(-50%);font-size:${Px(11)}px;letter-spacing:.2em;opacity:.7">GI-REV B</div>`);
+  overlay(`<div class="t m" style="left:${Px(22)}px;top:${Px(52)+bh/2}px;transform:translateY(-50%);font-size:${Px(11)}px;letter-spacing:.2em;opacity:.7">LEGACY</div>`);
   // tray: 4 pieces
   const count=4, slot=Math.min(Px(74),cell*74/54,W*.97/(count*104/74)), gpx=Math.round(slot*58/74);
   for(let k=0;k<count;k++){const x=W/2+(k-(count-1)/2)*slot*104/74, y=Px(96)/2; glass([x-slot/2,y-slot/2,slot,slot],Slot(false));
@@ -154,7 +154,7 @@ function render(t){
   const [wx,wy]=cellCenter(2,2); overlay(`<div class="g" style="left:${wx-36}px;top:${H-wy-36}px;background-position:${-(35%8)*80-4}px ${-Math.floor(35/8)*80-4}px;transform:scale(${g/72})"></div>`);
   // silkscreen
   overlay(`<div class="t m" style="left:${Px(44)}px;top:${H-Px(12)}px;transform:translateY(-50%);font-size:${Px(9)}px;letter-spacing:1.5px;color:rgba(255,255,255,.55)">© 2026</div>`);
-  overlay(`<div class="t m" style="right:${Px(20)}px;top:${H-Px(12)}px;transform:translateY(-50%);font-size:${Px(9)}px;letter-spacing:1.5px;color:rgba(255,255,255,.55)">GI-06 REV B</div>`);
+  overlay(`<div class="t m" style="right:${Px(20)}px;top:${H-Px(12)}px;transform:translateY(-50%);font-size:${Px(9)}px;letter-spacing:1.5px;color:rgba(255,255,255,.55)">GI-06</div>`);
   document.getElementById('overlay').innerHTML=ov;
 }
 window.render=render;
