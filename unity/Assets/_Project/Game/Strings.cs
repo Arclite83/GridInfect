@@ -42,6 +42,25 @@ namespace GridInfect.Game
             min == max ? Fmt(TierShort, (int)min)
                 : Fmt(TierBand, Fmt(TierShort, (int)min), (int)max);
 
+        // Whether the language in force reads right to left. Chrome mirrors
+        // on this (docs/I18N.md 7); the board never does. The RTL pseudolocale
+        // is how it is exercised before any such language ships.
+        public static bool IsRtl
+        {
+            get
+            {
+                string tag = CurrentTag;
+                if (tag == "qps-plocm") return true;
+                int cut = tag.IndexOf('-');
+                string primary = cut < 0 ? tag : tag.Substring(0, cut);
+                switch (primary)
+                {
+                    case "ar": case "he": case "fa": case "ur": return true;
+                    default: return false;
+                }
+            }
+        }
+
         // Adopt `tag` if it ships, and report whether it did. An unknown tag
         // leaves the current one in force: a save written by a build that
         // shipped more languages than this one must not blank the UI.

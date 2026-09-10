@@ -69,10 +69,10 @@ namespace GridInfect.Game
             float monthY = L.TopBarY - S.Px(70f);
             var arrow = new Vector2(S.Px(40f), S.Px(34f));
             int arrowPx = UiButton.IconPx(arrow);
-            _prev = UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Chevron(palette, arrowPx, true),
-                new Vector2(-L.ContentWidth / 2f + arrow.x / 2f, monthY), arrow, () => Go(_month - 1));
-            _next = UiButton.MakeIcon(Root.transform, "next", BugGlyph.Chevron(palette, arrowPx, false),
-                new Vector2(L.ContentWidth / 2f - arrow.x / 2f, monthY), arrow, () => Go(_month + 1));
+            _prev = UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Prev(palette, arrowPx),
+                new Vector2(L.Lead(arrow.x / 2f), monthY), arrow, () => Go(_month - 1));
+            _next = UiButton.MakeIcon(Root.transform, "next", BugGlyph.Next(palette, arrowPx),
+                new Vector2(L.Trail(arrow.x / 2f), monthY), arrow, () => Go(_month + 1));
             Buttons.Add(_prev);
             Buttons.Add(_next);
             _yearLabel = Ui.MakeText("year", Root.transform, "", S.Px(S.SmallText), BoardTheme.TextDim, 2, mono: true);
@@ -97,7 +97,7 @@ namespace GridInfect.Game
             for (int c = 0; c < Columns; c++)
             {
                 var day = (DayOfWeek)((c + 1) % 7);   // Monday first
-                float x = (c - (Columns - 1) / 2f) * _pitch;
+                float x = L.ColumnX(c, Columns, _pitch);   // and on the leading side
                 var band = DailyCalendar.Band(day);
                 string tier = Str.TierBandLabel(band.min, band.max);
                 var name = Ui.MakeText($"wk:{c}", Root.transform, Str.Day(c + 1), S.Px(S.SmallText), BoardTheme.Text, 2, mono: true);
@@ -158,7 +158,7 @@ namespace GridInfect.Game
                 if (d < 1 || d > days) continue;
                 var date = first.AddDays(d - 1);
                 int col = i % Columns, row = i / Columns;
-                float x = (col - (Columns - 1) / 2f) * _pitch;
+                float x = L.ColumnX(col, Columns, _pitch);
                 float y = _wellY + ((Rows - 1) / 2f - row) * _pitch;
                 bool isToday = date == _todayDate;
                 if (date < DailyCalendar.Epoch)
@@ -211,8 +211,8 @@ namespace GridInfect.Game
             // Both readouts in full copper: a zero streak used to dim its
             // badge to 2:1, which made the fact of a zero streak the thing
             // you could not read.
-            Badge("streak", Str.Fmt(Str.DailyStreak, streak), -L.ContentWidth / 2f, true);
-            Badge("month", Str.Fmt(Str.DailyMonthCount, Str.MonthShort(month), solved, playable), L.ContentWidth / 2f, false);
+            Badge("streak", Str.Fmt(Str.DailyStreak, streak), L.Lead(0f), true);
+            Badge("month", Str.Fmt(Str.DailyMonthCount, Str.MonthShort(month), solved, playable), L.Trail(0f), false);
 
             // The month's unplayed days go to the worker, newest first, behind
             // today's board and the recent archive.
@@ -260,10 +260,11 @@ namespace GridInfect.Game
             return root;
         }
 
-        void Badge(string name, string text, float edgeX, bool left)
+        // `leading`: hung inward from the leading edge, else from the trailing.
+        void Badge(string name, string text, float edgeX, bool leading)
         {
             var size = new Vector2(S.Px(S.BadgePadX * 2f + text.Length * S.BadgeText * 0.62f), S.Px(S.BadgePadY * 2f + S.BadgeText * 1.25f));
-            float x = left ? edgeX + size.x / 2f : edgeX - size.x / 2f;
+            float x = leading ? edgeX + L.Dir * size.x / 2f : edgeX - L.Dir * size.x / 2f;
             var badge = UiButton.Make(_page.transform, text, new Vector2(x, _badgeY), size,
                 GlassStyle.Badge(BoardPalette.Default), BoardTheme.Copper,
                 null, 20, pads: false, padAlpha: 1f, mono: true);
@@ -276,7 +277,7 @@ namespace GridInfect.Game
         {
             float slot = S.Px(S.TraySlot);
             float y = -h / 2f + S.Px(112f);
-            float slotX = -L.ContentWidth / 2f + slot / 2f + S.Px(8f);
+            float slotX = L.Lead(slot / 2f + S.Px(8f));
 
             // The slot is the selected day, so it is that day's tile at
             // size: the same glass the calendar draws, infected once solved.
@@ -293,11 +294,11 @@ namespace GridInfect.Game
             float infoX = slotX + slot / 2f + S.Px(22f);
             float readout = S.Px(12f);
             float bestY = y - S.Px(8f);
-            _dateLine = Ui.MakeText("date", Root.transform, "", S.Px(16f), BoardTheme.Text, 6, anchor: TextAnchor.MiddleLeft);
+            _dateLine = Ui.MakeText("date", Root.transform, "", S.Px(16f), BoardTheme.Text, 6, anchor: L.Leading);
             Ui.SetPos(_dateLine.gameObject, infoX, y + S.Px(24f));
-            _infoLine = Ui.MakeText("band", Root.transform, "", readout, BoardTheme.Text, 6, mono: true, anchor: TextAnchor.MiddleLeft);
+            _infoLine = Ui.MakeText("band", Root.transform, "", readout, BoardTheme.Text, 6, mono: true, anchor: L.Leading);
             Ui.SetPos(_infoLine.gameObject, infoX, y + S.Px(8f));
-            _bestLine = Ui.MakeText("best", Root.transform, "", readout, BoardTheme.Text, 6, mono: true, anchor: TextAnchor.MiddleLeft);
+            _bestLine = Ui.MakeText("best", Root.transform, "", readout, BoardTheme.Text, 6, mono: true, anchor: L.Leading);
             Ui.SetPos(_bestLine.gameObject, infoX, bestY);
 
             // BEGIN is a lit chip, and a lit chip is bigger than its box: it
@@ -383,7 +384,9 @@ namespace GridInfect.Game
         {
             if (!_pressed) return;
             _pressed = false;
-            float dx = world.x - _press.x;
+            // A swipe against the reading direction is "next", so the
+            // gesture mirrors with the pager it stands in for.
+            float dx = (world.x - _press.x) * L.Dir;
             if (Mathf.Abs(dx) > L.ShortEdgeUnit * SwipePct)
             {
                 Go(dx < 0f ? _month + 1 : _month - 1);
@@ -489,8 +492,8 @@ namespace GridInfect.Game
                 // else again. Right-anchored, the column is straight and
                 // nothing can walk over the edge.
                 var best = Ui.MakeText($"best:{g}", Root.transform, Str.Fmt(Str.EndlessBest, profile.EndlessBest[g - 1]),
-                    L.LabelText, BoardTheme.Accent, 2, anchor: TextAnchor.MiddleRight);
-                Ui.SetPos(best.gameObject, L.ContentWidth / 2f - L.Gap, y);
+                    L.LabelText, BoardTheme.Accent, 2, anchor: L.Trailing);
+                Ui.SetPos(best.gameObject, L.Trail(L.Gap), y);
             }
         }
     }

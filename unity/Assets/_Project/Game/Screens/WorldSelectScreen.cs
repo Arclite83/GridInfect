@@ -37,10 +37,10 @@ namespace GridInfect.Game
             float pagerY = -h * PagerPct;
             var pagerSize = new Vector2(L.ShortEdgeUnit * 0.20f, L.BarHeight);
             int arrow = UiButton.IconPx(pagerSize);
-            Buttons.Add(UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Chevron(BoardPalette.Default, arrow, true),
-                new Vector2(-L.ContentWidth / 2f + pagerSize.x / 2f, pagerY), pagerSize, () => Flip(-1)));
-            Buttons.Add(UiButton.MakeIcon(Root.transform, "next", BugGlyph.Chevron(BoardPalette.Default, arrow, false),
-                new Vector2(L.ContentWidth / 2f - pagerSize.x / 2f, pagerY), pagerSize, () => Flip(1)));
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Prev(BoardPalette.Default, arrow),
+                new Vector2(L.Lead(pagerSize.x / 2f), pagerY), pagerSize, () => Flip(-1)));
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "next", BugGlyph.Next(BoardPalette.Default, arrow),
+                new Vector2(L.Trail(pagerSize.x / 2f), pagerY), pagerSize, () => Flip(1)));
             _pageLabel = Ui.MakeText("page", Root.transform, "", L.BodyText, BoardTheme.TextDim, 2);
             Ui.SetPos(_pageLabel.gameObject, 0f, pagerY);
 
@@ -93,8 +93,8 @@ namespace GridInfect.Game
                 // and a centred readout put them in two different places.
                 var progress = Ui.MakeText($"progress:{world.Id}", button.Root.transform,
                     Str.Fmt(Str.WorldsProgress, done, world.Count), L.LabelText,
-                    clear ? BoardTheme.TextOnAccent : BoardTheme.Accent, 22, anchor: TextAnchor.MiddleRight);
-                Ui.SetPos(progress.gameObject, L.ContentWidth / 2f - L.Gap, L.ButtonHeight * 0.1f);
+                    clear ? BoardTheme.TextOnAccent : BoardTheme.Accent, 22, anchor: L.Trailing);
+                Ui.SetPos(progress.gameObject, L.Trail(L.Gap), L.ButtonHeight * 0.1f);
 
                 Meter(button.Root.transform, size, Queries.WorldInfection(profile, world.Id));
             }

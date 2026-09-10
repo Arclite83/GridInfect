@@ -197,14 +197,14 @@ namespace GridInfect.Game
             float y = -short_ * 0.08f;
             var size = new Vector2((width - L.Gap * 3f) / 2f, L.BarHeight);
             float x = (size.x + L.Gap) / 2f;
-            AddOfferButton(UiButton.Make(panel.transform, Str.MenuOfferAccept, new Vector2(-x, y), size,
+            AddOfferButton(UiButton.Make(panel.transform, Str.MenuOfferAccept, new Vector2(-x * L.Dir, y), size,
                 BoardTheme.Primary, BoardTheme.TextOnAccent, () =>
                 {
                     App.Do(GridInfectActions.TutorialSeen);
                     App.Screens.Show(new BoardScreen(),
                         prepare: () => App.Do(GridInfectActions.TutorialLoad, Inputs.Tutorial(0)).Applied);
                 }, 43));
-            AddOfferButton(UiButton.Make(panel.transform, Str.MenuOfferSkip, new Vector2(x, y), size,
+            AddOfferButton(UiButton.Make(panel.transform, Str.MenuOfferSkip, new Vector2(x * L.Dir, y), size,
                 BoardTheme.ButtonBg, BoardTheme.Text, () =>
                 {
                     App.Do(GridInfectActions.TutorialSeen);

@@ -139,7 +139,7 @@ namespace GridInfect.Game
                 string name = SkinName(id), want = SkinWant(id);
                 BoardPalette skin = BoardPalette.Preview(id);
                 bool earned = App.SkinEarned(id);
-                float x = (k - 1) * (w + L.Gap);
+                float x = L.ColumnX(k, Palettes.Length, w + L.Gap);
 
                 if (BoardPalette.Skin == id)
                 {

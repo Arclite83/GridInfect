@@ -40,7 +40,7 @@ namespace GridInfect.Game
         // would fit and their pictures would still overlap.
         float Swatch => Mathf.Min(S.Px(38f), _pitch * 0.72f);
         static float RowPitch => S.Px(54f);
-        static float TextX => -L.ContentWidth / 2f + S.Px(100f);
+        static float TextX => L.Lead(S.Px(100f));
 
         protected override void Build()
         {
@@ -54,10 +54,10 @@ namespace GridInfect.Game
             float pagerY = -h * PagerPct;
             var pagerSize = new Vector2(L.ShortEdgeUnit * 0.20f, L.BarHeight);
             int arrow = UiButton.IconPx(pagerSize);
-            Buttons.Add(UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Chevron(BoardPalette.Default, arrow, true),
-                new Vector2(-L.ContentWidth / 2f + pagerSize.x / 2f, pagerY), pagerSize, () => Flip(-1)));
-            Buttons.Add(UiButton.MakeIcon(Root.transform, "next", BugGlyph.Chevron(BoardPalette.Default, arrow, false),
-                new Vector2(L.ContentWidth / 2f - pagerSize.x / 2f, pagerY), pagerSize, () => Flip(1)));
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Prev(BoardPalette.Default, arrow),
+                new Vector2(L.Lead(pagerSize.x / 2f), pagerY), pagerSize, () => Flip(-1)));
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "next", BugGlyph.Next(BoardPalette.Default, arrow),
+                new Vector2(L.Trail(pagerSize.x / 2f), pagerY), pagerSize, () => Flip(1)));
             _pageLabel = Ui.MakeText("page", Root.transform, "", L.BodyText, BoardTheme.Text, 2);
             Ui.SetPos(_pageLabel.gameObject, 0f, pagerY);
 
@@ -243,23 +243,23 @@ namespace GridInfect.Game
 
         void Row(Mark[] marks, string id, string name, string line, ref float y)
         {
-            float x = -L.ContentWidth / 2f + S.Px(8f) + Swatch / 2f;
+            float x = L.Lead(S.Px(8f) + Swatch / 2f);
             foreach (Mark mark in marks)
             {
                 Draw(mark, x, y, Swatch);
-                x += Swatch + S.Px(6f);
+                x += (Swatch + S.Px(6f)) * L.Dir;
             }
 
             // A row with a name stacks it over the line; the empty/infected
             // pair has only the line, so it sits on the swatches' centre.
             if (!string.IsNullOrEmpty(name))
             {
-                Line($"name:{id}", name, TextX, y + S.Px(9f), L.LabelText * 0.9f, TextAnchor.MiddleLeft);
-                Line($"line:{id}", line, TextX, y - S.Px(9f), L.BodyText * 0.95f, TextAnchor.MiddleLeft);
+                Line($"name:{id}", name, TextX, y + S.Px(9f), L.LabelText * 0.9f, L.Leading);
+                Line($"line:{id}", line, TextX, y - S.Px(9f), L.BodyText * 0.95f, L.Leading);
             }
             else
             {
-                Line($"line:{id}", line, TextX, y, L.LabelText * 0.9f, TextAnchor.MiddleLeft);
+                Line($"line:{id}", line, TextX, y, L.LabelText * 0.9f, L.Leading);
             }
             y -= _pitch;
         }

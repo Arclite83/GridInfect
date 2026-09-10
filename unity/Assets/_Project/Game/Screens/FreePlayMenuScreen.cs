@@ -34,8 +34,8 @@ namespace GridInfect.Game
 
                 var best = Ui.MakeText($"best:{difficulty}", Root.transform,
                     Queries.FormatBestTime(profile.BestTimesMs[n]), L.LabelText, BoardTheme.Accent, 2,
-                    anchor: TextAnchor.MiddleRight);
-                Ui.SetPos(best.gameObject, L.ContentWidth / 2f - L.Gap, y);
+                    anchor: L.Trailing);
+                Ui.SetPos(best.gameObject, L.Trail(L.Gap), y);
             }
         }
 

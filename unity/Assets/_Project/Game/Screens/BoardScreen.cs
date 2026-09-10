@@ -95,8 +95,8 @@ namespace GridInfect.Game
             // MENU. It doubles as the mode's readout (clock, streak) where a
             // mode has one.
             _caption = Ui.MakeText("caption", Root.transform, "", S.Px(S.HudCaption), BoardTheme.TextDim, 2,
-                mono: true, anchor: TextAnchor.MiddleLeft);
-            Ui.SetPos(_caption.gameObject, -w / 2f + S.Px(S.HudInset), badgeY);
+                mono: true, anchor: L.Leading);
+            Ui.SetPos(_caption.gameObject, L.Dir * (-w / 2f + S.Px(S.HudInset)), badgeY);
             RefreshLockLabel();
 
             if (Tutorial) BuildTutorialChrome(badgeY);
@@ -139,10 +139,10 @@ namespace GridInfect.Game
             int arrow = UiButton.IconPx(chip);
             float x = ScreenW / 2f - S.Px(S.HudInset) - chip.x / 2f;
             float y = -ScreenH / 2f + S.Px(S.TrayHeight) / 2f;
-            _prevButton = UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Chevron(BoardPalette.Default, arrow, true),
-                new Vector2(-x, y), chip, () => StepTo(App.State.TutorialIndex - 1));
-            _nextButton = UiButton.MakeIcon(Root.transform, "next", BugGlyph.Chevron(BoardPalette.Default, arrow, false),
-                new Vector2(x, y), chip, () => StepTo(App.State.TutorialIndex + 1));
+            _prevButton = UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Prev(BoardPalette.Default, arrow),
+                new Vector2(-x * L.Dir, y), chip, () => StepTo(App.State.TutorialIndex - 1));
+            _nextButton = UiButton.MakeIcon(Root.transform, "next", BugGlyph.Next(BoardPalette.Default, arrow),
+                new Vector2(x * L.Dir, y), chip, () => StepTo(App.State.TutorialIndex + 1));
             Buttons.Add(_prevButton);
             Buttons.Add(_nextButton);
         }
@@ -766,11 +766,11 @@ namespace GridInfect.Game
             // haloes want — two lit chips a ChipPadSpan apart meet at the
             // midpoint rather than glowing through each other.
             var size = new Vector2(step - L.ChipPadSpan, L.BarHeight);
-            AddPopupButton(Str.BoardPopupMenu, new Vector2(-step, y), size, GoBack);
+            AddPopupButton(Str.BoardPopupMenu, new Vector2(-step * L.Dir, y), size, GoBack);
             AddPopupButton(Str.BoardPopupReplay, new Vector2(0f, y), size, replay);
             if (next != null)
             {
-                AddPopupButton(Str.BoardPopupNext, new Vector2(step, y), size, next);
+                AddPopupButton(Str.BoardPopupNext, new Vector2(step * L.Dir, y), size, next);
             }
         }
 

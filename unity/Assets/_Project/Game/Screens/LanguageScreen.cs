@@ -48,8 +48,7 @@ namespace GridInfect.Game
         static Vector2 Slot(int n, float w, float pitch, float top)
         {
             int col = n % Columns, row = n / Columns;
-            float x = (col - (Columns - 1) / 2f) * (w + L.Gap);
-            return new Vector2(x, top - row * pitch);
+            return new Vector2(L.ColumnX(col, Columns, w + L.Gap), top - row * pitch);
         }
 
         // The tag is ASCII by construction (SetLanguageAction.IsWellFormed),
