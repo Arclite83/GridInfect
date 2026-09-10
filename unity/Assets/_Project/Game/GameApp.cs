@@ -125,6 +125,7 @@ namespace GridInfect.Game
             BoardPalette.SetSkin(skin);
             BugGlyph.ClearCache();
             Substrate.Restyle(BoardPalette.Default);
+            Screens?.Restyle();
             if (_camera != null) _camera.backgroundColor = BoardTheme.Background;
         }
 

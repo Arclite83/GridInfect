@@ -32,13 +32,17 @@ namespace GridInfect.Game
         public virtual void OnRelease(Vector2 world) { }
     }
 
-    // Every navigation: 0.25 s to black, swap screens, 0.25 s back (ASSETS §6).
+    // Every navigation: 0.25 s down to the scrim, swap screens, 0.25 s back
+    // (ASSETS §6). The scrim is the board with the lights off, not black —
+    // black is a hole in the app and the substrate is still down there.
     //
     // A navigation may carry `prepare` — the dispatch that loads or generates
-    // the level the next screen is going to draw. It runs at full black, one
-    // presented frame after the LOADING card goes up, so an on-device
-    // generation (Endless T5 is seconds of solver work) is a screen that says
-    // what it is doing rather than a menu that stops answering. Input is shut
+    // the level the next screen is going to draw. It runs at the bottom of
+    // the fade, one presented frame after the loading card goes up, so an
+    // on-device generation (Endless T5 is seconds of solver work) is a screen
+    // that says what it is doing rather than a menu that stops answering.
+    // The card fades rather than switching on, so a navigation whose work
+    // lands in a frame or two never flashes it. Input is shut
     // off for the whole transition (GameApp reads Transitioning), which is
     // what stops a stray tap during the stall landing on whatever button the
     // next screen happens to put under the finger.
@@ -65,7 +69,7 @@ namespace GridInfect.Game
 
         readonly GameApp _app;
         readonly SpriteRenderer _fade;
-        readonly TextMesh _loading;
+        readonly LoadingCard _card;
 
         Phase _phase = Phase.None;
         float _phaseTime;
@@ -79,15 +83,18 @@ namespace GridInfect.Game
         {
             _app = app;
             var go = Ui.MakeRect("fade", null, new Vector2(UnityEngine.Screen.width * 2f, UnityEngine.Screen.height * 2f),
-                new Color(0f, 0f, 0f, 0f), 100);
+                BoardPalette.Alpha(LoadingCard.Scrim, 0f), 100);
             Object.DontDestroyOnLoad(go);
             _fade = go.GetComponent<SpriteRenderer>();
+            _card = new LoadingCard(101);
+        }
 
-            // On the black of the fade, so the lit tip white, not the ink.
-            _loading = Ui.MakeText("loading", null, "LOADING",
-                PresentationConfig.Layout.HeadingText, BoardTheme.TextOnAccent, 101);
-            Object.DontDestroyOnLoad(_loading.gameObject);
-            _loading.gameObject.SetActive(false);
+        // The scrim and the card follow the skin: the scrim because SetFade
+        // reads it fresh, the card because it is written again in place.
+        public void Restyle()
+        {
+            _card.Restyle();
+            SetFade(_fade.color.a);
         }
 
         // `prepare` returns false to call the navigation off: the current
@@ -115,6 +122,10 @@ namespace GridInfect.Game
 
         public void Update(float dt)
         {
+            // Always: the card runs its sweep while it is up and its fade
+            // out after the work has landed, which is past the end of the
+            // phase that put it there.
+            _card.Tick(dt);
             if (_phase == Phase.None) return;
 
             if (_phase == Phase.Working)
@@ -124,7 +135,7 @@ namespace GridInfect.Game
                 if (_workFrames++ == 0) return;
                 _waited += dt;
                 if (_ready != null && _waited < ReadyTimeout && !_ready()) return;
-                _loading.gameObject.SetActive(false);
+                _card.Hide();
                 bool ok = _prepare == null || _prepare();
                 _prepare = null;
                 _ready = null;
@@ -151,7 +162,7 @@ namespace GridInfect.Game
                 if (t < 1f) return;
                 if (_prepare != null)
                 {
-                    _loading.gameObject.SetActive(true);
+                    _card.Show();
                     _phase = Phase.Working;
                     _workFrames = 0;
                     return;
@@ -177,9 +188,7 @@ namespace GridInfect.Game
 
         void SetFade(float alpha)
         {
-            var c = _fade.color;
-            c.a = alpha;
-            _fade.color = c;
+            _fade.color = BoardPalette.Alpha(LoadingCard.Scrim, alpha);
         }
     }
 }

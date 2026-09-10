@@ -171,6 +171,33 @@ namespace GridInfect.Game
             material.SetFloat("_InsetPx", S.Px(style.InsetPx));
             return go;
         }
+
+        // Re-tints a box built from `style`: every colour in the stack at
+        // `alpha` of the alpha it was given. The shader has no global
+        // opacity — a box bakes its whole stack into its own material — so
+        // fading a piece of glass means writing the stack again. For the
+        // chrome that comes and goes rather than being built and destroyed
+        // (the loading card's cells).
+        public static void SetAlpha(GameObject glass, GlassStyle style, float alpha)
+        {
+            var owner = glass == null ? null : glass.GetComponent<MaterialOwner>();
+            if (owner == null || owner.Material == null) return;
+            var m = owner.Material;
+            m.SetColor("_FillTop", Fade(style.FillTop, alpha));
+            m.SetColor("_FillMid", Fade(style.FillMid, alpha));
+            m.SetColor("_FillBottom", Fade(style.FillBottom, alpha));
+            m.SetColor("_Border", Fade(style.Border, alpha));
+            m.SetColor("_TopLight", Fade(style.TopLight, alpha));
+            m.SetColor("_Glow", Fade(style.Glow, alpha));
+            m.SetColor("_Shadow", Fade(style.Shadow, alpha));
+            m.SetColor("_InsetShadow", Fade(style.InsetShadow, alpha));
+        }
+
+        static Color Fade(Color c, float alpha)
+        {
+            c.a *= alpha;
+            return c;
+        }
     }
 
     // Frees a per-instance material with the object that owns it.

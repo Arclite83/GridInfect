@@ -77,6 +77,7 @@ namespace UnityEngine
         public static int Min(int a, int b) => a < b ? a : b;
         public static float Lerp(float a, float b, float t) => a + (b - a) * Clamp01(t);
         public static float LerpUnclamped(float a, float b, float t) => a + (b - a) * t;
+        public static float Repeat(float t, float length) => length <= 0f ? 0f : t - (float)System.Math.Floor(t / length) * length;
         public static int RoundToInt(float v) => (int)System.Math.Round(v);
         public static float Sin(float v) => (float)System.Math.Sin(v);
         public static float Cos(float v) => (float)System.Math.Cos(v);
@@ -148,6 +149,7 @@ namespace UnityEngine
         public T AddComponent<T>() where T : Component, new() => new T();
         public T GetComponent<T>() where T : Component => null;
         public T GetComponentInChildren<T>() where T : Component => null;
+        public bool activeSelf => false;
         public void SetActive(bool active) { }
     }
 
