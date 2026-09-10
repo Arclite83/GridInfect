@@ -76,6 +76,7 @@ namespace UnityEngine
         public static int Max(int a, int b) => a > b ? a : b;
         public static int Min(int a, int b) => a < b ? a : b;
         public static float Lerp(float a, float b, float t) => a + (b - a) * Clamp01(t);
+        public static float LerpUnclamped(float a, float b, float t) => a + (b - a) * t;
         public static int RoundToInt(float v) => (int)System.Math.Round(v);
         public static float Sin(float v) => (float)System.Math.Sin(v);
         public static float Cos(float v) => (float)System.Math.Cos(v);

@@ -74,6 +74,11 @@ namespace GridInfect.Game
 
             public static float ShortEdgeUnit => ShortEdge;
             public static float ContentWidth => W * ContentWidthPct;
+            // A popup plate: inset half a row height either side of the
+            // full-width rows. At ContentWidth a message landing over the
+            // menu shared both edges with the stack under it and read as
+            // one more row of it rather than as something on top.
+            public static float PlateWidth => ContentWidth - ButtonHeight;
             public static float TopBarY => H * TopBarPct;
 
             public static float ButtonHeight => ShortEdge * 0.11f;
@@ -138,6 +143,21 @@ namespace GridInfect.Game
             public const float BugLandAt = 0.25f;
             public const float BugLandDur = 0.12f;
             public const float BugLandScale = 1.6f;     // the bug arrives from this size
+        }
+
+        // The first-open offer's entrance. It used to be built already lit:
+        // the dim was on and the plate was mid-slide on the menu's very
+        // first frame, which is the one frame the player is reading the
+        // title. Now the menu stands on its own, the screen goes dark under
+        // the plate, and the plate lands the way the title bug does.
+        public static class Offer
+        {
+            public const float Wait = 0.45f;    // the menu, alone
+            public const float Dim = 0.28f;     // the screen going dark behind it
+            public const float Rise = 0.34f;    // the plate coming up
+            public const float RiseAt = 0.12f;  // after the dim starts
+            public const float Overshoot = 1.1f;   // how hard it lands
+            public const float Fall = 0.22f;    // SKIP: the plate dropping back out
         }
 
         // The visual style (grid-infect-style/STYLE-GUIDE.md, locked

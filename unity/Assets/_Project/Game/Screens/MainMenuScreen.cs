@@ -1,6 +1,7 @@
 using GridInfect.Core;
 using UnityEngine;
 using L = GridInfect.Game.PresentationConfig.Layout;
+using O = GridInfect.Game.PresentationConfig.Offer;
 
 namespace GridInfect.Game
 {
@@ -62,12 +63,14 @@ namespace GridInfect.Game
                 new Vector2(-L.BackPos.x, L.BackPos.y), chip, () => App.Screens.Show(new SettingsScreen())));
 
             // The rules sit beside it, reachable before the first tap on
-            // anything else — which is when a player wants them. ChipPitch,
-            // not a bare gap: at chip.x + Gap * 0.7 the two chips cleared
-            // each other but their copper pads did not, so the help mark and
-            // the gear looked joined by one smear of yellow dots.
+            // anything else — which is when a player wants them. ChipPitch
+            // plus a Gap, not a bare gap and not the pitch alone: the pitch
+            // is the closest two chips may sit without their copper pads
+            // smearing into one another, which is a floor, not a spacing.
+            // At the floor the help mark still read as crowding the gear —
+            // two marks in one cluster rather than two controls.
             Buttons.Add(UiButton.MakeIcon(Root.transform, "help", BugGlyph.Question(palette, icon),
-                new Vector2(-L.BackPos.x - L.ChipPitch(chip.x), L.BackPos.y), chip,
+                new Vector2(-L.BackPos.x - L.ChipPitch(chip.x) - L.Gap, L.BackPos.y), chip,
                 () => App.Screens.Show(new RulesScreen())));
 
             // The tutorial, under the four ways in: a shorter chip, the same
@@ -85,6 +88,17 @@ namespace GridInfect.Game
         public override void Tick(float dt)
         {
             _title?.Tick(dt);
+            if (_offerPhase == OfferPhase.None) return;
+            _offerT += dt;
+            if (_offerPhase == OfferPhase.In)
+            {
+                if (OfferIn()) { _offerPhase = OfferPhase.None; SetOfferEnabled(true); }
+            }
+            else if (OfferOut())
+            {
+                _offerPhase = OfferPhase.None;
+                DestroyOffer();
+            }
         }
 
         // Where the series is picked up: the step after the last one beaten,
@@ -102,8 +116,28 @@ namespace GridInfect.Game
         // title and the four rows, and through glass they were the
         // message's background. The menu under it is shut off until it is
         // answered, as the board is under the COMPLETE popup.
+        //
+        // It arrives rather than being there. The plate used to be built
+        // already halfway on — the dim at full strength and the slide
+        // already running on the menu's first frame, which is the one frame
+        // the title has to itself. Now the menu stands alone for a beat, the
+        // screen goes dark, and the plate comes up from under the edge and
+        // settles the way the title's bug lands. Its two chips are dead
+        // until it has: a plate still in the air is not a thing a finger
+        // aimed at.
+        //
+        // The plate is PlateWidth, not ContentWidth. At the rows' own width
+        // it shared both edges with the stack under it and read as one more
+        // row rather than as a message on top of them.
+        enum OfferPhase { None, In, Out }
+
         GameObject _offer;
         GameObject _offerPanel;
+        SpriteRenderer _offerDim;
+        readonly System.Collections.Generic.List<UiButton> _offerButtons = new System.Collections.Generic.List<UiButton>();
+        OfferPhase _offerPhase;
+        float _offerT;
+        float _offerFrom;      // the plate's start, local px below its rest
 
         void OfferTutorial()
         {
@@ -111,47 +145,120 @@ namespace GridInfect.Game
 
             _offer = new GameObject("offer");
             _offer.transform.SetParent(Root.transform, false);
-            Ui.MakeRect("dim", _offer.transform,
-                new Vector2(UnityEngine.Screen.width, UnityEngine.Screen.height), BoardTheme.PanelDim, 40);
+            _offerDim = Ui.MakeRect("dim", _offer.transform,
+                new Vector2(UnityEngine.Screen.width, UnityEngine.Screen.height),
+                BoardPalette.Alpha(BoardTheme.PanelDim, 0f), 40).GetComponent<SpriteRenderer>();
 
             float short_ = PresentationConfig.ShortEdge;
+            float width = L.PlateWidth;
+            float height = short_ * 0.40f;
             var panel = new GameObject("panel");
             panel.transform.SetParent(_offer.transform, false);
             _offerPanel = panel;
-            Ui.MakeGlass("bg", panel.transform, new Vector2(L.ContentWidth, short_ * 0.40f), GlassStyle.Plate(BoardPalette.Default), 41);
+            Ui.MakeGlass("bg", panel.transform, new Vector2(width, height), GlassStyle.Plate(BoardPalette.Default), 41);
             var title = Ui.MakeText("title", panel.transform, "FIRST TIME?", L.HeadingText, BoardTheme.Text, 42, bold: true);
             Ui.SetPos(title.gameObject, 0f, short_ * 0.10f);
             var line = Ui.MakeText("line", panel.transform, "Learn the basics in a minute.", L.BodyText, BoardTheme.Text, 42);
             Ui.SetPos(line.gameObject, 0f, short_ * 0.03f);
 
+            // Two chips inside the plate's own width, a Gap between them and
+            // a Gap of plate either side, so the copper pads stay on the
+            // plate rather than hanging off its edges.
             float y = -short_ * 0.08f;
-            float step = L.ContentWidth / 4f;
-            var size = new Vector2(step * 1.6f, L.BarHeight);
-            Buttons.Add(UiButton.Make(panel.transform, "TUTORIAL", new Vector2(-step, y), size,
+            var size = new Vector2((width - L.Gap * 3f) / 2f, L.BarHeight);
+            float x = (size.x + L.Gap) / 2f;
+            AddOfferButton(UiButton.Make(panel.transform, "TUTORIAL", new Vector2(-x, y), size,
                 BoardTheme.Primary, BoardTheme.TextOnAccent, () =>
                 {
                     App.Do(GridInfectActions.TutorialSeen);
                     App.Screens.Show(new BoardScreen(),
                         prepare: () => App.Do(GridInfectActions.TutorialLoad, Inputs.Tutorial(0)).Applied);
                 }, 43));
-            Buttons.Add(UiButton.Make(panel.transform, "SKIP", new Vector2(step, y), size,
+            AddOfferButton(UiButton.Make(panel.transform, "SKIP", new Vector2(x, y), size,
                 BoardTheme.ButtonBg, BoardTheme.Text, () =>
                 {
                     App.Do(GridInfectActions.TutorialSeen);
                     CloseOffer();
                 }, 43));
 
-            panel.transform.localPosition = new Vector3(0f, -UnityEngine.Screen.height, 0f);
-            App.Tweens.MoveTo(panel.transform, Vector3.zero, PresentationConfig.PopupSlide);
+            // From under the bottom edge: the whole plate clear of the screen
+            // whatever the aspect, so nothing of it is on screen at rest.
+            _offerFrom = -(UnityEngine.Screen.height / 2f + height);
+            _offerPhase = OfferPhase.In;
+            _offerT = 0f;
+            OfferIn();
+        }
+
+        void AddOfferButton(UiButton button)
+        {
+            button.Enabled = false;
+            _offerButtons.Add(button);
+            Buttons.Add(button);
+        }
+
+        void SetOfferEnabled(bool enabled)
+        {
+            foreach (var button in _offerButtons) button.Enabled = enabled;
+        }
+
+        // The screen darkens, then the plate rises past its rest and settles
+        // back onto it. True once both have finished.
+        bool OfferIn()
+        {
+            float dim = Mathf.Clamp01((_offerT - O.Wait) / O.Dim);
+            SetDim(dim);
+
+            float t = Mathf.Clamp01((_offerT - O.Wait - O.RiseAt) / O.Rise);
+            // Ease out with a little back in the tail: it arrives with weight
+            // rather than coasting to a stop.
+            float u = t - 1f;
+            SetPlate(1f + (O.Overshoot + 1f) * u * u * u + O.Overshoot * u * u);
+            return dim >= 1f && t >= 1f;
+        }
+
+        // SKIP: the plate drops back the way it came and takes the dark with
+        // it. TUTORIAL does not run this — the navigation's own fade covers
+        // the plate leaving.
+        bool OfferOut()
+        {
+            float t = Mathf.Clamp01(_offerT / O.Fall);
+            SetPlate(1f - t * t * t);          // ease in: it falls away
+            SetDim(1f - Mathf.Clamp01(_offerT / (O.Fall + O.Dim * 0.5f)));
+            return _offerT >= O.Fall + O.Dim * 0.5f;
+        }
+
+        void SetDim(float k)
+        {
+            if (_offerDim != null) _offerDim.color = BoardPalette.Alpha(BoardTheme.PanelDim, BoardTheme.PanelDim.a * k);
+        }
+
+        // k = 0 off the bottom edge, 1 at rest; unclamped, so the overshoot
+        // in the ease can carry the plate past its resting place.
+        void SetPlate(float k)
+        {
+            if (_offerPanel != null)
+            {
+                _offerPanel.transform.localPosition = new Vector3(0f, Mathf.LerpUnclamped(_offerFrom, 0f, k), 0f);
+            }
         }
 
         void CloseOffer()
         {
+            if (_offer == null || _offerPhase == OfferPhase.Out) return;
+            SetOfferEnabled(false);
+            _offerPhase = OfferPhase.Out;
+            _offerT = 0f;
+        }
+
+        void DestroyOffer()
+        {
             if (_offer == null) return;
-            Buttons.RemoveAll(b => b.Root == null || b.Root.transform.parent == _offerPanel.transform);
+            foreach (var button in _offerButtons) Buttons.Remove(button);
+            _offerButtons.Clear();
             Object.Destroy(_offer);
             _offer = null;
             _offerPanel = null;
+            _offerDim = null;
             foreach (var button in Buttons) button.Enabled = true;
         }
     }
