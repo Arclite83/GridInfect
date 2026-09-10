@@ -117,7 +117,7 @@ namespace GridInfect.Game
             // wrap, so the rules sheet's longest line is what caps this.
             public static float BodyText => ShortEdge * 0.037f;
 
-            // Reading direction (docs/I18N.md 7): +1 left to right, -1 right
+            // Reading direction (docs/I18N.md): +1 left to right, -1 right
             // to left. Chrome positions itself from the leading and trailing
             // edges through Lead/Trail rather than from left and right, and
             // resolves its text anchors through Leading/Trailing, so a

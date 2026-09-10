@@ -9,7 +9,7 @@ namespace GridInfect.Game
     // device's language maps onto the shipped set, and the one formatter
     // every substitution goes through.
     //
-    // Core holds keys and never prose (docs/I18N.md 5), so every word the
+    // Core holds keys and never prose (docs/I18N.md), so every word the
     // player reads is resolved here, in the presentation layer, exactly as
     // the skin's colours are.
     public static partial class Str
@@ -18,7 +18,7 @@ namespace GridInfect.Game
         // column, never prose: a solve count, a streak, a level number, a
         // duration. Ambient culture would render those in the device's own
         // digits and separators and the column would stop lining up, so
-        // every substitution is invariant (docs/I18N.md 6). Text order is
+        // every substitution is invariant (docs/I18N.md). Text order is
         // the translation's business; digits are not.
         public static string Fmt(string format, object a0) =>
             string.Format(CultureInfo.InvariantCulture, format, a0);
@@ -43,7 +43,7 @@ namespace GridInfect.Game
                 : Fmt(TierBand, Fmt(TierShort, (int)min), (int)max);
 
         // Whether the language in force reads right to left. Chrome mirrors
-        // on this (docs/I18N.md 7); the board never does. The RTL pseudolocale
+        // on this (docs/I18N.md); the board never does. The RTL pseudolocale
         // is how it is exercised before any such language ships.
         public static bool IsRtl
         {

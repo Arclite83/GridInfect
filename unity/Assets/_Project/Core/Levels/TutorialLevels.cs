@@ -22,7 +22,7 @@ namespace GridInfect.Core
             public readonly (int piece, int cell)[] Solution;   // the marks, in a winning order
 
             // The one sentence over the board is not here. It is prose, and
-            // Core holds keys and never prose (docs/I18N.md 5): the adapter
+            // Core holds keys and never prose (docs/I18N.md): the adapter
             // reads tut.<step>.line from the string table. The sentence each
             // board teaches is kept beside it below as a comment, so this
             // file still reads as the lesson plan it is.

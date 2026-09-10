@@ -6,14 +6,14 @@ using S = GridInfect.Game.PresentationConfig.Style;
 namespace GridInfect.Game
 {
     // Language: a grid of glass chips off SETTINGS, one per shipped tag plus
-    // AUTO for following the device (docs/I18N.md 3). A chip carries its tag
+    // AUTO for following the device (docs/I18N.md). A chip carries its tag
     // in the mono face — a part number in the silkscreen idiom the HUD
     // already speaks — and the one in force is the lit chip. A non-Latin
     // language will additionally carry a drawn mark of its own script beside
     // the tag, for a reader who cannot read the chip; that lands with the
     // first such language (SelectorGlyphs), not before it.
     //
-    // The pseudolocales (docs/I18N.md 9) show in the editor and in a
+    // The pseudolocales (docs/I18N.md) show in the editor and in a
     // development build only. They are how the layout is tested, not
     // something a player picks.
     public sealed class LanguageScreen : AppScreen

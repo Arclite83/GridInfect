@@ -68,7 +68,7 @@ namespace GridInfect.Core.Tests
         }
 
         // The sentences themselves left Core with the rest of the prose
-        // (docs/I18N.md 5), and their shape — one line, non-empty, narrow
+        // (docs/I18N.md), and their shape — one line, non-empty, narrow
         // enough for the band that does not wrap — is checked by
         // tools/bake_strings.py over every language rather than here over
         // English only. What still belongs to Core is the count: the adapter

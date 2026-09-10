@@ -95,7 +95,7 @@ namespace GridInfect.Core
         // own names (G1..G5) are still a stored contract — the world files,
         // the level cache keys, the metrics golden — but the *word* a person
         // reads is prose, and Core holds keys and never prose
-        // (docs/I18N.md 5). It is Str.TierName / Str.TierBandLabel now.
+        // (docs/I18N.md). It is Str.TierName / Str.TierBandLabel now.
 
         // The streak as of `dateUtc`: intact if the last completed date is
         // today or yesterday, otherwise broken (shown as 0 until today's solve).

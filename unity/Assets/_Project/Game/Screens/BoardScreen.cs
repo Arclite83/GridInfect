@@ -728,7 +728,7 @@ namespace GridInfect.Game
                 {
                     // Three readouts joined by spacing. They are separate keys
                     // so that turning them into three positioned elements is a
-                    // layout change and not a translation one (docs/I18N.md 7).
+                    // layout change and not a translation one (docs/I18N.md).
                     _caption.text = Str.Fmt(Str.BoardHudSolved, endless.Index)
                         + "   " + Str.Fmt(Str.BoardHudStreak, endless.Streak)
                         + "   " + Str.Fmt(Str.BoardHudBest, App.State.Profile.EndlessBest[(int)endless.Grade - 1]);

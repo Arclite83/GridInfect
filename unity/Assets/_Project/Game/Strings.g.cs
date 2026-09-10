@@ -7,7 +7,7 @@ namespace GridInfect.Game
         public const string DefaultTag = "en";
 
         // Every shipped tag, default first. The selector draws this
-        // list minus the pseudolocales (docs/I18N.md 9).
+        // list minus the pseudolocales (docs/I18N.md).
         public static readonly string[] Tags =
         {
             "en",
