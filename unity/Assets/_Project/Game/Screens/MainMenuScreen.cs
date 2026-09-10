@@ -138,11 +138,10 @@ namespace GridInfect.Game
         OfferPhase _offerPhase;
         float _offerT;
         float _offerFrom;      // the plate's start, local px below its rest
+        bool _menuShut;        // the rows underneath, off
 
         void OfferTutorial()
         {
-            foreach (var button in Buttons) button.Enabled = false;
-
             _offer = new GameObject("offer");
             _offer.transform.SetParent(Root.transform, false);
             _offerDim = Ui.MakeRect("dim", _offer.transform,
@@ -207,6 +206,21 @@ namespace GridInfect.Game
         {
             float dim = Mathf.Clamp01((_offerT - O.Wait) / O.Dim);
             SetDim(dim);
+            // The menu goes dead when the screen starts going dark, not when
+            // the offer is built: a menu that looks live and answers nothing
+            // is worse than one that visibly has something over it, and the
+            // wait is the beat where the player is reading the title. A tap
+            // that lands inside it navigates and takes the offer with it —
+            // which is right, because it has not been answered, and the menu
+            // will make it again next time it is on screen.
+            if (!_menuShut && dim > 0f)
+            {
+                _menuShut = true;
+                foreach (var button in Buttons)
+                {
+                    if (!_offerButtons.Contains(button)) button.Enabled = false;
+                }
+            }
 
             float t = Mathf.Clamp01((_offerT - O.Wait - O.RiseAt) / O.Rise);
             // Ease out with a little back in the tail: it arrives with weight

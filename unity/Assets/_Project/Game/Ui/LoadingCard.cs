@@ -55,8 +55,6 @@ namespace GridInfect.Game
         float _target;
         float _t;             // the sweep's clock, free-running while up
 
-        public bool Visible => _alpha > 0f || _target > 0f;
-
         // The scrim a navigation fades to. Not black: black is a hole in the
         // app, and the substrate is still down there. This is the board with
         // the lights off, and it follows the skin because ScreenManager reads
