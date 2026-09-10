@@ -152,11 +152,18 @@ namespace GridInfect.Game
         // the plate, and the plate lands the way the title bug does.
         public static class Offer
         {
-            public const float Wait = 0.45f;    // the menu, alone
+            // Long enough for the title's own animation to finish (the bug
+            // lands, then INFECT lights a letter per hop: ~0.69 s). The one
+            // launch that shows this offer is the one launch that plays the
+            // wordmark, and darkening the screen over it wastes both.
+            public const float Wait = 0.75f;    // the menu, alone
             public const float Dim = 0.28f;     // the screen going dark behind it
             public const float Rise = 0.34f;    // the plate coming up
             public const float RiseAt = 0.12f;  // after the dim starts
-            public const float Overshoot = 1.1f;   // how hard it lands
+            // The back in the ease's tail, as a fraction of the travel — and
+            // the travel is most of the screen, so this is small on purpose:
+            // 0.8 puts the overshoot around 10 px on a 390x844.
+            public const float Overshoot = 0.8f;
             public const float Fall = 0.22f;    // SKIP: the plate dropping back out
         }
 
