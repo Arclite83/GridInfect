@@ -94,9 +94,9 @@ namespace GridInfect.Game
             // then the recent archive, then Endless's opening boards; in
             // Endless, the next board while the current one is played.
             _levels = new LevelCachePort(Application.persistentDataPath);
-            _levels.Load(LevelCache.Shared);
             EndlessSeed = (ulong)NowMs();
-            Warmup.AtBoot(LevelCache.Shared, System.DateTime.UtcNow, State.Profile, EndlessSeed);
+            _levels.LoadAsync(LevelCache.Shared, () =>
+                Warmup.AtBoot(LevelCache.Shared, System.DateTime.UtcNow, State.Profile, EndlessSeed));
 
             Dispatcher.Applied += _ =>
             {

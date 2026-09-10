@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Bloodhound.Engine;
 using GridInfect.Core;
 using UnityEngine;
 
@@ -16,6 +17,25 @@ namespace GridInfect.Game
         public LevelCachePort(string directory)
         {
             _path = Path.Combine(directory, "gridinfect_levels.json");
+        }
+
+        // Ahead of every prefetch: nothing may generate a board the file
+        // already holds for want of having read it yet.
+        const int LoadPriority = -1000;
+
+        // The read, on the worker; `then` runs on the main thread once it
+        // has landed (Work.Pump, from GameApp.Update). This is the one cost
+        // at boot that grows with play — up to LevelCache.Capacity boards of
+        // JSON — and the only reason the game would ever need a loading
+        // screen in front of its first frame. It does not: the first frame
+        // goes up on an empty cache and the file catches up behind it.
+        public void LoadAsync(LevelCache cache, Action then)
+        {
+            Work.Shared.Run(() =>
+            {
+                Load(cache);
+                return true;
+            }, LoadPriority, "levels:load", _ => then());
         }
 
         public void Load(LevelCache cache)
