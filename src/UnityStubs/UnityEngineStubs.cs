@@ -331,6 +331,7 @@ namespace UnityEngine
         public static string version => "";
         public static string buildGUID => "";
         public static SystemLanguage systemLanguage => SystemLanguage.English;
+        public static bool isEditor => false;
     }
 
     public static class Time

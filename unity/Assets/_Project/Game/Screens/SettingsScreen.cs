@@ -18,6 +18,11 @@ namespace GridInfect.Game
         UiButton _erase;
         bool _armed;
 
+        // Sound, skins, language: the stack the privacy row joins when the
+        // consent SDK asks for one. The count sizes the stack's centre, so
+        // the optional row is not in it and hangs below.
+        const int Rows = 3;
+
         protected override void Build()
         {
             float h = UnityEngine.Screen.height;
@@ -29,19 +34,23 @@ namespace GridInfect.Game
 
             var size = new Vector2(L.ContentWidth, L.ButtonHeight);
             int row = 0;
-            _sound = UiButton.Make(Root.transform, "", new Vector2(0f, L.StackRowY(row++, 3, L.ButtonHeight, 0f)), size,
+            _sound = UiButton.Make(Root.transform, "", new Vector2(0f, L.StackRowY(row++, Rows, L.ButtonHeight, 0f)), size,
                 BoardTheme.ButtonBg, BoardTheme.Text, ToggleSound);
             Buttons.Add(_sound);
             RefreshSound();
 
-            BuildSkins(L.StackRowY(row++, 3, L.ButtonHeight, 0f));
+            BuildSkins(L.StackRowY(row++, Rows, L.ButtonHeight, 0f));
+
+            Buttons.Add(UiButton.Make(Root.transform, Str.SettingsLanguage,
+                new Vector2(0f, L.StackRowY(row++, Rows, L.ButtonHeight, 0f)), size,
+                BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new LanguageScreen())));
 
             // R-802: the privacy options entry, whenever the consent SDK says
             // one is required.
             if (App.Ads.PrivacyOptionsAvailable)
             {
                 Buttons.Add(UiButton.Make(Root.transform, Str.SettingsPrivacy,
-                    new Vector2(0f, L.StackRowY(row++, 3, L.ButtonHeight, 0f)), size,
+                    new Vector2(0f, L.StackRowY(row++, Rows, L.ButtonHeight, 0f)), size,
                     BoardTheme.ButtonBg, BoardTheme.Text, () => App.Ads.ShowPrivacyOptions(null)));
             }
 

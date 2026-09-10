@@ -14,9 +14,10 @@ namespace GridInfect.Core
     // v6: + skin (board colours; absent = the ship green).
     // v7: + tutorialSeen, tutorialStep (the first-open offer answered; the
     // highest tutorial step beaten plus one).
+    // v8: + lang (BCP-47 tag; absent or "" = follow the device).
     public static class SaveCodec
     {
-        public const int Version = 7;
+        public const int Version = 8;
 
         public static string Save(Profile profile)
         {
@@ -72,6 +73,7 @@ namespace GridInfect.Core
                 ["counts"] = counts,
                 ["muted"] = profile.Muted,
                 ["skin"] = profile.Skin,
+                ["lang"] = profile.Lang ?? "",
                 ["worlds"] = worlds,
                 ["dailyBest"] = dailyBest,
                 ["dailyStreak"] = profile.DailyStreak,
@@ -148,6 +150,12 @@ namespace GridInfect.Core
                 profile.Skin = (int)skin;
             }
 
+            // A malformed tag is dropped rather than kept: the adapter would
+            // fall back to the device anyway, and a clean "" says so honestly.
+            if (root.TryGetValue("lang", out object lg) && lg is string lang && SetLanguageAction.IsWellFormed(lang))
+            {
+                profile.Lang = lang;
+            }
             if (root.TryGetValue("tutorialSeen", out object ts) && ts is bool tutorialSeen) profile.TutorialSeen = tutorialSeen;
             if (root.TryGetValue("tutorialStep", out object tp) && tp is long tutorialStep && tutorialStep >= 0)
             {

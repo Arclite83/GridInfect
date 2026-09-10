@@ -197,6 +197,45 @@ namespace GridInfect.Core.Tests
             Assert.That(profile.SolvedClassic, Is.Empty);
         }
 
+        [Test]
+        public void LanguageIsAPreferenceThatSurvivesSaveAndReset()
+        {
+            var dispatcher = GridInfectActions.CreateDispatcher();
+            Assert.That(dispatcher.State.Profile.Lang, Is.EqualTo(""), "a fresh profile follows the device");
+            Assert.That(dispatcher.Dispatch(GridInfectActions.SettingsLanguage, Inputs.Language("pt-BR")).Applied);
+            var profile = dispatcher.State.Profile;
+            profile.SolvedClassic.Add(3);
+
+            Assert.That(SaveCodec.Load(SaveCodec.Save(profile)).Lang, Is.EqualTo("pt-BR"));
+
+            Assert.That(dispatcher.Dispatch(GridInfectActions.ProgressReset).Applied);
+            Assert.That(profile.Lang, Is.EqualTo("pt-BR"));
+            Assert.That(profile.SolvedClassic, Is.Empty);
+
+            // Back to following the device is a tag too: the empty one.
+            Assert.That(dispatcher.Dispatch(GridInfectActions.SettingsLanguage, Inputs.Language("")).Applied);
+            Assert.That(profile.Lang, Is.EqualTo(""));
+        }
+
+        [Test]
+        public void LanguageIsValidatedOnShapeNotMembership()
+        {
+            var dispatcher = GridInfectActions.CreateDispatcher();
+            // The core does not know which tags ship; a well-formed stranger is fine.
+            Assert.That(dispatcher.Dispatch(GridInfectActions.SettingsLanguage, Inputs.Language("zh-Hant")).Applied);
+            Assert.That(dispatcher.Dispatch(GridInfectActions.SettingsLanguage, Inputs.Language("qps-plocm")).Applied);
+            foreach (string bad in new[] { "-de", "de-", "d e", "de--AT", "en_US", "aaaaaaaaaaaaaaaaa", "日本語" })
+            {
+                Assert.That(dispatcher.Dispatch(GridInfectActions.SettingsLanguage, Inputs.Language(bad)).Applied, Is.False, bad);
+            }
+            Assert.That(dispatcher.State.Profile.Lang, Is.EqualTo("qps-plocm"));
+
+            // A v7 save has no tag and follows the device; a bad one is dropped, not kept.
+            Assert.That(SaveCodec.Load("{\"v\":7,\"skin\":1}").Lang, Is.EqualTo(""));
+            Assert.That(SaveCodec.Load("{\"v\":8,\"lang\":\"en_US\"}").Lang, Is.EqualTo(""));
+            Assert.That(SaveCodec.Load("{\"v\":8,\"lang\":\"ja\"}").Lang, Is.EqualTo("ja"));
+        }
+
         // The two clean sweeps the skins are gated on. Nothing else in the
         // game is behind progress any more, so if these ever went wrong the
         // reward would silently never arrive.

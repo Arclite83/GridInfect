@@ -3,6 +3,7 @@
 
   "nav.menu": "MENU",
   "nav.worlds": "WORLDS",
+  "nav.settings": "SETTINGS",
   "common.page": "{0}/{1}",
 
   "menu.worlds": "WORLDS",
@@ -18,6 +19,7 @@
 
   "settings.title": "SETTINGS",
   "settings.privacy": "PRIVACY OPTIONS",
+  "settings.language": "LANGUAGE",
   "settings.eraseCaption": "ERASES EVERY LEVEL BEATEN\nAND EVERY SCORE. LOCKS ARE KEPT.",
   "settings.build": "V{0}   BUILD {1}",
   "settings.buildEditor": "EDITOR",
@@ -113,6 +115,9 @@
   "tier.band": "{0}-{1}",
 
   "loading.caption": "LOADING",
+
+  "language.title": "LANGUAGE",
+  "language.auto": "AUTO",
 
   "cal.day.1": "MON",
   "cal.day.2": "TUE",

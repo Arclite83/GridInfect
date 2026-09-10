@@ -102,6 +102,13 @@ namespace GridInfect.Core
         // (BoardPalette.SkinId). A preference like Muted, not progress.
         public int Skin;
 
+        // Language as a BCP-47 tag ("de", "pt-BR", "zh-Hant"), or "" to follow
+        // the device, which is the default and stays true when the device's
+        // own language changes later. The core keeps the tag opaque: which
+        // tags ship, and what each one draws, is the adapter's (Str), exactly
+        // as the skin's colours are. A preference, not progress.
+        public string Lang = "";
+
         public bool Dirty;
     }
 }
