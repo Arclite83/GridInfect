@@ -304,12 +304,33 @@ namespace UnityEngine
         public static ColorSpace activeColorSpace => ColorSpace.Linear;
     }
 
+    // Only the members Str.FromDevice switches on. Unity's own enum is much
+    // longer; the ones absent here are ones the game does not ship.
+    public enum SystemLanguage
+    {
+        Unknown = 0,
+        English,
+        German,
+        French,
+        Spanish,
+        Portuguese,
+        Italian,
+        Turkish,
+        Russian,
+        Japanese,
+        Korean,
+        Chinese,
+        ChineseSimplified,
+        ChineseTraditional,
+    }
+
     public static class Application
     {
         public static int targetFrameRate { get; set; }
         public static string persistentDataPath => "";
         public static string version => "";
         public static string buildGUID => "";
+        public static SystemLanguage systemLanguage => SystemLanguage.English;
     }
 
     public static class Time
