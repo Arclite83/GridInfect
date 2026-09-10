@@ -51,12 +51,29 @@ namespace GridInfect.Services
     }
 
     // R-602 cadence, designer-editable. A plain class here; the Unity asset
-    // wrapper (AdCadenceConfig ScriptableObject) hands it over.
+    // wrapper (AdCadenceConfig ScriptableObject) hands it over. Scalars and
+    // flags only, deliberately: the moment a change needs new logic it needs
+    // a build, and config that carries logic is a second codebase with no
+    // tests. AdCadenceGate clamps every value on read.
     [Serializable]
     public sealed class AdCadence
     {
-        public int MinSolvesBeforeFirstAd = 3;
-        public float MinSecondsBetweenAds = 90f;
+        // Kill switches, per placement.
+        public bool InterstitialEnabled = true;
+        public bool RewardedEnabled = true;
+
+        // Lifetime, not per session. The old session-scoped counter never
+        // tripped for a Daily-only player: one solve, then the app closes and
+        // the count starts over, so they never saw an ad at all.
+        public int GraceLifetimeSolves = 8;
+
+        // Both gates are required. See AdCadenceGate for why either alone
+        // fails at one end of the difficulty ramp.
+        public int MinSolvesBetweenAds = 3;
+        public float MinSecondsBetweenAds = 240f;
+
+        public int MaxAdsPerDay = 8;
+        public bool RewardedResetsGates = true;
     }
 
     // R-604: demo unit ids in development builds; production ids live only

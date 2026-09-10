@@ -186,6 +186,10 @@ namespace GridInfect.Game
             if (screen == null) return;
             screen.Tick(dt);
 
+            // The interstitial's time gate counts board time only (R-602):
+            // a menu left open is not the player working on a level.
+            Ads.Tick(dt, screen is BoardScreen);
+
             bool transitioning = Screens.Transitioning;
             if (_wasTransitioning && !transitioning)
             {
@@ -244,12 +248,15 @@ namespace GridInfect.Game
 
         void OnApplicationPause(bool paused)
         {
-            if (paused) _levels?.SaveIfDirty(LevelCache.Shared);
+            if (!paused) return;
+            _levels?.SaveIfDirty(LevelCache.Shared);
+            Ads?.Flush();
         }
 
         void OnApplicationQuit()
         {
             _levels?.SaveIfDirty(LevelCache.Shared);
+            Ads?.Flush();
         }
 
         public Vector2 ToWorld(Vector3 screenPos)

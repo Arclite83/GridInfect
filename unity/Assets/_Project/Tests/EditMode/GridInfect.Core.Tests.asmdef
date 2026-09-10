@@ -5,7 +5,8 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Bloodhound.Engine",
-        "GridInfect.Core"
+        "GridInfect.Core",
+        "GridInfect.Services"
     ],
     "includePlatforms": [
         "Editor"

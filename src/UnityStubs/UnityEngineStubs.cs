@@ -327,6 +327,19 @@ namespace UnityEngine
         public static bool GetMouseButtonUp(int button) => false;
     }
 
+    public static class PlayerPrefs
+    {
+        public static int GetInt(string key, int defaultValue = 0) => defaultValue;
+        public static void SetInt(string key, int value) { }
+        public static float GetFloat(string key, float defaultValue = 0f) => defaultValue;
+        public static void SetFloat(string key, float value) { }
+        public static string GetString(string key, string defaultValue = "") => defaultValue;
+        public static void SetString(string key, string value) { }
+        public static bool HasKey(string key) => false;
+        public static void DeleteKey(string key) { }
+        public static void Save() { }
+    }
+
     public static class Resources
     {
         public static T GetBuiltinResource<T>(string path) where T : Object => null;

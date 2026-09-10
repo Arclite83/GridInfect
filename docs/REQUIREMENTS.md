@@ -96,7 +96,7 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 | ID | Pri | Requirement | Trace |
 |---|---|---|---|
 | R-601 | MVP | AdMob via the Google Mobile Ads Unity plugin; the SDK initializes only after the consent gate (R-801) reports ads may be requested. | **NEW — needs approval** |
-| R-602 | MVP | One format at MVP: interstitial on dismissal of the solved popup — first ad no earlier than the 3rd solve of a session, minimum 90 s between ads; cadence values live in a designer-editable config asset, not code. | **NEW — needs approval** |
+| R-602 | MVP | One format at MVP: interstitial on dismissal of the solved popup, never on level open, abort or full reset, and never in the tutorial. Both gates required (AND): **3 solves** and **240 s of foreground board time** since the last ad, after a lifetime grace of **8** non-tutorial solves, capped at **8 per local day**. A rewarded ad resets both gates. Counters are lifetime and persisted adapter-side, never in `Profile` or the action log. Cadence values live in a designer-editable config asset, clamped on read. | cadence pass 2026-09-10; `AdCadenceGate`, `AdCadenceTests` |
 | R-603 | DROPPED | ~~Rewarded ad as an opt-in "skip this level".~~ Replaced by R-607 (NEXT_PASS decision 8). | superseded |
 | R-604 | MVP | Development builds use Google's demo ad unit IDs plus registered test-device IDs; production unit IDs exist only in the release config asset (see DEPENDENCIES §5). | **NEW — needs approval** |
 | R-605 | MVP | Play compliance for ads: `AD_ID` permission declared (the plugin adds it), Data safety form covers ads/device identifiers, app is declared not child-directed. | **NEW — needs approval** |
@@ -107,7 +107,7 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 
 | ID | Pri | Requirement | Trace |
 |---|---|---|---|
-| R-701 | MVP | Single non-consumable `remove_ads` product via Unity IAP on both stores; owning it suppresses interstitials only (the rewarded Lock stays available — it is user-initiated; the wallet is unchanged). One price point, the user's call. | NEXT_PASS decision 8 |
+| R-701 | MVP | Single non-consumable `remove_ads` product via Unity IAP on both stores; owning it suppresses interstitials only (the rewarded Lock stays available — it is user-initiated; the wallet is unchanged). One price point (USD 4.99), never discounted. Entry points: a `NO ADS` chip on the main menu under TUTORIAL, present from first launch and removed from the layout once owned, plus the settings surface (R-901). | NEXT_PASS decision 8; cadence pass 2026-09-10 |
 | R-702 | LATER | Restore-purchases flow (App Store review requirement; free on Play via receipt query). | **NEW — needs approval** |
 
 ## 8. Consent & privacy
@@ -172,7 +172,7 @@ individually.
 1. **R-115** — single-touch input (original multi-touch behavior unknowable from the repo).
 1a. **R-107** — the cancellation bug is *not* ported (you confirmed bug); the sub-decision needing approval is fast-forward-on-touch during the 0.3 s beat (vs. briefly ignoring input).
 2. **R-502** — fresh JSON save format, no legacy `GridInfectSave.txt` import.
-3. **R-601/602/604/605** — AdMob; interstitial-on-solve as the only MVP format (3rd-solve grace, 90 s cap); demo-ID discipline; Play ad declarations.
+3. **R-601/602/604/605** — AdMob; interstitial-on-solve as the only MVP format (3-solve AND 240 s gates, 8-solve lifetime grace, 8/day cap); demo-ID discipline; Play ad declarations.
 4. **R-603** — rewarded "skip level" (adds a mechanic; easiest honest reward sink).
 5. **R-606** — minimal analytics via Unity Analytics (LATER).
 6. **R-701/702** — non-consumable remove-ads via Unity IAP; price TBD by you.

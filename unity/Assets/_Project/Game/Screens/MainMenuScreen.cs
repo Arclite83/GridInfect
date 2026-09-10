@@ -80,6 +80,26 @@ namespace GridInfect.Game
                 new Vector2(0f, below), new Vector2(L.ContentWidth * 0.5f, L.BarHeight),
                 BoardTheme.ButtonBg, BoardTheme.Text, OpenTutorial));
 
+            // NO ADS, a row under the tutorial and off to the right: smaller
+            // than the chip above it, because hierarchy on this screen is
+            // size and this is the control a new player needs least. Full
+            // ink like everything else — there is no dim ink here (§BoardTheme),
+            // and a purchase control is a bad place to start making one.
+            // It is here from first launch rather than appearing after
+            // the first interstitial — someone who would rather pay than
+            // watch should not have to sit through one to learn they can.
+            // Once owned it leaves the layout entirely; no spent control is
+            // left behind saying "Purchased".
+            if (!App.Ads.Purchases.RemoveAdsOwned)
+            {
+                var noAds = new Vector2(L.ContentWidth * 0.42f, L.BarHeight);
+                float x = (L.ContentWidth - noAds.x) / 2f;
+                float y = below - L.BarHeight / 2f - L.Gap - noAds.y / 2f;
+                Buttons.Add(UiButton.Make(Root.transform, "NO ADS",
+                    new Vector2(x, y), noAds,
+                    BoardTheme.ButtonBg, BoardTheme.Text, OpenRemoveAds));
+            }
+
             if (!App.State.Profile.TutorialSeen) OfferTutorial();
         }
 
@@ -107,6 +127,19 @@ namespace GridInfect.Game
             int index = step >= TutorialLevels.Count ? 0 : step;
             App.Screens.Show(new BoardScreen(),
                 prepare: () => App.Do(GridInfectActions.TutorialLoad, Inputs.Tutorial(index)).Applied);
+        }
+
+        // R-701: the one non-consumable. The store sheet and its localised
+        // price belong to the purchase SDK, so this hands off and does
+        // nothing else; on success the menu rebuilds without the chip.
+        // Behind NullPurchaseService the callback reports false and the tap
+        // is inert, which is the correct behaviour until the SDK lands.
+        void OpenRemoveAds()
+        {
+            App.Ads.Purchases.BuyRemoveAds(owned =>
+            {
+                if (owned) App.Screens.Show(new MainMenuScreen(), instant: true);
+            });
         }
 
         // The first open: one offer, answered once either way (tutorial.seen).
