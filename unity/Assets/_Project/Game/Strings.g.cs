@@ -167,22 +167,22 @@ namespace GridInfect.Game
             "A repel clears the ray that hit it.",   // tut.8.line
             "A trap resets the whole board.",   // tut.9.line
             "A relay fires its own rays when lit.",   // tut.10.line
-            "First Steps",   // world.w01.name
-            "Two Lines",   // world.w02.name
-            "Corners",   // world.w03.name
-            "Crossings",   // world.w04.name
-            "Keep Clean",   // world.w05.name
-            "Counting",   // world.w06.name
-            "Corridors",   // world.w07.name
-            "Blots",   // world.w08.name
-            "Long Reach",   // world.w09.name
-            "Four Arms",   // world.w10.name
-            "Diagonals",   // world.w11.name
-            "Tight",   // world.w12.name
-            "Relays",   // world.w14.name
-            "Crosstalk",   // world.w15.name
-            "Suppose",   // world.w16.name
-            "Mastery",   // world.w17.name
+            "FIRST STEPS",   // world.w01.name
+            "TWO LINES",   // world.w02.name
+            "CORNERS",   // world.w03.name
+            "CROSSINGS",   // world.w04.name
+            "KEEP CLEAN",   // world.w05.name
+            "COUNTING",   // world.w06.name
+            "CORRIDORS",   // world.w07.name
+            "BLOTS",   // world.w08.name
+            "LONG REACH",   // world.w09.name
+            "FOUR ARMS",   // world.w10.name
+            "DIAGONALS",   // world.w11.name
+            "TIGHT",   // world.w12.name
+            "RELAYS",   // world.w14.name
+            "CROSSTALK",   // world.w15.name
+            "SUPPOSE",   // world.w16.name
+            "MASTERY",   // world.w17.name
         };
 
         // qps-ploc
@@ -330,22 +330,22 @@ namespace GridInfect.Game
             "[\u00c1 r\u00e9p\u00e9l \u00e7l\u00e9\u00e1r\u0161 th\u00e9 r\u00e1\u00fd th\u00e1t h\u00edt \u00edt.\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]",   // tut.8.line
             "[\u00c1 tr\u00e1p r\u00e9\u0161\u00e9t\u0161 th\u00e9 wh\u00f3l\u00e9 b\u00f3\u00e1r\u0111.\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]",   // tut.9.line
             "[\u00c1 r\u00e9l\u00e1\u00fd f\u00edr\u00e9\u0161 \u00edt\u0161 \u00f3w\u00f1 r\u00e1\u00fd\u0161 wh\u00e9\u00f1 l\u00edt.\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]",   // tut.10.line
-            "[F\u00edr\u0161t \u0160t\u00e9p\u0161\u00b7\u00b7\u00b7\u00b7]",   // world.w01.name
-            "[Tw\u00f3 L\u00ed\u00f1\u00e9\u0161\u00b7\u00b7\u00b7]",   // world.w02.name
-            "[\u00c7\u00f3r\u00f1\u00e9r\u0161\u00b7\u00b7\u00b7]",   // world.w03.name
-            "[\u00c7r\u00f3\u0161\u0161\u00ed\u00f1\u011f\u0161\u00b7\u00b7\u00b7\u00b7]",   // world.w04.name
-            "[K\u00e9\u00e9p \u00c7l\u00e9\u00e1\u00f1\u00b7\u00b7\u00b7\u00b7]",   // world.w05.name
-            "[\u00c7\u00f3\u00fa\u00f1t\u00ed\u00f1\u011f\u00b7\u00b7\u00b7]",   // world.w06.name
-            "[\u00c7\u00f3rr\u00ed\u0111\u00f3r\u0161\u00b7\u00b7\u00b7\u00b7]",   // world.w07.name
-            "[Bl\u00f3t\u0161\u00b7\u00b7]",   // world.w08.name
-            "[L\u00f3\u00f1\u011f R\u00e9\u00e1\u00e7h\u00b7\u00b7\u00b7\u00b7]",   // world.w09.name
-            "[F\u00f3\u00far \u00c1rm\u0161\u00b7\u00b7\u00b7]",   // world.w10.name
-            "[\u0110\u00ed\u00e1\u011f\u00f3\u00f1\u00e1l\u0161\u00b7\u00b7\u00b7\u00b7]",   // world.w11.name
-            "[T\u00ed\u011fht\u00b7\u00b7]",   // world.w12.name
-            "[R\u00e9l\u00e1\u00fd\u0161\u00b7\u00b7]",   // world.w14.name
-            "[\u00c7r\u00f3\u0161\u0161t\u00e1lk\u00b7\u00b7\u00b7\u00b7]",   // world.w15.name
-            "[\u0160\u00fapp\u00f3\u0161\u00e9\u00b7\u00b7\u00b7]",   // world.w16.name
-            "[M\u00e1\u0161t\u00e9r\u00fd\u00b7\u00b7\u00b7]",   // world.w17.name
+            "[F\u00cdR\u0160T \u0160T\u00c9P\u0160\u00b7\u00b7\u00b7\u00b7]",   // world.w01.name
+            "[TW\u00d3 L\u00cd\u00d1\u00c9\u0160\u00b7\u00b7\u00b7]",   // world.w02.name
+            "[\u00c7\u00d3R\u00d1\u00c9R\u0160\u00b7\u00b7\u00b7]",   // world.w03.name
+            "[\u00c7R\u00d3\u0160\u0160\u00cd\u00d1\u011e\u0160\u00b7\u00b7\u00b7\u00b7]",   // world.w04.name
+            "[K\u00c9\u00c9P \u00c7L\u00c9\u00c1\u00d1\u00b7\u00b7\u00b7\u00b7]",   // world.w05.name
+            "[\u00c7\u00d3\u00da\u00d1T\u00cd\u00d1\u011e\u00b7\u00b7\u00b7]",   // world.w06.name
+            "[\u00c7\u00d3RR\u00cd\u0110\u00d3R\u0160\u00b7\u00b7\u00b7\u00b7]",   // world.w07.name
+            "[BL\u00d3T\u0160\u00b7\u00b7]",   // world.w08.name
+            "[L\u00d3\u00d1\u011e R\u00c9\u00c1\u00c7H\u00b7\u00b7\u00b7\u00b7]",   // world.w09.name
+            "[F\u00d3\u00daR \u00c1RM\u0160\u00b7\u00b7\u00b7]",   // world.w10.name
+            "[\u0110\u00cd\u00c1\u011e\u00d3\u00d1\u00c1L\u0160\u00b7\u00b7\u00b7\u00b7]",   // world.w11.name
+            "[T\u00cd\u011eHT\u00b7\u00b7]",   // world.w12.name
+            "[R\u00c9L\u00c1\u00dd\u0160\u00b7\u00b7]",   // world.w14.name
+            "[\u00c7R\u00d3\u0160\u0160T\u00c1LK\u00b7\u00b7\u00b7\u00b7]",   // world.w15.name
+            "[\u0160\u00daPP\u00d3\u0160\u00c9\u00b7\u00b7\u00b7]",   // world.w16.name
+            "[M\u00c1\u0160T\u00c9R\u00dd\u00b7\u00b7\u00b7]",   // world.w17.name
         };
 
         // qps-plocm
@@ -493,22 +493,22 @@ namespace GridInfect.Game
             "\u202b.ti tih taht yar eht sraelc leper A\u202c",   // tut.8.line
             "\u202b.draob elohw eht steser part A\u202c",   // tut.9.line
             "\u202b.til nehw syar nwo sti serif yaler A\u202c",   // tut.10.line
-            "\u202bspetS tsriF\u202c",   // world.w01.name
-            "\u202bseniL owT\u202c",   // world.w02.name
-            "\u202bsrenroC\u202c",   // world.w03.name
-            "\u202bsgnissorC\u202c",   // world.w04.name
-            "\u202bnaelC peeK\u202c",   // world.w05.name
-            "\u202bgnitnuoC\u202c",   // world.w06.name
-            "\u202bsrodirroC\u202c",   // world.w07.name
-            "\u202bstolB\u202c",   // world.w08.name
-            "\u202bhcaeR gnoL\u202c",   // world.w09.name
-            "\u202bsmrA ruoF\u202c",   // world.w10.name
-            "\u202bslanogaiD\u202c",   // world.w11.name
-            "\u202bthgiT\u202c",   // world.w12.name
-            "\u202bsyaleR\u202c",   // world.w14.name
-            "\u202bklatssorC\u202c",   // world.w15.name
-            "\u202besoppuS\u202c",   // world.w16.name
-            "\u202byretsaM\u202c",   // world.w17.name
+            "\u202bSPETS TSRIF\u202c",   // world.w01.name
+            "\u202bSENIL OWT\u202c",   // world.w02.name
+            "\u202bSRENROC\u202c",   // world.w03.name
+            "\u202bSGNISSORC\u202c",   // world.w04.name
+            "\u202bNAELC PEEK\u202c",   // world.w05.name
+            "\u202bGNITNUOC\u202c",   // world.w06.name
+            "\u202bSRODIRROC\u202c",   // world.w07.name
+            "\u202bSTOLB\u202c",   // world.w08.name
+            "\u202bHCAER GNOL\u202c",   // world.w09.name
+            "\u202bSMRA RUOF\u202c",   // world.w10.name
+            "\u202bSLANOGAID\u202c",   // world.w11.name
+            "\u202bTHGIT\u202c",   // world.w12.name
+            "\u202bSYALER\u202c",   // world.w14.name
+            "\u202bKLATSSORC\u202c",   // world.w15.name
+            "\u202bESOPPUS\u202c",   // world.w16.name
+            "\u202bYRETSAM\u202c",   // world.w17.name
         };
 
         static readonly string[][] Tables =

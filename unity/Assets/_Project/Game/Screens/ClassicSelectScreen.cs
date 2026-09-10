@@ -30,10 +30,10 @@ namespace GridInfect.Game
         {
             float h = UnityEngine.Screen.height;
 
-            var title = Ui.MakeText("title", Root.transform, "LEGACY", L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.LegacyTitle, L.HeadingText, BoardTheme.Text, 2);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
 
-            Buttons.Add(UiButton.Make(Root.transform, "MENU", L.BackPos, L.BackSize,
+            Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
 
             float pagerY = -h * PagerPct;
@@ -69,7 +69,7 @@ namespace GridInfect.Game
             _grid.transform.SetParent(Root.transform, false);
 
             float h = UnityEngine.Screen.height;
-            _pageLabel.text = $"{_page + 1}/{Pages}";
+            _pageLabel.text = Str.Fmt(Str.CommonPage, _page + 1, Pages);
 
             // The rack fills the band between the title and the pager. Tiles
             // are square, so the grid stays legible whichever way the numbers
@@ -92,7 +92,7 @@ namespace GridInfect.Game
                 float y = centreY + ((Rows - 1) / 2f - n / Columns) * pitchY;
 
                 int captured = levelId;
-                var button = UiButton.Make(_grid.transform, (levelId + 1).ToString(),
+                var button = UiButton.Make(_grid.transform, Str.Num(levelId + 1),
                     new Vector2(x, y), size,
                     solved ? BoardTheme.TileSolved() : BoardTheme.TileOpen(),
                     solved ? BoardTheme.TextOnAccent : BoardTheme.Text,

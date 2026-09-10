@@ -87,6 +87,12 @@ namespace GridInfect.Game
             Dispatcher = GridInfectActions.CreateDispatcher();
             _save = new SavePort(Application.persistentDataPath);
             State.Profile = _save.Load();
+            // The language before the skin, and both before the first screen
+            // builds: a screen bakes its words and its colours at
+            // construction. The stored tag is not in the profile yet
+            // (docs/I18N.md 8 lands with the selector), so this follows the
+            // device and falls back to English.
+            Str.Resolve(null);
             ApplySkin();   // the saved colours, before the first screen builds
 
             // The level cache: what the device has generated so far, and the

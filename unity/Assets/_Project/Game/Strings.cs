@@ -29,6 +29,19 @@ namespace GridInfect.Game
         public static string Fmt(string format, object a0, object a1, object a2) =>
             string.Format(CultureInfo.InvariantCulture, format, a0, a1, a2);
 
+        // A bare number with no sentence around it: a calendar day, a level
+        // number on a tile, a year. Same rule as Fmt, and the reason to have
+        // it is that `n.ToString()` is the easy thing to type and is wrong.
+        public static string Num(int value) =>
+            value.ToString(CultureInfo.InvariantCulture);
+
+        // The difficulty band a weekday or a level carries. Grade's own names
+        // (G1..G5) stay the stored contract in Core; these are the words over
+        // them. A band whose ends match is just the one tier.
+        public static string TierBandLabel(Core.Solving.Grade min, Core.Solving.Grade max) =>
+            min == max ? Fmt(TierShort, (int)min)
+                : Fmt(TierBand, Fmt(TierShort, (int)min), (int)max);
+
         // Adopt `tag` if it ships, and report whether it did. An unknown tag
         // leaves the current one in force: a save written by a build that
         // shipped more languages than this one must not blank the UI.

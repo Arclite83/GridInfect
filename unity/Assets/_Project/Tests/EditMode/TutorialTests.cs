@@ -67,18 +67,18 @@ namespace GridInfect.Core.Tests
             }
         }
 
-        // One sentence, and one that fits the HUD band at the body size.
+        // The sentences themselves left Core with the rest of the prose
+        // (docs/I18N.md 5), and their shape — one line, non-empty, narrow
+        // enough for the band that does not wrap — is checked by
+        // tools/bake_strings.py over every language rather than here over
+        // English only. What still belongs to Core is the count: the adapter
+        // reads tut.<n>.line for n in 1..Count, so a step added here without
+        // a sentence added there would be a blank board with no lesson.
         [Test]
-        public void EveryStepHasOneShortLine()
+        public void TheSeriesIsTenSteps()
         {
-            for (int n = 0; n < TutorialLevels.Count; n++)
-            {
-                string line = TutorialLevels.Get(n).Line;
-                Assert.That(line, Is.Not.Empty, $"step {n}");
-                Assert.That(line.Length, Is.LessThanOrEqualTo(44), $"step {n}: '{line}' is too long for the HUD");
-                Assert.That(line.EndsWith("."), $"step {n}: '{line}'");
-                Assert.That(line.Contains("\n"), Is.False, $"step {n}: one line");
-            }
+            Assert.That(TutorialLevels.Count, Is.EqualTo(10),
+                "add or remove docs/strings/*.json tut.<n>.line to match");
         }
 
         [Test]

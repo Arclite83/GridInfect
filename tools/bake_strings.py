@@ -25,6 +25,7 @@ Usage: python3 tools/bake_strings.py
 import json
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -93,7 +94,10 @@ def check_worlds(base):
         key = f"world.{wid}.name"
         if key not in base:
             die(f"{DEFAULT}.json: no '{key}' for the world in docs/worlds/{wid}.jsonl")
-        if base[key] != name:
+        # Case is display, not identity: the JSONL authors the name and
+        # en.json authors how it is set, and the world rows are uppercase
+        # chips (STYLE-GUIDE 7). Renaming a world still has to touch both.
+        if base[key].casefold() != name.casefold():
             die(
                 f"{DEFAULT}.json: '{key}' is {base[key]!r} but docs/worlds/{wid}.jsonl "
                 f"authors {name!r}. Change both or neither."
@@ -103,6 +107,45 @@ def check_worlds(base):
             wid = key[len("world."):-len(".name")]
             if wid not in authored:
                 die(f"{DEFAULT}.json: '{key}' has no docs/worlds/{wid}.jsonl")
+
+
+def display_width(text):
+    """Latin counts 1 per character, CJK 2. TextMesh does not wrap and the
+    tutorial band is one line wide, so what matters is how wide a sentence
+    draws, not how many code points it has (docs/I18N.md 7)."""
+    return sum(2 if unicodedata.east_asian_width(c) in ("W", "F") else 1 for c in text)
+
+
+# The tutorial band holds one line at the body size. Measured from the
+# English set, whose longest is "Two bugs. Tap a placed bug to pick it up."
+TUTORIAL_WIDTH = 44
+
+
+def check_tutorial(tag, table):
+    """The ten sentences are the whole instruction set for a game that
+    teaches nothing else, and they draw into a fixed one-line band. This ran
+    as a Core test over English only; here it covers every language, which is
+    where a too-long line actually comes from."""
+    steps = sorted(
+        (int(k.split(".")[1]), k) for k in table if k.startswith("tut.") and k.endswith(".line")
+    )
+    if not steps:
+        die(f"{tag}.json: no tut.<n>.line keys")
+    for i, (n, _) in enumerate(steps, start=1):
+        if n != i:
+            die(f"{tag}.json: tutorial steps must run 1..N with no gaps; found {n} at position {i}")
+    for n, key in steps:
+        line = table[key]
+        if not line.strip():
+            die(f"{tag}.json: '{key}' is empty")
+        if "\n" in line:
+            die(f"{tag}.json: '{key}' is two lines; the tutorial band holds one")
+        width = display_width(line)
+        if width > TUTORIAL_WIDTH:
+            die(
+                f"{tag}.json: '{key}' draws {width} wide, over {TUTORIAL_WIDTH}: {line!r}. "
+                "Shorten it; the band does not wrap."
+            )
 
 
 def segments(text):
@@ -292,6 +335,7 @@ def main():
     if not base:
         die(f"{DEFAULT}.json is empty")
     check_worlds(base)
+    check_tutorial(DEFAULT, base)
 
     authored = sorted(
         p.stem for p in STRINGS.glob("*.json") if p.stem not in PSEUDO
@@ -306,6 +350,7 @@ def main():
         table = load(tag)
         check_keys(tag, base, table)
         check_placeholders(tag, base, table)
+        check_tutorial(tag, table)
         tables[tag] = table
     tables["qps-ploc"] = {k: ploc(v) for k, v in base.items()}
     tables["qps-plocm"] = {k: plocm(v) for k, v in base.items()}

@@ -63,13 +63,13 @@ namespace GridInfect.Game
             // either edge. Same top bar as every other screen: back on the
             // left, the screen's one action on the right.
             float hudBottom = h / 2f - S.Px(S.HudHeight - S.HudBottomPad);
-            var chip = ChipSize("RESET");
+            var chip = ChipSize(Str.BoardReset);
             float chipY = hudBottom + chip.y / 2f;
-            _backButton = UiButton.Make(Root.transform, "MENU",
+            _backButton = UiButton.Make(Root.transform, Str.NavMenu,
                 new Vector2(-w / 2f + S.Px(S.HudInset) + chip.x / 2f, chipY), chip,
                 BoardTheme.ButtonBg, BoardTheme.Text, GoBack);
             Buttons.Add(_backButton);
-            _resetButton = UiButton.Make(Root.transform, "RESET",
+            _resetButton = UiButton.Make(Root.transform, Str.BoardReset,
                 new Vector2(w / 2f - S.Px(S.HudInset) - chip.x / 2f, chipY), chip,
                 BoardTheme.ButtonBg, BoardTheme.Text, ResetLevel);
             Buttons.Add(_resetButton);
@@ -251,35 +251,35 @@ namespace GridInfect.Game
                 case GameMode.Tutorial:
                 {
                     int index = App.State.TutorialIndex;
-                    _title.text = $"TUTORIAL {index + 1}/{TutorialLevels.Count}";
-                    if (_lesson != null) _lesson.text = TutorialLevels.Get(index).Line;
+                    _title.text = Str.Fmt(Str.BoardTutorialTitle, index + 1, TutorialLevels.Count);
+                    if (_lesson != null) _lesson.text = Str.TutorialLine(index + 1);
                     level = $"T{index + 1:00}";
                     RefreshTutorialChrome();
                     break;
                 }
                 case GameMode.Classic:
-                    _caption.text = "LEGACY";
-                    _title.text = $"LEVEL {App.State.ClassicLevelId + 1}";
+                    _caption.text = Str.BoardLegacy;
+                    _title.text = Str.Fmt(Str.BoardLevel, App.State.ClassicLevelId + 1);
                     level = (App.State.ClassicLevelId + 1).ToString("00");
                     break;
                 case GameMode.World:
-                    _caption.text = Worlds.Get(App.State.WorldId).Name.ToUpperInvariant();
-                    _title.text = $"LEVEL {App.State.WorldIndex + 1}";
+                    _caption.text = Str.WorldName(App.State.WorldId);
+                    _title.text = Str.Fmt(Str.BoardLevel, App.State.WorldIndex + 1);
                     level = (App.State.WorldIndex + 1).ToString("00");
                     break;
                 case GameMode.Daily:
-                    _caption.text = "DAILY";
+                    _caption.text = Str.BoardDaily;
                     _title.text = App.State.DailyRun.DateUtc;
                     level = "DAILY";
                     break;
                 case GameMode.Endless:
-                    _caption.text = $"ENDLESS  {Queries.TierName(App.State.EndlessRun.Grade)}";
-                    _title.text = $"LEVEL {App.State.EndlessRun.Index + 1}";
+                    _caption.text = Str.Fmt(Str.BoardEndless, Str.Fmt(Str.TierName, (int)App.State.EndlessRun.Grade));
+                    _title.text = Str.Fmt(Str.BoardLevel, App.State.EndlessRun.Index + 1);
                     level = "ENDLESS";
                     break;
                 default:
-                    _caption.text = $"{App.State.Difficulty}".ToUpperInvariant();
-                    _title.text = $"LEVEL {App.State.FreePlayIndex + 1}";
+                    _caption.text = Str.DifficultyName((int)App.State.Difficulty);
+                    _title.text = Str.Fmt(Str.BoardLevel, App.State.FreePlayIndex + 1);
                     level = "FREE";
                     break;
             }
@@ -523,7 +523,9 @@ namespace GridInfect.Game
             // "SOLVE", not "LOCK": what the player buys is one piece solved
             // for them. Locking is what the rules then do to it, which is the
             // mechanism, not the offer.
-            _lockButton.Label.text = replay ? "HINT" : rewarded ? "+1 SOLVE" : $"SOLVE {locks:00}";
+            _lockButton.Label.text = replay ? Str.BoardHint
+                : rewarded ? Str.BoardPlusSolve
+                : Str.Fmt(Str.BoardSolve, locks);
             _lockButton.OnClick = rewarded ? EarnLock : (System.Action)LockPiece;
             _lockButton.Enabled = (replay || locks > 0 || rewarded) && !_popupOpen;
         }
@@ -605,10 +607,10 @@ namespace GridInfect.Game
                 // The streak line stays where the run actually moved it.
                 int streak = App.State.Profile.DailyStreak;
                 bool onTheDay = run.DateUtc == GameApp.TodayUtc();
-                OpenPopup(!onTheDay ? "COMPLETE"
-                    : streak <= 1 ? "COMPLETE\nStreak started"
-                    : $"COMPLETE\n{streak} days in a row");
-                AddPopupButton("CALENDAR", new Vector2(0f, -Short * 0.06f),
+                OpenPopup(!onTheDay ? Str.BoardComplete
+                    : streak <= 1 ? Str.BoardCompleteStreakStarted
+                    : Str.Fmt(Str.BoardCompleteStreakDays, streak));
+                AddPopupButton(Str.BoardPopupCalendar, new Vector2(0f, -Short * 0.06f),
                     new Vector2(L.ContentWidth / 3f, L.BarHeight), () => App.Screens.Show(new DailyScreen()));
             }
             else if (Tutorial)
@@ -630,8 +632,8 @@ namespace GridInfect.Game
                 {
                     HoldThen(() =>
                     {
-                        OpenPopup("TUTORIAL COMPLETE");
-                        AddPopupButton("PLAY", new Vector2(0f, -Short * 0.06f),
+                        OpenPopup(Str.BoardTutorialComplete);
+                        AddPopupButton(Str.BoardPopupPlay, new Vector2(0f, -Short * 0.06f),
                             new Vector2(L.ContentWidth / 3f, L.BarHeight),
                             () => App.Screens.Show(new BoardScreen(), prepare: () =>
                                 App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(Worlds.First.Id, 0)).Applied));
@@ -687,7 +689,7 @@ namespace GridInfect.Game
                 new Vector2(ScreenW * PresentationConfig.BoardWidthPct, ScreenH * 0.86f),
                 GlassStyle.Well(BoardPalette.Default), 30);
             Ui.SetPos(cover, 0f, -ScreenH * 0.07f);
-            var begin = UiButton.Make(_beginCover.transform, "BEGIN",
+            var begin = UiButton.Make(_beginCover.transform, Str.BoardBegin,
                 new Vector2(0f, 0f), new Vector2(L.ContentWidth * 0.55f, L.ButtonHeight),
                 BoardTheme.Primary, BoardTheme.TextOnAccent, () =>
                 {
@@ -722,7 +724,15 @@ namespace GridInfect.Game
             if (App.State.Mode == GameMode.Endless)
             {
                 var endless = App.State.EndlessRun;
-                if (endless != null) _caption.text = $"SOLVED {endless.Index}   STREAK {endless.Streak}   BEST {App.State.Profile.EndlessBest[(int)endless.Grade - 1]}";
+                if (endless != null)
+                {
+                    // Three readouts joined by spacing. They are separate keys
+                    // so that turning them into three positioned elements is a
+                    // layout change and not a translation one (docs/I18N.md 7).
+                    _caption.text = Str.Fmt(Str.BoardHudSolved, endless.Index)
+                        + "   " + Str.Fmt(Str.BoardHudStreak, endless.Streak)
+                        + "   " + Str.Fmt(Str.BoardHudBest, App.State.Profile.EndlessBest[(int)endless.Grade - 1]);
+                }
                 return;
             }
             if (App.State.Mode != GameMode.FreePlay) return;
@@ -737,15 +747,16 @@ namespace GridInfect.Game
                 App.Screens.Show(new FreePlayMenuScreen());
                 return;
             }
-            _caption.text = $"{App.State.Difficulty}   {App.State.FreePlayIndex + 1}/5   {Queries.FormatDuration(elapsed)}"
-                .ToUpperInvariant();
+            _caption.text = Str.DifficultyName((int)App.State.Difficulty)
+                + "   " + Str.Fmt(Str.BoardHudRunCount, App.State.FreePlayIndex + 1)
+                + "   " + Queries.FormatDuration(elapsed);
         }
 
         // ---- popups ----
 
         void ShowSolvedPopup(System.Action next, System.Action replay)
         {
-            OpenPopup("COMPLETE");
+            OpenPopup(Str.BoardComplete);
             float y = -Short * 0.06f;
             float step = L.ContentWidth / 3f;
             // Three chips on a step, so the box is the step less the room a
@@ -755,18 +766,18 @@ namespace GridInfect.Game
             // haloes want — two lit chips a ChipPadSpan apart meet at the
             // midpoint rather than glowing through each other.
             var size = new Vector2(step - L.ChipPadSpan, L.BarHeight);
-            AddPopupButton("MENU", new Vector2(-step, y), size, GoBack);
-            AddPopupButton("REPLAY", new Vector2(0f, y), size, replay);
+            AddPopupButton(Str.BoardPopupMenu, new Vector2(-step, y), size, GoBack);
+            AddPopupButton(Str.BoardPopupReplay, new Vector2(0f, y), size, replay);
             if (next != null)
             {
-                AddPopupButton("NEXT", new Vector2(step, y), size, next);
+                AddPopupButton(Str.BoardPopupNext, new Vector2(step, y), size, next);
             }
         }
 
         void ShowCompletedPopup()
         {
-            OpenPopup("COMPLETE");
-            AddPopupButton("MENU", new Vector2(0f, -Short * 0.06f),
+            OpenPopup(Str.BoardComplete);
+            AddPopupButton(Str.BoardPopupMenu, new Vector2(0f, -Short * 0.06f),
                 new Vector2(L.ContentWidth / 3f, L.BarHeight),
                 () => App.Screens.Show(new FreePlayMenuScreen()));
         }

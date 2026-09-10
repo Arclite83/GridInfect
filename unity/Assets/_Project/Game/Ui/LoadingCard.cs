@@ -86,7 +86,7 @@ namespace GridInfect.Game
                 _lit[n] = Make($"cell:{n}:lit", new Vector2(cell, cell), infected, sortingOrder + 2, x);
             }
 
-            _caption = Ui.MakeText("caption", _root.transform, "LOADING", S.Px(S.HudCaption), palette.Tip,
+            _caption = Ui.MakeText("caption", _root.transform, Str.LoadingCaption, S.Px(S.HudCaption), palette.Tip,
                 sortingOrder + 3, mono: true);
             Ui.SetPos(_caption.gameObject, 0f, -(cell / 2f + pad + S.Px(CaptionGapPx)));
 

@@ -43,12 +43,6 @@ namespace GridInfect.Game
         int TodayMonth => _todayDate.Year * 12 + _todayDate.Month - 1;
         int EpochMonth => DailyCalendar.Epoch.Year * 12 + DailyCalendar.Epoch.Month - 1;
 
-        static readonly string[] MonthNames =
-        {
-            "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
-            "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER",
-        };
-        static readonly string[] DayNames = { "MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN" };
 
         protected override void Build()
         {
@@ -61,13 +55,13 @@ namespace GridInfect.Game
             _selected = _todayDate;
 
             // HUD (§7): the mode label between two chips.
-            var title = Ui.MakeText("title", Root.transform, "DAILY", L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.DailyTitle, L.HeadingText, BoardTheme.Text, 2);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
             var caption = Ui.MakeText("caption", Root.transform, "GI-CAL REV B", S.Px(S.HudCaption), BoardTheme.TextDim, 2, mono: true);
             Ui.SetPos(caption.gameObject, 0f, L.TopBarY + L.HeadingText * 0.95f);
-            Buttons.Add(UiButton.Make(Root.transform, "MENU", L.BackPos, L.BackSize,
+            Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
-            _todayChip = UiButton.Make(Root.transform, "TODAY", new Vector2(-L.BackPos.x, L.BackPos.y), L.BackSize,
+            _todayChip = UiButton.Make(Root.transform, Str.DailyToday, new Vector2(-L.BackPos.x, L.BackPos.y), L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => { Go(TodayMonth); Select(_todayDate); });
             Buttons.Add(_todayChip);
 
@@ -105,8 +99,8 @@ namespace GridInfect.Game
                 var day = (DayOfWeek)((c + 1) % 7);   // Monday first
                 float x = (c - (Columns - 1) / 2f) * _pitch;
                 var band = DailyCalendar.Band(day);
-                string tier = Queries.TierBand(band.min, band.max);
-                var name = Ui.MakeText($"wk:{c}", Root.transform, DayNames[c], S.Px(S.SmallText), BoardTheme.Text, 2, mono: true);
+                string tier = Str.TierBandLabel(band.min, band.max);
+                var name = Ui.MakeText($"wk:{c}", Root.transform, Str.Day(c + 1), S.Px(S.SmallText), BoardTheme.Text, 2, mono: true);
                 Ui.SetPos(name.gameObject, x, _headerY + S.Px(12f));
                 // The tier was CopperLo, 2.3:1 on the mask at 11 px: the
                 // one number that says how hard the day is, in the least
@@ -144,8 +138,8 @@ namespace GridInfect.Game
             _tiles.Clear();
 
             int year = _month / 12, month = _month % 12 + 1;
-            _yearLabel.text = year.ToString();
-            _monthLabel.text = MonthNames[month - 1];
+            _yearLabel.text = Str.Num(year);
+            _monthLabel.text = Str.Month(month);
             _prev.Enabled = _month > EpochMonth;
             _next.Enabled = _month < TodayMonth;
             _prev.SetDim(!_prev.Enabled);
@@ -177,7 +171,7 @@ namespace GridInfect.Game
                     // Not pressable, so it may sit under the contrast floor,
                     // but 28% was a number you had to hunt for. 45% still
                     // reads as "not yet" next to a full-ink day.
-                    Tile($"day:{d}", x, y, FutureStyle(palette), d.ToString(), BoardPalette.Alpha(palette.Ink, 0.45f));
+                    Tile($"day:{d}", x, y, FutureStyle(palette), Str.Num(d), BoardPalette.Alpha(palette.Ink, 0.45f));
                     continue;
                 }
                 playable++;
@@ -194,7 +188,7 @@ namespace GridInfect.Game
                     var pointer = Ui.MakeGlass("pointer", _page.transform, new Vector2(S.Px(6f), S.Px(6f)), pointerStyle, 9);
                     Ui.SetPos(pointer, x, y + _cell / 2f + S.Px(6f));
                 }
-                var tile = Tile($"day:{d}", x, y, done ? BoardTheme.TileSolved() : BoardTheme.TileOpen(), d.ToString(),
+                var tile = Tile($"day:{d}", x, y, done ? BoardTheme.TileSolved() : BoardTheme.TileOpen(), Str.Num(d),
                     done ? BoardTheme.TextOnAccent : BoardTheme.Text);
                 if (done)
                 {
@@ -217,8 +211,8 @@ namespace GridInfect.Game
             // Both readouts in full copper: a zero streak used to dim its
             // badge to 2:1, which made the fact of a zero streak the thing
             // you could not read.
-            Badge("streak", $"STREAK {streak:00}", -L.ContentWidth / 2f, true);
-            Badge("month", $"{MonthNames[month - 1].Substring(0, 3)} {solved:00}/{playable:00}", L.ContentWidth / 2f, false);
+            Badge("streak", Str.Fmt(Str.DailyStreak, streak), -L.ContentWidth / 2f, true);
+            Badge("month", Str.Fmt(Str.DailyMonthCount, Str.MonthShort(month), solved, playable), L.ContentWidth / 2f, false);
 
             // The month's unplayed days go to the worker, newest first, behind
             // today's board and the recent archive.
@@ -326,20 +320,22 @@ namespace GridInfect.Game
             string dateUtc = DailySpec.Format(_selected);
             bool solved = Queries.IsDailySolved(App.State.Profile, dateUtc);
             var band = DailyCalendar.Band(_selected.DayOfWeek);
-            string tier = Queries.TierBand(band.min, band.max);
+            string tier = Str.TierBandLabel(band.min, band.max);
 
             if (_slotGlass != null) UnityEngine.Object.Destroy(_slotGlass);
             _slotGlass = Ui.MakeGlass("slot", Root.transform, new Vector2(_slotSize, _slotSize),
                 solved ? BoardTheme.TileSolved() : BoardTheme.TileOpen(), 5);
             Ui.SetPos(_slotGlass, _slotX, _slotY);
             _slotNumber.color = solved ? BoardTheme.TextOnAccent : BoardTheme.Text;
-            _slotNumber.text = _selected.Day.ToString();
-            _slotCaption.text = _selected == _todayDate ? "TODAY" : "PAST";
-            _dateLine.text = $"{DayNames[((int)_selected.DayOfWeek + 6) % 7]} {_selected.Day:00} {MonthNames[_selected.Month - 1].Substring(0, 3)}";
+            _slotNumber.text = Str.Num(_selected.Day);
+            _slotCaption.text = _selected == _todayDate ? Str.DailyToday : Str.DailyPast;
+            _dateLine.text = Str.Fmt(Str.DailyDateLine, Str.Day(((int)_selected.DayOfWeek + 6) % 7 + 1),
+                _selected.Day, Str.MonthShort(_selected.Month));
             if (DailyCalendar.IsReady(_selected))
             {
                 var level = DailyCalendar.For(_selected);
-                _infoLine.text = $"{tier} · {level.Def.Specs.Length} BUGS · {CellsToInfect(level)} CELLS";
+                _infoLine.text = tier + " \u00b7 " + Str.Fmt(Str.DailyBugs, level.Def.Specs.Length)
+                    + " \u00b7 " + Str.Fmt(Str.DailyCells, CellsToInfect(level));
                 _infoPending = false;
             }
             else
@@ -347,7 +343,7 @@ namespace GridInfect.Game
                 _infoLine.text = tier;
                 _infoPending = true;
             }
-            _bestLine.text = solved ? "COMPLETE" : _infoPending ? "GENERATING" : "UNPLAYED";
+            _bestLine.text = solved ? Str.DailyComplete : _infoPending ? Str.DailyGenerating : Str.DailyUnplayed;
 
             // BEGIN is the one lit control; PLAY AGAIN is plain glass. The
             // chip is rebuilt rather than restyled, so it is always one object.
@@ -356,7 +352,7 @@ namespace GridInfect.Game
                 Buttons.Remove(_play);
                 UnityEngine.Object.Destroy(_play.Root);
             }
-            _play = UiButton.Make(Root.transform, solved ? "PLAY AGAIN" : "BEGIN", _playCentre, _playSize,
+            _play = UiButton.Make(Root.transform, solved ? Str.DailyPlayAgain : Str.DailyBegin, _playCentre, _playSize,
                 solved ? BoardTheme.ButtonBg : BoardTheme.Primary, solved ? BoardTheme.Text : BoardTheme.TextOnAccent,
                 () => Play(_selected));
             Buttons.Add(_play);
@@ -461,9 +457,9 @@ namespace GridInfect.Game
     {
         protected override void Build()
         {
-            var title = Ui.MakeText("title", Root.transform, "ENDLESS", L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.EndlessTitle, L.HeadingText, BoardTheme.Text, 2);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
-            Buttons.Add(UiButton.Make(Root.transform, "MENU", L.BackPos, L.BackSize,
+            Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
 
             var profile = App.State.Profile;
@@ -472,7 +468,7 @@ namespace GridInfect.Game
             {
                 var grade = (Core.Solving.Grade)g;
                 float y = L.StackRowY(g - 1, 5, L.ButtonHeight, 0f);
-                Buttons.Add(UiButton.Make(Root.transform, Queries.TierName(grade), new Vector2(0f, y), size,
+                Buttons.Add(UiButton.Make(Root.transform, Str.Fmt(Str.TierName, g), new Vector2(0f, y), size,
                     BoardTheme.ButtonBg, BoardTheme.Text, () =>
                     {
                         // The seed is taken here rather than inside prepare:
@@ -492,7 +488,7 @@ namespace GridInfect.Game
                 // past the row that carries it while BEST 7 sat somewhere
                 // else again. Right-anchored, the column is straight and
                 // nothing can walk over the edge.
-                var best = Ui.MakeText($"best:{g}", Root.transform, $"BEST {profile.EndlessBest[g - 1]}",
+                var best = Ui.MakeText($"best:{g}", Root.transform, Str.Fmt(Str.EndlessBest, profile.EndlessBest[g - 1]),
                     L.LabelText, BoardTheme.Accent, 2, anchor: TextAnchor.MiddleRight);
                 Ui.SetPos(best.gameObject, L.ContentWidth / 2f - L.Gap, y);
             }
