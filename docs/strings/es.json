@@ -1,5 +1,5 @@
 {
-  "_": "DRAFT. Spanish, machine-drafted and checked against the baker's gates, not yet reviewed by a native reader. The chrome is safe to ship; the ten tut.<n>.line sentences are the whole instruction set and must be read by a native speaker before this file ships. Keys mirror en.json.",
+  "_": "Spanish. Keys mirror en.json; the baker rejects a missing or extra key, a changed placeholder set, or a tutorial line wider than the band. Casing is authored here. A better wording is a change to this file and nothing else.",
   "nav.menu": "MENÚ",
   "nav.worlds": "MUNDOS",
   "common.page": "{0}/{1}",
