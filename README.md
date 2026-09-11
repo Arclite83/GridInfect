@@ -112,10 +112,13 @@ python3 docs/tools/verify_test_vectors.py   # sanity: vectors self-verify
   APK/AAB/Xcode from the menu or `-executeMethod`, and a manual GitHub
   workflow builds Android once the Unity licence secrets are added. No
   build has been made yet.
-- **Nothing has been through the Unity editor yet.** The adapter is
-  compile-checked against API stubs (`src/`) and the shader has never been
-  compiled by Unity. `docs/UNITY_SETUP.md` §6 is the first-run checklist,
-  ordered by what is most likely to bite.
+- The project has been opened in the editor (2026-09-11): `Main.unity`
+  exists and is the build's scene, the design faces are imported and text
+  is TextMeshPro, and `Grid Infect ▸ Apply player settings and icons` has
+  run once (the default icon is set; the per-platform slots stay empty
+  until the Android and iOS Build Support modules are installed and it is
+  run again). `docs/UNITY_SETUP.md` §6 is still the first-run checklist for
+  what has not been confirmed on screen: the shaders, the board, the title.
 - Later waves (ads, IAP, consent, services): specified in
   `docs/REQUIREMENTS.md` / `docs/DEPENDENCIES.md`, deliberately not in this
   baseline.

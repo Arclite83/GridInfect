@@ -73,6 +73,10 @@ unity/*.sln
 # Transient scene the test runner drops into Assets/ mid-run
 unity/Assets/InitTestScene*.unity*
 
+# The editor's crash-recovery copy of an unsaved scene
+unity/Assets/_Recovery/
+unity/Assets/_Recovery.meta
+
 # Unity crash/report droppings and packaged output
 sysinfo.txt
 *.stackdump
