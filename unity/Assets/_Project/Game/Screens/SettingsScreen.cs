@@ -111,7 +111,7 @@ namespace GridInfect.Game
             BoardPalette.SkinId.Breadboard,
         };
 
-        static string SkinName(BoardPalette.SkinId id) =>
+        public static string SkinName(BoardPalette.SkinId id) =>
             id == BoardPalette.SkinId.Blue ? Str.SettingsSkinBlue
             : id == BoardPalette.SkinId.Breadboard ? Str.SettingsSkinTan
             : Str.SettingsSkinGreen;

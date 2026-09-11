@@ -604,6 +604,9 @@ namespace GridInfect.Game
         void OnSolved()
         {
             if (_popupOpen) return;
+            // The chime, after the winning wave's last click. Every mode,
+            // the tutorial included: a solve is a solve.
+            _board.PlaySolved();
             // The tutorial's ten boards are ad-free and count for nothing:
             // not toward the first-ad grace, not toward the cadence gates.
             if (!IsTutorial) App.Ads.CountSolve();
@@ -611,11 +614,13 @@ namespace GridInfect.Game
             {
                 int levelId = App.State.ClassicLevelId;
                 int next = Queries.NextClassicId(levelId);
-                App.Do(GridInfectActions.ProgressSolved, Inputs.Solved(levelId));
+                var earned = SkinEarnedBy(BoardPalette.SkinId.Breadboard,
+                    () => App.Do(GridInfectActions.ProgressSolved, Inputs.Solved(levelId)));
                 ShowSolvedPopup(next >= 0
-                    ? () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(next))
-                    : (System.Action)null,
-                    () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(levelId)));
+                    ? () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(next)).Applied
+                    : (System.Func<bool>)null,
+                    () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(levelId)).Applied,
+                    earned);
             }
             else if (App.State.Mode == GameMode.World)
             {
@@ -624,21 +629,24 @@ namespace GridInfect.Game
                 string worldId = App.State.WorldId;
                 int index = App.State.WorldIndex;
                 World world = Worlds.Get(worldId);
-                App.Do(GridInfectActions.ProgressSolvedWorld, Inputs.SolvedWorld(worldId, index));
-                System.Action next = null;
+                var earned = SkinEarnedBy(BoardPalette.SkinId.Blue,
+                    () => App.Do(GridInfectActions.ProgressSolvedWorld, Inputs.SolvedWorld(worldId, index)));
+                System.Func<bool> next = null;
                 if (index + 1 < world.Count)
                 {
-                    next = () => App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(worldId, index + 1));
+                    next = () => App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(worldId, index + 1)).Applied;
                 }
                 else
                 {
                     World following = Worlds.Next(worldId);
                     if (following != null)
                     {
-                        next = () => App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(following.Id, 0));
+                        next = () => App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(following.Id, 0)).Applied;
                     }
                 }
-                ShowSolvedPopup(next, () => App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(worldId, index)));
+                ShowSolvedPopup(next,
+                    () => App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(worldId, index)).Applied,
+                    earned);
             }
             else if (App.State.Mode == GameMode.Daily)
             {
@@ -805,9 +813,29 @@ namespace GridInfect.Game
 
         // ---- popups ----
 
-        void ShowSolvedPopup(System.Action next, System.Action replay)
+        // Run the progress action and report whether it earned `skin`: the
+        // solve that completes a sweep is the one where the skin was not
+        // earned before it and is after. Exactly once per sweep, and again
+        // only if progress is erased and the sweep made again — which is
+        // earning it again.
+        BoardPalette.SkinId? SkinEarnedBy(BoardPalette.SkinId skin, System.Action progress)
         {
-            OpenPopup(Str.BoardComplete);
+            bool before = App.SkinEarned(skin);
+            progress();
+            return !before && App.SkinEarned(skin) ? skin : (BoardPalette.SkinId?)null;
+        }
+
+        // `next` and `replay` load the level in question and report whether
+        // the load applied. On an ordinary solve they run in place: the
+        // session changes under this screen and it rebinds. On the solve
+        // that earned a skin, the popup says so and the skin goes on — the
+        // profile records the choice now, so the next launch wears it, and
+        // the palette switches under the fade so the next screen is built
+        // in it whole: chrome, glass, substrate, board. Every piece of glass
+        // bakes its colours when it is made, which is why the same level
+        // reloaded in place would have come up half in each.
+        void ShowSolvedPopup(System.Func<bool> next, System.Func<bool> replay, BoardPalette.SkinId? newSkin)
+        {
             float y = -Short * 0.06f;
             float step = L.ContentWidth / 3f;
             // Three chips on a step, so the box is the step less the room a
@@ -817,11 +845,31 @@ namespace GridInfect.Game
             // haloes want — two lit chips a ChipPadSpan apart meet at the
             // midpoint rather than glowing through each other.
             var size = new Vector2(step - L.ChipPadSpan, L.BarHeight);
-            AddPopupButton(Str.BoardPopupMenu, new Vector2(-step * L.Dir, y), size, GoBack);
-            AddPopupButton(Str.BoardPopupReplay, new Vector2(0f, y), size, replay);
+
+            if (newSkin == null)
+            {
+                OpenPopup(Str.BoardComplete);
+                AddPopupButton(Str.BoardPopupMenu, new Vector2(-step * L.Dir, y), size, GoBack);
+                AddPopupButton(Str.BoardPopupReplay, new Vector2(0f, y), size, () => replay());
+                if (next != null)
+                {
+                    AddPopupButton(Str.BoardPopupNext, new Vector2(step * L.Dir, y), size, () => next());
+                }
+                return;
+            }
+
+            var skin = newSkin.Value;
+            App.Do(GridInfectActions.SettingsSkin, Inputs.Skin((int)skin));
+            OpenPopup(Str.Fmt(Str.BoardCompleteSkin, SettingsScreen.SkinName(skin)));
+            System.Func<bool> restyle = () => { App.ApplySkin(); return true; };
+            AddPopupButton(Str.BoardPopupMenu, new Vector2(-step * L.Dir, y), size,
+                () => App.Screens.Show(BackScreen(), prepare: restyle));
+            AddPopupButton(Str.BoardPopupReplay, new Vector2(0f, y), size,
+                () => App.Screens.Show(new BoardScreen(), prepare: () => restyle() && replay()));
             if (next != null)
             {
-                AddPopupButton(Str.BoardPopupNext, new Vector2(step * L.Dir, y), size, next);
+                AddPopupButton(Str.BoardPopupNext, new Vector2(step * L.Dir, y), size,
+                    () => App.Screens.Show(new BoardScreen(), prepare: () => restyle() && next()));
             }
         }
 
@@ -887,34 +935,34 @@ namespace GridInfect.Game
 
         // ---- top bar ----
 
-        void GoBack()
+        void GoBack() => App.Screens.Show(BackScreen());
+
+        // The device's back button is the MENU chip, and nothing while that
+        // chip is off: a popup up, or the tutorial's hold between steps.
+        public override void OnBack()
+        {
+            if (_backButton != null && _backButton.Enabled) GoBack();
+        }
+
+        // Where MENU goes from this mode. A run that was mid-flight is
+        // abandoned on the way out, which is why this is only ever called
+        // when leaving.
+        AppScreen BackScreen()
         {
             if (App.State.Mode == GameMode.FreePlay)
             {
                 App.Do(GridInfectActions.FreePlayAbort);
-                App.Screens.Show(new FreePlayMenuScreen());
+                return new FreePlayMenuScreen();
             }
-            else if (App.State.Mode == GameMode.World)
-            {
-                App.Screens.Show(new WorldLevelSelectScreen(App.State.WorldId));
-            }
-            else if (App.State.Mode == GameMode.Daily)
-            {
-                App.Screens.Show(new DailyScreen());
-            }
-            else if (App.State.Mode == GameMode.Endless)
+            if (App.State.Mode == GameMode.World) return new WorldLevelSelectScreen(App.State.WorldId);
+            if (App.State.Mode == GameMode.Daily) return new DailyScreen();
+            if (App.State.Mode == GameMode.Endless)
             {
                 App.Do(GridInfectActions.EndlessAbort);
-                App.Screens.Show(new EndlessScreen());
+                return new EndlessScreen();
             }
-            else if (Tutorial)
-            {
-                App.Screens.Show(new MainMenuScreen());
-            }
-            else
-            {
-                App.Screens.Show(new ClassicSelectScreen());
-            }
+            if (Tutorial) return new MainMenuScreen();
+            return new ClassicSelectScreen();
         }
 
         void ResetLevel()

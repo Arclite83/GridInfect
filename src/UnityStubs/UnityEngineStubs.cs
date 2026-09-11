@@ -338,6 +338,7 @@ namespace UnityEngine
         public static string buildGUID => "";
         public static SystemLanguage systemLanguage => SystemLanguage.English;
         public static bool isEditor => false;
+        public static void Quit() { }
     }
 
     public static class Time
@@ -353,7 +354,10 @@ namespace UnityEngine
         public static bool GetMouseButtonDown(int button) => false;
         public static bool GetMouseButton(int button) => false;
         public static bool GetMouseButtonUp(int button) => false;
+        public static bool GetKeyDown(KeyCode key) => false;
     }
+
+    public enum KeyCode { None, Escape }
 
     public static class PlayerPrefs
     {

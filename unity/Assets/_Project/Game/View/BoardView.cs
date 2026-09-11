@@ -453,6 +453,11 @@ namespace GridInfect.Game
         // An undo retracts a piece and re-propagates the rest, then resyncs
         // every cell at once: that is a board correction, not a wave, so the
         // ink lifts off together instead of pretending to walk.
+        // The level is solved: the chime, once the winning wave has landed
+        // (or now, if it already has). Independent of HopAudio, which is the
+        // juice switch for the clicks; only the mute takes this away.
+        public void PlaySolved() => _audio.ScheduleChime(Mathf.Max(WaveEnd, _boardTime));
+
         public void BeginUndo() => _batch = Batch.Undo;
 
         // The replay button. Same simultaneous lift-off, and never a shake:

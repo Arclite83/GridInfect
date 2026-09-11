@@ -108,8 +108,14 @@ def cut(font, cps, out):
 
 
 def meta(path, family):
+    """Write the importer meta for a new face. An existing meta is kept:
+    its guid is the asset's identity in Unity, and a recut that changed it
+    would read as a new font to anything referencing the old one."""
     import uuid
-    (path.parent / (path.name + ".meta")).write_text(
+    meta_path = path.parent / (path.name + ".meta")
+    if meta_path.exists():
+        return
+    meta_path.write_text(
         "fileFormatVersion: 2\n"
         f"guid: {uuid.uuid4().hex}\n"
         "TrueTypeFontImporter:\n  externalObjects: {}\n  serializedVersion: 4\n  fontSize: 16\n"

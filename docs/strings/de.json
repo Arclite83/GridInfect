@@ -56,6 +56,7 @@
   "rules.spread.area": "Ein Klecks nimmt die acht ringsum.",
 
   "legacy.title": "KLASSIK",
+  "legacy.caption": "DAS ORIGINAL VON 2014, ALLE 128 LEVEL",
 
   "freeplay.title": "FREIES SPIEL",
   "freeplay.difficulty.beginner": "ANFÄNGER",
@@ -98,6 +99,7 @@
   "board.complete": "GESCHAFFT",
   "board.completeStreakStarted": "GESCHAFFT\nSerie gestartet",
   "board.completeStreakDays": "GESCHAFFT\n{0} Tage in Folge",
+  "board.completeSkin": "GESCHAFFT\nNeuer Skin: {0}",
   "board.tutorialComplete": "TUTORIAL GESCHAFFT",
   "board.popup.menu": "MENÜ",
   "board.popup.replay": "NOCHMAL",

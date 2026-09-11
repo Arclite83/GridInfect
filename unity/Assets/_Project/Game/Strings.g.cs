@@ -53,7 +53,7 @@ namespace GridInfect.Game
             "WORLDS",   // menu.worlds
             "DAILY",   // menu.daily
             "ENDLESS",   // menu.endless
-            "LEGACY",   // menu.legacy
+            "CLASSIC",   // menu.legacy
             "TUTORIAL",   // menu.tutorial
             "NO ADS",   // menu.noAds
             "FIRST TIME?",   // menu.offer.title
@@ -74,7 +74,7 @@ namespace GridInfect.Game
             "BLUE",   // settings.skin.blue
             "TAN",   // settings.skin.tan
             "CLEAR\nALL WORLDS",   // settings.skin.wantWorlds
-            "CLEAR\nALL LEGACY",   // settings.skin.wantLegacy
+            "CLEAR\nALL CLASSIC",   // settings.skin.wantLegacy
             "HOW TO PLAY",   // rules.title
             "Infect every cell on the board to win.",   // rules.goal
             "Drag a bug onto any cell.",   // rules.intro
@@ -97,7 +97,8 @@ namespace GridInfect.Game
             "Rays run to the edge.",   // rules.spread.cardinal
             "Or corner to corner.",   // rules.spread.diagonal
             "A blot takes the eight around it.",   // rules.spread.area
-            "LEGACY",   // legacy.title
+            "CLASSIC",   // legacy.title
+            "THE 2014 ORIGINAL, ALL 128 LEVELS",   // legacy.caption
             "FREE PLAY",   // freeplay.title
             "BEGINNER",   // freeplay.difficulty.beginner
             "EASY",   // freeplay.difficulty.easy
@@ -123,7 +124,7 @@ namespace GridInfect.Game
             "ENDLESS",   // endless.title
             "BEST {0}",   // endless.best
             "RESET",   // board.reset
-            "LEGACY",   // board.legacy
+            "CLASSIC",   // board.legacy
             "DAILY",   // board.daily
             "ENDLESS  {0}",   // board.endless
             "LEVEL {0}",   // board.level
@@ -135,6 +136,7 @@ namespace GridInfect.Game
             "COMPLETE",   // board.complete
             "COMPLETE\nStreak started",   // board.completeStreakStarted
             "COMPLETE\n{0} days in a row",   // board.completeStreakDays
+            "COMPLETE\nNew skin: {0}",   // board.completeSkin
             "TUTORIAL COMPLETE",   // board.tutorialComplete
             "MENU",   // board.popup.menu
             "REPLAY",   // board.popup.replay
@@ -263,6 +265,7 @@ namespace GridInfect.Game
             "Oder von Ecke zu Ecke.",   // rules.spread.diagonal
             "Ein Klecks nimmt die acht ringsum.",   // rules.spread.area
             "KLASSIK",   // legacy.title
+            "DAS ORIGINAL VON 2014, ALLE 128 LEVEL",   // legacy.caption
             "FREIES SPIEL",   // freeplay.title
             "ANF\u00c4NGER",   // freeplay.difficulty.beginner
             "LEICHT",   // freeplay.difficulty.easy
@@ -300,6 +303,7 @@ namespace GridInfect.Game
             "GESCHAFFT",   // board.complete
             "GESCHAFFT\nSerie gestartet",   // board.completeStreakStarted
             "GESCHAFFT\n{0} Tage in Folge",   // board.completeStreakDays
+            "GESCHAFFT\nNeuer Skin: {0}",   // board.completeSkin
             "TUTORIAL GESCHAFFT",   // board.tutorialComplete
             "MEN\u00dc",   // board.popup.menu
             "NOCHMAL",   // board.popup.replay
@@ -428,6 +432,7 @@ namespace GridInfect.Game
             "O de esquina a esquina.",   // rules.spread.diagonal
             "Una mancha toma las ocho de alrededor.",   // rules.spread.area
             "CL\u00c1SICO",   // legacy.title
+            "EL ORIGINAL DE 2014, LOS 128 NIVELES",   // legacy.caption
             "JUEGO LIBRE",   // freeplay.title
             "PRINCIPIANTE",   // freeplay.difficulty.beginner
             "F\u00c1CIL",   // freeplay.difficulty.easy
@@ -465,6 +470,7 @@ namespace GridInfect.Game
             "COMPLETO",   // board.complete
             "COMPLETO\nRacha iniciada",   // board.completeStreakStarted
             "COMPLETO\n{0} d\u00edas seguidos",   // board.completeStreakDays
+            "COMPLETO\nNuevo aspecto: {0}",   // board.completeSkin
             "TUTORIAL COMPLETO",   // board.tutorialComplete
             "MEN\u00da",   // board.popup.menu
             "REPETIR",   // board.popup.replay
@@ -593,6 +599,7 @@ namespace GridInfect.Game
             "Ou de coin \u00e0 coin.",   // rules.spread.diagonal
             "Une tache prend les huit autour.",   // rules.spread.area
             "CLASSIQUE",   // legacy.title
+            "L'ORIGINAL DE 2014, LES 128 NIVEAUX",   // legacy.caption
             "JEU LIBRE",   // freeplay.title
             "D\u00c9BUTANT",   // freeplay.difficulty.beginner
             "FACILE",   // freeplay.difficulty.easy
@@ -630,6 +637,7 @@ namespace GridInfect.Game
             "TERMIN\u00c9",   // board.complete
             "TERMIN\u00c9\nS\u00e9rie lanc\u00e9e",   // board.completeStreakStarted
             "TERMIN\u00c9\n{0} jours de suite",   // board.completeStreakDays
+            "TERMIN\u00c9\nNouveau th\u00e8me : {0}",   // board.completeSkin
             "TUTORIEL TERMIN\u00c9",   // board.tutorialComplete
             "MENU",   // board.popup.menu
             "REJOUER",   // board.popup.replay
@@ -758,6 +766,7 @@ namespace GridInfect.Game
             "O da angolo ad angolo.",   // rules.spread.diagonal
             "Una macchia prende le otto intorno.",   // rules.spread.area
             "CLASSICO",   // legacy.title
+            "L'ORIGINALE DEL 2014, TUTTI I 128 LIVELLI",   // legacy.caption
             "GIOCO LIBERO",   // freeplay.title
             "PRINCIPIANTE",   // freeplay.difficulty.beginner
             "FACILE",   // freeplay.difficulty.easy
@@ -795,6 +804,7 @@ namespace GridInfect.Game
             "COMPLETO",   // board.complete
             "COMPLETO\nSerie iniziata",   // board.completeStreakStarted
             "COMPLETO\n{0} giorni di fila",   // board.completeStreakDays
+            "COMPLETO\nNuovo aspetto: {0}",   // board.completeSkin
             "TUTORIAL COMPLETO",   // board.tutorialComplete
             "MENU",   // board.popup.menu
             "RIGIOCA",   // board.popup.replay
@@ -923,6 +933,7 @@ namespace GridInfect.Game
             "\u307e\u305f\u306f\u89d2\u304b\u3089\u89d2\u3078\u3002",   // rules.spread.diagonal
             "\u30b7\u30df\u306f\u5468\u56f2\u516b\u30de\u30b9\u3092\u53d6\u308b\u3002",   // rules.spread.area
             "\u30af\u30e9\u30b7\u30c3\u30af",   // legacy.title
+            "2014\u5e74\u306e\u30aa\u30ea\u30b8\u30ca\u30eb\u3001\u5168128\u30ec\u30d9\u30eb",   // legacy.caption
             "\u30d5\u30ea\u30fc\u30d7\u30ec\u30a4",   // freeplay.title
             "\u5165\u9580",   // freeplay.difficulty.beginner
             "\u304b\u3093\u305f\u3093",   // freeplay.difficulty.easy
@@ -960,6 +971,7 @@ namespace GridInfect.Game
             "\u30af\u30ea\u30a2",   // board.complete
             "\u30af\u30ea\u30a2\n\u9023\u7d9a\u8a18\u9332\u30b9\u30bf\u30fc\u30c8",   // board.completeStreakStarted
             "\u30af\u30ea\u30a2\n{0}\u65e5\u9023\u7d9a",   // board.completeStreakDays
+            "\u30af\u30ea\u30a2\n\u65b0\u3057\u3044\u30b9\u30ad\u30f3\uff1a{0}",   // board.completeSkin
             "\u30c1\u30e5\u30fc\u30c8\u30ea\u30a2\u30eb\u5b8c\u4e86",   // board.tutorialComplete
             "\u30e1\u30cb\u30e5\u30fc",   // board.popup.menu
             "\u30ea\u30d7\u30ec\u30a4",   // board.popup.replay
@@ -1088,6 +1100,7 @@ namespace GridInfect.Game
             "\ub610\ub294 \ubaa8\uc11c\ub9ac\uc5d0\uc11c \ubaa8\uc11c\ub9ac\ub85c.",   // rules.spread.diagonal
             "\uc5bc\ub8e9\uc740 \uc8fc\ubcc0 \uc5ec\ub35f \uce78\uc744 \ucc28\uc9c0\ud569\ub2c8\ub2e4.",   // rules.spread.area
             "\ud074\ub798\uc2dd",   // legacy.title
+            "2014\ub144 \uc624\ub9ac\uc9c0\ub110, 128\ub808\ubca8 \uc804\ubd80",   // legacy.caption
             "\uc790\uc720 \ud50c\ub808\uc774",   // freeplay.title
             "\uc785\ubb38",   // freeplay.difficulty.beginner
             "\uc26c\uc6c0",   // freeplay.difficulty.easy
@@ -1125,6 +1138,7 @@ namespace GridInfect.Game
             "\ud074\ub9ac\uc5b4",   // board.complete
             "\ud074\ub9ac\uc5b4\n\uc5f0\uc18d \uae30\ub85d \uc2dc\uc791",   // board.completeStreakStarted
             "\ud074\ub9ac\uc5b4\n{0}\uc77c \uc5f0\uc18d",   // board.completeStreakDays
+            "\ud074\ub9ac\uc5b4\n\uc0c8 \uc2a4\ud0a8: {0}",   // board.completeSkin
             "\ud29c\ud1a0\ub9ac\uc5bc \uc644\ub8cc",   // board.tutorialComplete
             "\uba54\ub274",   // board.popup.menu
             "\ub2e4\uc2dc",   // board.popup.replay
@@ -1253,6 +1267,7 @@ namespace GridInfect.Game
             "Ou de canto a canto.",   // rules.spread.diagonal
             "Uma mancha toma as oito ao redor.",   // rules.spread.area
             "CL\u00c1SSICO",   // legacy.title
+            "O ORIGINAL DE 2014, TODAS AS 128 FASES",   // legacy.caption
             "JOGO LIVRE",   // freeplay.title
             "INICIANTE",   // freeplay.difficulty.beginner
             "F\u00c1CIL",   // freeplay.difficulty.easy
@@ -1290,6 +1305,7 @@ namespace GridInfect.Game
             "COMPLETO",   // board.complete
             "COMPLETO\nS\u00e9rie iniciada",   // board.completeStreakStarted
             "COMPLETO\n{0} dias seguidos",   // board.completeStreakDays
+            "COMPLETO\nNovo visual: {0}",   // board.completeSkin
             "TUTORIAL COMPLETO",   // board.tutorialComplete
             "MENU",   // board.popup.menu
             "REPETIR",   // board.popup.replay
@@ -1418,6 +1434,7 @@ namespace GridInfect.Game
             "\u0418\u043b\u0438 \u0438\u0437 \u0443\u0433\u043b\u0430 \u0432 \u0443\u0433\u043e\u043b.",   // rules.spread.diagonal
             "\u041a\u043b\u044f\u043a\u0441\u0430 \u0431\u0435\u0440\u0451\u0442 \u0432\u043e\u0441\u0435\u043c\u044c \u043a\u043b\u0435\u0442\u043e\u043a \u0432\u043e\u043a\u0440\u0443\u0433.",   // rules.spread.area
             "\u041a\u041b\u0410\u0421\u0421\u0418\u041a\u0410",   // legacy.title
+            "\u041e\u0420\u0418\u0413\u0418\u041d\u0410\u041b 2014 \u0413\u041e\u0414\u0410, \u0412\u0421\u0415 128 \u0423\u0420\u041e\u0412\u041d\u0415\u0419",   // legacy.caption
             "\u0421\u0412\u041e\u0411\u041e\u0414\u041d\u0410\u042f \u0418\u0413\u0420\u0410",   // freeplay.title
             "\u041d\u041e\u0412\u0418\u0427\u041e\u041a",   // freeplay.difficulty.beginner
             "\u041b\u0415\u0413\u041a\u041e",   // freeplay.difficulty.easy
@@ -1455,6 +1472,7 @@ namespace GridInfect.Game
             "\u0413\u041e\u0422\u041e\u0412\u041e",   // board.complete
             "\u0413\u041e\u0422\u041e\u0412\u041e\n\u0421\u0435\u0440\u0438\u044f \u043d\u0430\u0447\u0430\u043b\u0430\u0441\u044c",   // board.completeStreakStarted
             "\u0413\u041e\u0422\u041e\u0412\u041e\n{0} \u0434\u043d\u0435\u0439 \u043f\u043e\u0434\u0440\u044f\u0434",   // board.completeStreakDays
+            "\u0413\u041e\u0422\u041e\u0412\u041e\n\u041d\u043e\u0432\u044b\u0439 \u0432\u0438\u0434: {0}",   // board.completeSkin
             "\u041e\u0411\u0423\u0427\u0415\u041d\u0418\u0415 \u041f\u0420\u041e\u0419\u0414\u0415\u041d\u041e",   // board.tutorialComplete
             "\u041c\u0415\u041d\u042e",   // board.popup.menu
             "\u0417\u0410\u041d\u041e\u0412\u041e",   // board.popup.replay
@@ -1583,6 +1601,7 @@ namespace GridInfect.Game
             "Ya da k\u00f6\u015feden k\u00f6\u015feye.",   // rules.spread.diagonal
             "Leke \u00e7evresindeki sekizi al\u0131r.",   // rules.spread.area
             "KLAS\u0130K",   // legacy.title
+            "2014 OR\u0130J\u0130NAL\u0130, 128 B\u00d6L\u00dcM\u00dcN TAMAMI",   // legacy.caption
             "SERBEST OYUN",   // freeplay.title
             "BA\u015eLANGI\u00c7",   // freeplay.difficulty.beginner
             "KOLAY",   // freeplay.difficulty.easy
@@ -1620,6 +1639,7 @@ namespace GridInfect.Game
             "TAMAM",   // board.complete
             "TAMAM\nSeri ba\u015flad\u0131",   // board.completeStreakStarted
             "TAMAM\n{0} g\u00fcn \u00fcst \u00fcste",   // board.completeStreakDays
+            "TAMAM\nYeni g\u00f6r\u00fcn\u00fcm: {0}",   // board.completeSkin
             "E\u011e\u0130T\u0130M TAMAM",   // board.tutorialComplete
             "MEN\u00dc",   // board.popup.menu
             "TEKRAR",   // board.popup.replay
@@ -1748,6 +1768,7 @@ namespace GridInfect.Game
             "\u6216\u4ece\u89d2\u5230\u89d2\u3002",   // rules.spread.diagonal
             "\u58a8\u70b9\u5360\u636e\u5468\u56f4\u516b\u683c\u3002",   // rules.spread.area
             "\u7ecf\u5178",   // legacy.title
+            "2014\u5e74\u539f\u7248\uff0c\u5168\u90e8128\u5173",   // legacy.caption
             "\u81ea\u7531\u6a21\u5f0f",   // freeplay.title
             "\u5165\u95e8",   // freeplay.difficulty.beginner
             "\u7b80\u5355",   // freeplay.difficulty.easy
@@ -1785,6 +1806,7 @@ namespace GridInfect.Game
             "\u5b8c\u6210",   // board.complete
             "\u5b8c\u6210\n\u8fde\u7eed\u8bb0\u5f55\u5f00\u59cb",   // board.completeStreakStarted
             "\u5b8c\u6210\n\u8fde\u7eed {0} \u5929",   // board.completeStreakDays
+            "\u5b8c\u6210\n\u65b0\u76ae\u80a4\uff1a{0}",   // board.completeSkin
             "\u6559\u7a0b\u5b8c\u6210",   // board.tutorialComplete
             "\u83dc\u5355",   // board.popup.menu
             "\u91cd\u73a9",   // board.popup.replay
@@ -1913,6 +1935,7 @@ namespace GridInfect.Game
             "\u6216\u5f9e\u89d2\u5230\u89d2\u3002",   // rules.spread.diagonal
             "\u58a8\u9ede\u4f54\u64da\u5468\u570d\u516b\u683c\u3002",   // rules.spread.area
             "\u7d93\u5178",   // legacy.title
+            "2014\u5e74\u539f\u7248\uff0c\u5168\u90e8128\u95dc",   // legacy.caption
             "\u81ea\u7531\u6a21\u5f0f",   // freeplay.title
             "\u5165\u9580",   // freeplay.difficulty.beginner
             "\u7c21\u55ae",   // freeplay.difficulty.easy
@@ -1950,6 +1973,7 @@ namespace GridInfect.Game
             "\u5b8c\u6210",   // board.complete
             "\u5b8c\u6210\n\u9023\u7e8c\u7d00\u9304\u958b\u59cb",   // board.completeStreakStarted
             "\u5b8c\u6210\n\u9023\u7e8c {0} \u5929",   // board.completeStreakDays
+            "\u5b8c\u6210\n\u65b0\u5916\u89c0\uff1a{0}",   // board.completeSkin
             "\u6559\u5b78\u5b8c\u6210",   // board.tutorialComplete
             "\u9078\u55ae",   // board.popup.menu
             "\u91cd\u73a9",   // board.popup.replay
@@ -2033,7 +2057,7 @@ namespace GridInfect.Game
             "[W\u00d3RL\u0110\u0160\u00b7\u00b7]",   // menu.worlds
             "[\u0110\u00c1\u00cdL\u00dd\u00b7\u00b7]",   // menu.daily
             "[\u00c9\u00d1\u0110L\u00c9\u0160\u0160\u00b7\u00b7\u00b7]",   // menu.endless
-            "[L\u00c9\u011e\u00c1\u00c7\u00dd\u00b7\u00b7]",   // menu.legacy
+            "[\u00c7L\u00c1\u0160\u0160\u00cd\u00c7\u00b7\u00b7\u00b7]",   // menu.legacy
             "[T\u00daT\u00d3R\u00cd\u00c1L\u00b7\u00b7\u00b7]",   // menu.tutorial
             "[\u00d1\u00d3 \u00c1\u0110\u0160\u00b7\u00b7]",   // menu.noAds
             "[F\u00cdR\u0160T T\u00cdM\u00c9?\u00b7\u00b7\u00b7\u00b7]",   // menu.offer.title
@@ -2054,7 +2078,7 @@ namespace GridInfect.Game
             "[BL\u00da\u00c9\u00b7\u00b7]",   // settings.skin.blue
             "[T\u00c1\u00d1\u00b7]",   // settings.skin.tan
             "[\u00c7L\u00c9\u00c1R\u00b7\u00b7]\n[\u00c1LL W\u00d3RL\u0110\u0160\u00b7\u00b7\u00b7\u00b7]",   // settings.skin.wantWorlds
-            "[\u00c7L\u00c9\u00c1R\u00b7\u00b7]\n[\u00c1LL L\u00c9\u011e\u00c1\u00c7\u00dd\u00b7\u00b7\u00b7\u00b7]",   // settings.skin.wantLegacy
+            "[\u00c7L\u00c9\u00c1R\u00b7\u00b7]\n[\u00c1LL \u00c7L\u00c1\u0160\u0160\u00cd\u00c7\u00b7\u00b7\u00b7\u00b7]",   // settings.skin.wantLegacy
             "[H\u00d3W T\u00d3 PL\u00c1\u00dd\u00b7\u00b7\u00b7\u00b7]",   // rules.title
             "[\u00cd\u00f1f\u00e9\u00e7t \u00e9v\u00e9r\u00fd \u00e7\u00e9ll \u00f3\u00f1 th\u00e9 b\u00f3\u00e1r\u0111 t\u00f3 w\u00ed\u00f1.\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]",   // rules.goal
             "[\u0110r\u00e1\u011f \u00e1 b\u00fa\u011f \u00f3\u00f1t\u00f3 \u00e1\u00f1\u00fd \u00e7\u00e9ll.\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]",   // rules.intro
@@ -2077,7 +2101,8 @@ namespace GridInfect.Game
             "[R\u00e1\u00fd\u0161 r\u00fa\u00f1 t\u00f3 th\u00e9 \u00e9\u0111\u011f\u00e9.\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]",   // rules.spread.cardinal
             "[\u00d3r \u00e7\u00f3r\u00f1\u00e9r t\u00f3 \u00e7\u00f3r\u00f1\u00e9r.\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]",   // rules.spread.diagonal
             "[\u00c1 bl\u00f3t t\u00e1k\u00e9\u0161 th\u00e9 \u00e9\u00ed\u011fht \u00e1r\u00f3\u00fa\u00f1\u0111 \u00edt.\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]",   // rules.spread.area
-            "[L\u00c9\u011e\u00c1\u00c7\u00dd\u00b7\u00b7]",   // legacy.title
+            "[\u00c7L\u00c1\u0160\u0160\u00cd\u00c7\u00b7\u00b7\u00b7]",   // legacy.title
+            "[TH\u00c9 2014 \u00d3R\u00cd\u011e\u00cd\u00d1\u00c1L, \u00c1LL 128 L\u00c9V\u00c9L\u0160\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]",   // legacy.caption
             "[FR\u00c9\u00c9 PL\u00c1\u00dd\u00b7\u00b7\u00b7]",   // freeplay.title
             "[B\u00c9\u011e\u00cd\u00d1\u00d1\u00c9R\u00b7\u00b7\u00b7]",   // freeplay.difficulty.beginner
             "[\u00c9\u00c1\u0160\u00dd\u00b7\u00b7]",   // freeplay.difficulty.easy
@@ -2103,7 +2128,7 @@ namespace GridInfect.Game
             "[\u00c9\u00d1\u0110L\u00c9\u0160\u0160\u00b7\u00b7\u00b7]",   // endless.title
             "[B\u00c9\u0160T \u00b7\u00b7{0}]",   // endless.best
             "[R\u00c9\u0160\u00c9T\u00b7\u00b7]",   // board.reset
-            "[L\u00c9\u011e\u00c1\u00c7\u00dd\u00b7\u00b7]",   // board.legacy
+            "[\u00c7L\u00c1\u0160\u0160\u00cd\u00c7\u00b7\u00b7\u00b7]",   // board.legacy
             "[\u0110\u00c1\u00cdL\u00dd\u00b7\u00b7]",   // board.daily
             "[\u00c9\u00d1\u0110L\u00c9\u0160\u0160  \u00b7\u00b7\u00b7{0}]",   // board.endless
             "[L\u00c9V\u00c9L \u00b7\u00b7{0}]",   // board.level
@@ -2115,6 +2140,7 @@ namespace GridInfect.Game
             "[\u00c7\u00d3MPL\u00c9T\u00c9\u00b7\u00b7\u00b7]",   // board.complete
             "[\u00c7\u00d3MPL\u00c9T\u00c9\u00b7\u00b7\u00b7]\n[\u0160tr\u00e9\u00e1k \u0161t\u00e1rt\u00e9\u0111\u00b7\u00b7\u00b7\u00b7\u00b7]",   // board.completeStreakStarted
             "[\u00c7\u00d3MPL\u00c9T\u00c9\u00b7\u00b7\u00b7]\n[{0} \u0111\u00e1\u00fd\u0161 \u00ed\u00f1 \u00e1 r\u00f3w\u00b7\u00b7\u00b7\u00b7]",   // board.completeStreakDays
+            "[\u00c7\u00d3MPL\u00c9T\u00c9\u00b7\u00b7\u00b7]\n[\u00d1\u00e9w \u0161k\u00ed\u00f1: \u00b7\u00b7\u00b7{0}]",   // board.completeSkin
             "[T\u00daT\u00d3R\u00cd\u00c1L \u00c7\u00d3MPL\u00c9T\u00c9\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]",   // board.tutorialComplete
             "[M\u00c9\u00d1\u00da\u00b7\u00b7]",   // board.popup.menu
             "[R\u00c9PL\u00c1\u00dd\u00b7\u00b7]",   // board.popup.replay
@@ -2198,7 +2224,7 @@ namespace GridInfect.Game
             "SDLROW",   // menu.worlds
             "YLIAD",   // menu.daily
             "SSELDNE",   // menu.endless
-            "YCAGEL",   // menu.legacy
+            "CISSALC",   // menu.legacy
             "LAIROTUT",   // menu.tutorial
             "SDA ON",   // menu.noAds
             "?EMIT TSRIF",   // menu.offer.title
@@ -2219,7 +2245,7 @@ namespace GridInfect.Game
             "EULB",   // settings.skin.blue
             "NAT",   // settings.skin.tan
             "RAELC\nSDLROW LLA",   // settings.skin.wantWorlds
-            "RAELC\nYCAGEL LLA",   // settings.skin.wantLegacy
+            "RAELC\nCISSALC LLA",   // settings.skin.wantLegacy
             "YALP OT WOH",   // rules.title
             ".niw ot draob eht no llec yreve tcefnI",   // rules.goal
             ".llec yna otno gub a garD",   // rules.intro
@@ -2242,7 +2268,8 @@ namespace GridInfect.Game
             ".egde eht ot nur syaR",   // rules.spread.cardinal
             ".renroc ot renroc rO",   // rules.spread.diagonal
             ".ti dnuora thgie eht sekat tolb A",   // rules.spread.area
-            "YCAGEL",   // legacy.title
+            "CISSALC",   // legacy.title
+            "SLEVEL 821 LLA ,LANIGIRO 4102 EHT",   // legacy.caption
             "YALP EERF",   // freeplay.title
             "RENNIGEB",   // freeplay.difficulty.beginner
             "YSAE",   // freeplay.difficulty.easy
@@ -2268,7 +2295,7 @@ namespace GridInfect.Game
             "SSELDNE",   // endless.title
             "{0} TSEB",   // endless.best
             "TESER",   // board.reset
-            "YCAGEL",   // board.legacy
+            "CISSALC",   // board.legacy
             "YLIAD",   // board.daily
             "{0}  SSELDNE",   // board.endless
             "{0} LEVEL",   // board.level
@@ -2280,6 +2307,7 @@ namespace GridInfect.Game
             "ETELPMOC",   // board.complete
             "ETELPMOC\ndetrats kaertS",   // board.completeStreakStarted
             "ETELPMOC\nwor a ni syad {0}",   // board.completeStreakDays
+            "ETELPMOC\n{0} :niks weN",   // board.completeSkin
             "ETELPMOC LAIROTUT",   // board.tutorialComplete
             "UNEM",   // board.popup.menu
             "YALPER",   // board.popup.replay
@@ -2386,11 +2414,11 @@ namespace GridInfect.Game
 
         // ---- families ----
 
-        static readonly int[] MonthIdx = { 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121 };
-        static readonly int[] MonthShortIdx = { 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133 };
-        static readonly int[] DayIdx = { 103, 104, 105, 106, 107, 108, 109 };
-        static readonly int[] TutIdx = { 134, 135, 136, 137, 138, 139, 140, 141, 142, 143 };
-        static readonly int[] DifficultyIdx = { 52, 53, 54, 55, 56 };
+        static readonly int[] MonthIdx = { 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123 };
+        static readonly int[] MonthShortIdx = { 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135 };
+        static readonly int[] DayIdx = { 105, 106, 107, 108, 109, 110, 111 };
+        static readonly int[] TutIdx = { 136, 137, 138, 139, 140, 141, 142, 143, 144, 145 };
+        static readonly int[] DifficultyIdx = { 53, 54, 55, 56, 57 };
 
         // Month 1-12, weekday 1-7 Monday first, tutorial step 1-based,
         // difficulty by its enum ordinal. Out of range is a bug, not a
@@ -2405,22 +2433,22 @@ namespace GridInfect.Game
         {
             switch (worldId)
             {
-                case "w01": return _v[144];
-                case "w02": return _v[145];
-                case "w03": return _v[146];
-                case "w04": return _v[147];
-                case "w05": return _v[148];
-                case "w06": return _v[149];
-                case "w07": return _v[150];
-                case "w08": return _v[151];
-                case "w09": return _v[152];
-                case "w10": return _v[153];
-                case "w11": return _v[154];
-                case "w12": return _v[155];
-                case "w14": return _v[156];
-                case "w15": return _v[157];
-                case "w16": return _v[158];
-                case "w17": return _v[159];
+                case "w01": return _v[146];
+                case "w02": return _v[147];
+                case "w03": return _v[148];
+                case "w04": return _v[149];
+                case "w05": return _v[150];
+                case "w06": return _v[151];
+                case "w07": return _v[152];
+                case "w08": return _v[153];
+                case "w09": return _v[154];
+                case "w10": return _v[155];
+                case "w11": return _v[156];
+                case "w12": return _v[157];
+                case "w14": return _v[158];
+                case "w15": return _v[159];
+                case "w16": return _v[160];
+                case "w17": return _v[161];
             }
             return worldId;
         }
@@ -2478,114 +2506,116 @@ namespace GridInfect.Game
         public static string RulesSpreadDiagonal => _v[48];
         public static string RulesSpreadArea => _v[49];
         public static string LegacyTitle => _v[50];
-        public static string FreeplayTitle => _v[51];
-        public static string FreeplayDifficultyBeginner => _v[52];
-        public static string FreeplayDifficultyEasy => _v[53];
-        public static string FreeplayDifficultyMedium => _v[54];
-        public static string FreeplayDifficultyHard => _v[55];
-        public static string FreeplayDifficultyChallenging => _v[56];
-        public static string WorldsTitle => _v[57];
-        public static string WorldsRow => _v[58];
-        public static string WorldsProgress => _v[59];
-        public static string DailyTitle => _v[60];
-        public static string DailyToday => _v[61];
-        public static string DailyPast => _v[62];
-        public static string DailyStreak => _v[63];
-        public static string DailyMonthCount => _v[64];
-        public static string DailyDateLine => _v[65];
-        public static string DailyBugs => _v[66];
-        public static string DailyCells => _v[67];
-        public static string DailyComplete => _v[68];
-        public static string DailyGenerating => _v[69];
-        public static string DailyUnplayed => _v[70];
-        public static string DailyPlayAgain => _v[71];
-        public static string DailyBegin => _v[72];
-        public static string EndlessTitle => _v[73];
-        public static string EndlessBest => _v[74];
-        public static string BoardReset => _v[75];
-        public static string BoardLegacy => _v[76];
-        public static string BoardDaily => _v[77];
-        public static string BoardEndless => _v[78];
-        public static string BoardLevel => _v[79];
-        public static string BoardTutorialTitle => _v[80];
-        public static string BoardBegin => _v[81];
-        public static string BoardHint => _v[82];
-        public static string BoardPlusSolve => _v[83];
-        public static string BoardSolve => _v[84];
-        public static string BoardComplete => _v[85];
-        public static string BoardCompleteStreakStarted => _v[86];
-        public static string BoardCompleteStreakDays => _v[87];
-        public static string BoardTutorialComplete => _v[88];
-        public static string BoardPopupMenu => _v[89];
-        public static string BoardPopupReplay => _v[90];
-        public static string BoardPopupNext => _v[91];
-        public static string BoardPopupPlay => _v[92];
-        public static string BoardPopupCalendar => _v[93];
-        public static string BoardHudStreak => _v[94];
-        public static string BoardHudBest => _v[95];
-        public static string BoardHudRunCount => _v[96];
-        public static string TierName => _v[97];
-        public static string TierShort => _v[98];
-        public static string TierBand => _v[99];
-        public static string LoadingCaption => _v[100];
-        public static string LanguageTitle => _v[101];
-        public static string LanguageAuto => _v[102];
-        public static string CalDay1 => _v[103];
-        public static string CalDay2 => _v[104];
-        public static string CalDay3 => _v[105];
-        public static string CalDay4 => _v[106];
-        public static string CalDay5 => _v[107];
-        public static string CalDay6 => _v[108];
-        public static string CalDay7 => _v[109];
-        public static string CalMonth1 => _v[110];
-        public static string CalMonth2 => _v[111];
-        public static string CalMonth3 => _v[112];
-        public static string CalMonth4 => _v[113];
-        public static string CalMonth5 => _v[114];
-        public static string CalMonth6 => _v[115];
-        public static string CalMonth7 => _v[116];
-        public static string CalMonth8 => _v[117];
-        public static string CalMonth9 => _v[118];
-        public static string CalMonth10 => _v[119];
-        public static string CalMonth11 => _v[120];
-        public static string CalMonth12 => _v[121];
-        public static string CalMonth1Short => _v[122];
-        public static string CalMonth2Short => _v[123];
-        public static string CalMonth3Short => _v[124];
-        public static string CalMonth4Short => _v[125];
-        public static string CalMonth5Short => _v[126];
-        public static string CalMonth6Short => _v[127];
-        public static string CalMonth7Short => _v[128];
-        public static string CalMonth8Short => _v[129];
-        public static string CalMonth9Short => _v[130];
-        public static string CalMonth10Short => _v[131];
-        public static string CalMonth11Short => _v[132];
-        public static string CalMonth12Short => _v[133];
-        public static string Tut1Line => _v[134];
-        public static string Tut2Line => _v[135];
-        public static string Tut3Line => _v[136];
-        public static string Tut4Line => _v[137];
-        public static string Tut5Line => _v[138];
-        public static string Tut6Line => _v[139];
-        public static string Tut7Line => _v[140];
-        public static string Tut8Line => _v[141];
-        public static string Tut9Line => _v[142];
-        public static string Tut10Line => _v[143];
-        public static string WorldW01Name => _v[144];
-        public static string WorldW02Name => _v[145];
-        public static string WorldW03Name => _v[146];
-        public static string WorldW04Name => _v[147];
-        public static string WorldW05Name => _v[148];
-        public static string WorldW06Name => _v[149];
-        public static string WorldW07Name => _v[150];
-        public static string WorldW08Name => _v[151];
-        public static string WorldW09Name => _v[152];
-        public static string WorldW10Name => _v[153];
-        public static string WorldW11Name => _v[154];
-        public static string WorldW12Name => _v[155];
-        public static string WorldW14Name => _v[156];
-        public static string WorldW15Name => _v[157];
-        public static string WorldW16Name => _v[158];
-        public static string WorldW17Name => _v[159];
+        public static string LegacyCaption => _v[51];
+        public static string FreeplayTitle => _v[52];
+        public static string FreeplayDifficultyBeginner => _v[53];
+        public static string FreeplayDifficultyEasy => _v[54];
+        public static string FreeplayDifficultyMedium => _v[55];
+        public static string FreeplayDifficultyHard => _v[56];
+        public static string FreeplayDifficultyChallenging => _v[57];
+        public static string WorldsTitle => _v[58];
+        public static string WorldsRow => _v[59];
+        public static string WorldsProgress => _v[60];
+        public static string DailyTitle => _v[61];
+        public static string DailyToday => _v[62];
+        public static string DailyPast => _v[63];
+        public static string DailyStreak => _v[64];
+        public static string DailyMonthCount => _v[65];
+        public static string DailyDateLine => _v[66];
+        public static string DailyBugs => _v[67];
+        public static string DailyCells => _v[68];
+        public static string DailyComplete => _v[69];
+        public static string DailyGenerating => _v[70];
+        public static string DailyUnplayed => _v[71];
+        public static string DailyPlayAgain => _v[72];
+        public static string DailyBegin => _v[73];
+        public static string EndlessTitle => _v[74];
+        public static string EndlessBest => _v[75];
+        public static string BoardReset => _v[76];
+        public static string BoardLegacy => _v[77];
+        public static string BoardDaily => _v[78];
+        public static string BoardEndless => _v[79];
+        public static string BoardLevel => _v[80];
+        public static string BoardTutorialTitle => _v[81];
+        public static string BoardBegin => _v[82];
+        public static string BoardHint => _v[83];
+        public static string BoardPlusSolve => _v[84];
+        public static string BoardSolve => _v[85];
+        public static string BoardComplete => _v[86];
+        public static string BoardCompleteStreakStarted => _v[87];
+        public static string BoardCompleteStreakDays => _v[88];
+        public static string BoardCompleteSkin => _v[89];
+        public static string BoardTutorialComplete => _v[90];
+        public static string BoardPopupMenu => _v[91];
+        public static string BoardPopupReplay => _v[92];
+        public static string BoardPopupNext => _v[93];
+        public static string BoardPopupPlay => _v[94];
+        public static string BoardPopupCalendar => _v[95];
+        public static string BoardHudStreak => _v[96];
+        public static string BoardHudBest => _v[97];
+        public static string BoardHudRunCount => _v[98];
+        public static string TierName => _v[99];
+        public static string TierShort => _v[100];
+        public static string TierBand => _v[101];
+        public static string LoadingCaption => _v[102];
+        public static string LanguageTitle => _v[103];
+        public static string LanguageAuto => _v[104];
+        public static string CalDay1 => _v[105];
+        public static string CalDay2 => _v[106];
+        public static string CalDay3 => _v[107];
+        public static string CalDay4 => _v[108];
+        public static string CalDay5 => _v[109];
+        public static string CalDay6 => _v[110];
+        public static string CalDay7 => _v[111];
+        public static string CalMonth1 => _v[112];
+        public static string CalMonth2 => _v[113];
+        public static string CalMonth3 => _v[114];
+        public static string CalMonth4 => _v[115];
+        public static string CalMonth5 => _v[116];
+        public static string CalMonth6 => _v[117];
+        public static string CalMonth7 => _v[118];
+        public static string CalMonth8 => _v[119];
+        public static string CalMonth9 => _v[120];
+        public static string CalMonth10 => _v[121];
+        public static string CalMonth11 => _v[122];
+        public static string CalMonth12 => _v[123];
+        public static string CalMonth1Short => _v[124];
+        public static string CalMonth2Short => _v[125];
+        public static string CalMonth3Short => _v[126];
+        public static string CalMonth4Short => _v[127];
+        public static string CalMonth5Short => _v[128];
+        public static string CalMonth6Short => _v[129];
+        public static string CalMonth7Short => _v[130];
+        public static string CalMonth8Short => _v[131];
+        public static string CalMonth9Short => _v[132];
+        public static string CalMonth10Short => _v[133];
+        public static string CalMonth11Short => _v[134];
+        public static string CalMonth12Short => _v[135];
+        public static string Tut1Line => _v[136];
+        public static string Tut2Line => _v[137];
+        public static string Tut3Line => _v[138];
+        public static string Tut4Line => _v[139];
+        public static string Tut5Line => _v[140];
+        public static string Tut6Line => _v[141];
+        public static string Tut7Line => _v[142];
+        public static string Tut8Line => _v[143];
+        public static string Tut9Line => _v[144];
+        public static string Tut10Line => _v[145];
+        public static string WorldW01Name => _v[146];
+        public static string WorldW02Name => _v[147];
+        public static string WorldW03Name => _v[148];
+        public static string WorldW04Name => _v[149];
+        public static string WorldW05Name => _v[150];
+        public static string WorldW06Name => _v[151];
+        public static string WorldW07Name => _v[152];
+        public static string WorldW08Name => _v[153];
+        public static string WorldW09Name => _v[154];
+        public static string WorldW10Name => _v[155];
+        public static string WorldW11Name => _v[156];
+        public static string WorldW12Name => _v[157];
+        public static string WorldW14Name => _v[158];
+        public static string WorldW15Name => _v[159];
+        public static string WorldW16Name => _v[160];
+        public static string WorldW17Name => _v[161];
     }
 }

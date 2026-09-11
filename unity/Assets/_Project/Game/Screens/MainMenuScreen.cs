@@ -103,6 +103,15 @@ namespace GridInfect.Game
             if (!App.State.Profile.TutorialSeen) OfferTutorial();
         }
 
+        // The root: back leaves the app, as Android expects. Not while the
+        // first-open offer is up — it has two answers and this is neither.
+        // A no-op in the editor.
+        public override void OnBack()
+        {
+            if (_offer != null) return;
+            Application.Quit();
+        }
+
         public override void Tick(float dt)
         {
             _title?.Tick(dt);
