@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using S = GridInfect.Game.PresentationConfig.Style;
 
@@ -49,7 +50,7 @@ namespace GridInfect.Game
         readonly GameObject _root;
         readonly Box[] _plate;              // the well and the six dormant cells
         readonly Box[] _lit = new Box[Cells];
-        readonly TextMesh _caption;
+        readonly TMP_Text _caption;
 
         float _alpha;         // 0 gone, 1 up
         float _target;

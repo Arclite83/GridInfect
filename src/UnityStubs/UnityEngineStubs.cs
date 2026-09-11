@@ -159,6 +159,12 @@ namespace UnityEngine
         public GameObject gameObject => null;
     }
 
+    public sealed class RectTransform : Transform
+    {
+        public Vector2 pivot { get; set; }
+        public Vector2 sizeDelta { get; set; }
+    }
+
     public class Transform : Component
     {
         public Vector3 position { get; set; }

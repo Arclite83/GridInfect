@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using L = GridInfect.Game.PresentationConfig.Layout;
 using S = GridInfect.Game.PresentationConfig.Style;
@@ -32,7 +33,7 @@ namespace GridInfect.Game
         static int _page;
 
         GameObject _body;
-        TextMesh _pageLabel;
+        TMP_Text _pageLabel;
         float _pitch;
 
         // Swatch box and row pitch in the guide's reference px. The swatch

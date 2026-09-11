@@ -113,7 +113,7 @@ namespace GridInfect.Game
             public static float TitleText => ShortEdge * 0.095f;
             public static float HeadingText => ShortEdge * 0.05f;
             public static float LabelText => ShortEdge * 0.04f;
-            // 0.037 is 14.4 px on the reference screen. TextMesh does not
+            // 0.037 is 14.4 px on the reference screen. Text does not
             // wrap, so the rules sheet's longest line is what caps this.
             public static float BodyText => ShortEdge * 0.037f;
 

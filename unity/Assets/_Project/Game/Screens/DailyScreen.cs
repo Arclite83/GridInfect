@@ -1,5 +1,6 @@
 using System;
 using GridInfect.Core;
+using TMPro;
 using UnityEngine;
 using L = GridInfect.Game.PresentationConfig.Layout;
 using S = GridInfect.Game.PresentationConfig.Style;
@@ -25,7 +26,7 @@ namespace GridInfect.Game
         static int _month = -1;            // year * 12 + month - 1, remembered across visits
 
         GameObject _page, _selection;
-        TextMesh _monthLabel, _yearLabel, _slotNumber, _slotCaption, _dateLine, _infoLine, _bestLine;
+        TMP_Text _monthLabel, _yearLabel, _slotNumber, _slotCaption, _dateLine, _infoLine, _bestLine;
         UiButton _prev, _next, _todayChip, _play;
         DateTime _selected;
         readonly System.Collections.Generic.List<(Rect bounds, Vector2 centre, DateTime date)> _tiles =

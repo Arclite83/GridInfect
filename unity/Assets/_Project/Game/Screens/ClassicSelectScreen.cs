@@ -1,4 +1,5 @@
 using GridInfect.Core;
+using TMPro;
 using UnityEngine;
 using L = GridInfect.Game.PresentationConfig.Layout;
 
@@ -24,7 +25,7 @@ namespace GridInfect.Game
         static int _page; // session-persistent, like the original Game singleton field
 
         GameObject _grid;
-        TextMesh _pageLabel;
+        TMP_Text _pageLabel;
 
         protected override void Build()
         {

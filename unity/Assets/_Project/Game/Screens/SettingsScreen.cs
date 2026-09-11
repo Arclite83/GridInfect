@@ -56,7 +56,7 @@ namespace GridInfect.Game
 
             // Two lines, and in ink: it was one dimmed line long enough to
             // run off both edges of the screen, which is a warning nobody
-            // reads. TextMesh does not wrap, so the break is explicit.
+            // reads. Wrapping is off, so the break is explicit.
             var caption = Ui.MakeText("caption", Root.transform,
                 Str.SettingsEraseCaption,
                 L.BodyText * 0.85f, BoardTheme.Text, 2);
@@ -166,7 +166,7 @@ namespace GridInfect.Game
                 {
                     Ui.MakeSprite("locked", chip.Root.transform,
                         BugGlyph.Lock(BoardPalette.Default, Mathf.RoundToInt(height * 0.62f)), 22);
-                    // TextMesh centres the whole block, so a two-line note is
+                    // The block is centred as a whole, so a two-line note is
                     // hung by its middle: half of it (1.2 lines) below the
                     // chip's bottom edge, not its first line.
                     var note = Ui.MakeText($"want:{id}", Root.transform, want, noteText,

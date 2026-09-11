@@ -1,4 +1,5 @@
 using GridInfect.Core;
+using TMPro;
 using UnityEngine;
 using L = GridInfect.Game.PresentationConfig.Layout;
 using S = GridInfect.Game.PresentationConfig.Style;
@@ -21,7 +22,7 @@ namespace GridInfect.Game
         static int _page;
 
         GameObject _list;
-        TextMesh _pageLabel;
+        TMP_Text _pageLabel;
 
         int Pages => (Worlds.Count + PerPage - 1) / PerPage;
 

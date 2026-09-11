@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using S = GridInfect.Game.PresentationConfig.Style;
 
@@ -12,8 +13,8 @@ namespace GridInfect.Game
         const string ShaderName = "GridInfect/Substrate";
 
         static GameObject _root;
-        static TextMesh _legend;
-        static TextMesh _copyright;
+        static TMP_Text _legend;
+        static TMP_Text _copyright;
         static Material _material;
 
         public static void Ensure(BoardPalette palette)

@@ -1,4 +1,5 @@
 using GridInfect.Core;
+using TMPro;
 using UnityEngine;
 using Grid = GridInfect.Core.Grid;
 using L = GridInfect.Game.PresentationConfig.Layout;
@@ -21,8 +22,8 @@ namespace GridInfect.Game
         BoardView _board;
         PieceView[] _pieces;
         LevelSession _bound;
-        TextMesh _title;
-        TextMesh _caption;
+        TMP_Text _title;
+        TMP_Text _caption;
         UiButton _backButton;
         UiButton _resetButton;
         UiButton _lockButton;
@@ -36,7 +37,7 @@ namespace GridInfect.Game
         // chevrons that walk the series, the ghost of each bug on the cell
         // it belongs on, and the beat after a solve that lets the wave land
         // before the next step slides in.
-        TextMesh _lesson;
+        TMP_Text _lesson;
         UiButton _prevButton, _nextButton;
         SpriteRenderer[] _marks;
         System.Action _advance;
