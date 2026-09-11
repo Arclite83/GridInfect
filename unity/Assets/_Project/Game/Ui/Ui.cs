@@ -60,11 +60,41 @@ namespace GridInfect.Game
         // build where the resource failed to import, and logs when used.
         static Font Vendored(string resource)
         {
-            Font font = null;
-            try { font = Resources.Load<Font>("Fonts/" + resource); }
-            catch (System.Exception) { }
+            Font font = TryVendored(resource);
             if (font == null) Debug.LogWarning($"[text] Resources/Fonts/{resource} did not load; an OS face stands in");
             return font;
+        }
+
+        static Font TryVendored(string resource)
+        {
+            try { return Resources.Load<Font>("Fonts/" + resource); }
+            catch (System.Exception) { return null; }
+        }
+
+        // The fallback faces (tools/subset_fonts.py): Noto, cut to the code
+        // points the string files use that the design faces do not carry —
+        // kana and kanji, Cyrillic, the odd Latin letter. Each design face
+        // falls through to these, in this order, for a glyph it lacks. A
+        // fallback that is not there is not an error: the tool has not been
+        // run for that script yet, and the OS face is what draws.
+        static readonly string[] FallbackFiles = { "Fallback-Sans", "Fallback-JP" };
+        static System.Collections.Generic.List<TMP_FontAsset> _fallbacks;
+
+        static System.Collections.Generic.List<TMP_FontAsset> Fallbacks
+        {
+            get
+            {
+                if (_fallbacks == null)
+                {
+                    _fallbacks = new System.Collections.Generic.List<TMP_FontAsset>();
+                    foreach (string file in FallbackFiles)
+                    {
+                        var asset = MakeFontAsset(TryVendored(file));
+                        if (asset != null) _fallbacks.Add(asset);
+                    }
+                }
+                return _fallbacks;
+            }
         }
 
         static Font FindFont(string[] preferred)
@@ -143,11 +173,17 @@ namespace GridInfect.Game
             }
         }
 
+        static TMP_FontAsset WithFallbacks(TMP_FontAsset asset)
+        {
+            if (asset != null) asset.fallbackFontAssetTable = Fallbacks;
+            return asset;
+        }
+
         public static TMP_FontAsset UiFontAsset
         {
             get
             {
-                if (_fontAsset == null) _fontAsset = MakeFontAsset(UiFont) ?? MakeFontAsset(MonoFont);
+                if (_fontAsset == null) _fontAsset = WithFallbacks(MakeFontAsset(UiFont) ?? MakeFontAsset(MonoFont));
                 return _fontAsset;
             }
         }
@@ -160,7 +196,7 @@ namespace GridInfect.Game
         {
             get
             {
-                if (_boldAsset == null) _boldAsset = UiBoldFont == UiFont ? null : MakeFontAsset(UiBoldFont);
+                if (_boldAsset == null) _boldAsset = UiBoldFont == UiFont ? null : WithFallbacks(MakeFontAsset(UiBoldFont));
                 return _boldAsset ?? UiFontAsset;
             }
         }
@@ -169,7 +205,7 @@ namespace GridInfect.Game
         {
             get
             {
-                if (_monoAsset == null) _monoAsset = MakeFontAsset(MonoFont) ?? UiFontAsset;
+                if (_monoAsset == null) _monoAsset = WithFallbacks(MakeFontAsset(MonoFont)) ?? UiFontAsset;
                 return _monoAsset;
             }
         }
