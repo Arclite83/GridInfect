@@ -61,16 +61,18 @@ namespace GridInfect.Game
 
             // HUD: items bottom-aligned in the 96 px band, 22 px in from
             // either edge. Same top bar as every other screen: back on the
-            // left, the screen's one action on the right.
+            // leading side, the screen's one action on the trailing. The HUD
+            // measures from the screen rather than Layout's content width, so
+            // it carries the direction sign itself.
             float hudBottom = h / 2f - S.Px(S.HudHeight - S.HudBottomPad);
             var chip = ChipSize(Str.BoardReset);
             float chipY = hudBottom + chip.y / 2f;
             _backButton = UiButton.Make(Root.transform, Str.NavMenu,
-                new Vector2(-w / 2f + S.Px(S.HudInset) + chip.x / 2f, chipY), chip,
+                new Vector2(L.Dir * (-w / 2f + S.Px(S.HudInset) + chip.x / 2f), chipY), chip,
                 BoardTheme.ButtonBg, BoardTheme.Text, GoBack);
             Buttons.Add(_backButton);
             _resetButton = UiButton.Make(Root.transform, Str.BoardReset,
-                new Vector2(w / 2f - S.Px(S.HudInset) - chip.x / 2f, chipY), chip,
+                new Vector2(L.Dir * (w / 2f - S.Px(S.HudInset) - chip.x / 2f), chipY), chip,
                 BoardTheme.ButtonBg, BoardTheme.Text, ResetLevel);
             Buttons.Add(_resetButton);
 
@@ -86,7 +88,7 @@ namespace GridInfect.Game
             var badge = new Vector2(S.Px(S.BadgePadX * 2f + 8 * S.BadgeText * 0.62f), S.Px(S.BadgePadY * 2f + S.BadgeText * 1.25f));
             float badgeY = h / 2f - S.Px(S.BadgeTop) - badge.y / 2f;
             _lockButton = UiButton.Make(Root.transform, "",
-                new Vector2(w / 2f - S.Px(S.HudInset) - badge.x / 2f, badgeY), badge,
+                new Vector2(L.Dir * (w / 2f - S.Px(S.HudInset) - badge.x / 2f), badgeY), badge,
                 GlassStyle.Badge(BoardPalette.Default), BoardTheme.Copper, LockPiece, 20, pads: false, padAlpha: 1f, mono: true);
             _lockButton.Cooldown = PresentationConfig.SolveCooldown;
             Buttons.Add(_lockButton);
