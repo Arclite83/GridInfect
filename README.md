@@ -25,6 +25,7 @@ board states extracted from the 2014 code.
 | [`src/`](src/) | dotnet mirror solution: builds and tests the same sources headless, no Unity needed |
 | [`docs/`](docs/) | The port specification extracted from the original (rules, generator, modes, assets, requirements, dependencies) + `test_vectors.json` |
 | [`docs/NEXT_PASS.md`](docs/NEXT_PASS.md), [`docs/EXECUTION_PLAN.md`](docs/EXECUTION_PLAN.md) | The next-pass decisions and the staged plan with its status table |
+| [`docs/ADMOB_SETUP.md`](docs/ADMOB_SETUP.md) | Stage 6's account-side half: the keystore check that decides the package name, the AdMob console, the plugin import and its define, the Play declarations |
 | [`docs/GENERATOR_V2.md`](docs/GENERATOR_V2.md), [`docs/RULES_V2.md`](docs/RULES_V2.md) | The deduction solver, trace grader, sampler and constructor (solution-first, subtractive, minimal); the rules every generated level runs on |
 | [`docs/strings/`](docs/strings/) | Every word the game says, one JSON per language, baked into `Strings.g.cs` by `tools/bake_strings.py`; the rules are `ARCHITECTURE.md` §8 |
 | [`docs/worlds/`](docs/worlds/) | The shipped worlds as JSONL (one header line with the generator spec, one level per line), baked into `WorldData.g.cs`. The Daily and Endless have no baked content: their boards are seed math, generated on the device into `LevelCache` ahead of the player |
@@ -119,6 +120,10 @@ python3 docs/tools/verify_test_vectors.py   # sanity: vectors self-verify
   until the Android and iOS Build Support modules are installed and it is
   run again). `docs/UNITY_SETUP.md` §6 is still the first-run checklist for
   what has not been confirmed on screen: the shaders, the board, the title.
-- Later waves (ads, IAP, consent, services): specified in
-  `docs/REQUIREMENTS.md` / `docs/DEPENDENCIES.md`, deliberately not in this
-  baseline.
+- Ads, IAP and consent: the game-side half is in — the cadence gate and its
+  tests, the `AdCadence`/`AdConfig` assets, the SDK adapters fenced behind
+  `GRIDINFECT_ADMOB`/`GRIDINFECT_IAP`, and an assembly-boundary gate keeping
+  the SDKs inside `GridInfect.Services` (R-1303). What is left is account-side
+  and device-side: `docs/ADMOB_SETUP.md` is the order of operations, starting
+  with whether the 2014 Android keystore still exists, because that decides
+  whether `com.bloodhoundstudios.gridinfect` can be reused at all.

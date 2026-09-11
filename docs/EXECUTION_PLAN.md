@@ -15,7 +15,7 @@ table below in the same PR.
 | 3 | Level bake, worlds, Legacy mode | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
 | 4 | Daily and Endless | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
 | 5 | Lock tool | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
-| 6 | Ads, consent, remove-ads (Android) | Blocked: the Google Mobile Ads / UMP and Unity IAP packages and an Android device build are not available in the authoring environment; the Services boundary, interfaces, Null services, cadence config, gate test and adapter wiring are in | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
+| 6 | Ads, consent, remove-ads (Android) | In: boundary, interfaces, Null services, cadence gate and its tests, `AdCadence`/`AdConfig` assets, fenced SDK adapters, define-driven `Bootstrap`, R-1303 gate test. Remaining is account-side and device-side only — see [`ADMOB_SETUP.md`](ADMOB_SETUP.md): the plugin import, the `GRIDINFECT_ADMOB` symbol, a compile pass over `Services/Sdk/`, and the internal-testing AAB | [#7](https://github.com/Arclite83/GridInfect/pull/7), [#19](https://github.com/Arclite83/GridInfect/pull/19) |
 | 7 | RulesV2 | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
 | 8 | Short arms | Cut | [#7](https://github.com/Arclite83/GridInfect/pull/7), then removed: the blot is the one short-range piece (`RULES_V2.md` §8) |
 | 9 | Area piece | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |

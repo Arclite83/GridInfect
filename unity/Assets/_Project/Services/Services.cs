@@ -78,10 +78,16 @@ namespace GridInfect.Services
 
     // R-604: demo unit ids in development builds; production ids live only
     // in the release config asset, never in code.
+    // Android ids and the iOS interstitial are the ones recorded in
+    // DEPENDENCIES §5 step 4. The iOS rewarded id is NOT in that list and is
+    // unverified — check it against Google's sample-unit page before the iOS
+    // follow ships. Nothing on the Android launch path reads it.
     public static class DemoAdUnits
     {
         public const string AndroidInterstitial = "ca-app-pub-3940256099942544/1033173712";
         public const string AndroidRewarded = "ca-app-pub-3940256099942544/5224354917";
+        public const string IosInterstitial = "ca-app-pub-3940256099942544/4411468910";
+        public const string IosRewarded = "ca-app-pub-3940256099942544/1712485313";
     }
 
     public sealed class NullConsentService : IConsentService
@@ -109,12 +115,30 @@ namespace GridInfect.Services
         public void Restore(Action<bool> owned) => owned?.Invoke(false);
     }
 
-    // The one place an implementation is chosen. Swap the Null services for
-    // the SDK-backed ones when the packages are imported (stage 6 follow-up).
+    // The one place an implementation is chosen, and the only thing the
+    // SDK import has to change — which is why it is a define and not an edit.
+    // GRIDINFECT_ADMOB is a scripting define symbol you add by hand after
+    // importing the plugin (it is a .unitypackage, so nothing can detect it);
+    // GRIDINFECT_IAP is a versionDefine on the Services asmdef and appears on
+    // its own when com.unity.purchasing is in the manifest.
+    //
+    // Without either symbol the Null services keep every build playable, which
+    // is R-801's rule in its strongest form: no ads, no consent, no store, and
+    // the game still runs.
     public static class Bootstrap
     {
+#if GRIDINFECT_ADMOB
+        public static IConsentService Consent() => new UmpConsentService();
+        public static IAdService Ads() => new AdMobAdService(AdConfig.Load());
+#else
         public static IConsentService Consent() => new NullConsentService();
         public static IAdService Ads() => new NullAdService();
+#endif
+
+#if GRIDINFECT_IAP
+        public static IPurchaseService Purchases() => new UnityIapPurchaseService();
+#else
         public static IPurchaseService Purchases() => new NullPurchaseService();
+#endif
     }
 }

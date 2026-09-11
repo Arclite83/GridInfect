@@ -122,6 +122,18 @@ namespace UnityEngine
         public RangeAttribute(float min, float max) { }
     }
 
+    [AttributeUsage(AttributeTargets.Field)]
+    public sealed class TooltipAttribute : Attribute
+    {
+        public TooltipAttribute(string tooltip) { }
+    }
+
+    [AttributeUsage(AttributeTargets.Field)]
+    public sealed class HeaderAttribute : Attribute
+    {
+        public HeaderAttribute(string header) { }
+    }
+
     [AttributeUsage(AttributeTargets.Class)]
     public sealed class CreateAssetMenuAttribute : Attribute
     {
