@@ -66,11 +66,25 @@ namespace GridInfect.Game
         {
             _caption.text = text;
             Ui.FitText(_caption, text, S.Px(S.HudCaption), _captionMaxW, mono: true);
+            for (int i = 0; i < 3; i++) if (_hud[i] != null) _hud[i].gameObject.SetActive(false);
         }
 
-        // A chip's box from its label: 12 px type, 8 x 14 padding (§7).
-        static Vector2 ChipSize(string label) =>
-            new Vector2(S.Px(S.ChipPadX * 2f + label.Length * S.ChipText * 0.66f), S.Px(S.ChipPadY * 2f + S.ChipText * 1.25f));
+        readonly TMP_Text[] _hud = new TMP_Text[3];
+
+        void SetHud(string leading, string middle, string trailing)
+        {
+            _caption.text = "";
+            string[] texts = { leading, middle, trailing };
+            float third = _captionMaxW / 3f - L.Gap;
+            for (int i = 0; i < 3; i++)
+            {
+                _hud[i].gameObject.SetActive(true);
+                _hud[i].text = texts[i];
+                Ui.FitText(_hud[i], texts[i], S.Px(S.HudCaption), third, mono: true);
+            }
+        }
+
+        static Vector2 ChipSize(string label) => Ui.ChipBox(label);
 
         protected override void Build()
         {
@@ -101,9 +115,9 @@ namespace GridInfect.Game
 
             // The one tool (stage 5): spends a lock, places one piece at its
             // solution cell and locks it. The counter badge under RESET, off
-            // the board: mono 13 px copperHi on black 35%. Eight characters —
-            // "SOLVE 03" and "+1 SOLVE" are both that wide.
-            var badge = new Vector2(S.Px(S.BadgePadX * 2f + 8 * S.BadgeText * 0.62f), S.Px(S.BadgePadY * 2f + S.BadgeText * 1.25f));
+            // the board: mono 13 px copperHi on black 35%, sized to the widest
+            // thing it ever says in this language so it never changes shape.
+            var badge = Ui.BadgeBox(Str.Fmt(Str.BoardSolve, 99), Str.BoardPlusSolve, Str.BoardHint);
             float badgeY = h / 2f - S.Px(S.BadgeTop) - badge.y / 2f;
             _captionMaxW = w - 2f * S.Px(S.HudInset) - badge.x - L.Gap;
             _lockButton = UiButton.Make(Root.transform, "",
@@ -115,9 +129,22 @@ namespace GridInfect.Game
             // The mono caption shares the badge's row, left-aligned under
             // MENU. It doubles as the mode's readout (clock, streak) where a
             // mode has one.
+            float captionX = L.Dir * (-w / 2f + S.Px(S.HudInset));
             _caption = Ui.MakeText("caption", Root.transform, "", S.Px(S.HudCaption), BoardTheme.TextDim, 2,
                 mono: true, anchor: L.Leading);
-            Ui.SetPos(_caption.gameObject, L.Dir * (-w / 2f + S.Px(S.HudInset)), badgeY);
+            Ui.SetPos(_caption.gameObject, captionX, badgeY);
+            // The three readouts a run shows (solved / streak / best, or
+            // difficulty / count / clock) are three texts on the caption's
+            // span, not one string with spaces for columns: each sits at its
+            // own end or the middle and fits its third.
+            var hudAnchors = new[] { L.Leading, TextAnchor.MiddleCenter, L.Trailing };
+            for (int i = 0; i < 3; i++)
+            {
+                _hud[i] = Ui.MakeText($"hud:{i}", Root.transform, "", S.Px(S.HudCaption), BoardTheme.TextDim, 2,
+                    mono: true, anchor: hudAnchors[i]);
+                Ui.SetPos(_hud[i].gameObject, captionX + L.Dir * _captionMaxW * i / 2f, badgeY);
+                _hud[i].gameObject.SetActive(false);
+            }
             RefreshLockLabel();
 
             if (Tutorial) BuildTutorialChrome(badgeY);
@@ -273,7 +300,11 @@ namespace GridInfect.Game
                 {
                     int index = App.State.TutorialIndex;
                     SetTitle(Str.Fmt(Str.BoardTutorialTitle, index + 1, TutorialLevels.Count));
-                    if (_lesson != null) _lesson.text = Str.TutorialLine(index + 1);
+                    if (_lesson != null)
+                    {
+                        _lesson.text = Str.TutorialLine(index + 1);
+                        Ui.FitText(_lesson, _lesson.text, L.BodyText * 0.95f, L.ContentWidth, mono: false);
+                    }
                     level = $"T{index + 1:00}";
                     RefreshTutorialChrome();
                     break;
@@ -747,12 +778,9 @@ namespace GridInfect.Game
                 var endless = App.State.EndlessRun;
                 if (endless != null)
                 {
-                    // Three readouts joined by spacing. They are separate keys
-                    // so that turning them into three positioned elements is a
-                    // layout change and not a translation one (docs/I18N.md).
-                    SetCaption(Str.Fmt(Str.BoardHudSolved, endless.Index)
-                        + "   " + Str.Fmt(Str.BoardHudStreak, endless.Streak)
-                        + "   " + Str.Fmt(Str.BoardHudBest, App.State.Profile.EndlessBest[(int)endless.Grade - 1]));
+                    SetHud(Str.Fmt(Str.BoardHudSolved, endless.Index),
+                        Str.Fmt(Str.BoardHudStreak, endless.Streak),
+                        Str.Fmt(Str.BoardHudBest, App.State.Profile.EndlessBest[(int)endless.Grade - 1]));
                 }
                 return;
             }
@@ -768,9 +796,9 @@ namespace GridInfect.Game
                 App.Screens.Show(new FreePlayMenuScreen());
                 return;
             }
-            SetCaption(Str.DifficultyName((int)App.State.Difficulty)
-                + "   " + Str.Fmt(Str.BoardHudRunCount, App.State.FreePlayIndex + 1)
-                + "   " + Queries.FormatDuration(elapsed));
+            SetHud(Str.DifficultyName((int)App.State.Difficulty),
+                Str.Fmt(Str.BoardHudRunCount, App.State.FreePlayIndex + 1),
+                Queries.FormatDuration(elapsed));
         }
 
         // ---- popups ----

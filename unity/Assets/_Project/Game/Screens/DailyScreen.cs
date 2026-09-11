@@ -266,7 +266,7 @@ namespace GridInfect.Game
         // `leading`: hung inward from the leading edge, else from the trailing.
         void Badge(string name, string text, float edgeX, bool leading)
         {
-            var size = new Vector2(S.Px(S.BadgePadX * 2f + text.Length * S.BadgeText * 0.62f), S.Px(S.BadgePadY * 2f + S.BadgeText * 1.25f));
+            var size = Ui.BadgeBox(text);
             float x = leading ? edgeX + L.Dir * size.x / 2f : edgeX - L.Dir * size.x / 2f;
             var badge = UiButton.Make(_page.transform, text, new Vector2(x, _badgeY), size,
                 GlassStyle.Badge(BoardPalette.Default), BoardTheme.Copper,

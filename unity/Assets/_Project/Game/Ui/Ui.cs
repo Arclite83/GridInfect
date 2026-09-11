@@ -206,13 +206,10 @@ namespace GridInfect.Game
         // Petch 500 and 700). Chip labels take it: 12-13 px uppercase on
         // glass over a photographed-looking board is where thin type goes
         // first in glare. The mono face has no bold and never asks for one.
-        // How wide a line draws, estimated: characters times size times the
-        // face's average advance (0.66 for the display face in caps, 0.62 for
-        // the mono). It is the estimate ChipSize always used, in one place.
-        // TMP can measure (GetPreferredValues); this estimate is what the
-        // TextMesh renderer left behind and is replaced by that measurement
-        // in the re-fit (docs/I18N.md, remaining), in this one place.
-        public static float EstimateWidth(string text, float heightPx, bool mono)
+        // How wide a line would draw, estimated: characters times size times
+        // the face's average advance. Only the fallback now, for a text with
+        // no font asset behind it; MeasureWidth is the real thing.
+        static float EstimateWidth(string text, float heightPx, bool mono)
         {
             int longest = 0, run = 0;
             for (int i = 0; i < text.Length; i++)
@@ -224,17 +221,79 @@ namespace GridInfect.Game
             return longest * heightPx * (mono ? 0.62f : 0.66f);
         }
 
+        // One hidden text, kept for measuring: how wide `text` draws in a
+        // face at a size, before the object that will show it exists. It is
+        // what lets a chip be sized to its label and a badge to its widest
+        // reading, in whatever language, instead of to a character count.
+        static TextMeshPro _measure;
+
+        public static float MeasureWidth(string text, float heightPx, bool mono, bool bold)
+        {
+            if (string.IsNullOrEmpty(text)) return 0f;
+            if (_measure == null)
+            {
+                var go = new GameObject("measure");
+                go.hideFlags = HideFlags.HideAndDontSave;
+                Object.DontDestroyOnLoad(go);
+                _measure = go.AddComponent<TextMeshPro>();
+                _measure.richText = false;
+                _measure.textWrappingMode = TextWrappingModes.NoWrap;
+                _measure.overflowMode = TextOverflowModes.Overflow;
+                _measure.color = Color.clear;
+                go.transform.localPosition = new Vector3(0f, 1e6f, 0f);
+            }
+            bool realBold = bold && !mono && UiBoldFontAsset != UiFontAsset;
+            var font = mono ? MonoFontAsset : realBold ? UiBoldFontAsset : UiFontAsset;
+            if (font == null) return EstimateWidth(text, heightPx, mono);
+            _measure.font = font;
+            _measure.fontStyle = bold && !mono && !realBold ? FontStyles.Bold : FontStyles.Normal;
+            _measure.fontSize = heightPx * TmpPointsPerPx;
+            return _measure.GetPreferredValues(text).x;
+        }
+
+        // Below this the type is not legible over the board (STYLE-GUIDE 7,
+        // PresentationConfig.Style), so a text stops shrinking here and is
+        // allowed to run over its box instead: clipped is a layout bug you
+        // can see, unreadable is one you cannot.
+        static float MinTextPx => S.Px(11f);
+
         // Size the text at `heightPx`, or smaller if that would draw wider
-        // than `maxWidthPx` (0 = no limit). A translation that is longer than
-        // the English it replaces shrinks to its box rather than leaving it.
+        // than `maxWidthPx` (0 = no limit), down to the legibility floor.
         public static void FitText(TMP_Text mesh, string text, float heightPx, float maxWidthPx, bool mono)
         {
-            if (maxWidthPx > 0f)
-            {
-                float width = EstimateWidth(text ?? "", heightPx, mono);
-                if (width > maxWidthPx) heightPx *= maxWidthPx / width;
-            }
             mesh.fontSize = heightPx * TmpPointsPerPx;
+            if (maxWidthPx <= 0f || string.IsNullOrEmpty(text)) return;
+            float width = mesh.font != null ? mesh.GetPreferredValues(text).x : EstimateWidth(text, heightPx, mono);
+            if (width > maxWidthPx)
+            {
+                float fitted = Mathf.Max(MinTextPx, heightPx * maxWidthPx / width);
+                mesh.fontSize = fitted * TmpPointsPerPx;
+            }
+        }
+
+        // A chip's label size from its box: 42% of the height, capped at
+        // 1.4x the chip type (STYLE-GUIDE 7). One definition, so the box a
+        // label is measured for is the box it is drawn in.
+        public static float LabelPx(Vector2 chipSize) =>
+            Mathf.Min(chipSize.y * 0.42f, S.Px(S.ChipText) * 1.4f);
+
+        // A chip's box from its label: 12 px type, 8 x 14 padding (§7), the
+        // width measured in the face the label draws in.
+        public static Vector2 ChipBox(string label, bool mono = false, bool bold = true)
+        {
+            float height = S.Px(S.ChipPadY * 2f + S.ChipText * 1.25f);
+            float textPx = LabelPx(new Vector2(0f, height));
+            return new Vector2(S.Px(S.ChipPadX * 2f) + MeasureWidth(label, textPx, mono, bold), height);
+        }
+
+        // A badge's box from its widest reading: mono 13 px on 6 x 12 padding.
+        public static Vector2 BadgeBox(params string[] readings)
+        {
+            float height = S.Px(S.BadgePadY * 2f + S.BadgeText * 1.25f);
+            float textPx = LabelPx(new Vector2(0f, height));
+            float widest = 0f;
+            foreach (string r in readings) widest = Mathf.Max(widest, MeasureWidth(r, textPx, mono: true, bold: true));
+            return new Vector2(S.Px(S.BadgePadX * 2f) + widest, height);
         }
 
         public static TMP_Text MakeText(string name, Transform parent, string text, float heightPx, Color color, int sortingOrder,
@@ -387,7 +446,7 @@ namespace GridInfect.Game
                 Ui.SetPos(right, sizePx.x / 2f + gap, 0f);
             }
 
-            float textPx = Mathf.Min(sizePx.y * 0.42f, S.Px(S.ChipText) * 1.4f);
+            float textPx = Ui.LabelPx(sizePx);
             // The label fits inside the chip's padding, or shrinks until it does.
             var text = Ui.MakeText("label", root.transform, label, textPx, textColor, sortingOrder + 1, mono, bold: true,
                 maxWidthPx: sizePx.x - S.Px(S.ChipPadX * 2f));
