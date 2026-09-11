@@ -13,6 +13,11 @@ namespace GridInfect.Game
     // Every level is open. The chain unlock is gone: a player who wants to
     // poke at level 90 may, and solving still advances on its own for one
     // who does not. Red is beaten.
+    //
+    // The title says CLASSIC and a caption under it says what that means —
+    // the 2014 game, all of it. Nowhere else does the app say it had a
+    // life before this one, and a new player reading the menu should not
+    // have to guess what the fourth row is.
     public sealed class ClassicSelectScreen : AppScreen
     {
         const int Columns = 4;
@@ -26,6 +31,7 @@ namespace GridInfect.Game
 
         GameObject _grid;
         TMP_Text _pageLabel;
+        float _gridTop;
 
         protected override void Build()
         {
@@ -33,6 +39,12 @@ namespace GridInfect.Game
 
             var title = Ui.MakeText("title", Root.transform, Str.LegacyTitle, L.HeadingText, BoardTheme.Text, 2, maxWidthPx: L.TitleWidth);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
+            float captionPx = L.BodyText * 0.8f;
+            float captionY = L.TopBarY - L.HeadingText * 0.55f - captionPx * 0.7f;
+            var caption = Ui.MakeText("caption", Root.transform, Str.LegacyCaption, captionPx, BoardTheme.TextDim, 2,
+                maxWidthPx: L.ContentWidth);
+            Ui.SetPos(caption.gameObject, 0f, captionY);
+            _gridTop = captionY - captionPx * 0.9f;
 
             Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
@@ -72,10 +84,10 @@ namespace GridInfect.Game
             float h = UnityEngine.Screen.height;
             _pageLabel.text = Str.Fmt(Str.CommonPage, _page + 1, Pages);
 
-            // The rack fills the band between the title and the pager. Tiles
-            // are square, so the grid stays legible whichever way the numbers
-            // fall out of the screen's aspect.
-            float top = L.TopBarY - L.HeadingText;
+            // The rack fills the band between the caption and the pager.
+            // Tiles are square, so the grid stays legible whichever way the
+            // numbers fall out of the screen's aspect.
+            float top = _gridTop;
             float bottom = -h * PagerPct + L.BarHeight;
             float pitchX = L.ContentWidth / Columns;
             float pitchY = (top - bottom) / Rows;

@@ -11,9 +11,6 @@ namespace GridInfect.Game
     // language it is a TextMeshPro. The original string is kept so that a
     // language change can re-fix, and so that measurement can ask for the
     // visual text (`text`) rather than the logical one.
-    //
-    // Not the pseudolocale: qps-plocm is already mirrored by the baker and
-    // has no Arabic in it; Str.IsShaped is false for it.
     public sealed class RtlText : TextMeshPro
     {
         static readonly FastStringBuilder Fixed = new FastStringBuilder(RTLSupport.DefaultBufferSize);

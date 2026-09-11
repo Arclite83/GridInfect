@@ -30,6 +30,26 @@ namespace GridInfect.Game
         public virtual bool OnPress(Vector2 world) => false;
         public virtual void OnDrag(Vector2 world) { }
         public virtual void OnRelease(Vector2 world) { }
+
+        // The device's back button (Android; Escape in the editor). A back
+        // chip lives in the top leading corner on every screen that has one
+        // (Layout.BackPos), so the default presses whatever enabled chip is
+        // there: MENU, the gear on the language screen, WORLDS on a world's
+        // level list. A screen whose way back is elsewhere overrides. A
+        // screen that has shut its chips (a popup up) answers nothing, which
+        // is the same answer a finger on the chip would get.
+        public virtual void OnBack()
+        {
+            Vector2 at = PresentationConfig.Layout.BackPos;
+            foreach (var button in Buttons)
+            {
+                if (button.HitTest(at))
+                {
+                    button.OnClick?.Invoke();
+                    return;
+                }
+            }
+        }
     }
 
     // Every navigation: 0.25 s down to the scrim, swap screens, 0.25 s back

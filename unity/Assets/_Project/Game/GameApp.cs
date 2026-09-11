@@ -211,6 +211,17 @@ namespace GridInfect.Game
             _wasTransitioning = transitioning;
             if (transitioning) return;
 
+            // Android's back button arrives as Escape. Behind the transition
+            // gate like a touch, and under the same debounce as a chip: a
+            // held or bounced key must not walk two screens back.
+            if (Input.GetKeyDown(KeyCode.Escape) && Time.realtimeSinceStartup >= _clickBlockedUntil)
+            {
+                FastForwardResolve();
+                screen.OnBack();
+                _clickBlockedUntil = Time.realtimeSinceStartup + PresentationConfig.ButtonDebounce;
+                return;
+            }
+
             if (Input.GetMouseButtonDown(0))
             {
                 if (Time.unscaledTime < _inputBlockedUntil) return;

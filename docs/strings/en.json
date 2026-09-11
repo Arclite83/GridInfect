@@ -8,7 +8,7 @@
   "menu.worlds": "WORLDS",
   "menu.daily": "DAILY",
   "menu.endless": "ENDLESS",
-  "menu.legacy": "LEGACY",
+  "menu.legacy": "CLASSIC",
   "menu.tutorial": "TUTORIAL",
   "menu.noAds": "NO ADS",
   "menu.offer.title": "FIRST TIME?",
@@ -30,7 +30,7 @@
   "settings.skin.blue": "BLUE",
   "settings.skin.tan": "TAN",
   "settings.skin.wantWorlds": "CLEAR\nALL WORLDS",
-  "settings.skin.wantLegacy": "CLEAR\nALL LEGACY",
+  "settings.skin.wantLegacy": "CLEAR\nALL CLASSIC",
 
   "rules.title": "HOW TO PLAY",
   "rules.goal": "Infect every cell on the board to win.",
@@ -55,7 +55,8 @@
   "rules.spread.diagonal": "Or corner to corner.",
   "rules.spread.area": "A blot takes the eight around it.",
 
-  "legacy.title": "LEGACY",
+  "legacy.title": "CLASSIC",
+  "legacy.caption": "THE 2014 ORIGINAL, ALL 128 LEVELS",
 
   "freeplay.title": "FREE PLAY",
   "freeplay.difficulty.beginner": "BEGINNER",
@@ -86,7 +87,7 @@
   "endless.best": "BEST {0}",
 
   "board.reset": "RESET",
-  "board.legacy": "LEGACY",
+  "board.legacy": "CLASSIC",
   "board.daily": "DAILY",
   "board.endless": "ENDLESS  {0}",
   "board.level": "LEVEL {0}",
@@ -98,6 +99,7 @@
   "board.complete": "COMPLETE",
   "board.completeStreakStarted": "COMPLETE\nStreak started",
   "board.completeStreakDays": "COMPLETE\n{0} days in a row",
+  "board.completeSkin": "COMPLETE\nNew skin: {0}",
   "board.tutorialComplete": "TUTORIAL COMPLETE",
   "board.popup.menu": "MENU",
   "board.popup.replay": "REPLAY",

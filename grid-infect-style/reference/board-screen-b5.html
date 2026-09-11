@@ -76,7 +76,7 @@ const defs=`<defs>
 </defs>`;
 const base=`<rect width="390" height="844" fill="url(#mask)"/><rect width="390" height="844" fill="url(#grid)"/><rect width="390" height="844" fill="url(#sheen)"/>`;
 const holes=[[22,22],[368,22],[22,822],[368,822]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="9" fill="#c9a648" opacity=".7"/><circle cx="${x}" cy="${y}" r="5" fill="#2a3a24"/>`).join("");
-const silk=`<g font-family="Share Tech Mono, monospace" font-size="9" fill="rgba(255,255,255,.55)" letter-spacing="1.5"><text x="44" y="30">BLOODHOUND STUDIOS</text><text x="290" y="835">GI-06 REV B</text><text x="44" y="835">© 2026</text></g>`;
+const silk=`<g font-family="Share Tech Mono, monospace" font-size="9" fill="rgba(255,255,255,.55)" letter-spacing="1.5"><text x="44" y="30">BLOODHOUND STUDIOS</text><text x="290" y="835">GI-06</text><text x="44" y="835">© 2026</text></g>`;
 
 // tone-on-tone traces, margins only, darker green, no gold
 const tt=["12,140 12,300 26,314 26,700","378,140 378,240 364,254 364,720","60,808 150,808 164,822 240,822","230,20 300,20 314,34 350,34"];
@@ -103,7 +103,7 @@ document.getElementById("row").innerHTML=variants.map(v=>`
 <div class="col"><h3>${v.t}</h3><p class="n">${v.n}</p>
  <div class="screen">
   <svg class="bg" viewBox="0 0 390 844">${defs}${v.bg}</svg>
-  <div class="hud"><span class="chip">MENU</span><div class="lvl"><small>GI-REV B</small>LEVEL 6</div><span class="chip">RESET</span></div>
+  <div class="hud"><span class="chip">MENU</span><div class="lvl">LEVEL 6</div><span class="chip">RESET</span></div>
   <span class="badge">LOCK 00</span>
   <div class="board">${cells}</div>
   <div class="tray">${tray}</div>
