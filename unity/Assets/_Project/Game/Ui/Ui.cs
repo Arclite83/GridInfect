@@ -80,7 +80,7 @@ namespace GridInfect.Game
         // JP in Japanese and from TC in Traditional. A fallback that is not
         // there is not an error: the tool has not been run for that script
         // yet, and the OS face is what draws.
-        static readonly string[] FallbackFiles = { "Fallback-Sans", "Fallback-JP", "Fallback-KR", "Fallback-SC", "Fallback-TC" };
+        static readonly string[] FallbackFiles = { "Fallback-Sans", "Fallback-JP", "Fallback-KR", "Fallback-SC", "Fallback-TC", "Fallback-AR", "Fallback-HE" };
         static readonly System.Collections.Generic.Dictionary<string, TMP_FontAsset> _fallbackAssets =
             new System.Collections.Generic.Dictionary<string, TMP_FontAsset>();
         static System.Collections.Generic.List<TMP_FontAsset> _fallbacks;
@@ -93,6 +93,8 @@ namespace GridInfect.Game
                 case "ko": return "Fallback-KR";
                 case "zh-Hans": return "Fallback-SC";
                 case "zh-Hant": return "Fallback-TC";
+                case "ar": return "Fallback-AR";
+                case "he": return "Fallback-HE";
                 default: return "Fallback-Sans";
             }
         }
@@ -294,7 +296,7 @@ namespace GridInfect.Game
         // face at a size, before the object that will show it exists. It is
         // what lets a chip be sized to its label and a badge to its widest
         // reading, in whatever language, instead of to a character count.
-        static TextMeshPro _measure;
+        static RtlText _measure;
 
         public static float MeasureWidth(string text, float heightPx, bool mono, bool bold)
         {
@@ -304,7 +306,7 @@ namespace GridInfect.Game
                 var go = new GameObject("measure");
                 go.hideFlags = HideFlags.HideAndDontSave;
                 Object.DontDestroyOnLoad(go);
-                _measure = go.AddComponent<TextMeshPro>();
+                _measure = go.AddComponent<RtlText>();
                 _measure.richText = false;
                 _measure.textWrappingMode = TextWrappingModes.NoWrap;
                 _measure.overflowMode = TextOverflowModes.Overflow;
@@ -317,7 +319,8 @@ namespace GridInfect.Game
             _measure.font = font;
             _measure.fontStyle = bold && !mono && !realBold ? FontStyles.Bold : FontStyles.Normal;
             _measure.fontSize = heightPx * TmpPointsPerPx;
-            return _measure.GetPreferredValues(text).x;
+            _measure.text = text;   // shaped if the language is, so the width is the visual one
+            return _measure.GetPreferredValues(_measure.text).x;
         }
 
         // Below this the type is not legible over the board (STYLE-GUIDE 7,
@@ -332,7 +335,9 @@ namespace GridInfect.Game
         {
             mesh.fontSize = heightPx * TmpPointsPerPx;
             if (maxWidthPx <= 0f || string.IsNullOrEmpty(text)) return;
-            float width = mesh.font != null ? mesh.GetPreferredValues(text).x : EstimateWidth(text, heightPx, mono);
+            // mesh.text is the visual string (shaped and reversed for a shaped
+            // language), which is the one that has a width.
+            float width = mesh.font != null ? mesh.GetPreferredValues(mesh.text).x : EstimateWidth(text, heightPx, mono);
             if (width > maxWidthPx)
             {
                 float fitted = Mathf.Max(MinTextPx, heightPx * maxWidthPx / width);
@@ -370,7 +375,7 @@ namespace GridInfect.Game
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
-            var mesh = go.AddComponent<TextMeshPro>();
+            var mesh = go.AddComponent<RtlText>();
             bool realBold = bold && !mono && UiBoldFontAsset != UiFontAsset;
             mesh.font = mono ? MonoFontAsset : realBold ? UiBoldFontAsset : UiFontAsset;
             // Strings come from translators, not markup: a '<' in a label is
@@ -378,11 +383,9 @@ namespace GridInfect.Game
             mesh.richText = false;
             mesh.textWrappingMode = TextWrappingModes.NoWrap;   // a hard break is authored (\n), never found
             mesh.overflowMode = TextOverflowModes.Overflow;
-            // Not TMP's RTL flag, even for a right-to-left tag: that flag
-            // reverses glyph order, which a real RTL language needs and the
-            // mirrored pseudolocale has already done to itself (docs/I18N.md).
-            // It is set with the first shaped language, not before.
-            mesh.isRightToLeftText = false;
+            // TMP's RTL flag is RtlText's to set, per string: on for a shaped
+            // language's text, off otherwise (the mirrored pseudolocale has
+            // already reversed itself and must not be reversed again).
             mesh.fontStyle = bold && !mono && !realBold ? FontStyles.Bold : FontStyles.Normal;
             mesh.text = text;
             FitText(mesh, text, heightPx, maxWidthPx, mono);

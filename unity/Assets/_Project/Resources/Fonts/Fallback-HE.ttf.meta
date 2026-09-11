@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 5fe997a6af2b4c68940334e61a0d2b94
+guid: 7741c9e20530466e8b16b9baa6906a1d
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Noto Sans TC
+  - Noto Sans Hebrew
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 5fe997a6af2b4c68940334e61a0d2b94
+guid: ebb356e4dcc74ba0b75914ddfcf94553
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Noto Sans TC
+  - Noto Naskh Arabic
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0

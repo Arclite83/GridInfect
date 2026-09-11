@@ -61,6 +61,23 @@ namespace GridInfect.Game
             }
         }
 
+        // Whether the language in force needs its text shaped and reordered
+        // before TMP draws it (RtlText). A subset of IsRtl: the mirrored
+        // pseudolocale reads right to left for layout and is not shaped.
+        public static bool IsShaped
+        {
+            get
+            {
+                string tag = CurrentTag;
+                int cut = tag.IndexOf('-');
+                switch (cut < 0 ? tag : tag.Substring(0, cut))
+                {
+                    case "ar": case "he": case "fa": case "ur": return true;
+                    default: return false;
+                }
+            }
+        }
+
         // Adopt `tag` if it ships, and report whether it did. An unknown tag
         // leaves the current one in force: a save written by a build that
         // shipped more languages than this one must not blank the UI.
@@ -112,6 +129,8 @@ namespace GridInfect.Game
                 case SystemLanguage.Chinese: return "zh-Hans";
                 case SystemLanguage.ChineseSimplified: return "zh-Hans";
                 case SystemLanguage.ChineseTraditional: return "zh-Hant";
+                case SystemLanguage.Arabic: return "ar";
+                case SystemLanguage.Hebrew: return "he";
                 default: return null;
             }
         }
