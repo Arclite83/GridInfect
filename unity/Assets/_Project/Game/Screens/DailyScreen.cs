@@ -36,7 +36,7 @@ namespace GridInfect.Game
 
         string _today;
         DateTime _todayDate;
-        float _cell, _gap, _pitch, _wellW, _wellH, _wellY, _headerY, _badgeY;
+        float _cell, _gap, _pitch, _wellW, _wellH, _wellY, _headerY, _badgeY, _infoMaxW;
         Vector2 _press;
         bool _pressed, _infoPending;
 
@@ -100,13 +100,15 @@ namespace GridInfect.Game
                 float x = L.ColumnX(c, Columns, _pitch);   // and on the leading side
                 var band = DailyCalendar.Band(day);
                 string tier = Str.TierBandLabel(band.min, band.max);
-                var name = Ui.MakeText($"wk:{c}", Root.transform, Str.Day(c + 1), S.Px(S.SmallText), BoardTheme.Text, 2, mono: true);
+                var name = Ui.MakeText($"wk:{c}", Root.transform, Str.Day(c + 1), S.Px(S.SmallText), BoardTheme.Text, 2, mono: true,
+                    maxWidthPx: _pitch - S.Px(4f));
                 Ui.SetPos(name.gameObject, x, _headerY + S.Px(12f));
                 // The tier was CopperLo, 2.3:1 on the mask at 11 px: the
                 // one number that says how hard the day is, in the least
                 // legible ink on the screen. Ink now; the day name above it
                 // is what carries the header's second tone.
-                var tierText = Ui.MakeText($"band:{c}", Root.transform, tier, S.Px(12f), BoardTheme.Text, 2, mono: true);
+                var tierText = Ui.MakeText($"band:{c}", Root.transform, tier, S.Px(12f), BoardTheme.Text, 2, mono: true,
+                    maxWidthPx: _pitch - S.Px(4f));
                 Ui.SetPos(tierText.gameObject, x, _headerY - S.Px(2f));
             }
 
@@ -293,6 +295,7 @@ namespace GridInfect.Game
 
             // The readouts hang off the slot inward, along the reading direction.
             float infoX = slotX + (slot / 2f + S.Px(22f)) * L.Dir;
+            _infoMaxW = Mathf.Abs(L.Trail(S.Px(8f)) - infoX);   // to the trailing edge
             float readout = S.Px(12f);
             float bestY = y - S.Px(8f);
             _dateLine = Ui.MakeText("date", Root.transform, "", S.Px(16f), BoardTheme.Text, 6, anchor: L.Leading);
@@ -346,6 +349,9 @@ namespace GridInfect.Game
                 _infoPending = true;
             }
             _bestLine.text = solved ? Str.DailyComplete : _infoPending ? Str.DailyGenerating : Str.DailyUnplayed;
+            Ui.FitText(_dateLine, _dateLine.text, S.Px(16f), _infoMaxW, mono: false);
+            Ui.FitText(_infoLine, _infoLine.text, S.Px(12f), _infoMaxW, mono: true);
+            Ui.FitText(_bestLine, _bestLine.text, S.Px(12f), _infoMaxW, mono: true);
 
             // BEGIN is the one lit control; PLAY AGAIN is plain glass. The
             // chip is rebuilt rather than restyled, so it is always one object.

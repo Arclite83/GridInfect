@@ -51,6 +51,22 @@ namespace GridInfect.Game
         // when the screen turns; positions stay fractions of their own axis.
         static float Short => PresentationConfig.ShortEdge;
 
+        // The room the HUD's two texts have: the title between the chips,
+        // the caption from its edge to the badge. Each shrinks to fit.
+        float _titleMaxW, _captionMaxW;
+
+        void SetTitle(string text)
+        {
+            _title.text = text;
+            Ui.FitText(_title, text, S.Px(S.HudLevel), _titleMaxW, mono: false);
+        }
+
+        void SetCaption(string text)
+        {
+            _caption.text = text;
+            Ui.FitText(_caption, text, S.Px(S.HudCaption), _captionMaxW, mono: true);
+        }
+
         // A chip's box from its label: 12 px type, 8 x 14 padding (§7).
         static Vector2 ChipSize(string label) =>
             new Vector2(S.Px(S.ChipPadX * 2f + label.Length * S.ChipText * 0.66f), S.Px(S.ChipPadY * 2f + S.ChipText * 1.25f));
@@ -67,6 +83,7 @@ namespace GridInfect.Game
             float hudBottom = h / 2f - S.Px(S.HudHeight - S.HudBottomPad);
             var chip = ChipSize(Str.BoardReset);
             float chipY = hudBottom + chip.y / 2f;
+            _titleMaxW = w - 2f * (S.Px(S.HudInset) + chip.x + L.Gap);
             _backButton = UiButton.Make(Root.transform, Str.NavMenu,
                 new Vector2(L.Dir * (-w / 2f + S.Px(S.HudInset) + chip.x / 2f), chipY), chip,
                 BoardTheme.ButtonBg, BoardTheme.Text, GoBack);
@@ -87,6 +104,7 @@ namespace GridInfect.Game
             // "SOLVE 03" and "+1 SOLVE" are both that wide.
             var badge = new Vector2(S.Px(S.BadgePadX * 2f + 8 * S.BadgeText * 0.62f), S.Px(S.BadgePadY * 2f + S.BadgeText * 1.25f));
             float badgeY = h / 2f - S.Px(S.BadgeTop) - badge.y / 2f;
+            _captionMaxW = w - 2f * S.Px(S.HudInset) - badge.x - L.Gap;
             _lockButton = UiButton.Make(Root.transform, "",
                 new Vector2(L.Dir * (w / 2f - S.Px(S.HudInset) - badge.x / 2f), badgeY), badge,
                 GlassStyle.Badge(BoardPalette.Default), BoardTheme.Copper, LockPiece, 20, pads: false, padAlpha: 1f, mono: true);
@@ -132,7 +150,7 @@ namespace GridInfect.Game
         {
             _lockButton.Enabled = false;
             _lockButton.Root.SetActive(false);
-            _caption.text = "";
+            SetCaption("");
 
             _lesson = Ui.MakeText("lesson", Root.transform, "", L.BodyText * 0.95f, BoardTheme.Text, 2);
             Ui.SetPos(_lesson.gameObject, 0f, lessonY);
@@ -253,35 +271,35 @@ namespace GridInfect.Game
                 case GameMode.Tutorial:
                 {
                     int index = App.State.TutorialIndex;
-                    _title.text = Str.Fmt(Str.BoardTutorialTitle, index + 1, TutorialLevels.Count);
+                    SetTitle(Str.Fmt(Str.BoardTutorialTitle, index + 1, TutorialLevels.Count));
                     if (_lesson != null) _lesson.text = Str.TutorialLine(index + 1);
                     level = $"T{index + 1:00}";
                     RefreshTutorialChrome();
                     break;
                 }
                 case GameMode.Classic:
-                    _caption.text = Str.BoardLegacy;
-                    _title.text = Str.Fmt(Str.BoardLevel, App.State.ClassicLevelId + 1);
+                    SetCaption(Str.BoardLegacy);
+                    SetTitle(Str.Fmt(Str.BoardLevel, App.State.ClassicLevelId + 1));
                     level = (App.State.ClassicLevelId + 1).ToString("00");
                     break;
                 case GameMode.World:
-                    _caption.text = Str.WorldName(App.State.WorldId);
-                    _title.text = Str.Fmt(Str.BoardLevel, App.State.WorldIndex + 1);
+                    SetCaption(Str.WorldName(App.State.WorldId));
+                    SetTitle(Str.Fmt(Str.BoardLevel, App.State.WorldIndex + 1));
                     level = (App.State.WorldIndex + 1).ToString("00");
                     break;
                 case GameMode.Daily:
-                    _caption.text = Str.BoardDaily;
-                    _title.text = App.State.DailyRun.DateUtc;
+                    SetCaption(Str.BoardDaily);
+                    SetTitle(App.State.DailyRun.DateUtc);
                     level = "DAILY";
                     break;
                 case GameMode.Endless:
-                    _caption.text = Str.Fmt(Str.BoardEndless, Str.Fmt(Str.TierName, (int)App.State.EndlessRun.Grade));
-                    _title.text = Str.Fmt(Str.BoardLevel, App.State.EndlessRun.Index + 1);
+                    SetCaption(Str.Fmt(Str.BoardEndless, Str.Fmt(Str.TierName, (int)App.State.EndlessRun.Grade)));
+                    SetTitle(Str.Fmt(Str.BoardLevel, App.State.EndlessRun.Index + 1));
                     level = "ENDLESS";
                     break;
                 default:
-                    _caption.text = Str.DifficultyName((int)App.State.Difficulty);
-                    _title.text = Str.Fmt(Str.BoardLevel, App.State.FreePlayIndex + 1);
+                    SetCaption(Str.DifficultyName((int)App.State.Difficulty));
+                    SetTitle(Str.Fmt(Str.BoardLevel, App.State.FreePlayIndex + 1));
                     level = "FREE";
                     break;
             }
@@ -731,9 +749,9 @@ namespace GridInfect.Game
                     // Three readouts joined by spacing. They are separate keys
                     // so that turning them into three positioned elements is a
                     // layout change and not a translation one (docs/I18N.md).
-                    _caption.text = Str.Fmt(Str.BoardHudSolved, endless.Index)
+                    SetCaption(Str.Fmt(Str.BoardHudSolved, endless.Index)
                         + "   " + Str.Fmt(Str.BoardHudStreak, endless.Streak)
-                        + "   " + Str.Fmt(Str.BoardHudBest, App.State.Profile.EndlessBest[(int)endless.Grade - 1]);
+                        + "   " + Str.Fmt(Str.BoardHudBest, App.State.Profile.EndlessBest[(int)endless.Grade - 1]));
                 }
                 return;
             }
@@ -749,9 +767,9 @@ namespace GridInfect.Game
                 App.Screens.Show(new FreePlayMenuScreen());
                 return;
             }
-            _caption.text = Str.DifficultyName((int)App.State.Difficulty)
+            SetCaption(Str.DifficultyName((int)App.State.Difficulty)
                 + "   " + Str.Fmt(Str.BoardHudRunCount, App.State.FreePlayIndex + 1)
-                + "   " + Queries.FormatDuration(elapsed);
+                + "   " + Queries.FormatDuration(elapsed));
         }
 
         // ---- popups ----
