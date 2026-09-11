@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using S = GridInfect.Game.PresentationConfig.Style;
 
@@ -5,11 +6,33 @@ namespace GridInfect.Game
 {
     // Procedural primitives: one white texture, glass panels, OS fonts, zero
     // assets. 1 world unit = 1 screen pixel, origin at screen center.
+    //
+    // Text is TextMeshPro's worldspace component over a font asset built at
+    // runtime from the same OS faces FindFont always chose, so the swap from
+    // TextMesh changed the renderer and nothing about which face is used.
+    // What TMP brings: a signed-distance face that stays crisp at every size,
+    // measurement (GetPreferredValues), wrapping and auto-size when asked,
+    // and a fallback chain and bidi flag for the languages that need them
+    // (docs/I18N.md).
     public static class Ui
     {
         static Sprite _whiteSprite;
         static Font _font;
         static Font _mono;
+        static TMP_FontAsset _fontAsset;
+        static TMP_FontAsset _monoAsset;
+
+        // TextMesh drew an em `heightPx` units tall from fontSize 64 and a
+        // characterSize of heightPx * 10 / 64; TMP's worldspace component
+        // draws an em of fontSize / 10 units. So fontSize = heightPx * 10.
+        // If every piece of text in the game comes up ten times too big or
+        // too small, this is the number that is wrong, and nothing else is.
+        const float TmpPointsPerPx = 10f;
+
+        // The SDF is sampled at this point size; glyphs are added to the
+        // atlas on demand, so a language's charset costs nothing until it
+        // is drawn.
+        const int SamplingPointSize = 90;
 
         public static Sprite WhiteSprite
         {
@@ -77,6 +100,45 @@ namespace GridInfect.Game
             }
         }
 
+        // A dynamic SDF font asset over a Font: glyphs rasterised into the
+        // atlas as they are first drawn. Null if TMP cannot read the face
+        // (it goes through FreeType from the font's file), in which case
+        // the other face stands in rather than nothing drawing.
+        static TMP_FontAsset MakeFontAsset(Font font)
+        {
+            if (font == null) return null;
+            try
+            {
+                var asset = TMP_FontAsset.CreateFontAsset(font, SamplingPointSize, 9, UnityEngine.TextCore.LowLevel.GlyphRenderMode.SDFAA, 1024, 1024,
+                    AtlasPopulationMode.Dynamic, true);
+                if (asset != null) asset.hideFlags = HideFlags.HideAndDontSave;
+                return asset;
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[text] no font asset for {font.name}: {e.Message}");
+                return null;
+            }
+        }
+
+        public static TMP_FontAsset UiFontAsset
+        {
+            get
+            {
+                if (_fontAsset == null) _fontAsset = MakeFontAsset(UiFont) ?? MakeFontAsset(MonoFont);
+                return _fontAsset;
+            }
+        }
+
+        public static TMP_FontAsset MonoFontAsset
+        {
+            get
+            {
+                if (_monoAsset == null) _monoAsset = MakeFontAsset(MonoFont) ?? UiFontAsset;
+                return _monoAsset;
+            }
+        }
+
         // A flat rectangle. Still used for dims and covers; every visible
         // chrome element is glass now.
         public static GameObject MakeRect(string name, Transform parent, Vector2 sizePx, Color color, int sortingOrder)
@@ -109,26 +171,78 @@ namespace GridInfect.Game
         // Petch 500 and 700). Chip labels take it: 12-13 px uppercase on
         // glass over a photographed-looking board is where thin type goes
         // first in glare. The mono face has no bold and never asks for one.
-        public static TextMesh MakeText(string name, Transform parent, string text, float heightPx, Color color, int sortingOrder,
-            bool mono = false, TextAnchor anchor = TextAnchor.MiddleCenter, bool bold = false)
+        // How wide a line draws, estimated: characters times size times the
+        // face's average advance (0.66 for the display face in caps, 0.62 for
+        // the mono). It is the estimate ChipSize always used, in one place.
+        // TMP can measure (GetPreferredValues); this estimate is what the
+        // TextMesh renderer left behind and is replaced by that measurement
+        // in the re-fit (docs/I18N.md, remaining), in this one place.
+        public static float EstimateWidth(string text, float heightPx, bool mono)
+        {
+            int longest = 0, run = 0;
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (text[i] == '\n') { if (run > longest) longest = run; run = 0; }
+                else run++;
+            }
+            if (run > longest) longest = run;
+            return longest * heightPx * (mono ? 0.62f : 0.66f);
+        }
+
+        // Size the text at `heightPx`, or smaller if that would draw wider
+        // than `maxWidthPx` (0 = no limit). A translation that is longer than
+        // the English it replaces shrinks to its box rather than leaving it.
+        public static void FitText(TMP_Text mesh, string text, float heightPx, float maxWidthPx, bool mono)
+        {
+            if (maxWidthPx > 0f)
+            {
+                float width = EstimateWidth(text ?? "", heightPx, mono);
+                if (width > maxWidthPx) heightPx *= maxWidthPx / width;
+            }
+            mesh.fontSize = heightPx * TmpPointsPerPx;
+        }
+
+        public static TMP_Text MakeText(string name, Transform parent, string text, float heightPx, Color color, int sortingOrder,
+            bool mono = false, TextAnchor anchor = TextAnchor.MiddleCenter, bool bold = false, float maxWidthPx = 0f)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
-            var mesh = go.AddComponent<TextMesh>();
-            var font = mono ? MonoFont : UiFont;
-            mesh.font = font;
+            var mesh = go.AddComponent<TextMeshPro>();
+            mesh.font = mono ? MonoFontAsset : UiFontAsset;
+            // Strings come from translators, not markup: a '<' in a label is
+            // a '<'. TextMesh parsed tags by default; this does not.
+            mesh.richText = false;
+            mesh.textWrappingMode = TextWrappingModes.NoWrap;   // a hard break is authored (\n), never found
+            mesh.overflowMode = TextOverflowModes.Overflow;
+            // Not TMP's RTL flag, even for a right-to-left tag: that flag
+            // reverses glyph order, which a real RTL language needs and the
+            // mirrored pseudolocale has already done to itself (docs/I18N.md).
+            // It is set with the first shaped language, not before.
+            mesh.isRightToLeftText = false;
+            mesh.fontStyle = bold && !mono ? FontStyles.Bold : FontStyles.Normal;
             mesh.text = text;
-            mesh.fontStyle = bold && !mono ? FontStyle.Bold : FontStyle.Normal;
-            mesh.fontSize = 64;
-            mesh.characterSize = heightPx * 10f / 64f;
-            mesh.anchor = anchor;
-            mesh.alignment = anchor == TextAnchor.MiddleLeft ? TextAlignment.Left
-                : anchor == TextAnchor.MiddleRight ? TextAlignment.Right : TextAlignment.Center;
+            FitText(mesh, text, heightPx, maxWidthPx, mono);
+            // The rect is a point at the object's origin; the pivot and the
+            // alignment together put the text where TextMesh's anchor did.
+            var rect = mesh.rectTransform;
+            rect.sizeDelta = Vector2.zero;
+            if (anchor == TextAnchor.MiddleLeft)
+            {
+                rect.pivot = new Vector2(0f, 0.5f);
+                mesh.alignment = TextAlignmentOptions.Left;
+            }
+            else if (anchor == TextAnchor.MiddleRight)
+            {
+                rect.pivot = new Vector2(1f, 0.5f);
+                mesh.alignment = TextAlignmentOptions.Right;
+            }
+            else
+            {
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                mesh.alignment = TextAlignmentOptions.Center;
+            }
             mesh.color = color;
-            var renderer = go.GetComponent<MeshRenderer>();
-            renderer.sortingOrder = sortingOrder;
-            // TextMesh needs the font material to render.
-            if (font != null) renderer.sharedMaterial = font.material;
+            mesh.sortingOrder = sortingOrder;
             return mesh;
         }
 
@@ -157,7 +271,7 @@ namespace GridInfect.Game
     public sealed class UiButton
     {
         public GameObject Root;
-        public TextMesh Label;
+        public TMP_Text Label;
         public SpriteRenderer Icon;       // an icon chip's mark, when it has one instead of a label
         public Rect Bounds;               // world coords (pixels, origin center-screen): the drawn box
         public System.Action OnClick;
@@ -238,7 +352,9 @@ namespace GridInfect.Game
             }
 
             float textPx = Mathf.Min(sizePx.y * 0.42f, S.Px(S.ChipText) * 1.4f);
-            var text = Ui.MakeText("label", root.transform, label, textPx, textColor, sortingOrder + 1, mono, bold: true);
+            // The label fits inside the chip's padding, or shrinks until it does.
+            var text = Ui.MakeText("label", root.transform, label, textPx, textColor, sortingOrder + 1, mono, bold: true,
+                maxWidthPx: sizePx.x - S.Px(S.ChipPadX * 2f));
             return new UiButton
             {
                 Root = root,

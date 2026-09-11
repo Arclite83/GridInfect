@@ -18,38 +18,47 @@ namespace GridInfect.Game
         UiButton _erase;
         bool _armed;
 
+        // Sound, skins, language: the stack the privacy row joins when the
+        // consent SDK asks for one. The count sizes the stack's centre, so
+        // the optional row is not in it and hangs below.
+        const int Rows = 3;
+
         protected override void Build()
         {
             float h = UnityEngine.Screen.height;
 
-            var title = Ui.MakeText("title", Root.transform, "SETTINGS", L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.SettingsTitle, L.HeadingText, BoardTheme.Text, 2);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
-            Buttons.Add(UiButton.Make(Root.transform, "MENU", L.BackPos, L.BackSize,
+            Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
 
             var size = new Vector2(L.ContentWidth, L.ButtonHeight);
             int row = 0;
-            _sound = UiButton.Make(Root.transform, "", new Vector2(0f, L.StackRowY(row++, 3, L.ButtonHeight, 0f)), size,
+            _sound = UiButton.Make(Root.transform, "", new Vector2(0f, L.StackRowY(row++, Rows, L.ButtonHeight, 0f)), size,
                 BoardTheme.ButtonBg, BoardTheme.Text, ToggleSound);
             Buttons.Add(_sound);
             RefreshSound();
 
-            BuildSkins(L.StackRowY(row++, 3, L.ButtonHeight, 0f));
+            BuildSkins(L.StackRowY(row++, Rows, L.ButtonHeight, 0f));
+
+            Buttons.Add(UiButton.Make(Root.transform, Str.SettingsLanguage,
+                new Vector2(0f, L.StackRowY(row++, Rows, L.ButtonHeight, 0f)), size,
+                BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new LanguageScreen())));
 
             // R-802: the privacy options entry, whenever the consent SDK says
             // one is required.
             if (App.Ads.PrivacyOptionsAvailable)
             {
-                Buttons.Add(UiButton.Make(Root.transform, "PRIVACY OPTIONS",
-                    new Vector2(0f, L.StackRowY(row++, 3, L.ButtonHeight, 0f)), size,
+                Buttons.Add(UiButton.Make(Root.transform, Str.SettingsPrivacy,
+                    new Vector2(0f, L.StackRowY(row++, Rows, L.ButtonHeight, 0f)), size,
                     BoardTheme.ButtonBg, BoardTheme.Text, () => App.Ads.ShowPrivacyOptions(null)));
             }
 
             // Two lines, and in ink: it was one dimmed line long enough to
             // run off both edges of the screen, which is a warning nobody
-            // reads. TextMesh does not wrap, so the break is explicit.
+            // reads. Wrapping is off, so the break is explicit.
             var caption = Ui.MakeText("caption", Root.transform,
-                "ERASES EVERY LEVEL BEATEN\nAND EVERY SCORE. LOCKS ARE KEPT.",
+                Str.SettingsEraseCaption,
                 L.BodyText * 0.85f, BoardTheme.Text, 2);
             Ui.SetPos(caption.gameObject, 0f, -h * 0.36f + L.BarHeight * 1.6f);
             _erase = UiButton.Make(Root.transform, "", new Vector2(0f, -h * 0.36f),
@@ -73,8 +82,8 @@ namespace GridInfect.Game
         void BuildStamp(float y)
         {
             string guid = Application.buildGUID;
-            string build = string.IsNullOrEmpty(guid) ? "EDITOR" : guid.Substring(0, 8).ToUpperInvariant();
-            var stamp = Ui.MakeText("build", Root.transform, $"V{Application.version}   BUILD {build}",
+            string build = string.IsNullOrEmpty(guid) ? Str.SettingsBuildEditor : guid.Substring(0, 8).ToUpperInvariant();
+            var stamp = Ui.MakeText("build", Root.transform, Str.Fmt(Str.SettingsBuild, Application.version, build),
                 S.Px(S.SmallText), BoardTheme.TextDim, 2, mono: true);
             Ui.SetPos(stamp.gameObject, 0f, y);
         }
@@ -92,12 +101,26 @@ namespace GridInfect.Game
         // gate is here and not in the action: unlock gating is presentation
         // policy throughout (ARCHITECTURE §3), so a test or a tool can still
         // set any skin.
-        static readonly (BoardPalette.SkinId id, string name, string want)[] Palettes =
+        // Ids only. The words come from Str at build time, not from a static
+        // initialiser: a static readonly string would freeze at type init and
+        // survive a language change that rebuilds every screen around it.
+        static readonly BoardPalette.SkinId[] Palettes =
         {
-            (BoardPalette.SkinId.Default, "GREEN", null),
-            (BoardPalette.SkinId.Blue, "BLUE", "CLEAR\nALL WORLDS"),
-            (BoardPalette.SkinId.Breadboard, "TAN", "CLEAR\nALL LEGACY"),
+            BoardPalette.SkinId.Default,
+            BoardPalette.SkinId.Blue,
+            BoardPalette.SkinId.Breadboard,
         };
+
+        static string SkinName(BoardPalette.SkinId id) =>
+            id == BoardPalette.SkinId.Blue ? Str.SettingsSkinBlue
+            : id == BoardPalette.SkinId.Breadboard ? Str.SettingsSkinTan
+            : Str.SettingsSkinGreen;
+
+        // What solving opens the skin, or null for the one that starts open.
+        static string SkinWant(BoardPalette.SkinId id) =>
+            id == BoardPalette.SkinId.Blue ? Str.SettingsSkinWantWorlds
+            : id == BoardPalette.SkinId.Breadboard ? Str.SettingsSkinWantLegacy
+            : null;
 
         void BuildSkins(float y)
         {
@@ -112,10 +135,11 @@ namespace GridInfect.Game
 
             for (int k = 0; k < Palettes.Length; k++)
             {
-                var (id, name, want) = Palettes[k];
+                var id = Palettes[k];
+                string name = SkinName(id), want = SkinWant(id);
                 BoardPalette skin = BoardPalette.Preview(id);
                 bool earned = App.SkinEarned(id);
-                float x = (k - 1) * (w + L.Gap);
+                float x = L.ColumnX(k, Palettes.Length, w + L.Gap);
 
                 if (BoardPalette.Skin == id)
                 {
@@ -142,10 +166,10 @@ namespace GridInfect.Game
                 {
                     Ui.MakeSprite("locked", chip.Root.transform,
                         BugGlyph.Lock(BoardPalette.Default, Mathf.RoundToInt(height * 0.62f)), 22);
-                    // TextMesh centres the whole block, so a two-line note is
+                    // The block is centred as a whole, so a two-line note is
                     // hung by its middle: half of it (1.2 lines) below the
                     // chip's bottom edge, not its first line.
-                    var note = Ui.MakeText($"want:{name}", Root.transform, want, noteText,
+                    var note = Ui.MakeText($"want:{id}", Root.transform, want, noteText,
                         BoardTheme.Text, 12);
                     Ui.SetPos(note.gameObject, x, y - height / 2f - S.Px(4f) - noteText * 1.2f);
                 }
@@ -197,7 +221,7 @@ namespace GridInfect.Game
 
         void RefreshSound()
         {
-            _sound.Label.text = App.State.Profile.Muted ? "SOUND: OFF" : "SOUND: ON";
+            _sound.Label.text = App.State.Profile.Muted ? Str.SettingsSoundOff : Str.SettingsSoundOn;
         }
 
         void Erase()
@@ -222,7 +246,7 @@ namespace GridInfect.Game
             // The chip is plain glass either way — legible is the point —
             // and arming turns the type to the infection, which is the one
             // colour on this screen that means anything.
-            _erase.Label.text = _armed ? "TAP AGAIN TO ERASE" : "RESET PROGRESS";
+            _erase.Label.text = _armed ? Str.SettingsResetArmed : Str.SettingsReset;
             _erase.Label.color = _armed ? BoardTheme.Primary : BoardTheme.Text;
         }
     }

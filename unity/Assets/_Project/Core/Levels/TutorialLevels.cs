@@ -18,13 +18,16 @@ namespace GridInfect.Core
     {
         public sealed class Step
         {
-            public readonly string Line;          // the one sentence over the board
             public readonly LevelDef Def;
             public readonly (int piece, int cell)[] Solution;   // the marks, in a winning order
 
-            internal Step(string line, LevelDef def, (int piece, int cell)[] solution)
+            // The one sentence over the board is not here. It is prose, and
+            // Core holds keys and never prose (docs/I18N.md): the adapter
+            // reads tut.<step>.line from the string table. The sentence each
+            // board teaches is kept beside it below as a comment, so this
+            // file still reads as the lesson plan it is.
+            internal Step(LevelDef def, (int piece, int cell)[] solution)
             {
-                Line = line;
                 Def = def;
                 Solution = solution;
             }
@@ -55,7 +58,7 @@ namespace GridInfect.Core
         static Step[] Build() => new[]
         {
             // 1. A plus. The only cell on both its lines is the middle.
-            Make("Drag the bug onto the marked cell.",
+            Make(   // Drag the bug onto the marked cell.
                 new[]
                 {
                     "......",
@@ -74,7 +77,7 @@ namespace GridInfect.Core
 
             // 2. The same plus with its arms broken: a ray does not stop at
             // a gap, which is the one rule a still board cannot show.
-            Make("Rays cross gaps.",
+            Make(   // Rays cross gaps.
                 new[]
                 {
                     "......",
@@ -94,7 +97,7 @@ namespace GridInfect.Core
             // 3. Two single-arm bugs at the two ends of an L: each must sit
             // where its one ray covers the whole leg. A player who drops one
             // wrong learns the undo here, which is why the sentence says it.
-            Make("Two bugs. Tap a placed bug to pick it up.",
+            Make(   // Two bugs. Tap a placed bug to pick it up.
                 new[]
                 {
                     "......",
@@ -114,7 +117,7 @@ namespace GridInfect.Core
             // 4. A wall in the row. The RD bug's ray stops at it and the two
             // cells beyond stay dark until the L bug takes them from the
             // far end.
-            Make("A wall stops a ray.",
+            Make(   // A wall stops a ray.
                 new[]
                 {
                     "......",
@@ -132,7 +135,7 @@ namespace GridInfect.Core
                 "RD,L", At(0, 5, 0), At(1, 5, 5)),
 
             // 5. An X. The four-diagonal bug only covers it from the centre.
-            Make("Bugs can also be diagonal.",
+            Make(   // Bugs can also be diagonal.
                 new[]
                 {
                     "......",
@@ -150,7 +153,7 @@ namespace GridInfect.Core
                 "ul+ur+dl+dr", At(0, 5, 2)),
 
             // 6. A 3x3 square and the blot.
-            Make("A blot takes the eight cells around it.",
+            Make(   // A blot takes the eight cells around it.
                 new[]
                 {
                     "......",
@@ -170,7 +173,7 @@ namespace GridInfect.Core
             // 7. Two rows, an avoid cell at one end of each. The L bug's row
             // has its avoid on the right, the R bug's on the left: either bug
             // in the other row would touch it, and the drop bounces.
-            Make("A ray may never touch an avoid cell.",
+            Make(   // A ray may never touch an avoid cell.
                 new[]
                 {
                     "......",
@@ -193,7 +196,7 @@ namespace GridInfect.Core
             // outright: the win check runs before the repel, RULES §4.1.)
             // Two bugs of one axis each would swap roles, so the second is
             // a blot, and the block is three rows so it has one centre.
-            Make("A repel clears the ray that hit it.",
+            Make(   // A repel clears the ray that hit it.
                 new[]
                 {
                     "......",
@@ -213,7 +216,7 @@ namespace GridInfect.Core
             // 9. Two columns with a trap at one end of each, mirrored: the
             // U bug's column has its trap below, the D bug's above. A bug
             // pointed at a trap trips it and the board comes back empty.
-            Make("A trap resets the whole board.",
+            Make(   // A trap resets the whole board.
                 new[]
                 {
                     "......",
@@ -234,7 +237,7 @@ namespace GridInfect.Core
             // row; the relay at its end fires down, the next fires left, and
             // so on inward, seven turns to the middle. The tail cell is in a
             // column no ray runs up, so the bug has one place to go.
-            Make("A relay fires its own rays when lit.",
+            Make(   // A relay fires its own rays when lit.
                 new[]
                 {
                     "......",
@@ -263,10 +266,10 @@ namespace GridInfect.Core
             return (Grid.Loc(i, j), (byte)arms);
         }
 
-        static Step Make(string line, string[] rows, string pieces, params (int piece, int cell)[] solution) =>
-            Make(line, rows, pieces, solution, Array.Empty<(int, byte)>());
+        static Step Make(string[] rows, string pieces, params (int piece, int cell)[] solution) =>
+            Make(rows, pieces, solution, Array.Empty<(int, byte)>());
 
-        static Step Make(string line, string[] rows, string pieces, (int piece, int cell)[] solution,
+        static Step Make(string[] rows, string pieces, (int piece, int cell)[] solution,
             params (int cell, byte arms)[] relays)
         {
             if (rows.Length != Grid.Height) throw new InvalidOperationException("tutorial board: row count");
@@ -297,7 +300,7 @@ namespace GridInfect.Core
             string[] names = pieces.Split(',');
             var specs = new PieceSpec[names.Length];
             for (int k = 0; k < names.Length; k++) specs[k] = PieceSpec.Parse(names[k]);
-            return new Step(line, new LevelDef(board, specs, cellData), solution);
+            return new Step(new LevelDef(board, specs, cellData), solution);
         }
     }
 }

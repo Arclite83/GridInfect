@@ -91,17 +91,11 @@ namespace GridInfect.Core
         // The grade band a weekday's dailies fall in (the calendar's column header).
         public static (Solving.Grade min, Solving.Grade max) DailyBand(System.DayOfWeek day) => DailyCalendar.Band(day);
 
-        // Difficulty as a player reads it. The Grade enum's own names (G1..G5)
-        // are a stored contract — the world files, the level cache keys, the
-        // metrics golden — so the word a person sees lives here and nowhere
-        // else. "G" said nothing on its own; a tier is plainly a difficulty
-        // band, and T3 does not read as level 3 the way L3 would.
-        public static string TierName(Solving.Grade grade) => $"TIER {(int)grade}";
-
-        public static string TierShort(Solving.Grade grade) => $"T{(int)grade}";
-
-        public static string TierBand(Solving.Grade min, Solving.Grade max) =>
-            min == max ? TierShort(min) : $"{TierShort(min)}-{(int)max}";
+        // Difficulty as a player reads it used to live here. The Grade enum's
+        // own names (G1..G5) are still a stored contract — the world files,
+        // the level cache keys, the metrics golden — but the *word* a person
+        // reads is prose, and Core holds keys and never prose
+        // (docs/I18N.md). It is Str.TierName / Str.TierBandLabel now.
 
         // The streak as of `dateUtc`: intact if the last completed date is
         // today or yesterday, otherwise broken (shown as 0 until today's solve).

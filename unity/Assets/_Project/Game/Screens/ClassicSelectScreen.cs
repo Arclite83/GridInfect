@@ -1,4 +1,5 @@
 using GridInfect.Core;
+using TMPro;
 using UnityEngine;
 using L = GridInfect.Game.PresentationConfig.Layout;
 
@@ -24,25 +25,25 @@ namespace GridInfect.Game
         static int _page; // session-persistent, like the original Game singleton field
 
         GameObject _grid;
-        TextMesh _pageLabel;
+        TMP_Text _pageLabel;
 
         protected override void Build()
         {
             float h = UnityEngine.Screen.height;
 
-            var title = Ui.MakeText("title", Root.transform, "LEGACY", L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.LegacyTitle, L.HeadingText, BoardTheme.Text, 2);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
 
-            Buttons.Add(UiButton.Make(Root.transform, "MENU", L.BackPos, L.BackSize,
+            Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
 
             float pagerY = -h * PagerPct;
             var pagerSize = new Vector2(L.ShortEdgeUnit * 0.20f, L.BarHeight);
             int arrow = UiButton.IconPx(pagerSize);
-            Buttons.Add(UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Chevron(BoardPalette.Default, arrow, true),
-                new Vector2(-L.ContentWidth / 2f + pagerSize.x / 2f, pagerY), pagerSize, () => Flip(-1)));
-            Buttons.Add(UiButton.MakeIcon(Root.transform, "next", BugGlyph.Chevron(BoardPalette.Default, arrow, false),
-                new Vector2(L.ContentWidth / 2f - pagerSize.x / 2f, pagerY), pagerSize, () => Flip(1)));
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Prev(BoardPalette.Default, arrow),
+                new Vector2(L.Lead(pagerSize.x / 2f), pagerY), pagerSize, () => Flip(-1)));
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "next", BugGlyph.Next(BoardPalette.Default, arrow),
+                new Vector2(L.Trail(pagerSize.x / 2f), pagerY), pagerSize, () => Flip(1)));
 
             _pageLabel = Ui.MakeText("page", Root.transform, "", L.BodyText, BoardTheme.TextDim, 2);
             Ui.SetPos(_pageLabel.gameObject, 0f, pagerY);
@@ -69,7 +70,7 @@ namespace GridInfect.Game
             _grid.transform.SetParent(Root.transform, false);
 
             float h = UnityEngine.Screen.height;
-            _pageLabel.text = $"{_page + 1}/{Pages}";
+            _pageLabel.text = Str.Fmt(Str.CommonPage, _page + 1, Pages);
 
             // The rack fills the band between the title and the pager. Tiles
             // are square, so the grid stays legible whichever way the numbers
@@ -92,7 +93,7 @@ namespace GridInfect.Game
                 float y = centreY + ((Rows - 1) / 2f - n / Columns) * pitchY;
 
                 int captured = levelId;
-                var button = UiButton.Make(_grid.transform, (levelId + 1).ToString(),
+                var button = UiButton.Make(_grid.transform, Str.Num(levelId + 1),
                     new Vector2(x, y), size,
                     solved ? BoardTheme.TileSolved() : BoardTheme.TileOpen(),
                     solved ? BoardTheme.TextOnAccent : BoardTheme.Text,

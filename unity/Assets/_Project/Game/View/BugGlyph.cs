@@ -151,6 +151,14 @@ namespace GridInfect.Game
         // A pager chevron. The pagers were "◀" and "▶" as chip labels,
         // which is a glyph the display face does not carry and the fallback
         // draws small; a drawn chevron is the same on every phone.
+        // The pager's two marks. "Previous" points against the reading
+        // direction and "next" along it, so under a right-to-left language
+        // the pair swaps — the one mark in the chrome that mirrors, because
+        // it is about progress through a sequence rather than a thing
+        // (docs/I18N.md).
+        public static Sprite Prev(BoardPalette p, int sizePx) => Chevron(p, sizePx, left: !Str.IsRtl);
+        public static Sprite Next(BoardPalette p, int sizePx) => Chevron(p, sizePx, left: Str.IsRtl);
+
         public static Sprite Chevron(BoardPalette p, int sizePx, bool left)
         {
             return Cached($"chevron:{left}:{sizePx}:{p.GlyphKey}", () =>

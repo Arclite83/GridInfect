@@ -31,16 +31,16 @@ namespace GridInfect.Game
             // WORLDS, and plain glass: it says where it goes, and the
             // infection is what a beaten level wears now — a menu row in the
             // same red reads as one already done.
-            Buttons.Add(UiButton.Make(Root.transform, "WORLDS",
+            Buttons.Add(UiButton.Make(Root.transform, Str.MenuWorlds,
                 new Vector2(0f, L.StackRowY(0, 4, L.ButtonHeight, 0f)), size,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new WorldSelectScreen())));
-            Buttons.Add(UiButton.Make(Root.transform, "DAILY",
+            Buttons.Add(UiButton.Make(Root.transform, Str.MenuDaily,
                 new Vector2(0f, L.StackRowY(1, 4, L.ButtonHeight, 0f)), size,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new DailyScreen())));
-            Buttons.Add(UiButton.Make(Root.transform, "ENDLESS",
+            Buttons.Add(UiButton.Make(Root.transform, Str.MenuEndless,
                 new Vector2(0f, L.StackRowY(2, 4, L.ButtonHeight, 0f)), size,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new EndlessScreen())));
-            Buttons.Add(UiButton.Make(Root.transform, "LEGACY",
+            Buttons.Add(UiButton.Make(Root.transform, Str.MenuLegacy,
                 new Vector2(0f, L.StackRowY(3, 4, L.ButtonHeight, 0f)), size,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new ClassicSelectScreen())));
 
@@ -68,7 +68,7 @@ namespace GridInfect.Game
             // At the floor the help mark still read as crowding the gear —
             // two marks in one cluster rather than two controls.
             Buttons.Add(UiButton.MakeIcon(Root.transform, "help", BugGlyph.Question(palette, icon),
-                new Vector2(-L.BackPos.x - L.ChipPitch(chip.x) - L.Gap, L.BackPos.y), chip,
+                new Vector2(-L.BackPos.x - (L.ChipPitch(chip.x) + L.Gap) * L.Dir, L.BackPos.y), chip,
                 () => App.Screens.Show(new RulesScreen())));
 
             // The tutorial, under the four ways in: a shorter chip, the same
@@ -76,7 +76,7 @@ namespace GridInfect.Game
             // screen is dimmed; hierarchy is size). It is the way back into
             // the series for anyone who skipped it or wants a step again.
             float below = L.StackRowY(3, 4, L.ButtonHeight, 0f) - L.ButtonHeight / 2f - L.Gap - L.BarHeight / 2f;
-            Buttons.Add(UiButton.Make(Root.transform, "TUTORIAL",
+            Buttons.Add(UiButton.Make(Root.transform, Str.MenuTutorial,
                 new Vector2(0f, below), new Vector2(L.ContentWidth * 0.5f, L.BarHeight),
                 BoardTheme.ButtonBg, BoardTheme.Text, OpenTutorial));
 
@@ -93,9 +93,9 @@ namespace GridInfect.Game
             if (!App.Ads.Purchases.RemoveAdsOwned)
             {
                 var noAds = new Vector2(L.ContentWidth * 0.42f, L.BarHeight);
-                float x = (L.ContentWidth - noAds.x) / 2f;
+                float x = (L.ContentWidth - noAds.x) / 2f * L.Dir;   // trailing side
                 float y = below - L.BarHeight / 2f - L.Gap - noAds.y / 2f;
-                Buttons.Add(UiButton.Make(Root.transform, "NO ADS",
+                Buttons.Add(UiButton.Make(Root.transform, Str.MenuNoAds,
                     new Vector2(x, y), noAds,
                     BoardTheme.ButtonBg, BoardTheme.Text, OpenRemoveAds));
             }
@@ -186,9 +186,9 @@ namespace GridInfect.Game
             panel.transform.SetParent(_offer.transform, false);
             _offerPanel = panel;
             Ui.MakeGlass("bg", panel.transform, new Vector2(width, height), GlassStyle.Plate(BoardPalette.Default), 41);
-            var title = Ui.MakeText("title", panel.transform, "FIRST TIME?", L.HeadingText, BoardTheme.Text, 42, bold: true);
+            var title = Ui.MakeText("title", panel.transform, Str.MenuOfferTitle, L.HeadingText, BoardTheme.Text, 42, bold: true);
             Ui.SetPos(title.gameObject, 0f, short_ * 0.10f);
-            var line = Ui.MakeText("line", panel.transform, "Learn the basics in a minute.", L.BodyText, BoardTheme.Text, 42);
+            var line = Ui.MakeText("line", panel.transform, Str.MenuOfferLine, L.BodyText, BoardTheme.Text, 42);
             Ui.SetPos(line.gameObject, 0f, short_ * 0.03f);
 
             // Two chips inside the plate's own width, a Gap between them and
@@ -197,14 +197,14 @@ namespace GridInfect.Game
             float y = -short_ * 0.08f;
             var size = new Vector2((width - L.Gap * 3f) / 2f, L.BarHeight);
             float x = (size.x + L.Gap) / 2f;
-            AddOfferButton(UiButton.Make(panel.transform, "TUTORIAL", new Vector2(-x, y), size,
+            AddOfferButton(UiButton.Make(panel.transform, Str.MenuOfferAccept, new Vector2(-x * L.Dir, y), size,
                 BoardTheme.Primary, BoardTheme.TextOnAccent, () =>
                 {
                     App.Do(GridInfectActions.TutorialSeen);
                     App.Screens.Show(new BoardScreen(),
                         prepare: () => App.Do(GridInfectActions.TutorialLoad, Inputs.Tutorial(0)).Applied);
                 }, 43));
-            AddOfferButton(UiButton.Make(panel.transform, "SKIP", new Vector2(x, y), size,
+            AddOfferButton(UiButton.Make(panel.transform, Str.MenuOfferSkip, new Vector2(x * L.Dir, y), size,
                 BoardTheme.ButtonBg, BoardTheme.Text, () =>
                 {
                     App.Do(GridInfectActions.TutorialSeen);

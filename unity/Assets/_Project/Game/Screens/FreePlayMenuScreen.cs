@@ -15,9 +15,9 @@ namespace GridInfect.Game
 
         protected override void Build()
         {
-            var title = Ui.MakeText("title", Root.transform, "FREE PLAY", L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.FreeplayTitle, L.HeadingText, BoardTheme.Text, 2);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
-            Buttons.Add(UiButton.Make(Root.transform, "MENU", L.BackPos, L.BackSize,
+            Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
 
             var profile = App.State.Profile;
@@ -29,13 +29,13 @@ namespace GridInfect.Game
                 float y = L.StackRowY(n, Order.Length, L.ButtonHeight, 0f);
 
                 var captured = difficulty;
-                Buttons.Add(UiButton.Make(Root.transform, difficulty.ToString().ToUpperInvariant(),
+                Buttons.Add(UiButton.Make(Root.transform, Str.DifficultyName((int)difficulty),
                     new Vector2(0f, y), size, BoardTheme.ButtonBg, BoardTheme.Text, () => StartRun(captured)));
 
                 var best = Ui.MakeText($"best:{difficulty}", Root.transform,
                     Queries.FormatBestTime(profile.BestTimesMs[n]), L.LabelText, BoardTheme.Accent, 2,
-                    anchor: TextAnchor.MiddleRight);
-                Ui.SetPos(best.gameObject, L.ContentWidth / 2f - L.Gap, y);
+                    anchor: L.Trailing);
+                Ui.SetPos(best.gameObject, L.Trail(L.Gap), y);
             }
         }
 

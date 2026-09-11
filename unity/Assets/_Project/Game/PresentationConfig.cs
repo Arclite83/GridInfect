@@ -113,16 +113,37 @@ namespace GridInfect.Game
             public static float TitleText => ShortEdge * 0.095f;
             public static float HeadingText => ShortEdge * 0.05f;
             public static float LabelText => ShortEdge * 0.04f;
-            // 0.037 is 14.4 px on the reference screen. TextMesh does not
+            // 0.037 is 14.4 px on the reference screen. Text does not
             // wrap, so the rules sheet's longest line is what caps this.
             public static float BodyText => ShortEdge * 0.037f;
 
-            // A back button lives in the top-left corner on every screen that
-            // has one, sized so a thumb can reach it on the tallest phone.
+            // Reading direction (docs/I18N.md): +1 left to right, -1 right
+            // to left. Chrome positions itself from the leading and trailing
+            // edges through Lead/Trail rather than from left and right, and
+            // resolves its text anchors through Leading/Trailing, so a
+            // right-to-left language mirrors the chrome by construction. The
+            // board is not chrome: its coordinates never pass through this.
+            public static float Dir => Str.IsRtl ? -1f : 1f;
+            public static UnityEngine.TextAnchor Leading =>
+                Str.IsRtl ? UnityEngine.TextAnchor.MiddleRight : UnityEngine.TextAnchor.MiddleLeft;
+            public static UnityEngine.TextAnchor Trailing =>
+                Str.IsRtl ? UnityEngine.TextAnchor.MiddleLeft : UnityEngine.TextAnchor.MiddleRight;
+
+            // x of a point `inset` in from the content's leading / trailing edge.
+            public static float Lead(float inset) => Dir * (-ContentWidth / 2f + inset);
+            public static float Trail(float inset) => Dir * (ContentWidth / 2f - inset);
+
+            // x of column `col` of `count` at `pitch`, centred, first column
+            // on the leading side.
+            public static float ColumnX(int col, int count, float pitch) =>
+                Dir * (col - (count - 1) / 2f) * pitch;
+
+            // A back button lives in the top leading corner on every screen
+            // that has one, sized so a thumb can reach it on the tallest phone.
             public static UnityEngine.Vector2 BackSize =>
                 new UnityEngine.Vector2(ShortEdge * 0.20f, BarHeight);
             public static UnityEngine.Vector2 BackPos =>
-                new UnityEngine.Vector2(-ContentWidth / 2f + ShortEdge * 0.10f, TopBarY);
+                new UnityEngine.Vector2(Lead(ShortEdge * 0.10f), TopBarY);
 
             // n stacked rows of `rowHeight`, centred on `centreY`; row 0 on top.
             public static float StackRowY(int n, int count, float rowHeight, float centreY)

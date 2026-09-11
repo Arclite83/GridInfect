@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using L = GridInfect.Game.PresentationConfig.Layout;
 using S = GridInfect.Game.PresentationConfig.Style;
@@ -32,7 +33,7 @@ namespace GridInfect.Game
         static int _page;
 
         GameObject _body;
-        TextMesh _pageLabel;
+        TMP_Text _pageLabel;
         float _pitch;
 
         // Swatch box and row pitch in the guide's reference px. The swatch
@@ -40,24 +41,24 @@ namespace GridInfect.Game
         // would fit and their pictures would still overlap.
         float Swatch => Mathf.Min(S.Px(38f), _pitch * 0.72f);
         static float RowPitch => S.Px(54f);
-        static float TextX => -L.ContentWidth / 2f + S.Px(100f);
+        static float TextX => L.Lead(S.Px(100f));
 
         protected override void Build()
         {
             float h = UnityEngine.Screen.height;
 
-            var title = Ui.MakeText("title", Root.transform, "HOW TO PLAY", L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.RulesTitle, L.HeadingText, BoardTheme.Text, 2);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
-            Buttons.Add(UiButton.Make(Root.transform, "MENU", L.BackPos, L.BackSize,
+            Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
 
             float pagerY = -h * PagerPct;
             var pagerSize = new Vector2(L.ShortEdgeUnit * 0.20f, L.BarHeight);
             int arrow = UiButton.IconPx(pagerSize);
-            Buttons.Add(UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Chevron(BoardPalette.Default, arrow, true),
-                new Vector2(-L.ContentWidth / 2f + pagerSize.x / 2f, pagerY), pagerSize, () => Flip(-1)));
-            Buttons.Add(UiButton.MakeIcon(Root.transform, "next", BugGlyph.Chevron(BoardPalette.Default, arrow, false),
-                new Vector2(L.ContentWidth / 2f - pagerSize.x / 2f, pagerY), pagerSize, () => Flip(1)));
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Prev(BoardPalette.Default, arrow),
+                new Vector2(L.Lead(pagerSize.x / 2f), pagerY), pagerSize, () => Flip(-1)));
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "next", BugGlyph.Next(BoardPalette.Default, arrow),
+                new Vector2(L.Trail(pagerSize.x / 2f), pagerY), pagerSize, () => Flip(1)));
             _pageLabel = Ui.MakeText("page", Root.transform, "", L.BodyText, BoardTheme.Text, 2);
             Ui.SetPos(_pageLabel.gameObject, 0f, pagerY);
 
@@ -75,7 +76,7 @@ namespace GridInfect.Game
             if (_body != null) Object.Destroy(_body);
             _body = new GameObject("page");
             _body.transform.SetParent(Root.transform, false);
-            _pageLabel.text = $"{_page + 1}/{Pages}";
+            _pageLabel.text = Str.Fmt(Str.CommonPage, _page + 1, Pages);
 
             if (_page == 0) BuildBoardPage();
             else BuildBugPage();
@@ -98,7 +99,7 @@ namespace GridInfect.Game
             float top = L.TopBarY - S.Px(30f);
             float bottom = -UnityEngine.Screen.height * PagerPct + L.BarHeight;
 
-            Line("goal", "Infect every cell on the board to win.", 0f, top, L.BodyText);
+            Line("goal", Str.RulesGoal, 0f, top, L.BodyText);
             top -= S.Px(26f);
 
             top = Diagram(top, (top - bottom) * 0.30f);
@@ -107,13 +108,13 @@ namespace GridInfect.Game
             _pitch = Mathf.Min(RowPitch, (top - bottom - note) / BoardRows);
             float y = top - _pitch / 2f;
 
-            Row(new[] { Mark.Empty, Mark.Infected }, "", "Infect it.", ref y);
-            Row(new[] { Mark.Gap }, "GAP", "Not a cell: rays cross it.", ref y);
-            Row(new[] { Mark.Wall }, "WALL", "Blocks a ray.", ref y);
-            Row(new[] { Mark.Repel }, "REPEL", "Clears back when hit.", ref y);
-            Row(new[] { Mark.Trap }, "TRAP", "Clears the board when hit.", ref y);
-            Row(new[] { Mark.Relay }, "RELAY", "Fires its own rays when hit.", ref y);
-            Row(new[] { Mark.Avoid }, "AVOID", "Rays must not touch it.", ref y);
+            Row(new[] { Mark.Empty, Mark.Infected }, "infect", null, Str.RulesCellInfect, ref y);
+            Row(new[] { Mark.Gap }, "gap", Str.RulesCellGapName, Str.RulesCellGapLine, ref y);
+            Row(new[] { Mark.Wall }, "wall", Str.RulesCellWallName, Str.RulesCellWallLine, ref y);
+            Row(new[] { Mark.Repel }, "repel", Str.RulesCellRepelName, Str.RulesCellRepelLine, ref y);
+            Row(new[] { Mark.Trap }, "trap", Str.RulesCellTrapName, Str.RulesCellTrapLine, ref y);
+            Row(new[] { Mark.Relay }, "relay", Str.RulesCellRelayName, Str.RulesCellRelayLine, ref y);
+            Row(new[] { Mark.Avoid }, "avoid", Str.RulesCellAvoidName, Str.RulesCellAvoidLine, ref y);
 
             // The two things a legend cannot show, both about the rows above.
             // The win check runs before either a repel or a trap fires
@@ -121,9 +122,9 @@ namespace GridInfect.Game
             // both — the original shipped that as its level 26 tutorial. And
             // an avoid cell is never reached at all: the move is refused
             // before anything resolves (RulesV2.CanPlace).
-            Line("note1", "Win on a repel or trap and it still counts.",
+            Line("note1", Str.RulesNote1,
                 0f, bottom + note * 0.72f, L.BodyText * 0.95f);
-            Line("note2", "Hit an avoid cell and the drop bounces back.",
+            Line("note2", Str.RulesNote2,
                 0f, bottom + note * 0.28f, L.BodyText * 0.95f);
         }
 
@@ -154,7 +155,7 @@ namespace GridInfect.Game
             glyph.transform.localPosition = new Vector3(-0.5f * pitch, y - pitch, 0f);
 
             float bottom = y - 2f * pitch - cell / 2f;
-            Line("diagram", "A ray runs to the edge, over gaps.", 0f, bottom - S.Px(16f), L.BodyText * 0.95f);
+            Line("diagram", Str.RulesDiagram, 0f, bottom - S.Px(16f), L.BodyText * 0.95f);
             return bottom - S.Px(30f);
         }
 
@@ -165,16 +166,16 @@ namespace GridInfect.Game
             float top = L.TopBarY - S.Px(30f);
             float bottom = -UnityEngine.Screen.height * PagerPct + L.BarHeight;
 
-            Line("intro", "Drag a bug onto any cell.", 0f, top, L.BodyText);
+            Line("intro", Str.RulesIntro, 0f, top, L.BodyText);
             top -= S.Px(26f);
 
             // One little board per family, each showing the bug and what it
             // lights. A piece needs no name here: the picture is the whole of
             // what there is to say about it.
             float band = (top - bottom) / 3f;
-            Spread(top, band, "LRUD", "Rays run to the edge.");
-            Spread(top - band, band, "ul+ur+dl+dr", "Or corner to corner.");
-            Spread(top - band * 2f, band, "A", "A blot takes the eight around it.");
+            Spread(top, band, "LRUD", Str.RulesSpreadCardinal);
+            Spread(top - band, band, "ul+ur+dl+dr", Str.RulesSpreadDiagonal);
+            Spread(top - band * 2f, band, "A", Str.RulesSpreadArea);
         }
 
         const int SpreadRows = 3;
@@ -241,25 +242,25 @@ namespace GridInfect.Game
 
         // ---- rows ----
 
-        void Row(Mark[] marks, string name, string line, ref float y)
+        void Row(Mark[] marks, string id, string name, string line, ref float y)
         {
-            float x = -L.ContentWidth / 2f + S.Px(8f) + Swatch / 2f;
+            float x = L.Lead(S.Px(8f) + Swatch / 2f);
             foreach (Mark mark in marks)
             {
                 Draw(mark, x, y, Swatch);
-                x += Swatch + S.Px(6f);
+                x += (Swatch + S.Px(6f)) * L.Dir;
             }
 
             // A row with a name stacks it over the line; the empty/infected
             // pair has only the line, so it sits on the swatches' centre.
-            if (name.Length > 0)
+            if (!string.IsNullOrEmpty(name))
             {
-                Line($"name:{name}", name, TextX, y + S.Px(9f), L.LabelText * 0.9f, TextAnchor.MiddleLeft);
-                Line($"line:{name}", line, TextX, y - S.Px(9f), L.BodyText * 0.95f, TextAnchor.MiddleLeft);
+                Line($"name:{id}", name, TextX, y + S.Px(9f), L.LabelText * 0.9f, L.Leading);
+                Line($"line:{id}", line, TextX, y - S.Px(9f), L.BodyText * 0.95f, L.Leading);
             }
             else
             {
-                Line($"line:{line}", line, TextX, y, L.LabelText * 0.9f, TextAnchor.MiddleLeft);
+                Line($"line:{id}", line, TextX, y, L.LabelText * 0.9f, L.Leading);
             }
             y -= _pitch;
         }

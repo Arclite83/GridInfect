@@ -126,6 +126,50 @@ namespace GridInfect.Core
         }
     }
 
+    // settings.language { lang }: a BCP-47 tag, or "" to follow the device.
+    // Validation is on shape only — letters, digits and hyphens, a sane
+    // length — never on membership: a save from a build that shipped more
+    // languages than this one replays cleanly, and the adapter falls back
+    // to the device for a tag it does not carry (Str.Resolve).
+    public sealed class SetLanguageAction : GameAction<GameState>
+    {
+        public const int MaxLength = 16;
+
+        public override string Name => "settings.language";
+
+        public static bool IsWellFormed(string tag)
+        {
+            if (tag == null || tag.Length > MaxLength) return false;
+            if (tag.Length == 0) return true;
+            if (tag[0] == '-' || tag[tag.Length - 1] == '-') return false;
+            for (int i = 0; i < tag.Length; i++)
+            {
+                char c = tag[i];
+                bool ok = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-';
+                if (!ok) return false;
+                if (c == '-' && tag[i - 1] == '-') return false;
+            }
+            return true;
+        }
+
+        public override string Validate(GameState state, ActionInput input)
+        {
+            string lang = input.Str("lang");
+            if (!IsWellFormed(lang)) return $"lang '{lang}' is not a language tag";
+            return null;
+        }
+
+        public override void Execute(GameState state, ActionInput input)
+        {
+            string lang = input.Str("lang");
+            if (state.Profile.Lang != lang)
+            {
+                state.Profile.Lang = lang;
+                state.Profile.Dirty = true;
+            }
+        }
+    }
+
     public sealed class SetMutedAction : GameAction<GameState>
     {
         public override string Name => "settings.mute";

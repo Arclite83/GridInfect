@@ -87,7 +87,8 @@ namespace GridInfect.Game
             Dispatcher = GridInfectActions.CreateDispatcher();
             _save = new SavePort(Application.persistentDataPath);
             State.Profile = _save.Load();
-            ApplySkin();   // the saved colours, before the first screen builds
+            ApplyLanguage();   // the saved words, before the first screen builds
+            ApplySkin();       // the saved colours, likewise
 
             // The level cache: what the device has generated so far, and the
             // worker that generates ahead of the player. Today's daily first,
@@ -109,6 +110,14 @@ namespace GridInfect.Game
 
             Screens = new ScreenManager(this);
             Screens.Show(new MainMenuScreen(), instant: true);
+        }
+
+        // The stored tag if it ships, else the device, else English
+        // (docs/I18N.md). A screen bakes its words at construction, so
+        // whoever calls this after boot rebuilds the screen it is on.
+        public void ApplyLanguage()
+        {
+            Str.Resolve(State.Profile.Lang);
         }
 
         // A skin change touches everything that baked a colour when it was

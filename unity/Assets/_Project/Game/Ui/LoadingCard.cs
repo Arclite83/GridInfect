@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using S = GridInfect.Game.PresentationConfig.Style;
 
@@ -49,7 +50,7 @@ namespace GridInfect.Game
         readonly GameObject _root;
         readonly Box[] _plate;              // the well and the six dormant cells
         readonly Box[] _lit = new Box[Cells];
-        readonly TextMesh _caption;
+        readonly TMP_Text _caption;
 
         float _alpha;         // 0 gone, 1 up
         float _target;
@@ -79,14 +80,17 @@ namespace GridInfect.Game
             var infected = BoardTheme.CellInfected();
             for (int n = 0; n < Cells; n++)
             {
-                float x = (n - (Cells - 1) / 2f) * pitch;
+                // The sweep runs from the leading side, like any progress.
+                // The card is built once at boot, so a language change
+                // mid-session keeps the old direction until the next launch.
+                float x = PresentationConfig.Layout.ColumnX(n, Cells, pitch);
                 _plate[n + 1] = Make($"cell:{n}", new Vector2(cell, cell), dormant, sortingOrder + 1, x);
                 // The lit cell rides on top of the dormant one, exactly as a
                 // board cell does: what the sweep drives is its alpha.
                 _lit[n] = Make($"cell:{n}:lit", new Vector2(cell, cell), infected, sortingOrder + 2, x);
             }
 
-            _caption = Ui.MakeText("caption", _root.transform, "LOADING", S.Px(S.HudCaption), palette.Tip,
+            _caption = Ui.MakeText("caption", _root.transform, Str.LoadingCaption, S.Px(S.HudCaption), palette.Tip,
                 sortingOrder + 3, mono: true);
             Ui.SetPos(_caption.gameObject, 0f, -(cell / 2f + pad + S.Px(CaptionGapPx)));
 

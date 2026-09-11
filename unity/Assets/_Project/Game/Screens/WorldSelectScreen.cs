@@ -1,4 +1,5 @@
 using GridInfect.Core;
+using TMPro;
 using UnityEngine;
 using L = GridInfect.Game.PresentationConfig.Layout;
 using S = GridInfect.Game.PresentationConfig.Style;
@@ -21,7 +22,7 @@ namespace GridInfect.Game
         static int _page;
 
         GameObject _list;
-        TextMesh _pageLabel;
+        TMP_Text _pageLabel;
 
         int Pages => (Worlds.Count + PerPage - 1) / PerPage;
 
@@ -29,18 +30,18 @@ namespace GridInfect.Game
         {
             float h = UnityEngine.Screen.height;
 
-            var title = Ui.MakeText("title", Root.transform, "WORLDS", L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.WorldsTitle, L.HeadingText, BoardTheme.Text, 2);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
-            Buttons.Add(UiButton.Make(Root.transform, "MENU", L.BackPos, L.BackSize,
+            Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
 
             float pagerY = -h * PagerPct;
             var pagerSize = new Vector2(L.ShortEdgeUnit * 0.20f, L.BarHeight);
             int arrow = UiButton.IconPx(pagerSize);
-            Buttons.Add(UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Chevron(BoardPalette.Default, arrow, true),
-                new Vector2(-L.ContentWidth / 2f + pagerSize.x / 2f, pagerY), pagerSize, () => Flip(-1)));
-            Buttons.Add(UiButton.MakeIcon(Root.transform, "next", BugGlyph.Chevron(BoardPalette.Default, arrow, false),
-                new Vector2(L.ContentWidth / 2f - pagerSize.x / 2f, pagerY), pagerSize, () => Flip(1)));
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "prev", BugGlyph.Prev(BoardPalette.Default, arrow),
+                new Vector2(L.Lead(pagerSize.x / 2f), pagerY), pagerSize, () => Flip(-1)));
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "next", BugGlyph.Next(BoardPalette.Default, arrow),
+                new Vector2(L.Trail(pagerSize.x / 2f), pagerY), pagerSize, () => Flip(1)));
             _pageLabel = Ui.MakeText("page", Root.transform, "", L.BodyText, BoardTheme.TextDim, 2);
             Ui.SetPos(_pageLabel.gameObject, 0f, pagerY);
 
@@ -64,7 +65,7 @@ namespace GridInfect.Game
             }
             _list = new GameObject("worlds");
             _list.transform.SetParent(Root.transform, false);
-            _pageLabel.text = $"{_page + 1}/{Pages}";
+            _pageLabel.text = Str.Fmt(Str.CommonPage, _page + 1, Pages);
 
             var profile = App.State.Profile;
             var size = new Vector2(L.ContentWidth, L.ButtonHeight);
@@ -77,7 +78,7 @@ namespace GridInfect.Game
                 bool clear = Queries.IsWorldSolved(profile, world.Id);
                 float y = L.StackRowY(n, PerPage, L.ButtonHeight, 0f);
                 string captured = world.Id;
-                var button = UiButton.Make(_list.transform, $"{world.Index + 1}  {world.Name.ToUpperInvariant()}",
+                var button = UiButton.Make(_list.transform, Str.Fmt(Str.WorldsRow, world.Index + 1, Str.WorldName(world.Id)),
                     new Vector2(0f, y), size,
                     clear ? BoardTheme.TileSolved() : BoardTheme.TileOpen(),
                     clear ? BoardTheme.TextOnAccent : BoardTheme.Text,
@@ -92,9 +93,9 @@ namespace GridInfect.Game
                 // Right-anchored: the counts are two widths (9/12, 10/12)
                 // and a centred readout put them in two different places.
                 var progress = Ui.MakeText($"progress:{world.Id}", button.Root.transform,
-                    $"{done}/{world.Count}", L.LabelText,
-                    clear ? BoardTheme.TextOnAccent : BoardTheme.Accent, 22, anchor: TextAnchor.MiddleRight);
-                Ui.SetPos(progress.gameObject, L.ContentWidth / 2f - L.Gap, L.ButtonHeight * 0.1f);
+                    Str.Fmt(Str.WorldsProgress, done, world.Count), L.LabelText,
+                    clear ? BoardTheme.TextOnAccent : BoardTheme.Accent, 22, anchor: L.Trailing);
+                Ui.SetPos(progress.gameObject, L.Trail(L.Gap), L.ButtonHeight * 0.1f);
 
                 Meter(button.Root.transform, size, Queries.WorldInfection(profile, world.Id));
             }
@@ -116,7 +117,8 @@ namespace GridInfect.Game
 
             float filled = Mathf.Max(height, width * Mathf.Clamp01(fraction));
             var fill = Ui.MakeGlass("meter:fill", parent, new Vector2(filled, height), BoardTheme.MeterFill(), 22);
-            Ui.SetPos(fill, -width / 2f + filled / 2f, y);
+            // Fills from the leading edge: progress runs the way the row reads.
+            Ui.SetPos(fill, L.Dir * (-width / 2f + filled / 2f), y);
         }
     }
 
@@ -140,9 +142,9 @@ namespace GridInfect.Game
             float h = UnityEngine.Screen.height;
             World world = Worlds.Get(_worldId);
 
-            var title = Ui.MakeText("title", Root.transform, world.Name.ToUpperInvariant(), L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.WorldName(world.Id), L.HeadingText, BoardTheme.Text, 2);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
-            Buttons.Add(UiButton.Make(Root.transform, "WORLDS", L.BackPos, L.BackSize,
+            Buttons.Add(UiButton.Make(Root.transform, Str.NavWorlds, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new WorldSelectScreen())));
 
             int rows = (world.Count + Columns - 1) / Columns;
@@ -161,7 +163,7 @@ namespace GridInfect.Game
                 float x = (n % Columns - (Columns - 1) / 2f) * pitchX;
                 float y = centreY + ((rows - 1) / 2f - n / Columns) * pitchY;
                 int captured = n;
-                var button = UiButton.Make(Root.transform, (n + 1).ToString(), new Vector2(x, y), size,
+                var button = UiButton.Make(Root.transform, Str.Num(n + 1), new Vector2(x, y), size,
                     solved ? BoardTheme.TileSolved() : BoardTheme.TileOpen(),
                     solved ? BoardTheme.TextOnAccent : BoardTheme.Text,
                     () => App.Screens.Show(new BoardScreen(), prepare: () =>
