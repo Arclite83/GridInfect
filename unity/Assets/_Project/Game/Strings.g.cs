@@ -11,12 +11,14 @@ namespace GridInfect.Game
         public static readonly string[] Tags =
         {
             "en",
+            "de",
             "qps-ploc",
             "qps-plocm",
         };
 
         public static readonly bool[] IsPseudo =
         {
+            false,
             false,
             true,
             true,
@@ -186,6 +188,172 @@ namespace GridInfect.Game
             "CROSSTALK",   // world.w15.name
             "SUPPOSE",   // world.w16.name
             "MASTERY",   // world.w17.name
+        };
+
+        // de
+        static readonly string[] De =
+        {
+            "MEN\u00dc",   // nav.menu
+            "WELTEN",   // nav.worlds
+            "{0}/{1}",   // common.page
+            "WELTEN",   // menu.worlds
+            "T\u00c4GLICH",   // menu.daily
+            "ENDLOS",   // menu.endless
+            "KLASSIK",   // menu.legacy
+            "TUTORIAL",   // menu.tutorial
+            "KEINE WERBUNG",   // menu.noAds
+            "ZUM ERSTEN MAL?",   // menu.offer.title
+            "Lern die Grundlagen in einer Minute.",   // menu.offer.line
+            "TUTORIAL",   // menu.offer.accept
+            "\u00dcBERSPRINGEN",   // menu.offer.skip
+            "EINSTELLUNGEN",   // settings.title
+            "DATENSCHUTZ",   // settings.privacy
+            "SPRACHE",   // settings.language
+            "L\u00d6SCHT JEDES GESCHAFFTE LEVEL\nUND JEDEN REKORD. SCHL\u00d6SSER BLEIBEN.",   // settings.eraseCaption
+            "V{0}   BUILD {1}",   // settings.build
+            "EDITOR",   // settings.buildEditor
+            "TON: AN",   // settings.soundOn
+            "TON: AUS",   // settings.soundOff
+            "FORTSCHRITT L\u00d6SCHEN",   // settings.reset
+            "NOCHMAL TIPPEN ZUM L\u00d6SCHEN",   // settings.resetArmed
+            "GR\u00dcN",   // settings.skin.green
+            "BLAU",   // settings.skin.blue
+            "BEIGE",   // settings.skin.tan
+            "ALLE WELTEN\nSCHAFFEN",   // settings.skin.wantWorlds
+            "GANZ KLASSIK\nSCHAFFEN",   // settings.skin.wantLegacy
+            "SPIELANLEITUNG",   // rules.title
+            "Infiziere jede Zelle des Bretts, um zu gewinnen.",   // rules.goal
+            "Zieh einen K\u00e4fer auf eine beliebige Zelle.",   // rules.intro
+            "Ein Strahl l\u00e4uft bis zum Rand, \u00fcber L\u00fccken hinweg.",   // rules.diagram
+            "Ein Sieg auf Absto\u00dfer oder Falle z\u00e4hlt trotzdem.",   // rules.note1
+            "Trifft ein Strahl eine Sperrzelle, springt der Zug zur\u00fcck.",   // rules.note2
+            "Infizier sie.",   // rules.cell.infect
+            "L\u00dcCKE",   // rules.cell.gap.name
+            "Keine Zelle: Strahlen kreuzen sie.",   // rules.cell.gap.line
+            "WAND",   // rules.cell.wall.name
+            "Blockiert einen Strahl.",   // rules.cell.wall.line
+            "ABSTOSSER",   // rules.cell.repel.name
+            "L\u00f6scht zur\u00fcck, wenn getroffen.",   // rules.cell.repel.line
+            "FALLE",   // rules.cell.trap.name
+            "Leert das Brett, wenn getroffen.",   // rules.cell.trap.line
+            "RELAIS",   // rules.cell.relay.name
+            "Feuert eigene Strahlen, wenn getroffen.",   // rules.cell.relay.line
+            "SPERRE",   // rules.cell.avoid.name
+            "Strahlen d\u00fcrfen sie nicht ber\u00fchren.",   // rules.cell.avoid.line
+            "Strahlen laufen bis zum Rand.",   // rules.spread.cardinal
+            "Oder von Ecke zu Ecke.",   // rules.spread.diagonal
+            "Ein Klecks nimmt die acht ringsum.",   // rules.spread.area
+            "KLASSIK",   // legacy.title
+            "FREIES SPIEL",   // freeplay.title
+            "ANF\u00c4NGER",   // freeplay.difficulty.beginner
+            "LEICHT",   // freeplay.difficulty.easy
+            "MITTEL",   // freeplay.difficulty.medium
+            "SCHWER",   // freeplay.difficulty.hard
+            "FORDERND",   // freeplay.difficulty.challenging
+            "WELTEN",   // worlds.title
+            "{0}  {1}",   // worlds.row
+            "{0}/{1}",   // worlds.progress
+            "T\u00c4GLICH",   // daily.title
+            "HEUTE",   // daily.today
+            "VERGANGEN",   // daily.past
+            "SERIE {0:00}",   // daily.streak
+            "{0} {1:00}/{2:00}",   // daily.monthCount
+            "{0} {1:00} {2}",   // daily.dateLine
+            "K\u00c4FER {0}",   // daily.bugs
+            "ZELLEN {0}",   // daily.cells
+            "GESCHAFFT",   // daily.complete
+            "ERZEUGE",   // daily.generating
+            "UNGESPIELT",   // daily.unplayed
+            "NOCHMAL",   // daily.playAgain
+            "START",   // daily.begin
+            "ENDLOS",   // endless.title
+            "REKORD {0}",   // endless.best
+            "RESET",   // board.reset
+            "KLASSIK",   // board.legacy
+            "T\u00c4GLICH",   // board.daily
+            "ENDLOS  {0}",   // board.endless
+            "LEVEL {0}",   // board.level
+            "TUTORIAL {0}/{1}",   // board.tutorialTitle
+            "START",   // board.begin
+            "TIPP",   // board.hint
+            "+1 L\u00d6SEN",   // board.plusSolve
+            "L\u00d6SEN {0:00}",   // board.solve
+            "GESCHAFFT",   // board.complete
+            "GESCHAFFT\nSerie gestartet",   // board.completeStreakStarted
+            "GESCHAFFT\n{0} Tage in Folge",   // board.completeStreakDays
+            "TUTORIAL GESCHAFFT",   // board.tutorialComplete
+            "MEN\u00dc",   // board.popup.menu
+            "NOCHMAL",   // board.popup.replay
+            "WEITER",   // board.popup.next
+            "SPIELEN",   // board.popup.play
+            "KALENDER",   // board.popup.calendar
+            "GEL\u00d6ST {0}",   // board.hud.solved
+            "SERIE {0}",   // board.hud.streak
+            "REKORD {0}",   // board.hud.best
+            "{0}/5",   // board.hud.runCount
+            "STUFE {0}",   // tier.name
+            "S{0}",   // tier.short
+            "{0}-{1}",   // tier.band
+            "LADEN",   // loading.caption
+            "SPRACHE",   // language.title
+            "AUTO",   // language.auto
+            "MO",   // cal.day.1
+            "DI",   // cal.day.2
+            "MI",   // cal.day.3
+            "DO",   // cal.day.4
+            "FR",   // cal.day.5
+            "SA",   // cal.day.6
+            "SO",   // cal.day.7
+            "JANUAR",   // cal.month.1
+            "FEBRUAR",   // cal.month.2
+            "M\u00c4RZ",   // cal.month.3
+            "APRIL",   // cal.month.4
+            "MAI",   // cal.month.5
+            "JUNI",   // cal.month.6
+            "JULI",   // cal.month.7
+            "AUGUST",   // cal.month.8
+            "SEPTEMBER",   // cal.month.9
+            "OKTOBER",   // cal.month.10
+            "NOVEMBER",   // cal.month.11
+            "DEZEMBER",   // cal.month.12
+            "JAN",   // cal.month.1.short
+            "FEB",   // cal.month.2.short
+            "M\u00c4R",   // cal.month.3.short
+            "APR",   // cal.month.4.short
+            "MAI",   // cal.month.5.short
+            "JUN",   // cal.month.6.short
+            "JUL",   // cal.month.7.short
+            "AUG",   // cal.month.8.short
+            "SEP",   // cal.month.9.short
+            "OKT",   // cal.month.10.short
+            "NOV",   // cal.month.11.short
+            "DEZ",   // cal.month.12.short
+            "Zieh den K\u00e4fer auf die markierte Zelle.",   // tut.1.line
+            "Strahlen kreuzen L\u00fccken.",   // tut.2.line
+            "Zwei K\u00e4fer. Tipp einen, um ihn aufzuheben.",   // tut.3.line
+            "Eine Wand stoppt einen Strahl.",   // tut.4.line
+            "K\u00e4fer k\u00f6nnen auch diagonal sein.",   // tut.5.line
+            "Ein Klecks nimmt die acht Zellen ringsum.",   // tut.6.line
+            "Ein Strahl darf keine Sperrzelle ber\u00fchren.",   // tut.7.line
+            "Ein Absto\u00dfer l\u00f6scht den treffenden Strahl.",   // tut.8.line
+            "Eine Falle setzt das ganze Brett zur\u00fcck.",   // tut.9.line
+            "Leuchtet ein Relais, feuert es Strahlen.",   // tut.10.line
+            "ERSTE SCHRITTE",   // world.w01.name
+            "ZWEI LINIEN",   // world.w02.name
+            "ECKEN",   // world.w03.name
+            "KREUZUNGEN",   // world.w04.name
+            "SAUBER BLEIBEN",   // world.w05.name
+            "Z\u00c4HLEN",   // world.w06.name
+            "KORRIDORE",   // world.w07.name
+            "KLECKSE",   // world.w08.name
+            "LANGE REICHWEITE",   // world.w09.name
+            "VIER ARME",   // world.w10.name
+            "DIAGONALEN",   // world.w11.name
+            "ENG",   // world.w12.name
+            "RELAIS",   // world.w14.name
+            "\u00dcBERSPRECHEN",   // world.w15.name
+            "ANGENOMMEN",   // world.w16.name
+            "MEISTERSCHAFT",   // world.w17.name
         };
 
         // qps-ploc
@@ -523,6 +691,7 @@ namespace GridInfect.Game
         static readonly string[][] Tables =
         {
             En,
+            De,
             QpsPloc,
             QpsPlocm,
         };
