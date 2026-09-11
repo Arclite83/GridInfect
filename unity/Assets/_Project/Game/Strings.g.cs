@@ -359,168 +359,168 @@ namespace GridInfect.Game
         // qps-plocm
         static readonly string[] QpsPlocm =
         {
-            "\u202bUNEM\u202c",   // nav.menu
-            "\u202bSDLROW\u202c",   // nav.worlds
-            "\u202bSGNITTES\u202c",   // nav.settings
-            "\u202b{0}/{1}\u202c",   // common.page
-            "\u202bSDLROW\u202c",   // menu.worlds
-            "\u202bYLIAD\u202c",   // menu.daily
-            "\u202bSSELDNE\u202c",   // menu.endless
-            "\u202bYCAGEL\u202c",   // menu.legacy
-            "\u202bLAIROTUT\u202c",   // menu.tutorial
-            "\u202bSDA ON\u202c",   // menu.noAds
-            "\u202b?EMIT TSRIF\u202c",   // menu.offer.title
-            "\u202b.etunim a ni scisab eht nraeL\u202c",   // menu.offer.line
-            "\u202bLAIROTUT\u202c",   // menu.offer.accept
-            "\u202bPIKS\u202c",   // menu.offer.skip
-            "\u202bSGNITTES\u202c",   // settings.title
-            "\u202bSNOITPO YCAVIRP\u202c",   // settings.privacy
-            "\u202bEGAUGNAL\u202c",   // settings.language
-            "\u202bNETAEB LEVEL YREVE SESARE\u202c\n\u202b.TPEK ERA SKCOL .EROCS YREVE DNA\u202c",   // settings.eraseCaption
-            "\u202bV{0} DLIUB   {1}\u202c",   // settings.build
-            "\u202bROTIDE\u202c",   // settings.buildEditor
-            "\u202bNO :DNUOS\u202c",   // settings.soundOn
-            "\u202bFFO :DNUOS\u202c",   // settings.soundOff
-            "\u202bSSERGORP TESER\u202c",   // settings.reset
-            "\u202bESARE OT NIAGA PAT\u202c",   // settings.resetArmed
-            "\u202bNEERG\u202c",   // settings.skin.green
-            "\u202bEULB\u202c",   // settings.skin.blue
-            "\u202bNAT\u202c",   // settings.skin.tan
-            "\u202bRAELC\u202c\n\u202bSDLROW LLA\u202c",   // settings.skin.wantWorlds
-            "\u202bRAELC\u202c\n\u202bYCAGEL LLA\u202c",   // settings.skin.wantLegacy
-            "\u202bYALP OT WOH\u202c",   // rules.title
-            "\u202b.niw ot draob eht no llec yreve tcefnI\u202c",   // rules.goal
-            "\u202b.llec yna otno gub a garD\u202c",   // rules.intro
-            "\u202b.spag revo ,egde eht ot snur yar A\u202c",   // rules.diagram
-            "\u202b.stnuoc llits ti dna part ro leper a no niW\u202c",   // rules.note1
-            "\u202b.kcab secnuob pord eht dna llec diova na tiH\u202c",   // rules.note2
-            "\u202b.ti tcefnI\u202c",   // rules.cell.infect
-            "\u202bPAG\u202c",   // rules.cell.gap.name
-            "\u202b.ti ssorc syar :llec a toN\u202c",   // rules.cell.gap.line
-            "\u202bLLAW\u202c",   // rules.cell.wall.name
-            "\u202b.yar a skcolB\u202c",   // rules.cell.wall.line
-            "\u202bLEPER\u202c",   // rules.cell.repel.name
-            "\u202b.tih nehw kcab sraelC\u202c",   // rules.cell.repel.line
-            "\u202bPART\u202c",   // rules.cell.trap.name
-            "\u202b.tih nehw draob eht sraelC\u202c",   // rules.cell.trap.line
-            "\u202bYALER\u202c",   // rules.cell.relay.name
-            "\u202b.tih nehw syar nwo sti seriF\u202c",   // rules.cell.relay.line
-            "\u202bDIOVA\u202c",   // rules.cell.avoid.name
-            "\u202b.ti hcuot ton tsum syaR\u202c",   // rules.cell.avoid.line
-            "\u202b.egde eht ot nur syaR\u202c",   // rules.spread.cardinal
-            "\u202b.renroc ot renroc rO\u202c",   // rules.spread.diagonal
-            "\u202b.ti dnuora thgie eht sekat tolb A\u202c",   // rules.spread.area
-            "\u202bYCAGEL\u202c",   // legacy.title
-            "\u202bYALP EERF\u202c",   // freeplay.title
-            "\u202bRENNIGEB\u202c",   // freeplay.difficulty.beginner
-            "\u202bYSAE\u202c",   // freeplay.difficulty.easy
-            "\u202bMUIDEM\u202c",   // freeplay.difficulty.medium
-            "\u202bDRAH\u202c",   // freeplay.difficulty.hard
-            "\u202bGNIGNELLAHC\u202c",   // freeplay.difficulty.challenging
-            "\u202bSDLROW\u202c",   // worlds.title
-            "\u202b{0}  {1}\u202c",   // worlds.row
-            "\u202b{0}/{1}\u202c",   // worlds.progress
-            "\u202bYLIAD\u202c",   // daily.title
-            "\u202bYADOT\u202c",   // daily.today
-            "\u202bTSAP\u202c",   // daily.past
-            "\u202b KAERTS{0:00}\u202c",   // daily.streak
-            "\u202b{0} {1:00}/{2:00}\u202c",   // daily.monthCount
-            "\u202b{0} {1:00} {2}\u202c",   // daily.dateLine
-            "\u202b SGUB{0}\u202c",   // daily.bugs
-            "\u202b SLLEC{0}\u202c",   // daily.cells
-            "\u202bETELPMOC\u202c",   // daily.complete
-            "\u202bGNITARENEG\u202c",   // daily.generating
-            "\u202bDEYALPNU\u202c",   // daily.unplayed
-            "\u202bNIAGA YALP\u202c",   // daily.playAgain
-            "\u202bNIGEB\u202c",   // daily.begin
-            "\u202bSSELDNE\u202c",   // endless.title
-            "\u202b TSEB{0}\u202c",   // endless.best
-            "\u202bTESER\u202c",   // board.reset
-            "\u202bYCAGEL\u202c",   // board.legacy
-            "\u202bYLIAD\u202c",   // board.daily
-            "\u202b  SSELDNE{0}\u202c",   // board.endless
-            "\u202b LEVEL{0}\u202c",   // board.level
-            "\u202b LAIROTUT{0}/{1}\u202c",   // board.tutorialTitle
-            "\u202bNIGEB\u202c",   // board.begin
-            "\u202bTNIH\u202c",   // board.hint
-            "\u202bEVLOS 1+\u202c",   // board.plusSolve
-            "\u202b EVLOS{0:00}\u202c",   // board.solve
-            "\u202bETELPMOC\u202c",   // board.complete
-            "\u202bETELPMOC\u202c\n\u202bdetrats kaertS\u202c",   // board.completeStreakStarted
-            "\u202bETELPMOC\u202c\n\u202b{0}wor a ni syad \u202c",   // board.completeStreakDays
-            "\u202bETELPMOC LAIROTUT\u202c",   // board.tutorialComplete
-            "\u202bUNEM\u202c",   // board.popup.menu
-            "\u202bYALPER\u202c",   // board.popup.replay
-            "\u202bTXEN\u202c",   // board.popup.next
-            "\u202bYALP\u202c",   // board.popup.play
-            "\u202bRADNELAC\u202c",   // board.popup.calendar
-            "\u202b DEVLOS{0}\u202c",   // board.hud.solved
-            "\u202b KAERTS{0}\u202c",   // board.hud.streak
-            "\u202b TSEB{0}\u202c",   // board.hud.best
-            "\u202b{0}5/\u202c",   // board.hud.runCount
-            "\u202b REIT{0}\u202c",   // tier.name
-            "\u202bT{0}\u202c",   // tier.short
-            "\u202b{0}-{1}\u202c",   // tier.band
-            "\u202bGNIDAOL\u202c",   // loading.caption
-            "\u202bEGAUGNAL\u202c",   // language.title
-            "\u202bOTUA\u202c",   // language.auto
-            "\u202bNOM\u202c",   // cal.day.1
-            "\u202bEUT\u202c",   // cal.day.2
-            "\u202bDEW\u202c",   // cal.day.3
-            "\u202bUHT\u202c",   // cal.day.4
-            "\u202bIRF\u202c",   // cal.day.5
-            "\u202bTAS\u202c",   // cal.day.6
-            "\u202bNUS\u202c",   // cal.day.7
-            "\u202bYRAUNAJ\u202c",   // cal.month.1
-            "\u202bYRAURBEF\u202c",   // cal.month.2
-            "\u202bHCRAM\u202c",   // cal.month.3
-            "\u202bLIRPA\u202c",   // cal.month.4
-            "\u202bYAM\u202c",   // cal.month.5
-            "\u202bENUJ\u202c",   // cal.month.6
-            "\u202bYLUJ\u202c",   // cal.month.7
-            "\u202bTSUGUA\u202c",   // cal.month.8
-            "\u202bREBMETPES\u202c",   // cal.month.9
-            "\u202bREBOTCO\u202c",   // cal.month.10
-            "\u202bREBMEVON\u202c",   // cal.month.11
-            "\u202bREBMECED\u202c",   // cal.month.12
-            "\u202bNAJ\u202c",   // cal.month.1.short
-            "\u202bBEF\u202c",   // cal.month.2.short
-            "\u202bRAM\u202c",   // cal.month.3.short
-            "\u202bRPA\u202c",   // cal.month.4.short
-            "\u202bYAM\u202c",   // cal.month.5.short
-            "\u202bNUJ\u202c",   // cal.month.6.short
-            "\u202bLUJ\u202c",   // cal.month.7.short
-            "\u202bGUA\u202c",   // cal.month.8.short
-            "\u202bPES\u202c",   // cal.month.9.short
-            "\u202bTCO\u202c",   // cal.month.10.short
-            "\u202bVON\u202c",   // cal.month.11.short
-            "\u202bCED\u202c",   // cal.month.12.short
-            "\u202b.llec dekram eht otno gub eht garD\u202c",   // tut.1.line
-            "\u202b.spag ssorc syaR\u202c",   // tut.2.line
-            "\u202b.pu ti kcip ot gub decalp a paT .sgub owT\u202c",   // tut.3.line
-            "\u202b.yar a spots llaw A\u202c",   // tut.4.line
-            "\u202b.lanogaid eb osla nac sguB\u202c",   // tut.5.line
-            "\u202b.ti dnuora sllec thgie eht sekat tolb A\u202c",   // tut.6.line
-            "\u202b.llec diova na hcuot reven yam yar A\u202c",   // tut.7.line
-            "\u202b.ti tih taht yar eht sraelc leper A\u202c",   // tut.8.line
-            "\u202b.draob elohw eht steser part A\u202c",   // tut.9.line
-            "\u202b.til nehw syar nwo sti serif yaler A\u202c",   // tut.10.line
-            "\u202bSPETS TSRIF\u202c",   // world.w01.name
-            "\u202bSENIL OWT\u202c",   // world.w02.name
-            "\u202bSRENROC\u202c",   // world.w03.name
-            "\u202bSGNISSORC\u202c",   // world.w04.name
-            "\u202bNAELC PEEK\u202c",   // world.w05.name
-            "\u202bGNITNUOC\u202c",   // world.w06.name
-            "\u202bSRODIRROC\u202c",   // world.w07.name
-            "\u202bSTOLB\u202c",   // world.w08.name
-            "\u202bHCAER GNOL\u202c",   // world.w09.name
-            "\u202bSMRA RUOF\u202c",   // world.w10.name
-            "\u202bSLANOGAID\u202c",   // world.w11.name
-            "\u202bTHGIT\u202c",   // world.w12.name
-            "\u202bSYALER\u202c",   // world.w14.name
-            "\u202bKLATSSORC\u202c",   // world.w15.name
-            "\u202bESOPPUS\u202c",   // world.w16.name
-            "\u202bYRETSAM\u202c",   // world.w17.name
+            "UNEM",   // nav.menu
+            "SDLROW",   // nav.worlds
+            "SGNITTES",   // nav.settings
+            "{0}/{1}",   // common.page
+            "SDLROW",   // menu.worlds
+            "YLIAD",   // menu.daily
+            "SSELDNE",   // menu.endless
+            "YCAGEL",   // menu.legacy
+            "LAIROTUT",   // menu.tutorial
+            "SDA ON",   // menu.noAds
+            "?EMIT TSRIF",   // menu.offer.title
+            ".etunim a ni scisab eht nraeL",   // menu.offer.line
+            "LAIROTUT",   // menu.offer.accept
+            "PIKS",   // menu.offer.skip
+            "SGNITTES",   // settings.title
+            "SNOITPO YCAVIRP",   // settings.privacy
+            "EGAUGNAL",   // settings.language
+            "NETAEB LEVEL YREVE SESARE\n.TPEK ERA SKCOL .EROCS YREVE DNA",   // settings.eraseCaption
+            "V{0} DLIUB   {1}",   // settings.build
+            "ROTIDE",   // settings.buildEditor
+            "NO :DNUOS",   // settings.soundOn
+            "FFO :DNUOS",   // settings.soundOff
+            "SSERGORP TESER",   // settings.reset
+            "ESARE OT NIAGA PAT",   // settings.resetArmed
+            "NEERG",   // settings.skin.green
+            "EULB",   // settings.skin.blue
+            "NAT",   // settings.skin.tan
+            "RAELC\nSDLROW LLA",   // settings.skin.wantWorlds
+            "RAELC\nYCAGEL LLA",   // settings.skin.wantLegacy
+            "YALP OT WOH",   // rules.title
+            ".niw ot draob eht no llec yreve tcefnI",   // rules.goal
+            ".llec yna otno gub a garD",   // rules.intro
+            ".spag revo ,egde eht ot snur yar A",   // rules.diagram
+            ".stnuoc llits ti dna part ro leper a no niW",   // rules.note1
+            ".kcab secnuob pord eht dna llec diova na tiH",   // rules.note2
+            ".ti tcefnI",   // rules.cell.infect
+            "PAG",   // rules.cell.gap.name
+            ".ti ssorc syar :llec a toN",   // rules.cell.gap.line
+            "LLAW",   // rules.cell.wall.name
+            ".yar a skcolB",   // rules.cell.wall.line
+            "LEPER",   // rules.cell.repel.name
+            ".tih nehw kcab sraelC",   // rules.cell.repel.line
+            "PART",   // rules.cell.trap.name
+            ".tih nehw draob eht sraelC",   // rules.cell.trap.line
+            "YALER",   // rules.cell.relay.name
+            ".tih nehw syar nwo sti seriF",   // rules.cell.relay.line
+            "DIOVA",   // rules.cell.avoid.name
+            ".ti hcuot ton tsum syaR",   // rules.cell.avoid.line
+            ".egde eht ot nur syaR",   // rules.spread.cardinal
+            ".renroc ot renroc rO",   // rules.spread.diagonal
+            ".ti dnuora thgie eht sekat tolb A",   // rules.spread.area
+            "YCAGEL",   // legacy.title
+            "YALP EERF",   // freeplay.title
+            "RENNIGEB",   // freeplay.difficulty.beginner
+            "YSAE",   // freeplay.difficulty.easy
+            "MUIDEM",   // freeplay.difficulty.medium
+            "DRAH",   // freeplay.difficulty.hard
+            "GNIGNELLAHC",   // freeplay.difficulty.challenging
+            "SDLROW",   // worlds.title
+            "{0}  {1}",   // worlds.row
+            "{0}/{1}",   // worlds.progress
+            "YLIAD",   // daily.title
+            "YADOT",   // daily.today
+            "TSAP",   // daily.past
+            " KAERTS{0:00}",   // daily.streak
+            "{0} {1:00}/{2:00}",   // daily.monthCount
+            "{0} {1:00} {2}",   // daily.dateLine
+            " SGUB{0}",   // daily.bugs
+            " SLLEC{0}",   // daily.cells
+            "ETELPMOC",   // daily.complete
+            "GNITARENEG",   // daily.generating
+            "DEYALPNU",   // daily.unplayed
+            "NIAGA YALP",   // daily.playAgain
+            "NIGEB",   // daily.begin
+            "SSELDNE",   // endless.title
+            " TSEB{0}",   // endless.best
+            "TESER",   // board.reset
+            "YCAGEL",   // board.legacy
+            "YLIAD",   // board.daily
+            "  SSELDNE{0}",   // board.endless
+            " LEVEL{0}",   // board.level
+            " LAIROTUT{0}/{1}",   // board.tutorialTitle
+            "NIGEB",   // board.begin
+            "TNIH",   // board.hint
+            "EVLOS 1+",   // board.plusSolve
+            " EVLOS{0:00}",   // board.solve
+            "ETELPMOC",   // board.complete
+            "ETELPMOC\ndetrats kaertS",   // board.completeStreakStarted
+            "ETELPMOC\n{0}wor a ni syad ",   // board.completeStreakDays
+            "ETELPMOC LAIROTUT",   // board.tutorialComplete
+            "UNEM",   // board.popup.menu
+            "YALPER",   // board.popup.replay
+            "TXEN",   // board.popup.next
+            "YALP",   // board.popup.play
+            "RADNELAC",   // board.popup.calendar
+            " DEVLOS{0}",   // board.hud.solved
+            " KAERTS{0}",   // board.hud.streak
+            " TSEB{0}",   // board.hud.best
+            "{0}5/",   // board.hud.runCount
+            " REIT{0}",   // tier.name
+            "T{0}",   // tier.short
+            "{0}-{1}",   // tier.band
+            "GNIDAOL",   // loading.caption
+            "EGAUGNAL",   // language.title
+            "OTUA",   // language.auto
+            "NOM",   // cal.day.1
+            "EUT",   // cal.day.2
+            "DEW",   // cal.day.3
+            "UHT",   // cal.day.4
+            "IRF",   // cal.day.5
+            "TAS",   // cal.day.6
+            "NUS",   // cal.day.7
+            "YRAUNAJ",   // cal.month.1
+            "YRAURBEF",   // cal.month.2
+            "HCRAM",   // cal.month.3
+            "LIRPA",   // cal.month.4
+            "YAM",   // cal.month.5
+            "ENUJ",   // cal.month.6
+            "YLUJ",   // cal.month.7
+            "TSUGUA",   // cal.month.8
+            "REBMETPES",   // cal.month.9
+            "REBOTCO",   // cal.month.10
+            "REBMEVON",   // cal.month.11
+            "REBMECED",   // cal.month.12
+            "NAJ",   // cal.month.1.short
+            "BEF",   // cal.month.2.short
+            "RAM",   // cal.month.3.short
+            "RPA",   // cal.month.4.short
+            "YAM",   // cal.month.5.short
+            "NUJ",   // cal.month.6.short
+            "LUJ",   // cal.month.7.short
+            "GUA",   // cal.month.8.short
+            "PES",   // cal.month.9.short
+            "TCO",   // cal.month.10.short
+            "VON",   // cal.month.11.short
+            "CED",   // cal.month.12.short
+            ".llec dekram eht otno gub eht garD",   // tut.1.line
+            ".spag ssorc syaR",   // tut.2.line
+            ".pu ti kcip ot gub decalp a paT .sgub owT",   // tut.3.line
+            ".yar a spots llaw A",   // tut.4.line
+            ".lanogaid eb osla nac sguB",   // tut.5.line
+            ".ti dnuora sllec thgie eht sekat tolb A",   // tut.6.line
+            ".llec diova na hcuot reven yam yar A",   // tut.7.line
+            ".ti tih taht yar eht sraelc leper A",   // tut.8.line
+            ".draob elohw eht steser part A",   // tut.9.line
+            ".til nehw syar nwo sti serif yaler A",   // tut.10.line
+            "SPETS TSRIF",   // world.w01.name
+            "SENIL OWT",   // world.w02.name
+            "SRENROC",   // world.w03.name
+            "SGNISSORC",   // world.w04.name
+            "NAELC PEEK",   // world.w05.name
+            "GNITNUOC",   // world.w06.name
+            "SRODIRROC",   // world.w07.name
+            "STOLB",   // world.w08.name
+            "HCAER GNOL",   // world.w09.name
+            "SMRA RUOF",   // world.w10.name
+            "SLANOGAID",   // world.w11.name
+            "THGIT",   // world.w12.name
+            "SYALER",   // world.w14.name
+            "KLATSSORC",   // world.w15.name
+            "ESOPPUS",   // world.w16.name
+            "YRETSAM",   // world.w17.name
         };
 
         static readonly string[][] Tables =

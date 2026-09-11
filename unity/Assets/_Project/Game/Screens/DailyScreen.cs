@@ -291,7 +291,8 @@ namespace GridInfect.Game
             _slotCaption = Ui.MakeText("slot:caption", Root.transform, "", S.Px(S.TrayCaption), BoardTheme.TextDim, 6, mono: true);
             Ui.SetPos(_slotCaption.gameObject, slotX, y - slot / 2f - S.Px(12f));
 
-            float infoX = slotX + slot / 2f + S.Px(22f);
+            // The readouts hang off the slot inward, along the reading direction.
+            float infoX = slotX + (slot / 2f + S.Px(22f)) * L.Dir;
             float readout = S.Px(12f);
             float bestY = y - S.Px(8f);
             _dateLine = Ui.MakeText("date", Root.transform, "", S.Px(16f), BoardTheme.Text, 6, anchor: L.Leading);
@@ -308,7 +309,7 @@ namespace GridInfect.Game
             // the glow. The chip is hung off that line instead: half the
             // line, the halo, a gap, half the chip.
             _playSize = new Vector2(L.ContentWidth * 0.36f, L.BarHeight);
-            _playCentre = new Vector2(infoX + _playSize.x / 2f,
+            _playCentre = new Vector2(infoX + _playSize.x / 2f * L.Dir,
                 bestY - readout / 2f - L.ChipGlow - S.Px(S.Gap) - _playSize.y / 2f);
         }
 

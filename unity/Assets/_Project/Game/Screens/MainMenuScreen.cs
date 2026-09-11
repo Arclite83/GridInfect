@@ -68,7 +68,7 @@ namespace GridInfect.Game
             // At the floor the help mark still read as crowding the gear —
             // two marks in one cluster rather than two controls.
             Buttons.Add(UiButton.MakeIcon(Root.transform, "help", BugGlyph.Question(palette, icon),
-                new Vector2(-L.BackPos.x - L.ChipPitch(chip.x) - L.Gap, L.BackPos.y), chip,
+                new Vector2(-L.BackPos.x - (L.ChipPitch(chip.x) + L.Gap) * L.Dir, L.BackPos.y), chip,
                 () => App.Screens.Show(new RulesScreen())));
 
             // The tutorial, under the four ways in: a shorter chip, the same
@@ -93,7 +93,7 @@ namespace GridInfect.Game
             if (!App.Ads.Purchases.RemoveAdsOwned)
             {
                 var noAds = new Vector2(L.ContentWidth * 0.42f, L.BarHeight);
-                float x = (L.ContentWidth - noAds.x) / 2f;
+                float x = (L.ContentWidth - noAds.x) / 2f * L.Dir;   // trailing side
                 float y = below - L.BarHeight / 2f - L.Gap - noAds.y / 2f;
                 Buttons.Add(UiButton.Make(Root.transform, Str.MenuNoAds,
                     new Vector2(x, y), noAds,

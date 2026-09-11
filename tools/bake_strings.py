@@ -182,15 +182,18 @@ def ploc(text):
 
 
 def plocm(text):
-    """Reverse the readable runs and mark the string RTL. Placeholders keep
-    their order: string.Format still has to find {0} before {1}."""
+    """Reverse the readable runs. Placeholders keep their order:
+    string.Format still has to find {0} before {1}. No RLE/PDF marks around
+    the result: the renderer has no bidi and would draw them as glyphs, and
+    the layout is what this pseudolocale tests, not shaping. A bidi-aware
+    renderer is tested with a real RTL language, not with this."""
     out = []
     for line in text.split("\n"):
         body = "".join(
             chunk if is_ph else chunk[::-1]
             for is_ph, chunk in segments(line)
         )
-        out.append(f"‫{body}‬")
+        out.append(body)
     return "\n".join(out)
 
 
