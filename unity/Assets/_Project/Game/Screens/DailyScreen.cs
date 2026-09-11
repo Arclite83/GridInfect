@@ -56,10 +56,10 @@ namespace GridInfect.Game
             _selected = _todayDate;
 
             // HUD (§7): the mode label between two chips.
+            // The title alone, as on every other select screen: it used to
+            // wear a mono part number over it, which named nothing.
             var title = Ui.MakeText("title", Root.transform, Str.DailyTitle, L.HeadingText, BoardTheme.Text, 2, maxWidthPx: L.TitleWidth);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
-            var caption = Ui.MakeText("caption", Root.transform, "GI-CAL REV B", S.Px(S.HudCaption), BoardTheme.TextDim, 2, mono: true);
-            Ui.SetPos(caption.gameObject, 0f, L.TopBarY + L.HeadingText * 0.95f);
             Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
             _todayChip = UiButton.Make(Root.transform, Str.DailyToday, new Vector2(-L.BackPos.x, L.BackPos.y), L.BackSize,

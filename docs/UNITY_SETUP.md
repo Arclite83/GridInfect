@@ -192,7 +192,9 @@ What the script does on every build:
   makes it the only scene in the list. A player needs one scene; the game
   needs nothing in it (§2).
 - Assigns the icons under `Assets/_Project/Art/Icon/` to every icon slot the
-  installed platform module exposes: `icon_1024.png` (the monogram, on the
+  installed platform module exposes (without Android or iOS Build Support
+  installed only the default slot is set, which is what the first apply on
+  2026-09-11 did; install the modules in Hub and run the apply again): `icon_1024.png` (the monogram, on the
   substrate) everywhere, and for Android's adaptive icon the background
   substrate under the 62% foreground. These are exports of
   `grid-infect-style/gen-logo.mjs --png`; regenerate there, copy here.

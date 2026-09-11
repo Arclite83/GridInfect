@@ -74,7 +74,7 @@ p.sub{margin:0 0 14px;color:#9aa;max-width:900px;font-size:13px}
 <p class="sub">Substrate is a routed PCB: traces with 45° bends, vias, silkscreen, corner mounting holes. The well is a recessed dark region so the glass reads. HUD elements are glass chips with two gold pads each. Tray is three component slots: next (lit), then two queued. Two new bug types placed on the board for context: a diagonal at row 2 and an area at row 10.</p>
 <div class="screen">
  <svg class="bg" viewBox="0 0 390 844" id="bg"></svg>
- <div class="hud"><span class="chip">MENU</span><div class="lvl"><small>GI-REV B</small>LEVEL 6</div><span class="chip">RESET</span></div>
+ <div class="hud"><span class="chip">MENU</span><div class="lvl">LEVEL 6</div><span class="chip">RESET</span></div>
  <span class="badge">LOCK 00</span>
  <div class="board" id="board"></div>
  <div class="tray" id="tray"></div>
@@ -166,7 +166,7 @@ let sv=`<defs>
 for(const p of tr){sv+=`<polyline points="${p}" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" transform="translate(0 1.5)"/><polyline points="${p}" fill="none" stroke="#c9a648" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".55"/>`;}
 for(const [x,y] of vias){sv+=`<circle cx="${x}" cy="${y}" r="5.5" fill="#c9a648" opacity=".8"/><circle cx="${x}" cy="${y}" r="2.4" fill="#3b4a33"/>`;}
 for(const [x,y] of [[22,22],[368,22],[22,822],[368,822]]){sv+=`<circle cx="${x}" cy="${y}" r="9" fill="#c9a648" opacity=".7"/><circle cx="${x}" cy="${y}" r="5" fill="#2a3a24"/>`;}
-sv+=`<g font-family="Share Tech Mono, monospace" font-size="9" fill="rgba(255,255,255,.55)" letter-spacing="1.5"><text x="44" y="30">BLOODHOUND STUDIOS</text><text x="290" y="835">GI-06 REV B</text><text x="44" y="835">© 2026</text></g>`;
+sv+=`<g font-family="Share Tech Mono, monospace" font-size="9" fill="rgba(255,255,255,.55)" letter-spacing="1.5"><text x="44" y="30">BLOODHOUND STUDIOS</text><text x="290" y="835">GI-06</text><text x="44" y="835">© 2026</text></g>`;
 bg.innerHTML=sv;
 
 /* board with new types */

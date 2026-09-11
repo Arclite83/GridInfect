@@ -9,7 +9,7 @@ namespace GridInfect.Game
     // device's language maps onto the shipped set, and the one formatter
     // every substitution goes through.
     //
-    // Core holds keys and never prose (docs/I18N.md), so every word the
+    // Core holds keys and never prose (ARCHITECTURE.md §8), so every word the
     // player reads is resolved here, in the presentation layer, exactly as
     // the skin's colours are.
     public static partial class Str
@@ -18,7 +18,7 @@ namespace GridInfect.Game
         // column, never prose: a solve count, a streak, a level number, a
         // duration. Ambient culture would render those in the device's own
         // digits and separators and the column would stop lining up, so
-        // every substitution is invariant (docs/I18N.md). Text order is
+        // every substitution is invariant (ARCHITECTURE.md §8). Text order is
         // the translation's business; digits are not.
         public static string Fmt(string format, object a0) =>
             string.Format(CultureInfo.InvariantCulture, format, a0);
@@ -43,7 +43,7 @@ namespace GridInfect.Game
                 : Fmt(TierBand, Fmt(TierShort, (int)min), (int)max);
 
         // Whether the language in force reads right to left. Chrome mirrors
-        // on this (docs/I18N.md); the board never does. The RTL pseudolocale
+        // on this (ARCHITECTURE.md §8); the board never does. The RTL pseudolocale
         // is how it is exercised before any such language ships.
         public static bool IsRtl
         {
@@ -54,6 +54,23 @@ namespace GridInfect.Game
                 int cut = tag.IndexOf('-');
                 string primary = cut < 0 ? tag : tag.Substring(0, cut);
                 switch (primary)
+                {
+                    case "ar": case "he": case "fa": case "ur": return true;
+                    default: return false;
+                }
+            }
+        }
+
+        // Whether the language in force needs its text shaped and reordered
+        // before TMP draws it (RtlText). A subset of IsRtl: the mirrored
+        // pseudolocale reads right to left for layout and is not shaped.
+        public static bool IsShaped
+        {
+            get
+            {
+                string tag = CurrentTag;
+                int cut = tag.IndexOf('-');
+                switch (cut < 0 ? tag : tag.Substring(0, cut))
                 {
                     case "ar": case "he": case "fa": case "ur": return true;
                     default: return false;
@@ -112,6 +129,8 @@ namespace GridInfect.Game
                 case SystemLanguage.Chinese: return "zh-Hans";
                 case SystemLanguage.ChineseSimplified: return "zh-Hans";
                 case SystemLanguage.ChineseTraditional: return "zh-Hant";
+                case SystemLanguage.Arabic: return "ar";
+                case SystemLanguage.Hebrew: return "he";
                 default: return null;
             }
         }

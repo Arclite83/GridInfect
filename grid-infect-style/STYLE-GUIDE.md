@@ -27,7 +27,7 @@ Rule: gold appears only as points (pads, vias, mounting holes, HUD chip pads), n
 4. Sheen: radial, white 18% at (50%, 12%), r 50%.
 5. Traces: margins only, tone-on-tone. 3px black 14% with a 1px white 10% highlight offset -1.5px. 45° bends. Trace ends: 4px black 18% dot with 1.6px white 35% center.
 6. Mounting holes: four corners, r9 copper 70% over r5 #2a3a24.
-7. Silkscreen: Share Tech Mono 9px, white 55%, letter-spacing 1.5. Top-left studio name, bottom-left copyright, bottom-right `GI-{LEVEL}` — the board's part number, blank on a screen with no board on it. As built it was `GI-{LEVEL} REV B`, and `GI-REV B` on the menus; the revision letter named nothing in the game and is gone (the running build is in SETTINGS).
+7. Silkscreen: Share Tech Mono 9px, white 55%, letter-spacing 1.5. Top-left studio name, bottom-left copyright, bottom-right `GI-{LEVEL}` — the board's part number, blank on a screen with no board on it (the running build is in SETTINGS, not on the silkscreen).
 8. Vignette: radial black 0% to 28% from r60% to r75%.
 
 Trace routing is placeholder art. Production generates routing per level.

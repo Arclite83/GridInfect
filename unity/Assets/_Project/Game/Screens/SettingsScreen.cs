@@ -71,11 +71,9 @@ namespace GridInfect.Game
         }
 
         // Which build is this. The one question a screenshot from the wild
-        // has to answer, and the reason the substrate's bottom-right corner
-        // used to say `GI-REV B` on every screen — a revision letter from
-        // the style mockups that named nothing. The answer belongs here
-        // rather than on the home screen: it is settings data, like the
-        // sound switch and the erase button, not something the game wears.
+        // has to answer. The answer belongs here rather than on the home
+        // screen: it is settings data, like the sound switch and the erase
+        // button, not something the game wears.
         //
         // buildGUID is the player's own build id and is empty in the editor,
         // where the question has a different answer.

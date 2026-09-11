@@ -14,6 +14,9 @@ use, so a language costs what it draws and not the whole of Noto:
     Fallback-KR.ttf     Noto Sans KR, for Korean
     Fallback-SC.ttf     Noto Sans SC, for Simplified Chinese
     Fallback-TC.ttf     Noto Sans TC, for Traditional Chinese
+    Fallback-AR.ttf     Noto Naskh Arabic, for Arabic, plus every joined
+                        form the vendored RTLTMPro fixer can emit
+    Fallback-HE.ttf     Noto Sans Hebrew, for Hebrew
 
 Each is cut to the characters of the languages it serves, not to a
 script: kanji and hanzi share code points and Japan, the mainland and
@@ -51,7 +54,34 @@ SOURCES = [
     ("Fallback-KR.ttf", "NotoSansKR.ttf", 500, ["ko"]),
     ("Fallback-SC.ttf", "NotoSansSC.ttf", 500, ["zh-Hans"]),
     ("Fallback-TC.ttf", "NotoSansTC.ttf", 500, ["zh-Hant"]),
+    ("Fallback-AR.ttf", "NotoNaskhArabic.ttf", 500, ["ar"]),
+    ("Fallback-HE.ttf", "NotoSansHebrew.ttf", 500, ["he"]),
 ]
+
+# The Arabic strings are stored as base letters; what is drawn is the
+# presentation form RtlText's fixer picks for each letter's position, so
+# the Arabic face carries every code point the fixer can emit — the ones
+# named in its tables — on top of the strings' own characters.
+RTL_TABLES = [
+    ROOT / "unity/Assets/_Project/Game/Rtl/Types/ArabicIsolatedLetters.cs",
+    ROOT / "unity/Assets/_Project/Game/Rtl/GlyphFixer.cs",
+    ROOT / "unity/Assets/_Project/Game/Rtl/LigatureFixer.cs",
+]
+
+
+def fixer_forms():
+    """The tables name each letter's isolated form; GlyphFixer derives the
+    final, initial and medial forms as that code point plus 1, 2 and 3, and
+    LigatureFixer names the lam-alef ligatures outright. So every named
+    code point and its three neighbours."""
+    import re
+    cps = set()
+    for path in RTL_TABLES:
+        for hexa in re.findall(r"0x([0-9A-Fa-f]{4})", path.read_text(encoding="utf-8")):
+            base = int(hexa, 16)
+            if 0xFB50 <= base <= 0xFEFF:
+                cps.update(range(base, base + 4))
+    return cps
 
 
 def is_cjk(cp):
@@ -134,7 +164,10 @@ def main():
 
     design = covered_by_design()
     for out_name, src_name, weight, tags in SOURCES:
-        cps = {cp for cp in strings_codepoints(tags) - design if cp >= 0x20}
+        used = {cp for cp in strings_codepoints(tags) - design if cp >= 0x20}
+        cps = set(used)
+        if "ar" in tags:
+            cps |= fixer_forms()
         out = FONTS / out_name
         if not cps:
             if out.exists():
@@ -143,9 +176,14 @@ def main():
             print(f"{out_name}: nothing to carry")
             continue
         font = instance(src / src_name, weight)
-        missing = [chr(cp) for cp in cps if cp not in font.getBestCmap()]
+        cmap = font.getBestCmap()
+        # A character the strings use must be there; a derived form the
+        # face does not carry (an unassigned neighbour of a ligature) is
+        # simply not a glyph, and is dropped.
+        missing = [chr(cp) for cp in used if cp not in cmap]
         if missing:
             sys.exit(f"subset_fonts: {src_name} lacks {''.join(missing[:20])!r}")
+        cps = {cp for cp in cps if cp in cmap}
         cut(font, cps, out)
         family = TTFont(out)["name"].getBestFamilyName()
         meta(out, family)

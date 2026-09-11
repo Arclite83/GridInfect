@@ -95,7 +95,7 @@ export function boardBackground(skin=S){
 <g id="traces">${traces.map(p=>`<polyline points="${p}" fill="none" stroke="rgba(0,0,0,.14)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><polyline points="${p}" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="1" stroke-linejoin="round" stroke-linecap="round" transform="translate(0 -1.5)"/>`).join("")}
 ${ends.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="4" fill="rgba(0,0,0,.18)"/><circle cx="${x}" cy="${y}" r="1.6" fill="rgba(255,255,255,.35)"/>`).join("")}</g>
 <g id="holes">${holes.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="9" fill="${skin.copper}" opacity=".7"/><circle cx="${x}" cy="${y}" r="5" fill="#2a3a24"/>`).join("")}</g>
-<g id="silkscreen" font-family="Share Tech Mono, monospace" font-size="9" fill="rgba(255,255,255,.55)" letter-spacing="1.5"><text x="44" y="30">BLOODHOUND STUDIOS</text><text x="290" y="835">GI-{LEVEL} REV B</text><text x="44" y="835">© 2026</text></g>
+<g id="silkscreen" font-family="Share Tech Mono, monospace" font-size="9" fill="rgba(255,255,255,.55)" letter-spacing="1.5"><text x="44" y="30">BLOODHOUND STUDIOS</text><text x="290" y="835">GI-{LEVEL}</text><text x="44" y="835">© 2026</text></g>
 <rect width="390" height="844" fill="url(#vig)"/>
 </svg>
 `;

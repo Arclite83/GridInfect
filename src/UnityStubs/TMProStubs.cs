@@ -26,7 +26,7 @@ namespace TMPro
 
     public class TMP_Text : Component
     {
-        public string text { get; set; }
+        public virtual string text { get; set; }
         public float fontSize { get; set; }
         public TMP_FontAsset font { get; set; }
         public FontStyles fontStyle { get; set; }
@@ -43,7 +43,7 @@ namespace TMPro
         public Vector2 GetPreferredValues(string text) => default;
     }
 
-    public sealed class TextMeshPro : TMP_Text
+    public class TextMeshPro : TMP_Text
     {
         public int sortingOrder { get; set; }
     }

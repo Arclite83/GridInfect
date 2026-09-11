@@ -1,5 +1,5 @@
 {
-  "_": "Source of truth for every user-facing string. tools/bake_strings.py emits unity/Assets/_Project/Game/Strings.g.cs from this file and its siblings; CI re-derives and fails a stale bake. Keys are stable, values are not. Casing is authored here, never applied in code (docs/I18N.md 6). {0} placeholders keep their order and their format specifiers; a translation may reorder them. \\n is a hard break: TextMesh does not wrap, so every break is deliberate.",
+  "_": "Source of truth for every user-facing string. tools/bake_strings.py emits unity/Assets/_Project/Game/Strings.g.cs from this file and its siblings; CI re-derives and fails a stale bake. Keys are stable, values are not. Casing is authored here, never applied in code (ARCHITECTURE.md §8). {0} placeholders keep their order and their format specifiers; a translation may reorder them. \\n is a hard break: wrapping is off, so every break is deliberate.",
 
   "nav.menu": "MENU",
   "nav.worlds": "WORLDS",
