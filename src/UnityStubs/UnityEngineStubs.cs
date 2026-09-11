@@ -328,6 +328,8 @@ namespace UnityEngine
         Chinese,
         ChineseSimplified,
         ChineseTraditional,
+        Arabic,
+        Hebrew,
     }
 
     public static class Application
