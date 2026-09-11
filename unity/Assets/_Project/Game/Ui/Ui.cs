@@ -109,8 +109,38 @@ namespace GridInfect.Game
         // Petch 500 and 700). Chip labels take it: 12-13 px uppercase on
         // glass over a photographed-looking board is where thin type goes
         // first in glare. The mono face has no bold and never asks for one.
+        // How wide a line draws, estimated: characters times size times the
+        // face's average advance (0.66 for the display face in caps, 0.62 for
+        // the mono). It is the estimate ChipSize always used, in one place.
+        // TextMesh cannot measure; this is where GetPreferredValues goes when
+        // the renderer can (docs/I18N.md, remaining).
+        public static float EstimateWidth(string text, float heightPx, bool mono)
+        {
+            int longest = 0, run = 0;
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (text[i] == '\n') { if (run > longest) longest = run; run = 0; }
+                else run++;
+            }
+            if (run > longest) longest = run;
+            return longest * heightPx * (mono ? 0.62f : 0.66f);
+        }
+
+        // Size the text at `heightPx`, or smaller if that would draw wider
+        // than `maxWidthPx` (0 = no limit). A translation that is longer than
+        // the English it replaces shrinks to its box rather than leaving it.
+        public static void FitText(TextMesh mesh, string text, float heightPx, float maxWidthPx, bool mono)
+        {
+            if (maxWidthPx > 0f)
+            {
+                float width = EstimateWidth(text ?? "", heightPx, mono);
+                if (width > maxWidthPx) heightPx *= maxWidthPx / width;
+            }
+            mesh.characterSize = heightPx * 10f / 64f;
+        }
+
         public static TextMesh MakeText(string name, Transform parent, string text, float heightPx, Color color, int sortingOrder,
-            bool mono = false, TextAnchor anchor = TextAnchor.MiddleCenter, bool bold = false)
+            bool mono = false, TextAnchor anchor = TextAnchor.MiddleCenter, bool bold = false, float maxWidthPx = 0f)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -120,7 +150,7 @@ namespace GridInfect.Game
             mesh.text = text;
             mesh.fontStyle = bold && !mono ? FontStyle.Bold : FontStyle.Normal;
             mesh.fontSize = 64;
-            mesh.characterSize = heightPx * 10f / 64f;
+            FitText(mesh, text, heightPx, maxWidthPx, mono);
             mesh.anchor = anchor;
             mesh.alignment = anchor == TextAnchor.MiddleLeft ? TextAlignment.Left
                 : anchor == TextAnchor.MiddleRight ? TextAlignment.Right : TextAlignment.Center;
@@ -238,7 +268,9 @@ namespace GridInfect.Game
             }
 
             float textPx = Mathf.Min(sizePx.y * 0.42f, S.Px(S.ChipText) * 1.4f);
-            var text = Ui.MakeText("label", root.transform, label, textPx, textColor, sortingOrder + 1, mono, bold: true);
+            // The label fits inside the chip's padding, or shrinks until it does.
+            var text = Ui.MakeText("label", root.transform, label, textPx, textColor, sortingOrder + 1, mono, bold: true,
+                maxWidthPx: sizePx.x - S.Px(S.ChipPadX * 2f));
             return new UiButton
             {
                 Root = root,
