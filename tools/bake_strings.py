@@ -182,18 +182,23 @@ def ploc(text):
 
 
 def plocm(text):
-    """Reverse the readable runs. Placeholders keep their order:
-    string.Format still has to find {0} before {1}. No RLE/PDF marks around
-    the result: the renderer has no bidi and would draw them as glyphs, and
-    the layout is what this pseudolocale tests, not shaping. A bidi-aware
-    renderer is tested with a real RTL language, not with this."""
+    """Mirror the line: the whole run of characters and placeholders in
+    reverse, each placeholder kept intact. "SOLVE {0:00}" becomes
+    "{0:00} EVLOS", so the number lands on the far side of the word with the
+    space still between them, as a bidi renderer would lay it. string.Format
+    does not care which order {0} and {1} appear in, and check_placeholders
+    compares sets. Reversing only the text and leaving the placeholders put
+    moved every such space to the wrong side of its word.
+
+    No RLE/PDF marks around the result: the renderer has no bidi and would
+    draw them as glyphs, and the layout is what this pseudolocale tests, not
+    shaping. A bidi-aware renderer is tested with a real RTL language."""
     out = []
     for line in text.split("\n"):
-        body = "".join(
-            chunk if is_ph else chunk[::-1]
-            for is_ph, chunk in segments(line)
-        )
-        out.append(body)
+        tokens = []
+        for is_ph, chunk in segments(line):
+            tokens.extend([chunk] if is_ph else list(chunk))
+        out.append("".join(reversed(tokens)))
     return "\n".join(out)
 
 

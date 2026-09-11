@@ -362,7 +362,7 @@ namespace GridInfect.Game
             "UNEM",   // nav.menu
             "SDLROW",   // nav.worlds
             "SGNITTES",   // nav.settings
-            "{0}/{1}",   // common.page
+            "{1}/{0}",   // common.page
             "SDLROW",   // menu.worlds
             "YLIAD",   // menu.daily
             "SSELDNE",   // menu.endless
@@ -377,7 +377,7 @@ namespace GridInfect.Game
             "SNOITPO YCAVIRP",   // settings.privacy
             "EGAUGNAL",   // settings.language
             "NETAEB LEVEL YREVE SESARE\n.TPEK ERA SKCOL .EROCS YREVE DNA",   // settings.eraseCaption
-            "V{0} DLIUB   {1}",   // settings.build
+            "{1} DLIUB   {0}V",   // settings.build
             "ROTIDE",   // settings.buildEditor
             "NO :DNUOS",   // settings.soundOn
             "FFO :DNUOS",   // settings.soundOff
@@ -418,49 +418,49 @@ namespace GridInfect.Game
             "DRAH",   // freeplay.difficulty.hard
             "GNIGNELLAHC",   // freeplay.difficulty.challenging
             "SDLROW",   // worlds.title
-            "{0}  {1}",   // worlds.row
-            "{0}/{1}",   // worlds.progress
+            "{1}  {0}",   // worlds.row
+            "{1}/{0}",   // worlds.progress
             "YLIAD",   // daily.title
             "YADOT",   // daily.today
             "TSAP",   // daily.past
-            " KAERTS{0:00}",   // daily.streak
-            "{0} {1:00}/{2:00}",   // daily.monthCount
-            "{0} {1:00} {2}",   // daily.dateLine
-            " SGUB{0}",   // daily.bugs
-            " SLLEC{0}",   // daily.cells
+            "{0:00} KAERTS",   // daily.streak
+            "{2:00}/{1:00} {0}",   // daily.monthCount
+            "{2} {1:00} {0}",   // daily.dateLine
+            "{0} SGUB",   // daily.bugs
+            "{0} SLLEC",   // daily.cells
             "ETELPMOC",   // daily.complete
             "GNITARENEG",   // daily.generating
             "DEYALPNU",   // daily.unplayed
             "NIAGA YALP",   // daily.playAgain
             "NIGEB",   // daily.begin
             "SSELDNE",   // endless.title
-            " TSEB{0}",   // endless.best
+            "{0} TSEB",   // endless.best
             "TESER",   // board.reset
             "YCAGEL",   // board.legacy
             "YLIAD",   // board.daily
-            "  SSELDNE{0}",   // board.endless
-            " LEVEL{0}",   // board.level
-            " LAIROTUT{0}/{1}",   // board.tutorialTitle
+            "{0}  SSELDNE",   // board.endless
+            "{0} LEVEL",   // board.level
+            "{1}/{0} LAIROTUT",   // board.tutorialTitle
             "NIGEB",   // board.begin
             "TNIH",   // board.hint
             "EVLOS 1+",   // board.plusSolve
-            " EVLOS{0:00}",   // board.solve
+            "{0:00} EVLOS",   // board.solve
             "ETELPMOC",   // board.complete
             "ETELPMOC\ndetrats kaertS",   // board.completeStreakStarted
-            "ETELPMOC\n{0}wor a ni syad ",   // board.completeStreakDays
+            "ETELPMOC\nwor a ni syad {0}",   // board.completeStreakDays
             "ETELPMOC LAIROTUT",   // board.tutorialComplete
             "UNEM",   // board.popup.menu
             "YALPER",   // board.popup.replay
             "TXEN",   // board.popup.next
             "YALP",   // board.popup.play
             "RADNELAC",   // board.popup.calendar
-            " DEVLOS{0}",   // board.hud.solved
-            " KAERTS{0}",   // board.hud.streak
-            " TSEB{0}",   // board.hud.best
-            "{0}5/",   // board.hud.runCount
-            " REIT{0}",   // tier.name
-            "T{0}",   // tier.short
-            "{0}-{1}",   // tier.band
+            "{0} DEVLOS",   // board.hud.solved
+            "{0} KAERTS",   // board.hud.streak
+            "{0} TSEB",   // board.hud.best
+            "5/{0}",   // board.hud.runCount
+            "{0} REIT",   // tier.name
+            "{0}T",   // tier.short
+            "{1}-{0}",   // tier.band
             "GNIDAOL",   // loading.caption
             "EGAUGNAL",   // language.title
             "OTUA",   // language.auto
