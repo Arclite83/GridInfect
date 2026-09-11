@@ -24,9 +24,9 @@ from pathlib import Path
 RATE = 44100
 ROOT = 1180.0
 CLICK_SAMPLES = RATE * 30 // 1000
-CHIME_SAMPLES = RATE * 300 // 1000
+CHIME_SAMPLES = RATE * 450 // 1000
 CLICK_VOLUME = 0.6
-CHIME_VOLUME = 0.45
+CHIME_VOLUME = 0.5
 PEAK = 0.9
 HOP = 0.040
 HOP_PITCH_CAP = 7
@@ -56,22 +56,49 @@ def build_click():
     return normalise(out)
 
 
-def build_chime():
-    out = [0.0] * CHIME_SAMPLES
-    freq = [ROOT, ROOT * 2.0]
-    start = [0.0, 0.07]
-    hold = [0.045, 0.06]
-    release = [0.006, 0.05]
-    for k, f in enumerate(freq):
-        first = round(start[k] * RATE)
-        last = min(CHIME_SAMPLES, first + round((hold[k] + release[k] * 6) * RATE))
-        for n in range(first, last):
-            t = (n - first) / RATE
-            attack = min(1.0, t / 0.001)
-            gate = 1.0 if t <= hold[k] else math.exp(-(t - hold[k]) / release[k])
-            w = 2 * math.pi * f * t
-            tone = math.sin(w) + math.sin(3 * w) / 3 + math.sin(5 * w) / 5
-            out[n] += tone * attack * gate
+def build_chime(drive=3.0, noise=0.35, variant_len=CHIME_SAMPLES):
+    """The solve: two detuned sawtooths (and a sub an octave down) through
+    a resonant lowpass whose cutoff sweeps up and back, the pitch sliding
+    in from a fifth below, a breath of noise on the attack, and a tanh
+    drive. An analogue confirm, not a chip one."""
+    out = []
+    target = ROOT / 2               # 590 Hz: the click's root an octave down
+    phase = [0.0, 0.0, 0.0]
+    rates = [1.0, 1.006, 0.5]       # unison, +10 cents, the sub
+    gains = [1.0, 0.8, 0.4]
+    low = band = 0.0
+    seed = 0x9E3779B9
+    for n in range(variant_len):
+        t = n / RATE
+        # pitch: a fifth below at t = 0, settling on the note in ~50 ms
+        f0 = target * 2 ** (-(7 / 12) * math.exp(-t / 0.03))
+        x = 0.0
+        for k in range(3):
+            f = f0 * rates[k]
+            phase[k] += f / RATE
+            if phase[k] >= 1.0:
+                phase[k] -= 1.0
+            harmonics = max(1, int(16000 / f))
+            saw = 0.0
+            for h in range(1, min(harmonics, 40) + 1):
+                saw += math.sin(2 * math.pi * h * phase[k]) / h
+            x += gains[k] * saw * (2 / math.pi)
+        seed = (seed * 1664525 + 1013904223) & 0xFFFFFFFF
+        white = (seed >> 8) / 8388608.0 - 1.0
+        x += noise * white * math.exp(-t * 300)
+        # filter: cutoff opens over 50 ms, then closes with a 140 ms tail
+        sweep = min(1.0, t / 0.05) * math.exp(-max(0.0, t - 0.05) / 0.14)
+        cutoff = 350 + (5200 - 350) * sweep
+        fc = 2 * math.sin(math.pi * min(cutoff, 6000) / RATE)
+        q = 1 / 3.5
+        low += fc * band
+        high = x - low - q * band
+        band += fc * high
+        y = low
+        y = math.tanh(y * drive) / math.tanh(drive)
+        attack = min(1.0, t / 0.002)
+        env = attack * (1.0 if t < 0.06 else math.exp(-(t - 0.06) / 0.16))
+        out.append(y * env)
     return normalise(out)
 
 
@@ -116,6 +143,7 @@ def write(path, samples):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="audio-preview")
+    ap.add_argument("--variants", action="store_true", help="also render alternates to compare")
     args = ap.parse_args()
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -125,10 +153,13 @@ def main():
     write(out / "click.wav", mix([(0.0, click, CLICK_VOLUME)], 0.3))
     ladder = [(d * HOP, resample_pitch(click, min(d, HOP_PITCH_CAP)), CLICK_VOLUME) for d in range(8)]
     write(out / "click-ladder.wav", mix(ladder, 0.6))
-    write(out / "chime.wav", mix([(0.0, chime, CHIME_VOLUME)], 0.5))
+    write(out / "chime.wav", mix([(0.0, chime, CHIME_VOLUME)], 0.6))
     wave_hops = [(d * HOP, resample_pitch(click, min(d, HOP_PITCH_CAP)), CLICK_VOLUME) for d in range(6)]
     solve = wave_hops + [(6 * HOP, chime, CHIME_VOLUME)]
-    write(out / "solve.wav", mix(solve, 0.8))
+    write(out / "solve.wav", mix(solve, 0.9))
+    if args.variants:
+        clean = build_chime(drive=1.2, noise=0.0)
+        write(out / "solve-clean-synth.wav", mix(wave_hops + [(6 * HOP, clean, CHIME_VOLUME)], 0.9))
 
 
 if __name__ == "__main__":
