@@ -79,14 +79,6 @@ namespace GridInfect.Game
             if (_legend != null) _legend.color = silk;
         }
 
-        // The board's own part number, bottom right: `GI-06`, `GI-DAILY`,
-        // `GI-T01`. It was `GI-{level} REV B`, and a bare `GI-REV B` on
-        // every menu — a revision letter carried over from the style
-        // mockups, naming nothing that exists in the game and saying the
-        // same thing on a screen with no board on it at all. The
-        // designation is real, so it stays; the revision was not, and the
-        // build the player is actually running is in SETTINGS, where build
-        // data belongs. No board, no part number: the corner stays clear.
         public static void SetLevel(string level)
         {
             if (_legend == null) return;
