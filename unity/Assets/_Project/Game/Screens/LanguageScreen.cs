@@ -24,8 +24,12 @@ namespace GridInfect.Game
         {
             var title = Ui.MakeText("title", Root.transform, Str.LanguageTitle, L.HeadingText, BoardTheme.Text, 2);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
-            Buttons.Add(UiButton.Make(Root.transform, Str.NavSettings, L.BackPos, L.BackSize,
-                BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new SettingsScreen())));
+            // Back is the gear, the same mark that opened settings from the
+            // menu: a word for it crowded the title, and the mark needs no
+            // translating.
+            var chip = new Vector2(L.IconChip, L.IconChip);
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "settings", BugGlyph.Gear(BoardPalette.Default, UiButton.IconPx(chip)),
+                L.BackPos, chip, () => App.Screens.Show(new SettingsScreen())));
 
             bool dev = Debug.isDebugBuild || Application.isEditor;
             string stored = App.State.Profile.Lang ?? "";
