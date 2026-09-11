@@ -18,8 +18,10 @@ namespace GridInfect.Game
     {
         static Sprite _whiteSprite;
         static Font _font;
+        static Font _bold;
         static Font _mono;
         static TMP_FontAsset _fontAsset;
+        static TMP_FontAsset _boldAsset;
         static TMP_FontAsset _monoAsset;
 
         // TextMesh drew an em `heightPx` units tall from fontSize 64 and a
@@ -51,11 +53,20 @@ namespace GridInfect.Game
             }
         }
 
-        // The guide's display face is Chakra Petch and its mono face Share
-        // Tech Mono (STYLE-GUIDE §7). Neither ships with a phone, so each is
-        // asked for first and a system face stands in until the TTFs are
-        // imported. Newer editors (6000.5+) dropped the built-in legacy
-        // fonts, and probing a missing builtin logs an error — ask the OS.
+        // The guide's display face is Chakra Petch at 500 and 700 and its
+        // mono face Share Tech Mono (STYLE-GUIDE §7). All three ship under
+        // Resources/Fonts (OFL, licences beside them), so the face is a
+        // given rather than probed for; the OS chain behind it is for a
+        // build where the resource failed to import, and logs when used.
+        static Font Vendored(string resource)
+        {
+            Font font = null;
+            try { font = Resources.Load<Font>("Fonts/" + resource); }
+            catch (System.Exception) { }
+            if (font == null) Debug.LogWarning($"[text] Resources/Fonts/{resource} did not load; an OS face stands in");
+            return font;
+        }
+
         static Font FindFont(string[] preferred)
         {
             string[] installed = Font.GetOSInstalledFontNames() ?? new string[0];
@@ -81,9 +92,19 @@ namespace GridInfect.Game
             {
                 if (_font == null)
                 {
-                    _font = FindFont(new[] { "Chakra Petch", "Chakra Petch Medium", "Arial", "Helvetica", "Segoe UI", "Liberation Sans", "DejaVu Sans", "Roboto" });
+                    _font = Vendored("ChakraPetch-Medium")
+                        ?? FindFont(new[] { "Chakra Petch Medium", "Chakra Petch", "Arial", "Helvetica", "Segoe UI", "Liberation Sans", "DejaVu Sans", "Roboto" });
                 }
                 return _font;
+            }
+        }
+
+        public static Font UiBoldFont
+        {
+            get
+            {
+                if (_bold == null) _bold = Vendored("ChakraPetch-Bold") ?? UiFont;
+                return _bold;
             }
         }
 
@@ -93,7 +114,8 @@ namespace GridInfect.Game
             {
                 if (_mono == null)
                 {
-                    _mono = FindFont(new[] { "Share Tech Mono", "Menlo", "Consolas", "Courier New", "Liberation Mono", "DejaVu Sans Mono", "Roboto Mono" });
+                    _mono = Vendored("ShareTechMono-Regular")
+                        ?? FindFont(new[] { "Share Tech Mono", "Menlo", "Consolas", "Courier New", "Liberation Mono", "DejaVu Sans Mono", "Roboto Mono" });
                     if (_mono == null) _mono = UiFont;
                 }
                 return _mono;
@@ -127,6 +149,19 @@ namespace GridInfect.Game
             {
                 if (_fontAsset == null) _fontAsset = MakeFontAsset(UiFont) ?? MakeFontAsset(MonoFont);
                 return _fontAsset;
+            }
+        }
+
+        // The 700 weight is its own face, not TMP's synthetic bold over the
+        // 500: the synthetic one thickens strokes without the letterforms
+        // that were drawn for the weight. It falls back to that synthetic
+        // bold only when the bold face itself did not load.
+        public static TMP_FontAsset UiBoldFontAsset
+        {
+            get
+            {
+                if (_boldAsset == null) _boldAsset = UiBoldFont == UiFont ? null : MakeFontAsset(UiBoldFont);
+                return _boldAsset ?? UiFontAsset;
             }
         }
 
@@ -208,7 +243,8 @@ namespace GridInfect.Game
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             var mesh = go.AddComponent<TextMeshPro>();
-            mesh.font = mono ? MonoFontAsset : UiFontAsset;
+            bool realBold = bold && !mono && UiBoldFontAsset != UiFontAsset;
+            mesh.font = mono ? MonoFontAsset : realBold ? UiBoldFontAsset : UiFontAsset;
             // Strings come from translators, not markup: a '<' in a label is
             // a '<'. TextMesh parsed tags by default; this does not.
             mesh.richText = false;
@@ -219,7 +255,7 @@ namespace GridInfect.Game
             // mirrored pseudolocale has already done to itself (docs/I18N.md).
             // It is set with the first shaped language, not before.
             mesh.isRightToLeftText = false;
-            mesh.fontStyle = bold && !mono ? FontStyles.Bold : FontStyles.Normal;
+            mesh.fontStyle = bold && !mono && !realBold ? FontStyles.Bold : FontStyles.Normal;
             mesh.text = text;
             FitText(mesh, text, heightPx, maxWidthPx, mono);
             // The rect is a point at the object's origin; the pivot and the
