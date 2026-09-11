@@ -13,11 +13,11 @@ Gates, both run here so CI fails on the derivation rather than on a test:
   * world.<id>.name matches the name authored in docs/worlds/<id>.jsonl,
     so the display string and the baked world record cannot drift.
 
-Two pseudolocales are generated, never authored (ARCHITECTURE.md §8):
-  qps-ploc   pads and accents Latin text to catch overflow and clipping;
-  qps-plocm  reverses it to catch left/right assumptions before an RTL
-             language exists.
-Both leave placeholders and hard breaks untouched.
+One pseudolocale is generated, never authored (ARCHITECTURE.md §8):
+  qps-ploc   pads and accents Latin text to catch overflow and clipping.
+It leaves placeholders and hard breaks untouched. (A mirrored one used to
+exercise right-to-left chrome before any RTL language shipped; Arabic and
+Hebrew do that for real now.)
 
 Usage: python3 tools/bake_strings.py
 """
@@ -34,7 +34,7 @@ WORLDS = ROOT / "docs" / "worlds"
 OUT = ROOT / "unity" / "Assets" / "_Project" / "Game" / "Strings.g.cs"
 
 DEFAULT = "en"
-PSEUDO = ("qps-ploc", "qps-plocm")
+PSEUDO = ("qps-ploc",)
 
 # {0}, {1:00} and the like. Everything outside these is translatable text.
 PLACEHOLDER = re.compile(r"\{\d+(?::[^}]*)?\}")
@@ -178,27 +178,6 @@ def ploc(text):
             for is_ph, chunk in segments(line)
         )
         out.append(f"[{body}]")
-    return "\n".join(out)
-
-
-def plocm(text):
-    """Mirror the line: the whole run of characters and placeholders in
-    reverse, each placeholder kept intact. "SOLVE {0:00}" becomes
-    "{0:00} EVLOS", so the number lands on the far side of the word with the
-    space still between them, as a bidi renderer would lay it. string.Format
-    does not care which order {0} and {1} appear in, and check_placeholders
-    compares sets. Reversing only the text and leaving the placeholders put
-    moved every such space to the wrong side of its word.
-
-    No RLE/PDF marks around the result: the renderer has no bidi and would
-    draw them as glyphs, and the layout is what this pseudolocale tests, not
-    shaping. A bidi-aware renderer is tested with a real RTL language."""
-    out = []
-    for line in text.split("\n"):
-        tokens = []
-        for is_ph, chunk in segments(line):
-            tokens.extend([chunk] if is_ph else list(chunk))
-        out.append("".join(reversed(tokens)))
     return "\n".join(out)
 
 
@@ -361,7 +340,6 @@ def main():
         check_tutorial(tag, table)
         tables[tag] = table
     tables["qps-ploc"] = {k: ploc(v) for k, v in base.items()}
-    tables["qps-plocm"] = {k: plocm(v) for k, v in base.items()}
 
     # en.json's own order is the table order, so a diff of the generated file
     # reads like a diff of the source.

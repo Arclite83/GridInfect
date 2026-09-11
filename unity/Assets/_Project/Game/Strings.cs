@@ -43,14 +43,12 @@ namespace GridInfect.Game
                 : Fmt(TierBand, Fmt(TierShort, (int)min), (int)max);
 
         // Whether the language in force reads right to left. Chrome mirrors
-        // on this (ARCHITECTURE.md §8); the board never does. The RTL pseudolocale
-        // is how it is exercised before any such language ships.
+        // on this (ARCHITECTURE.md §8); the board never does.
         public static bool IsRtl
         {
             get
             {
                 string tag = CurrentTag;
-                if (tag == "qps-plocm") return true;
                 int cut = tag.IndexOf('-');
                 string primary = cut < 0 ? tag : tag.Substring(0, cut);
                 switch (primary)

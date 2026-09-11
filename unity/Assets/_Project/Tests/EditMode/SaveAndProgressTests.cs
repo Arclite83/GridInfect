@@ -223,12 +223,12 @@ namespace GridInfect.Core.Tests
             var dispatcher = GridInfectActions.CreateDispatcher();
             // The core does not know which tags ship; a well-formed stranger is fine.
             Assert.That(dispatcher.Dispatch(GridInfectActions.SettingsLanguage, Inputs.Language("zh-Hant")).Applied);
-            Assert.That(dispatcher.Dispatch(GridInfectActions.SettingsLanguage, Inputs.Language("qps-plocm")).Applied);
+            Assert.That(dispatcher.Dispatch(GridInfectActions.SettingsLanguage, Inputs.Language("qps-ploc")).Applied);
             foreach (string bad in new[] { "-de", "de-", "d e", "de--AT", "en_US", "aaaaaaaaaaaaaaaaa", "日本語" })
             {
                 Assert.That(dispatcher.Dispatch(GridInfectActions.SettingsLanguage, Inputs.Language(bad)).Applied, Is.False, bad);
             }
-            Assert.That(dispatcher.State.Profile.Lang, Is.EqualTo("qps-plocm"));
+            Assert.That(dispatcher.State.Profile.Lang, Is.EqualTo("qps-ploc"));
 
             // A v7 save has no tag and follows the device; a bad one is dropped, not kept.
             Assert.That(SaveCodec.Load("{\"v\":7,\"skin\":1}").Lang, Is.EqualTo(""));

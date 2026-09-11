@@ -266,14 +266,14 @@ come from `Layout.Lead`/`Trail`/`ColumnX`, anchors from
 `Layout.Leading`/`Trailing`, pager marks from `BugGlyph.Prev`/`Next`, all off
 `Str.IsRtl`; board coordinates never pass through `Layout.Dir`. Arabic and
 Hebrew are shaped by `RtlText` (RTLTMPro's fixer, MIT, vendored under
-`Game/Rtl`) on the way into TextMeshPro; the mirrored pseudolocale is not.
+`Game/Rtl`) on the way into TextMeshPro.
 Language is a BCP-47 tag in `Profile.Lang`, `""` meaning follow the device;
 one tag per language, never two regional variants together. The selector is
 a mono chip carrying the tag plus a drawn glyph of its own script for a
 non-Latin language (`SelectorGlyphs.g.cs`), never a flag: flags name
-countries. Two pseudolocales are generated, never authored, and show in the
+countries. One pseudolocale is generated, never authored, and shows in the
 editor and development builds only: `qps-ploc` pads and accents to find
-clipping, `qps-plocm` mirrors to find left/right assumptions. The Noto
+clipping. The Noto
 fallback faces (`tools/subset_fonts.py`) are cut per language to the code
 points its strings use that the design faces lack, one face per CJK
 language because kanji and hanzi share code points and are drawn

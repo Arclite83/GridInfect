@@ -25,7 +25,6 @@ namespace GridInfect.Game
             "zh-Hans",
             "zh-Hant",
             "qps-ploc",
-            "qps-plocm",
         };
 
         public static readonly bool[] IsPseudo =
@@ -44,7 +43,6 @@ namespace GridInfect.Game
             false,
             false,
             false,
-            true,
             true,
         };
 
@@ -2553,173 +2551,6 @@ namespace GridInfect.Game
             "[M\u00c1\u0160T\u00c9R\u00dd\u00b7\u00b7\u00b7]",   // world.w17.name
         };
 
-        // qps-plocm
-        static readonly string[] QpsPlocm =
-        {
-            "UNEM",   // nav.menu
-            "SDLROW",   // nav.worlds
-            "{1}/{0}",   // common.page
-            "SDLROW",   // menu.worlds
-            "YLIAD",   // menu.daily
-            "SSELDNE",   // menu.endless
-            "CISSALC",   // menu.legacy
-            "LAIROTUT",   // menu.tutorial
-            "SDA ON",   // menu.noAds
-            "?EMIT TSRIF",   // menu.offer.title
-            ".etunim a ni scisab eht nraeL",   // menu.offer.line
-            "LAIROTUT",   // menu.offer.accept
-            "PIKS",   // menu.offer.skip
-            "SGNITTES",   // settings.title
-            "SNOITPO YCAVIRP",   // settings.privacy
-            "EGAUGNAL",   // settings.language
-            "NETAEB LEVEL YREVE SESARE\n.TPEK ERA SKCOL .EROCS YREVE DNA",   // settings.eraseCaption
-            "{1} DLIUB   {0}V",   // settings.build
-            "ROTIDE",   // settings.buildEditor
-            "NO :DNUOS",   // settings.soundOn
-            "FFO :DNUOS",   // settings.soundOff
-            "SSERGORP TESER",   // settings.reset
-            "ESARE OT NIAGA PAT",   // settings.resetArmed
-            "NEERG",   // settings.skin.green
-            "EULB",   // settings.skin.blue
-            "NAT",   // settings.skin.tan
-            "RAELC\nSDLROW LLA",   // settings.skin.wantWorlds
-            "RAELC\nCISSALC LLA",   // settings.skin.wantLegacy
-            "YALP OT WOH",   // rules.title
-            ".niw ot draob eht no llec yreve tcefnI",   // rules.goal
-            ".llec yna otno gub a garD",   // rules.intro
-            ".spag revo ,egde eht ot snur yar A",   // rules.diagram
-            ".stnuoc llits ti dna part ro leper a no niW",   // rules.note1
-            ".kcab secnuob pord eht dna llec diova na tiH",   // rules.note2
-            ".ti tcefnI",   // rules.cell.infect
-            "PAG",   // rules.cell.gap.name
-            ".ti ssorc syar :llec a toN",   // rules.cell.gap.line
-            "LLAW",   // rules.cell.wall.name
-            ".yar a skcolB",   // rules.cell.wall.line
-            "LEPER",   // rules.cell.repel.name
-            ".tih nehw kcab sraelC",   // rules.cell.repel.line
-            "PART",   // rules.cell.trap.name
-            ".tih nehw draob eht sraelC",   // rules.cell.trap.line
-            "YALER",   // rules.cell.relay.name
-            ".tih nehw syar nwo sti seriF",   // rules.cell.relay.line
-            "DIOVA",   // rules.cell.avoid.name
-            ".ti hcuot ton tsum syaR",   // rules.cell.avoid.line
-            ".egde eht ot nur syaR",   // rules.spread.cardinal
-            ".renroc ot renroc rO",   // rules.spread.diagonal
-            ".ti dnuora thgie eht sekat tolb A",   // rules.spread.area
-            "CISSALC",   // legacy.title
-            "SLEVEL 821 LLA ,LANIGIRO 4102 EHT",   // legacy.caption
-            "YALP EERF",   // freeplay.title
-            "RENNIGEB",   // freeplay.difficulty.beginner
-            "YSAE",   // freeplay.difficulty.easy
-            "MUIDEM",   // freeplay.difficulty.medium
-            "DRAH",   // freeplay.difficulty.hard
-            "GNIGNELLAHC",   // freeplay.difficulty.challenging
-            "SDLROW",   // worlds.title
-            "{1}  {0}",   // worlds.row
-            "{1}/{0}",   // worlds.progress
-            "YLIAD",   // daily.title
-            "YADOT",   // daily.today
-            "TSAP",   // daily.past
-            "{0:00} KAERTS",   // daily.streak
-            "{2:00}/{1:00} {0}",   // daily.monthCount
-            "{2} {1:00} {0}",   // daily.dateLine
-            "{0} SGUB",   // daily.bugs
-            "{0} SLLEC",   // daily.cells
-            "ETELPMOC",   // daily.complete
-            "GNITARENEG",   // daily.generating
-            "DEYALPNU",   // daily.unplayed
-            "NIAGA YALP",   // daily.playAgain
-            "NIGEB",   // daily.begin
-            "SSELDNE",   // endless.title
-            "{0} TSEB",   // endless.best
-            "TESER",   // board.reset
-            "CISSALC",   // board.legacy
-            "YLIAD",   // board.daily
-            "{0}  SSELDNE",   // board.endless
-            "{0} LEVEL",   // board.level
-            "{1}/{0} LAIROTUT",   // board.tutorialTitle
-            "NIGEB",   // board.begin
-            "TNIH",   // board.hint
-            "EVLOS 1+",   // board.plusSolve
-            "{0:00} EVLOS",   // board.solve
-            "ETELPMOC",   // board.complete
-            "ETELPMOC\ndetrats kaertS",   // board.completeStreakStarted
-            "ETELPMOC\nwor a ni syad {0}",   // board.completeStreakDays
-            "ETELPMOC\n{0} :niks weN",   // board.completeSkin
-            "ETELPMOC LAIROTUT",   // board.tutorialComplete
-            "UNEM",   // board.popup.menu
-            "YALPER",   // board.popup.replay
-            "TXEN",   // board.popup.next
-            "YALP",   // board.popup.play
-            "RADNELAC",   // board.popup.calendar
-            "{0} KAERTS",   // board.hud.streak
-            "{0} TSEB",   // board.hud.best
-            "5/{0}",   // board.hud.runCount
-            "{0} REIT",   // tier.name
-            "{0}T",   // tier.short
-            "{1}-{0}",   // tier.band
-            "GNIDAOL",   // loading.caption
-            "EGAUGNAL",   // language.title
-            "OTUA",   // language.auto
-            "NOM",   // cal.day.1
-            "EUT",   // cal.day.2
-            "DEW",   // cal.day.3
-            "UHT",   // cal.day.4
-            "IRF",   // cal.day.5
-            "TAS",   // cal.day.6
-            "NUS",   // cal.day.7
-            "YRAUNAJ",   // cal.month.1
-            "YRAURBEF",   // cal.month.2
-            "HCRAM",   // cal.month.3
-            "LIRPA",   // cal.month.4
-            "YAM",   // cal.month.5
-            "ENUJ",   // cal.month.6
-            "YLUJ",   // cal.month.7
-            "TSUGUA",   // cal.month.8
-            "REBMETPES",   // cal.month.9
-            "REBOTCO",   // cal.month.10
-            "REBMEVON",   // cal.month.11
-            "REBMECED",   // cal.month.12
-            "NAJ",   // cal.month.1.short
-            "BEF",   // cal.month.2.short
-            "RAM",   // cal.month.3.short
-            "RPA",   // cal.month.4.short
-            "YAM",   // cal.month.5.short
-            "NUJ",   // cal.month.6.short
-            "LUJ",   // cal.month.7.short
-            "GUA",   // cal.month.8.short
-            "PES",   // cal.month.9.short
-            "TCO",   // cal.month.10.short
-            "VON",   // cal.month.11.short
-            "CED",   // cal.month.12.short
-            ".llec dekram eht otno gub eht garD",   // tut.1.line
-            ".spag ssorc syaR",   // tut.2.line
-            ".pu ti kcip ot gub decalp a paT .sgub owT",   // tut.3.line
-            ".yar a spots llaw A",   // tut.4.line
-            ".lanogaid eb osla nac sguB",   // tut.5.line
-            ".ti dnuora sllec thgie eht sekat tolb A",   // tut.6.line
-            ".llec diova na hcuot reven yam yar A",   // tut.7.line
-            ".ti tih taht yar eht sraelc leper A",   // tut.8.line
-            ".draob elohw eht steser part A",   // tut.9.line
-            ".til nehw syar nwo sti serif yaler A",   // tut.10.line
-            "SPETS TSRIF",   // world.w01.name
-            "SENIL OWT",   // world.w02.name
-            "SRENROC",   // world.w03.name
-            "SGNISSORC",   // world.w04.name
-            "NAELC PEEK",   // world.w05.name
-            "GNITNUOC",   // world.w06.name
-            "SRODIRROC",   // world.w07.name
-            "STOLB",   // world.w08.name
-            "HCAER GNOL",   // world.w09.name
-            "SMRA RUOF",   // world.w10.name
-            "SLANOGAID",   // world.w11.name
-            "THGIT",   // world.w12.name
-            "SYALER",   // world.w14.name
-            "KLATSSORC",   // world.w15.name
-            "ESOPPUS",   // world.w16.name
-            "YRETSAM",   // world.w17.name
-        };
-
         static readonly string[][] Tables =
         {
             En,
@@ -2737,7 +2568,6 @@ namespace GridInfect.Game
             ZhHans,
             ZhHant,
             QpsPloc,
-            QpsPlocm,
         };
 
         static string[] _v = Tables[0];
