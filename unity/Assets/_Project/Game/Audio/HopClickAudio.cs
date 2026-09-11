@@ -12,10 +12,11 @@ namespace GridInfect.Game
     // bar's modes are inharmonic — 1 : 2.756 : 5.404 : 8.933 — which is
     // what makes a strike read as glass rather than as a note, and the
     // higher modes die fastest. The click is a tap: 35 ms, the modes gone
-    // almost at once. The solve is one clean strike an octave above the
-    // click's root with a quieter strike at the root under it for body,
-    // its fundamental doubled a few cents apart so it shimmers as it
-    // fades — 0.3 s, snappy. Scheduled to follow the last click of the
+    // almost at once. The solve is two strikes: a short grace at the
+    // fifth, then 55 ms later the main strike an octave above the click's
+    // root with a quieter strike at the root under it for body, its
+    // fundamental doubled a few cents apart so it shimmers as it fades —
+    // under 0.4 s, snappy. Scheduled to follow the last click of the
     // winning wave, never to overlap it.
     //
     // Both clips are synthesised, like every other asset in this project.
@@ -26,7 +27,10 @@ namespace GridInfect.Game
         const int Sources = 8;
         const int SampleRate = 44100;
         const int ClickSamples = SampleRate * 35 / 1000;   // 35 ms
-        const int ChimeSamples = SampleRate * 320 / 1000;  // 0.32 s
+        const int StrikeSamples = SampleRate * 320 / 1000;   // the main strike, 0.32 s
+        const int GraceSamples = SampleRate * 120 / 1000;    // the grace, 0.12 s
+        const int GraceLead = SampleRate * 55 / 1000;        // the main strike lands this far after the grace
+        const int ChimeSamples = GraceLead + StrikeSamples;
 
         // The click's root, and the chime's. The ladder tops out at +7
         // semitones (Vfx.HopPitchCapSemitones), the fifth: 1768 Hz.
@@ -174,23 +178,30 @@ namespace GridInfect.Game
             return clip;
         }
 
-        // The solve: the strike an octave up, with the root under it. Each
-        // strike is normalised on its own before the mix, as the render
-        // tool does it, so the two sit at the ratio written here.
+        // The solve: the grace at the fifth, then the strike an octave up
+        // with the root under it. Each strike is normalised on its own
+        // before the mix, as the render tool does it, so the three sit at
+        // the ratios written here.
         static AudioClip BuildChime()
         {
-            var top = new float[ChimeSamples];
+            var grace = new float[GraceSamples];
+            Strike(grace, Root * 1.4983f,
+                new[] { 1f, 0.4f, 0.2f, 0f }, new[] { 0.05f, 0.03f, 0.015f, 0.01f },
+                noise: 0.3f, shimmer: 0f, seed: 0x2545F491u, mix: 1f);
+            Normalise(grace);
+            var top = new float[StrikeSamples];
             Strike(top, Root * 2f,
                 new[] { 1f, 0.45f, 0.22f, 0f }, new[] { 0.19f, 0.07f, 0.03f, 0.01f },
                 noise: 0.35f, shimmer: 0.35f, seed: 0x2545F491u, mix: 1f);
             Normalise(top);
-            var body = new float[ChimeSamples];
+            var body = new float[StrikeSamples];
             Strike(body, Root,
                 new[] { 1f, 0.3f, 0.1f, 0f }, new[] { 0.09f, 0.04f, 0.02f, 0.01f },
                 noise: 0f, shimmer: 0f, seed: 0x2545F491u, mix: 1f);
             Normalise(body);
             var samples = new float[ChimeSamples];
-            for (int n = 0; n < ChimeSamples; n++) samples[n] = top[n] + 0.45f * body[n];
+            for (int n = 0; n < GraceSamples; n++) samples[n] = 0.7f * grace[n];
+            for (int n = 0; n < StrikeSamples; n++) samples[GraceLead + n] += top[n] + 0.45f * body[n];
             Normalise(samples);
             var clip = AudioClip.Create("solve", ChimeSamples, 1, SampleRate, false);
             clip.SetData(samples, 0);

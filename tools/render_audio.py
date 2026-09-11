@@ -76,11 +76,11 @@ def build_click():
                   noise=0.5, shimmer=0.0, seed=0x9E3779B9)
 
 
-def build_chime(two=False):
-    """The solve: one clean strike an octave above the click's root, with
-    a quieter strike at the root under it for body. Snappy — 0.3 s, most
-    of it the fundamental fading — and glassy from the modes and the
-    shimmer on the fundamental."""
+def build_chime(two=True):
+    """The solve: a short grace strike at the fifth, then the main strike
+    an octave above the click's root with a quieter strike at the root
+    under it for body. Snappy — under 0.4 s — and glassy from the modes
+    and the shimmer on the fundamental. two=False drops the grace."""
     top = strike(CHIME_SAMPLES / RATE, ROOT * 2,
                  gains=[1.0, 0.45, 0.22, 0.0], taus=[0.19, 0.07, 0.03, 0.01],
                  noise=0.35, shimmer=0.35, seed=0x2545F491)
@@ -155,8 +155,8 @@ def main():
     solve = wave_hops + [(6 * HOP, chime, CHIME_VOLUME)]
     write(out / "solve.wav", mix(solve, 0.9))
     if args.variants:
-        two = build_chime(two=True)
-        write(out / "solve-two-strikes.wav", mix(wave_hops + [(6 * HOP, two, CHIME_VOLUME)], 0.9))
+        one = build_chime(two=False)
+        write(out / "solve-one-strike.wav", mix(wave_hops + [(6 * HOP, one, CHIME_VOLUME)], 0.9))
 
 
 if __name__ == "__main__":
