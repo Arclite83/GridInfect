@@ -8,15 +8,15 @@ namespace GridInfect.Game
     // a small pool of sources, each set to its own pitch, rather than one
     // source whose pitch would smear across the whole wave.
     //
-    // And the one other sound the board makes: the solve. An analogue
-    // synth voice in the click's key — the clicks walk a chromatic ladder
-    // up from the root, and this lands on the root an octave down: two
-    // detuned sawtooths and a sub through a resonant lowpass whose cutoff
-    // sweeps open and closes again, the pitch sliding in from a fifth
-    // below, a breath of noise on the attack, and a tanh drive over all of
-    // it. Half a second. The first cut was a bell and the second a chip
-    // blip; neither is what this board sounds like. Scheduled to follow
-    // the last click of the winning wave, never to overlap it.
+    // Both sounds are struck glass, because the tiles are glass. A free
+    // bar's modes are inharmonic — 1 : 2.756 : 5.404 : 8.933 — which is
+    // what makes a strike read as glass rather than as a note, and the
+    // higher modes die fastest. The click is a tap: 35 ms, the modes gone
+    // almost at once. The solve is one clean strike an octave above the
+    // click's root with a quieter strike at the root under it for body,
+    // its fundamental doubled a few cents apart so it shimmers as it
+    // fades — 0.3 s, snappy. Scheduled to follow the last click of the
+    // winning wave, never to overlap it.
     //
     // Both clips are synthesised, like every other asset in this project.
     // tools/render_audio.py renders the same formulas to WAV to listen to
@@ -25,20 +25,17 @@ namespace GridInfect.Game
     {
         const int Sources = 8;
         const int SampleRate = 44100;
-        const int ClickSamples = SampleRate * 30 / 1000;   // 30 ms
-        const int ChimeSamples = SampleRate * 450 / 1000;  // 0.45 s
+        const int ClickSamples = SampleRate * 35 / 1000;   // 35 ms
+        const int ChimeSamples = SampleRate * 320 / 1000;  // 0.32 s
 
         // The click's root, and the chime's. The ladder tops out at +7
         // semitones (Vfx.HopPitchCapSemitones), the fifth: 1768 Hz.
         const float Root = 1180f;
 
-        // Levels. The click was 0.35, a guess written before anything had
-        // been heard; the clip itself was also a bare sine with no attack,
-        // which is what read as thin. The clip now carries a transient and
-        // a lower partial and is normalised to a fixed peak, so the level
-        // here is the level.
+        // Levels. Each clip is normalised to a fixed peak, so the level
+        // here is the level. tools/render_audio.py is where they were set.
         const float ClickVolume = 0.6f;
-        const float ChimeVolume = 0.5f;
+        const float ChimeVolume = 0.55f;
         const float Peak = 0.9f;
 
         readonly GameObject _root;
@@ -134,101 +131,70 @@ namespace GridInfect.Game
 
         // ---- synthesis ----
 
-        // The click: a 1180 Hz body under a 14 ms decay, an octave-down
-        // partial for weight (shorter, so it is felt in the attack and not
-        // heard as a hum), a 3.3 kHz snap, and one millisecond of noise at
-        // the front, which is the "click" itself — a sine that starts from
-        // zero has no attack, and an attack is what a phone speaker can
-        // actually reproduce of a sound this short. Nothing under 590 Hz: a
-        // phone speaker has nothing there to give.
+        static readonly float[] Modes = { 1f, 2.756f, 5.404f, 8.933f };
+
+        // One strike: the four modes at their gains and decays, an optional
+        // second fundamental a few cents sharp (the shimmer), a burst of
+        // noise on the first millisecond (the snap), and a 0.4 ms attack so
+        // the first sample is not a step.
+        static void Strike(float[] samples, float f0, float[] gains, float[] taus, float noise, float shimmer, uint seed, float mix)
+        {
+            for (int n = 0; n < samples.Length; n++)
+            {
+                float t = n / (float)SampleRate;
+                float x = 0f;
+                for (int k = 0; k < Modes.Length; k++)
+                {
+                    float f = f0 * Modes[k];
+                    if (f > 18000f || gains[k] <= 0f) continue;
+                    x += gains[k] * Mathf.Sin(2f * Mathf.PI * f * t) * Mathf.Exp(-t / taus[k]);
+                }
+                if (shimmer > 0f)
+                {
+                    x += shimmer * Mathf.Sin(2f * Mathf.PI * f0 * 1.004f * t) * Mathf.Exp(-t / taus[0]);
+                }
+                seed = seed * 1664525u + 1013904223u;
+                float white = (seed >> 8) / 8388608f - 1f;
+                x += noise * white * Mathf.Exp(-t * 2500f);
+                float attack = Mathf.Min(1f, t / 0.0004f);
+                samples[n] += x * attack * mix;
+            }
+        }
+
+        // The hop: a tap on glass at the root.
         static AudioClip BuildClick()
         {
             var samples = new float[ClickSamples];
-            uint noise = 0x9E3779B9u;   // fixed seed: the same clip every launch
-            for (int n = 0; n < ClickSamples; n++)
-            {
-                float t = n / (float)SampleRate;
-                float envelope = Mathf.Exp(-t * 70f);
-                float body = Mathf.Sin(2f * Mathf.PI * Root * t);
-                float sub = 0.5f * Mathf.Sin(2f * Mathf.PI * (Root / 2f) * t) * Mathf.Exp(-t * 120f);
-                float snap = 0.4f * Mathf.Sin(2f * Mathf.PI * 3300f * t) * Mathf.Exp(-t * 400f);
-                noise = noise * 1664525u + 1013904223u;
-                float white = (noise >> 8) / 8388608f - 1f;   // [-1, 1)
-                float tick = 0.6f * white * Mathf.Exp(-t * 1500f);
-                samples[n] = (body + sub + snap + tick) * envelope;
-            }
+            Strike(samples, Root,
+                new[] { 1f, 0.55f, 0.3f, 0.12f }, new[] { 0.016f, 0.008f, 0.004f, 0.002f },
+                noise: 0.5f, shimmer: 0f, seed: 0x9E3779B9u, mix: 1f);
             Normalise(samples);
             var clip = AudioClip.Create("hop-click", ClickSamples, 1, SampleRate, false);
             clip.SetData(samples, 0);
             return clip;
         }
 
-        // The solve. Oscillators: a saw at 590 Hz (the click's root an
-        // octave down), one +10 cents beside it, and a sub an octave under
-        // both — each additive to 16 kHz, so nothing aliases. Pitch starts a
-        // fifth low and settles in ~50 ms. Filter: a Chamberlin state-
-        // variable lowpass, Q 3.5, cutoff from 350 Hz opening to 5.2 kHz
-        // over 50 ms and closing on a 140 ms tail (capped at 6 kHz, where
-        // that filter is still stable at this rate). Noise on the first few
-        // ms, then tanh drive and the amplitude envelope: 2 ms in, 60 ms
-        // held, a 160 ms fall.
+        // The solve: the strike an octave up, with the root under it. Each
+        // strike is normalised on its own before the mix, as the render
+        // tool does it, so the two sit at the ratio written here.
         static AudioClip BuildChime()
         {
+            var top = new float[ChimeSamples];
+            Strike(top, Root * 2f,
+                new[] { 1f, 0.45f, 0.22f, 0f }, new[] { 0.19f, 0.07f, 0.03f, 0.01f },
+                noise: 0.35f, shimmer: 0.35f, seed: 0x2545F491u, mix: 1f);
+            Normalise(top);
+            var body = new float[ChimeSamples];
+            Strike(body, Root,
+                new[] { 1f, 0.3f, 0.1f, 0f }, new[] { 0.09f, 0.04f, 0.02f, 0.01f },
+                noise: 0f, shimmer: 0f, seed: 0x2545F491u, mix: 1f);
+            Normalise(body);
             var samples = new float[ChimeSamples];
-            const float Target = Root / 2f;
-            const float Drive = 3f;
-            const float Noise = 0.35f;
-            float[] rates = { 1f, 1.006f, 0.5f };
-            float[] gains = { 1f, 0.8f, 0.4f };
-            var phase = new float[3];
-            float low = 0f, band = 0f;
-            uint seed = 0x9E3779B9u;
-            float driveNorm = 1f / Tanh(Drive);
-            for (int n = 0; n < ChimeSamples; n++)
-            {
-                float t = n / (float)SampleRate;
-                float f0 = Target * Mathf.Pow(2f, -(7f / 12f) * Mathf.Exp(-t / 0.03f));
-                float x = 0f;
-                for (int k = 0; k < 3; k++)
-                {
-                    float f = f0 * rates[k];
-                    phase[k] += f / SampleRate;
-                    if (phase[k] >= 1f) phase[k] -= 1f;   // every harmonic is an integer multiple, so this is free; it keeps the sine's argument small
-                    int harmonics = Mathf.Min(40, Mathf.Max(1, (int)(16000f / f)));
-                    float saw = 0f;
-                    for (int h = 1; h <= harmonics; h++)
-                    {
-                        saw += Mathf.Sin(2f * Mathf.PI * h * phase[k]) / h;
-                    }
-                    x += gains[k] * saw * (2f / Mathf.PI);
-                }
-                seed = seed * 1664525u + 1013904223u;
-                float white = (seed >> 8) / 8388608f - 1f;
-                x += Noise * white * Mathf.Exp(-t * 300f);
-
-                float sweep = Mathf.Min(1f, t / 0.05f) * Mathf.Exp(-Mathf.Max(0f, t - 0.05f) / 0.14f);
-                float cutoff = 350f + (5200f - 350f) * sweep;
-                float fc = 2f * Mathf.Sin(Mathf.PI * Mathf.Min(cutoff, 6000f) / SampleRate);
-                const float Q = 1f / 3.5f;
-                low += fc * band;
-                float high = x - low - Q * band;
-                band += fc * high;
-                float y = Tanh(low * Drive) * driveNorm;
-
-                float attack = Mathf.Min(1f, t / 0.002f);
-                float envelope = attack * (t < 0.06f ? 1f : Mathf.Exp(-(t - 0.06f) / 0.16f));
-                samples[n] = y * envelope;
-            }
+            for (int n = 0; n < ChimeSamples; n++) samples[n] = top[n] + 0.45f * body[n];
             Normalise(samples);
             var clip = AudioClip.Create("solve", ChimeSamples, 1, SampleRate, false);
             clip.SetData(samples, 0);
             return clip;
-        }
-
-        static float Tanh(float x)
-        {
-            float e = Mathf.Exp(2f * x);
-            return (e - 1f) / (e + 1f);
         }
 
         // Scale the clip so its loudest sample sits at Peak. The level a
