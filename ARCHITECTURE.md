@@ -91,7 +91,7 @@ live in `Queries` and carry zero rules.
 | `progress.unlockAll` | — | ProfileActions | *retired gate.* The dev row that dispatched it is gone with the gates it opened |
 | `settings.mute` | `muted` | ProfileActions | audio preference |
 | `settings.skin` | `skin` | ProfileActions | board colours (0 green, 1 blue, 2 breadboard). The core keeps the number; `BoardPalette.SkinId` in the adapter owns what it means, so a new skin needs no new action |
-| `settings.language` | `lang` | ProfileActions | the language as a BCP-47 tag, or `""` to follow the device. Validated on shape, never on membership: the core keeps the tag opaque and `Str` in the adapter owns which tags ship and what each draws (`docs/I18N.md` §8) |
+| `settings.language` | `lang` | ProfileActions | the language as a BCP-47 tag, or `""` to follow the device. Validated on shape, never on membership: the core keeps the tag opaque and `Str` in the adapter owns which tags ship and what each draws (§8) |
 | `freeplay.begin` | `nowMs` | FreePlayActions | BEGIN pressed; run clock starts (wall clock via input) |
 | `freeplay.advance` | — | FreePlayActions | next generated level, clock keeps running |
 | `freeplay.complete` | `nowMs` | FreePlayActions | 5th solve: best time iff lower, count++, rejects a backward clock |
