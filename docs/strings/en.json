@@ -104,7 +104,6 @@
   "board.popup.next": "NEXT",
   "board.popup.play": "PLAY",
   "board.popup.calendar": "CALENDAR",
-  "board.hud.solved": "SOLVED {0}",
   "board.hud.streak": "STREAK {0}",
   "board.hud.best": "BEST {0}",
   "board.hud.runCount": "{0}/5",

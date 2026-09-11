@@ -94,7 +94,6 @@
   "board.popup.next": "次へ",
   "board.popup.play": "プレイ",
   "board.popup.calendar": "カレンダー",
-  "board.hud.solved": "解いた {0}",
   "board.hud.streak": "連続 {0}",
   "board.hud.best": "ベスト {0}",
   "board.hud.runCount": "{0}/5",

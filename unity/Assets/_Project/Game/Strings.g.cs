@@ -135,7 +135,6 @@ namespace GridInfect.Game
             "NEXT",   // board.popup.next
             "PLAY",   // board.popup.play
             "CALENDAR",   // board.popup.calendar
-            "SOLVED {0}",   // board.hud.solved
             "STREAK {0}",   // board.hud.streak
             "BEST {0}",   // board.hud.best
             "{0}/5",   // board.hud.runCount
@@ -301,7 +300,6 @@ namespace GridInfect.Game
             "WEITER",   // board.popup.next
             "SPIELEN",   // board.popup.play
             "KALENDER",   // board.popup.calendar
-            "GEL\u00d6ST {0}",   // board.hud.solved
             "SERIE {0}",   // board.hud.streak
             "REKORD {0}",   // board.hud.best
             "{0}/5",   // board.hud.runCount
@@ -467,7 +465,6 @@ namespace GridInfect.Game
             "SIGUIENTE",   // board.popup.next
             "JUGAR",   // board.popup.play
             "CALENDARIO",   // board.popup.calendar
-            "RESUELTOS {0}",   // board.hud.solved
             "RACHA {0}",   // board.hud.streak
             "MEJOR {0}",   // board.hud.best
             "{0}/5",   // board.hud.runCount
@@ -633,7 +630,6 @@ namespace GridInfect.Game
             "SUIVANT",   // board.popup.next
             "JOUER",   // board.popup.play
             "CALENDRIER",   // board.popup.calendar
-            "R\u00c9SOLUS {0}",   // board.hud.solved
             "S\u00c9RIE {0}",   // board.hud.streak
             "RECORD {0}",   // board.hud.best
             "{0}/5",   // board.hud.runCount
@@ -799,7 +795,6 @@ namespace GridInfect.Game
             "AVANTI",   // board.popup.next
             "GIOCA",   // board.popup.play
             "CALENDARIO",   // board.popup.calendar
-            "RISOLTI {0}",   // board.hud.solved
             "SERIE {0}",   // board.hud.streak
             "RECORD {0}",   // board.hud.best
             "{0}/5",   // board.hud.runCount
@@ -965,7 +960,6 @@ namespace GridInfect.Game
             "\u6b21\u3078",   // board.popup.next
             "\u30d7\u30ec\u30a4",   // board.popup.play
             "\u30ab\u30ec\u30f3\u30c0\u30fc",   // board.popup.calendar
-            "\u89e3\u3044\u305f {0}",   // board.hud.solved
             "\u9023\u7d9a {0}",   // board.hud.streak
             "\u30d9\u30b9\u30c8 {0}",   // board.hud.best
             "{0}/5",   // board.hud.runCount
@@ -1131,7 +1125,6 @@ namespace GridInfect.Game
             "PR\u00d3XIMA",   // board.popup.next
             "JOGAR",   // board.popup.play
             "CALEND\u00c1RIO",   // board.popup.calendar
-            "RESOLVIDAS {0}",   // board.hud.solved
             "S\u00c9RIE {0}",   // board.hud.streak
             "RECORDE {0}",   // board.hud.best
             "{0}/5",   // board.hud.runCount
@@ -1297,7 +1290,6 @@ namespace GridInfect.Game
             "\u0414\u0410\u041b\u042c\u0428\u0415",   // board.popup.next
             "\u0418\u0413\u0420\u0410\u0422\u042c",   // board.popup.play
             "\u041a\u0410\u041b\u0415\u041d\u0414\u0410\u0420\u042c",   // board.popup.calendar
-            "\u0420\u0415\u0428\u0415\u041d\u041e {0}",   // board.hud.solved
             "\u0421\u0415\u0420\u0418\u042f {0}",   // board.hud.streak
             "\u0420\u0415\u041a\u041e\u0420\u0414 {0}",   // board.hud.best
             "{0}/5",   // board.hud.runCount
@@ -1463,7 +1455,6 @@ namespace GridInfect.Game
             "SONRAK\u0130",   // board.popup.next
             "OYNA",   // board.popup.play
             "TAKV\u0130M",   // board.popup.calendar
-            "\u00c7\u00d6Z\u00dcLEN {0}",   // board.hud.solved
             "SER\u0130 {0}",   // board.hud.streak
             "REKOR {0}",   // board.hud.best
             "{0}/5",   // board.hud.runCount
@@ -1629,7 +1620,6 @@ namespace GridInfect.Game
             "[\u00d1\u00c9XT\u00b7\u00b7]",   // board.popup.next
             "[PL\u00c1\u00dd\u00b7\u00b7]",   // board.popup.play
             "[\u00c7\u00c1L\u00c9\u00d1\u0110\u00c1R\u00b7\u00b7\u00b7]",   // board.popup.calendar
-            "[\u0160\u00d3LV\u00c9\u0110 \u00b7\u00b7{0}]",   // board.hud.solved
             "[\u0160TR\u00c9\u00c1K \u00b7\u00b7{0}]",   // board.hud.streak
             "[B\u00c9\u0160T \u00b7\u00b7{0}]",   // board.hud.best
             "[{0}/5]",   // board.hud.runCount
@@ -1795,7 +1785,6 @@ namespace GridInfect.Game
             "TXEN",   // board.popup.next
             "YALP",   // board.popup.play
             "RADNELAC",   // board.popup.calendar
-            "{0} DEVLOS",   // board.hud.solved
             "{0} KAERTS",   // board.hud.streak
             "{0} TSEB",   // board.hud.best
             "5/{0}",   // board.hud.runCount
@@ -1893,10 +1882,10 @@ namespace GridInfect.Game
 
         // ---- families ----
 
-        static readonly int[] MonthIdx = { 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122 };
-        static readonly int[] MonthShortIdx = { 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134 };
-        static readonly int[] DayIdx = { 104, 105, 106, 107, 108, 109, 110 };
-        static readonly int[] TutIdx = { 135, 136, 137, 138, 139, 140, 141, 142, 143, 144 };
+        static readonly int[] MonthIdx = { 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121 };
+        static readonly int[] MonthShortIdx = { 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133 };
+        static readonly int[] DayIdx = { 103, 104, 105, 106, 107, 108, 109 };
+        static readonly int[] TutIdx = { 134, 135, 136, 137, 138, 139, 140, 141, 142, 143 };
         static readonly int[] DifficultyIdx = { 52, 53, 54, 55, 56 };
 
         // Month 1-12, weekday 1-7 Monday first, tutorial step 1-based,
@@ -1912,22 +1901,22 @@ namespace GridInfect.Game
         {
             switch (worldId)
             {
-                case "w01": return _v[145];
-                case "w02": return _v[146];
-                case "w03": return _v[147];
-                case "w04": return _v[148];
-                case "w05": return _v[149];
-                case "w06": return _v[150];
-                case "w07": return _v[151];
-                case "w08": return _v[152];
-                case "w09": return _v[153];
-                case "w10": return _v[154];
-                case "w11": return _v[155];
-                case "w12": return _v[156];
-                case "w14": return _v[157];
-                case "w15": return _v[158];
-                case "w16": return _v[159];
-                case "w17": return _v[160];
+                case "w01": return _v[144];
+                case "w02": return _v[145];
+                case "w03": return _v[146];
+                case "w04": return _v[147];
+                case "w05": return _v[148];
+                case "w06": return _v[149];
+                case "w07": return _v[150];
+                case "w08": return _v[151];
+                case "w09": return _v[152];
+                case "w10": return _v[153];
+                case "w11": return _v[154];
+                case "w12": return _v[155];
+                case "w14": return _v[156];
+                case "w15": return _v[157];
+                case "w16": return _v[158];
+                case "w17": return _v[159];
             }
             return worldId;
         }
@@ -2028,72 +2017,71 @@ namespace GridInfect.Game
         public static string BoardPopupNext => _v[91];
         public static string BoardPopupPlay => _v[92];
         public static string BoardPopupCalendar => _v[93];
-        public static string BoardHudSolved => _v[94];
-        public static string BoardHudStreak => _v[95];
-        public static string BoardHudBest => _v[96];
-        public static string BoardHudRunCount => _v[97];
-        public static string TierName => _v[98];
-        public static string TierShort => _v[99];
-        public static string TierBand => _v[100];
-        public static string LoadingCaption => _v[101];
-        public static string LanguageTitle => _v[102];
-        public static string LanguageAuto => _v[103];
-        public static string CalDay1 => _v[104];
-        public static string CalDay2 => _v[105];
-        public static string CalDay3 => _v[106];
-        public static string CalDay4 => _v[107];
-        public static string CalDay5 => _v[108];
-        public static string CalDay6 => _v[109];
-        public static string CalDay7 => _v[110];
-        public static string CalMonth1 => _v[111];
-        public static string CalMonth2 => _v[112];
-        public static string CalMonth3 => _v[113];
-        public static string CalMonth4 => _v[114];
-        public static string CalMonth5 => _v[115];
-        public static string CalMonth6 => _v[116];
-        public static string CalMonth7 => _v[117];
-        public static string CalMonth8 => _v[118];
-        public static string CalMonth9 => _v[119];
-        public static string CalMonth10 => _v[120];
-        public static string CalMonth11 => _v[121];
-        public static string CalMonth12 => _v[122];
-        public static string CalMonth1Short => _v[123];
-        public static string CalMonth2Short => _v[124];
-        public static string CalMonth3Short => _v[125];
-        public static string CalMonth4Short => _v[126];
-        public static string CalMonth5Short => _v[127];
-        public static string CalMonth6Short => _v[128];
-        public static string CalMonth7Short => _v[129];
-        public static string CalMonth8Short => _v[130];
-        public static string CalMonth9Short => _v[131];
-        public static string CalMonth10Short => _v[132];
-        public static string CalMonth11Short => _v[133];
-        public static string CalMonth12Short => _v[134];
-        public static string Tut1Line => _v[135];
-        public static string Tut2Line => _v[136];
-        public static string Tut3Line => _v[137];
-        public static string Tut4Line => _v[138];
-        public static string Tut5Line => _v[139];
-        public static string Tut6Line => _v[140];
-        public static string Tut7Line => _v[141];
-        public static string Tut8Line => _v[142];
-        public static string Tut9Line => _v[143];
-        public static string Tut10Line => _v[144];
-        public static string WorldW01Name => _v[145];
-        public static string WorldW02Name => _v[146];
-        public static string WorldW03Name => _v[147];
-        public static string WorldW04Name => _v[148];
-        public static string WorldW05Name => _v[149];
-        public static string WorldW06Name => _v[150];
-        public static string WorldW07Name => _v[151];
-        public static string WorldW08Name => _v[152];
-        public static string WorldW09Name => _v[153];
-        public static string WorldW10Name => _v[154];
-        public static string WorldW11Name => _v[155];
-        public static string WorldW12Name => _v[156];
-        public static string WorldW14Name => _v[157];
-        public static string WorldW15Name => _v[158];
-        public static string WorldW16Name => _v[159];
-        public static string WorldW17Name => _v[160];
+        public static string BoardHudStreak => _v[94];
+        public static string BoardHudBest => _v[95];
+        public static string BoardHudRunCount => _v[96];
+        public static string TierName => _v[97];
+        public static string TierShort => _v[98];
+        public static string TierBand => _v[99];
+        public static string LoadingCaption => _v[100];
+        public static string LanguageTitle => _v[101];
+        public static string LanguageAuto => _v[102];
+        public static string CalDay1 => _v[103];
+        public static string CalDay2 => _v[104];
+        public static string CalDay3 => _v[105];
+        public static string CalDay4 => _v[106];
+        public static string CalDay5 => _v[107];
+        public static string CalDay6 => _v[108];
+        public static string CalDay7 => _v[109];
+        public static string CalMonth1 => _v[110];
+        public static string CalMonth2 => _v[111];
+        public static string CalMonth3 => _v[112];
+        public static string CalMonth4 => _v[113];
+        public static string CalMonth5 => _v[114];
+        public static string CalMonth6 => _v[115];
+        public static string CalMonth7 => _v[116];
+        public static string CalMonth8 => _v[117];
+        public static string CalMonth9 => _v[118];
+        public static string CalMonth10 => _v[119];
+        public static string CalMonth11 => _v[120];
+        public static string CalMonth12 => _v[121];
+        public static string CalMonth1Short => _v[122];
+        public static string CalMonth2Short => _v[123];
+        public static string CalMonth3Short => _v[124];
+        public static string CalMonth4Short => _v[125];
+        public static string CalMonth5Short => _v[126];
+        public static string CalMonth6Short => _v[127];
+        public static string CalMonth7Short => _v[128];
+        public static string CalMonth8Short => _v[129];
+        public static string CalMonth9Short => _v[130];
+        public static string CalMonth10Short => _v[131];
+        public static string CalMonth11Short => _v[132];
+        public static string CalMonth12Short => _v[133];
+        public static string Tut1Line => _v[134];
+        public static string Tut2Line => _v[135];
+        public static string Tut3Line => _v[136];
+        public static string Tut4Line => _v[137];
+        public static string Tut5Line => _v[138];
+        public static string Tut6Line => _v[139];
+        public static string Tut7Line => _v[140];
+        public static string Tut8Line => _v[141];
+        public static string Tut9Line => _v[142];
+        public static string Tut10Line => _v[143];
+        public static string WorldW01Name => _v[144];
+        public static string WorldW02Name => _v[145];
+        public static string WorldW03Name => _v[146];
+        public static string WorldW04Name => _v[147];
+        public static string WorldW05Name => _v[148];
+        public static string WorldW06Name => _v[149];
+        public static string WorldW07Name => _v[150];
+        public static string WorldW08Name => _v[151];
+        public static string WorldW09Name => _v[152];
+        public static string WorldW10Name => _v[153];
+        public static string WorldW11Name => _v[154];
+        public static string WorldW12Name => _v[155];
+        public static string WorldW14Name => _v[156];
+        public static string WorldW15Name => _v[157];
+        public static string WorldW16Name => _v[158];
+        public static string WorldW17Name => _v[159];
     }
 }

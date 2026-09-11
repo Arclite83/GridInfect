@@ -94,7 +94,6 @@
   "board.popup.next": "SONRAKİ",
   "board.popup.play": "OYNA",
   "board.popup.calendar": "TAKVİM",
-  "board.hud.solved": "ÇÖZÜLEN {0}",
   "board.hud.streak": "SERİ {0}",
   "board.hud.best": "REKOR {0}",
   "board.hud.runCount": "{0}/5",

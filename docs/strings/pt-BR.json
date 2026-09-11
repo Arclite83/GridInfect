@@ -94,7 +94,6 @@
   "board.popup.next": "PRÓXIMA",
   "board.popup.play": "JOGAR",
   "board.popup.calendar": "CALENDÁRIO",
-  "board.hud.solved": "RESOLVIDAS {0}",
   "board.hud.streak": "SÉRIE {0}",
   "board.hud.best": "RECORDE {0}",
   "board.hud.runCount": "{0}/5",

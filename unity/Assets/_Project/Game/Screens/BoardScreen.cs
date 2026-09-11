@@ -778,8 +778,10 @@ namespace GridInfect.Game
                 var endless = App.State.EndlessRun;
                 if (endless != null)
                 {
-                    SetHud(Str.Fmt(Str.BoardHudSolved, endless.Index),
-                        Str.Fmt(Str.BoardHudStreak, endless.Streak),
+                    // Streak and best, at the two ends. The run's index is
+                    // the title's LEVEL n already, and a SOLVED count beside
+                    // the SOLVE badge read as two of the same thing.
+                    SetHud(Str.Fmt(Str.BoardHudStreak, endless.Streak), "",
                         Str.Fmt(Str.BoardHudBest, App.State.Profile.EndlessBest[(int)endless.Grade - 1]));
                 }
                 return;

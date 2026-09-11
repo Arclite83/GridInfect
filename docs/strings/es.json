@@ -94,7 +94,6 @@
   "board.popup.next": "SIGUIENTE",
   "board.popup.play": "JUGAR",
   "board.popup.calendar": "CALENDARIO",
-  "board.hud.solved": "RESUELTOS {0}",
   "board.hud.streak": "RACHA {0}",
   "board.hud.best": "MEJOR {0}",
   "board.hud.runCount": "{0}/5",

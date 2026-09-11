@@ -94,7 +94,6 @@
   "board.popup.next": "AVANTI",
   "board.popup.play": "GIOCA",
   "board.popup.calendar": "CALENDARIO",
-  "board.hud.solved": "RISOLTI {0}",
   "board.hud.streak": "SERIE {0}",
   "board.hud.best": "RECORD {0}",
   "board.hud.runCount": "{0}/5",
