@@ -91,7 +91,7 @@ live in `Queries` and carry zero rules.
 | `progress.unlockAll` | — | ProfileActions | *retired gate.* The dev row that dispatched it is gone with the gates it opened |
 | `settings.mute` | `muted` | ProfileActions | audio preference |
 | `settings.skin` | `skin` | ProfileActions | board colours (0 green, 1 blue, 2 breadboard). The core keeps the number; `BoardPalette.SkinId` in the adapter owns what it means, so a new skin needs no new action |
-| `settings.language` | `lang` | ProfileActions | the language as a BCP-47 tag, or `""` to follow the device. Validated on shape, never on membership: the core keeps the tag opaque and `Str` in the adapter owns which tags ship and what each draws (`docs/I18N.md` §8) |
+| `settings.language` | `lang` | ProfileActions | the language as a BCP-47 tag, or `""` to follow the device. Validated on shape, never on membership: the core keeps the tag opaque and `Str` in the adapter owns which tags ship and what each draws (§8) |
 | `freeplay.begin` | `nowMs` | FreePlayActions | BEGIN pressed; run clock starts (wall clock via input) |
 | `freeplay.advance` | — | FreePlayActions | next generated level, clock keeps running |
 | `freeplay.complete` | `nowMs` | FreePlayActions | 5th solve: best time iff lower, count++, rejects a backward clock |
@@ -224,8 +224,8 @@ it.
 The Unity layer owns exactly one piece of timing: scheduling `board.resolve`
 0.3 s after a drop (fast-forwarding on input). Everything else it does is
 listen (`CellChanged` / `LevelSolved` / `PiecesUnbound` — R-113) and render.
-The baseline look is 100% procedural (one white texture, built-in font,
-zero serialized scene content — any empty scene boots via
+The baseline look is 100% procedural (one white texture, the three
+vendored faces under `Resources/Fonts`, zero serialized scene content — any empty scene boots via
 `RuntimeInitializeOnLoadMethod`), so the project runs on a fresh clone.
 Rendering is URP (built-in is in maintenance): the pipeline asset is created
 and assigned from code on first editor open
@@ -247,6 +247,38 @@ keeps its shape when the screen turns, and positions stay fractions of the axis
 they belong to. Screens each inventing their own fractions of screen height is
 what let all four drift into a landscape-only shape, so every screen
 measures from it.
+
+**Text and language.** Core holds keys and never prose: a word a player
+reads lives in `docs/strings/<tag>.json`, is baked by `tools/bake_strings.py`
+into `Game/Strings.g.cs` as a property of `Str` (so a typo is a build
+error), and is read through `Str` in the adapter; a gameplay type carries an
+id and the adapter looks the word up. The baker is the gate: every language
+file must carry `en.json`'s keys and placeholders exactly, a `world.<id>.name`
+must match its JSONL, and a tutorial line must fit the one-line band (East
+Asian width, so CJK counts double). Substitutions go through `Str.Fmt` and
+bare numbers through `Str.Num`, both invariant, because every number shown
+is a mono-column readout. Casing is authored in the table, never applied in
+code. Counts are label-value (`BUGS 3`), so no language needs plural rules.
+A string is never a layout: a box is sized by `Ui.MeasureWidth`, a text
+fits its box by `Ui.FitText` down to the 11 px floor, and no literal spacing
+stands in for columns. Chrome mirrors and the board never does: positions
+come from `Layout.Lead`/`Trail`/`ColumnX`, anchors from
+`Layout.Leading`/`Trailing`, pager marks from `BugGlyph.Prev`/`Next`, all off
+`Str.IsRtl`; board coordinates never pass through `Layout.Dir`. Arabic and
+Hebrew are shaped by `RtlText` (RTLTMPro's fixer, MIT, vendored under
+`Game/Rtl`) on the way into TextMeshPro; the mirrored pseudolocale is not.
+Language is a BCP-47 tag in `Profile.Lang`, `""` meaning follow the device;
+one tag per language, never two regional variants together. The selector is
+a mono chip carrying the tag plus a drawn glyph of its own script for a
+non-Latin language (`SelectorGlyphs.g.cs`), never a flag: flags name
+countries. Two pseudolocales are generated, never authored, and show in the
+editor and development builds only: `qps-ploc` pads and accents to find
+clipping, `qps-plocm` mirrors to find left/right assumptions. The Noto
+fallback faces (`tools/subset_fonts.py`) are cut per language to the code
+points its strings use that the design faces lack, one face per CJK
+language because kanji and hanzi share code points and are drawn
+differently; `Ui` orders them with the language in force first. Both font
+tools read Noto sources that are not in the repo.
 
 The board itself is `docs/infection-vfx-spec.md`, built the same way — one
 quad, one material, zero imported art. Cell state goes into a point-filtered

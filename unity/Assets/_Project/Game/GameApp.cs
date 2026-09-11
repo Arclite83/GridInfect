@@ -113,7 +113,7 @@ namespace GridInfect.Game
         }
 
         // The stored tag if it ships, else the device, else English
-        // (docs/I18N.md). A screen bakes its words at construction, so
+        // (ARCHITECTURE.md §8). A screen bakes its words at construction, so
         // whoever calls this after boot rebuilds the screen it is on.
         public void ApplyLanguage()
         {

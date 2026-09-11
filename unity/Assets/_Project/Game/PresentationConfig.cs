@@ -118,7 +118,7 @@ namespace GridInfect.Game
             // line that fits is drawn at, not a cap set by the longest one.
             public static float BodyText => ShortEdge * 0.037f;
 
-            // Reading direction (docs/I18N.md): +1 left to right, -1 right
+            // Reading direction (ARCHITECTURE.md §8): +1 left to right, -1 right
             // to left. Chrome positions itself from the leading and trailing
             // edges through Lead/Trail rather than from left and right, and
             // resolves its text anchors through Leading/Trailing, so a
