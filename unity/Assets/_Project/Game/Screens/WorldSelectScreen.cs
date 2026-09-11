@@ -116,7 +116,8 @@ namespace GridInfect.Game
 
             float filled = Mathf.Max(height, width * Mathf.Clamp01(fraction));
             var fill = Ui.MakeGlass("meter:fill", parent, new Vector2(filled, height), BoardTheme.MeterFill(), 22);
-            Ui.SetPos(fill, -width / 2f + filled / 2f, y);
+            // Fills from the leading edge: progress runs the way the row reads.
+            Ui.SetPos(fill, L.Dir * (-width / 2f + filled / 2f), y);
         }
     }
 

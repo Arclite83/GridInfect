@@ -79,7 +79,10 @@ namespace GridInfect.Game
             var infected = BoardTheme.CellInfected();
             for (int n = 0; n < Cells; n++)
             {
-                float x = (n - (Cells - 1) / 2f) * pitch;
+                // The sweep runs from the leading side, like any progress.
+                // The card is built once at boot, so a language change
+                // mid-session keeps the old direction until the next launch.
+                float x = PresentationConfig.Layout.ColumnX(n, Cells, pitch);
                 _plate[n + 1] = Make($"cell:{n}", new Vector2(cell, cell), dormant, sortingOrder + 1, x);
                 // The lit cell rides on top of the dormant one, exactly as a
                 // board cell does: what the sweep drives is its alpha.
