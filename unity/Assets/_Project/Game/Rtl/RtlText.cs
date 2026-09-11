@@ -43,7 +43,7 @@ namespace GridInfect.Game
 
         // farsi: false (Arabic forms and Arabic-Indic numerals off);
         // preserveNumbers: true, since every number the game shows is a
-        // Western-digit readout (docs/I18N.md); fixTags: false, since
+        // Western-digit readout (ARCHITECTURE.md §8); fixTags: false, since
         // richText is off and a '<' is a '<'.
         static string Fix(string logical)
         {

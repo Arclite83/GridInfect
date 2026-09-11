@@ -26,6 +26,7 @@ board states extracted from the 2014 code.
 | [`docs/`](docs/) | The port specification extracted from the original (rules, generator, modes, assets, requirements, dependencies) + `test_vectors.json` |
 | [`docs/NEXT_PASS.md`](docs/NEXT_PASS.md), [`docs/EXECUTION_PLAN.md`](docs/EXECUTION_PLAN.md) | The next-pass decisions and the staged plan with its status table |
 | [`docs/GENERATOR_V2.md`](docs/GENERATOR_V2.md), [`docs/RULES_V2.md`](docs/RULES_V2.md) | The deduction solver, trace grader, sampler and constructor (solution-first, subtractive, minimal); the rules every generated level runs on |
+| [`docs/strings/`](docs/strings/) | Every word the game says, one JSON per language, baked into `Strings.g.cs` by `tools/bake_strings.py`; the rules are `ARCHITECTURE.md` §8 |
 | [`docs/worlds/`](docs/worlds/) | The shipped worlds as JSONL (one header line with the generator spec, one level per line), baked into `WorldData.g.cs`. The Daily and Endless have no baked content: their boards are seed math, generated on the device into `LevelCache` ahead of the player |
 | [`src/GenLevels/`](src/GenLevels/) | The offline level generator behind `tools/gen_levels` and `tools/gen_worlds.sh` |
 | [`grid-infect-style/`](grid-infect-style/) | The locked visual style (`STYLE-GUIDE.md`): bugs on a printed circuit board. Tokens, the vector asset generator, the reference mockups |
@@ -85,6 +86,7 @@ python3 tools/bake_levels.py          # docs/test_vectors.json -> ClassicLevelDa
 python3 tools/gen_undo_fixtures.py    # Python reference -> UndoFixtures.g.cs
 python3 tools/gen_level_metrics_golden.py   # Python solver oracle -> docs/level_metrics_classic.json
 python3 tools/bake_worlds.py          # docs/worlds/*.jsonl -> WorldData.g.cs
+python3 tools/bake_strings.py         # docs/strings/*.json -> Strings.g.cs (+ pseudolocales)
 tools/gen_worlds.sh                   # regenerate docs/worlds/*.jsonl from their recorded seeds (needs .NET)
 tools/gen_levels --grade G3 --count 25 --seed 1 --pieces 4-5   # ad-hoc batch generation (JSONL)
 python3 docs/tools/verify_test_vectors.py   # sanity: vectors self-verify

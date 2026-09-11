@@ -13,7 +13,7 @@ namespace GridInfect.Game
     // What TMP brings: a signed-distance face that stays crisp at every size,
     // measurement (GetPreferredValues), wrapping and auto-size when asked,
     // and a fallback chain and bidi flag for the languages that need them
-    // (docs/I18N.md).
+    // (ARCHITECTURE.md §8).
     public static class Ui
     {
         static Sprite _whiteSprite;
