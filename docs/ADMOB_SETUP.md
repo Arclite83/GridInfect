@@ -10,72 +10,57 @@ it needs accounts this project cannot reach.
 
 ---
 
-## 0. Before anything: find the 2014 Android keystore
+## 0. The identifier, decided
 
-**Do this first. It decides the package name, and it is a five-minute check
-that invalidates the rest of the plan if it comes back wrong.**
+`com.bloodhoundstudios.gridinfect.app`, on both stores. Draft app created on
+Play 2026-09-11; register the same bundle ID on App Store Connect before the
+iOS follow.
 
-A Play listing can only be updated by something signed with its original key.
-Play App Signing launched in 2017, so a 2014 app was almost certainly signed
-with a local keystore and never enrolled. If that `.keystore`/`.jks` and its
-passwords are gone, `com.bloodhoundstudios.gridinfect` cannot be updated —
-and because the package name was published, it also cannot be reused for a
-new listing. It would be burned in both directions.
+Why not the 2014 package: a Play listing can only be updated by something
+signed with its original key, the 2014 app predates Play App Signing, and
+the keystore left with a laptop. That alone kills updating the old listing.
+A published package name also cannot be reused for a *new* listing, which
+kills the other route. `com.bloodhoundstudios.gridinfect` is burned both
+ways, and nothing on Google's side reverses it.
 
-Check for: the keystore file itself, the store password, the key alias, and
-the alias password. All four, not just the file.
+iOS could have kept the old bundle ID (Apple manages the certificates), but
+the one thing reuse was ever going to buy was the Android install base. With
+that gone, one identity for the remaster is simpler than two, and a 2014
+listing's ratings and screenshots are nothing worth inheriting.
 
-- **Found all four** → reuse `com.bloodhoundstudios.gridinfect`. See §1.
-- **Missing any** → new package name, and open the Play Console to confirm
-  whether the old listing is still enrolled in anything before assuming.
+This closes `NEXT_PASS.md` decision 6 and resolves R-1203.
 
-iOS has no equivalent trap: Apple manages signing certificates and you can
-regenerate them from the developer account at will. The only question there
-is whether the App Store Connect record still exists.
+## 1. The keystore, this time
 
-`mobile-build.yml` already takes the keystore as `GI_KEYSTORE_B64` plus its
-passwords as secrets, and `ProjectSettings.asset` has
-`androidUseCustomKeystore: 0` waiting to be turned on. The plumbing is done.
+Generate the upload key before the first AAB, and put it somewhere that
+outlives a machine. The 2014 one lived on a laptop; that is the whole story
+of §0.
 
----
+```
+keytool -genkeypair -v -keystore gridinfect-upload.jks -alias upload \
+  -keyalg RSA -keysize 2048 -validity 10000
+```
 
-## 1. Store identities
+Store the `.jks` plus all three secrets (store password, alias, alias
+password) in a password manager that takes file attachments. Play App
+Signing is on by default for a new app, so this is an *upload* key and
+Google holds the real signing key; losing it is a reset request rather than
+a burned package. Still: do not lose it.
 
-`applicationIdentifier` is already `com.bloodhoundstudios.gridinfect` for both
-platforms in `ProjectSettings.asset`.
-
-This reopens `NEXT_PASS.md` decision 6 ("new app on the stores regardless"),
-which was taken before anyone knew the old credentials survived.
-
-**Reuse both, if the credentials are there.** The rebuild is the same game by
-construction — the rules engine replays all 128 shipped levels against golden
-board states pulled from the 2014 code. That is a remaster, not a sequel, and
-an identifier is exactly the thing a remaster keeps. Reuse also hands you
-whatever install base is left as a launch-day cohort, at no cost.
-
-What you give up by reusing:
-
-- **Lifetime ratings carry and cannot be reset.** Check the old listing's
-  average before committing. If it is bad enough to hurt, that is the one
-  real argument for a fresh package.
-- Any old IAP products, pricing and Data safety answers ride along and need
-  auditing rather than filling in fresh.
-
-What you do *not* give up, contrary to the usual worry: the update-shock of
-pushing a different game to existing owners. It is not a different game.
-
-Decision to record in `NEXT_PASS.md` once you have checked the keystore and
-the rating.
-
----
+`mobile-build.yml` reads it as `GI_KEYSTORE_B64` plus `GI_KEYSTORE_PASS`,
+`GI_KEYALIAS`, `GI_KEYALIAS_PASS`. `MobileBuild.cs` reads the same names
+from the environment for a local build. Nothing about the key is ever in
+the repo.
 
 ## 2. AdMob console
 
 Free to set up; AdMob takes a revenue share rather than a fee.
 
-1. Create an AdMob account and add the **Android** app. If the Play listing
-   exists, link it — linking is what lets AdMob verify the app and is worth
-   doing before you have traffic.
+1. Add the **Android** app. When it asks whether the app is listed on a
+   store, answer **no**: it hands you an app ID immediately and marks the app
+   "not linked". A draft Play app is not a listing, and internal testing is
+   not public, so linking waits until the production release. Unlinked apps
+   serve test ads without restriction, which is all the first build needs.
 2. Copy the **AdMob app ID** (`ca-app-pub-…~…`, tilde). It goes in
    `Assets ▸ Google Mobile Ads ▸ Settings` after the import in §3, which
    writes `GoogleMobileAdsSettings.asset`. The plugin injects it into the
@@ -126,6 +111,32 @@ Keep `AdConfig.UseTestAds` on for every build that is not a store release.
    against IntelliSense. Their file headers say exactly which is which.
 5. Fill in `Assets ▸ Google Mobile Ads ▸ Settings` with the app ID from §2.
 
+### The first build with ads in it
+
+Two milestones, in this order, because the first needs no key and the
+second does.
+
+**Sideload APK.** `Grid Infect ▸ Build ▸ Android (APK for a device)`. With no
+`GI_KEYSTORE` in the environment it is debug-signed, which installs fine and
+uploads nowhere. Leave `AdConfig.UseTestAds` on. Solve nine boards outside
+the tutorial and the ninth's popup should carry a test interstitial; the
+LOCK button at an empty wallet should offer a test rewarded ad. That is
+the whole acceptance for "ads work", and it needs nothing from Play.
+
+**Internal-testing AAB.** Generate the key (§1), export the four `GI_*`
+variables, `Grid Infect ▸ Build ▸ Android (AAB for Play)`, upload to the
+draft app's **Internal testing** track. Internal testing needs only a
+tester list, not the full store listing or review, and it is the first
+thing that proves the signing, the manifest and the `AD_ID` permission end
+to end on a Play-delivered install.
+
+The GitHub workflow (`mobile-build.yml`) does the same builds headless,
+but it needs the Unity licence secrets set and the plugin's files committed
+(`Assets/GoogleMobileAds`, `Assets/ExternalDependencyManager`,
+`Assets/Plugins/Android`, their `.meta` files). Commit them; that is
+normal for a `.unitypackage`. It just is not the fastest route to the
+first APK.
+
 ---
 
 ## 4. Google Play
@@ -174,4 +185,4 @@ Nothing below needs doing:
 | Privacy options entry (R-802) | `SettingsScreen.cs`, shown only when UMP requires it |
 | NO ADS chip (R-701) | `MainMenuScreen.cs`, hidden once owned |
 | Assembly boundary gate (R-1303) | `Tests/EditMode/AssemblyBoundaryTests.cs` |
-| Keystore plumbing | `.github/workflows/mobile-build.yml` |
+| Keystore plumbing (the key itself is yours to make, §1) | `.github/workflows/mobile-build.yml`, `Editor/MobileBuild.cs` |

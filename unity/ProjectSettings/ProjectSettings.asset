@@ -169,8 +169,8 @@ PlayerSettings:
   androidMaxAspectRatio: 2.4
   androidMinAspectRatio: 1
   applicationIdentifier:
-    Android: com.bloodhoundstudios.gridinfect
-    iPhone: com.bloodhoundstudios.gridinfect
+    Android: com.bloodhoundstudios.gridinfect.app
+    iPhone: com.bloodhoundstudios.gridinfect.app
   buildNumber:
     Standalone: 0
     VisionOS: 0
