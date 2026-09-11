@@ -18,8 +18,10 @@ namespace GridInfect.Game
     {
         static Sprite _whiteSprite;
         static Font _font;
+        static Font _bold;
         static Font _mono;
         static TMP_FontAsset _fontAsset;
+        static TMP_FontAsset _boldAsset;
         static TMP_FontAsset _monoAsset;
 
         // TextMesh drew an em `heightPx` units tall from fontSize 64 and a
@@ -51,11 +53,50 @@ namespace GridInfect.Game
             }
         }
 
-        // The guide's display face is Chakra Petch and its mono face Share
-        // Tech Mono (STYLE-GUIDE §7). Neither ships with a phone, so each is
-        // asked for first and a system face stands in until the TTFs are
-        // imported. Newer editors (6000.5+) dropped the built-in legacy
-        // fonts, and probing a missing builtin logs an error — ask the OS.
+        // The guide's display face is Chakra Petch at 500 and 700 and its
+        // mono face Share Tech Mono (STYLE-GUIDE §7). All three ship under
+        // Resources/Fonts (OFL, licences beside them), so the face is a
+        // given rather than probed for; the OS chain behind it is for a
+        // build where the resource failed to import, and logs when used.
+        static Font Vendored(string resource)
+        {
+            Font font = TryVendored(resource);
+            if (font == null) Debug.LogWarning($"[text] Resources/Fonts/{resource} did not load; an OS face stands in");
+            return font;
+        }
+
+        static Font TryVendored(string resource)
+        {
+            try { return Resources.Load<Font>("Fonts/" + resource); }
+            catch (System.Exception) { return null; }
+        }
+
+        // The fallback faces (tools/subset_fonts.py): Noto, cut to the code
+        // points the string files use that the design faces do not carry —
+        // kana and kanji, Cyrillic, the odd Latin letter. Each design face
+        // falls through to these, in this order, for a glyph it lacks. A
+        // fallback that is not there is not an error: the tool has not been
+        // run for that script yet, and the OS face is what draws.
+        static readonly string[] FallbackFiles = { "Fallback-Sans", "Fallback-JP" };
+        static System.Collections.Generic.List<TMP_FontAsset> _fallbacks;
+
+        static System.Collections.Generic.List<TMP_FontAsset> Fallbacks
+        {
+            get
+            {
+                if (_fallbacks == null)
+                {
+                    _fallbacks = new System.Collections.Generic.List<TMP_FontAsset>();
+                    foreach (string file in FallbackFiles)
+                    {
+                        var asset = MakeFontAsset(TryVendored(file));
+                        if (asset != null) _fallbacks.Add(asset);
+                    }
+                }
+                return _fallbacks;
+            }
+        }
+
         static Font FindFont(string[] preferred)
         {
             string[] installed = Font.GetOSInstalledFontNames() ?? new string[0];
@@ -81,9 +122,19 @@ namespace GridInfect.Game
             {
                 if (_font == null)
                 {
-                    _font = FindFont(new[] { "Chakra Petch", "Chakra Petch Medium", "Arial", "Helvetica", "Segoe UI", "Liberation Sans", "DejaVu Sans", "Roboto" });
+                    _font = Vendored("ChakraPetch-Medium")
+                        ?? FindFont(new[] { "Chakra Petch Medium", "Chakra Petch", "Arial", "Helvetica", "Segoe UI", "Liberation Sans", "DejaVu Sans", "Roboto" });
                 }
                 return _font;
+            }
+        }
+
+        public static Font UiBoldFont
+        {
+            get
+            {
+                if (_bold == null) _bold = Vendored("ChakraPetch-Bold") ?? UiFont;
+                return _bold;
             }
         }
 
@@ -93,7 +144,8 @@ namespace GridInfect.Game
             {
                 if (_mono == null)
                 {
-                    _mono = FindFont(new[] { "Share Tech Mono", "Menlo", "Consolas", "Courier New", "Liberation Mono", "DejaVu Sans Mono", "Roboto Mono" });
+                    _mono = Vendored("ShareTechMono-Regular")
+                        ?? FindFont(new[] { "Share Tech Mono", "Menlo", "Consolas", "Courier New", "Liberation Mono", "DejaVu Sans Mono", "Roboto Mono" });
                     if (_mono == null) _mono = UiFont;
                 }
                 return _mono;
@@ -121,12 +173,31 @@ namespace GridInfect.Game
             }
         }
 
+        static TMP_FontAsset WithFallbacks(TMP_FontAsset asset)
+        {
+            if (asset != null) asset.fallbackFontAssetTable = Fallbacks;
+            return asset;
+        }
+
         public static TMP_FontAsset UiFontAsset
         {
             get
             {
-                if (_fontAsset == null) _fontAsset = MakeFontAsset(UiFont) ?? MakeFontAsset(MonoFont);
+                if (_fontAsset == null) _fontAsset = WithFallbacks(MakeFontAsset(UiFont) ?? MakeFontAsset(MonoFont));
                 return _fontAsset;
+            }
+        }
+
+        // The 700 weight is its own face, not TMP's synthetic bold over the
+        // 500: the synthetic one thickens strokes without the letterforms
+        // that were drawn for the weight. It falls back to that synthetic
+        // bold only when the bold face itself did not load.
+        public static TMP_FontAsset UiBoldFontAsset
+        {
+            get
+            {
+                if (_boldAsset == null) _boldAsset = UiBoldFont == UiFont ? null : WithFallbacks(MakeFontAsset(UiBoldFont));
+                return _boldAsset ?? UiFontAsset;
             }
         }
 
@@ -134,7 +205,7 @@ namespace GridInfect.Game
         {
             get
             {
-                if (_monoAsset == null) _monoAsset = MakeFontAsset(MonoFont) ?? UiFontAsset;
+                if (_monoAsset == null) _monoAsset = WithFallbacks(MakeFontAsset(MonoFont)) ?? UiFontAsset;
                 return _monoAsset;
             }
         }
@@ -171,13 +242,10 @@ namespace GridInfect.Game
         // Petch 500 and 700). Chip labels take it: 12-13 px uppercase on
         // glass over a photographed-looking board is where thin type goes
         // first in glare. The mono face has no bold and never asks for one.
-        // How wide a line draws, estimated: characters times size times the
-        // face's average advance (0.66 for the display face in caps, 0.62 for
-        // the mono). It is the estimate ChipSize always used, in one place.
-        // TMP can measure (GetPreferredValues); this estimate is what the
-        // TextMesh renderer left behind and is replaced by that measurement
-        // in the re-fit (docs/I18N.md, remaining), in this one place.
-        public static float EstimateWidth(string text, float heightPx, bool mono)
+        // How wide a line would draw, estimated: characters times size times
+        // the face's average advance. Only the fallback now, for a text with
+        // no font asset behind it; MeasureWidth is the real thing.
+        static float EstimateWidth(string text, float heightPx, bool mono)
         {
             int longest = 0, run = 0;
             for (int i = 0; i < text.Length; i++)
@@ -189,17 +257,79 @@ namespace GridInfect.Game
             return longest * heightPx * (mono ? 0.62f : 0.66f);
         }
 
+        // One hidden text, kept for measuring: how wide `text` draws in a
+        // face at a size, before the object that will show it exists. It is
+        // what lets a chip be sized to its label and a badge to its widest
+        // reading, in whatever language, instead of to a character count.
+        static TextMeshPro _measure;
+
+        public static float MeasureWidth(string text, float heightPx, bool mono, bool bold)
+        {
+            if (string.IsNullOrEmpty(text)) return 0f;
+            if (_measure == null)
+            {
+                var go = new GameObject("measure");
+                go.hideFlags = HideFlags.HideAndDontSave;
+                Object.DontDestroyOnLoad(go);
+                _measure = go.AddComponent<TextMeshPro>();
+                _measure.richText = false;
+                _measure.textWrappingMode = TextWrappingModes.NoWrap;
+                _measure.overflowMode = TextOverflowModes.Overflow;
+                _measure.color = Color.clear;
+                go.transform.localPosition = new Vector3(0f, 1e6f, 0f);
+            }
+            bool realBold = bold && !mono && UiBoldFontAsset != UiFontAsset;
+            var font = mono ? MonoFontAsset : realBold ? UiBoldFontAsset : UiFontAsset;
+            if (font == null) return EstimateWidth(text, heightPx, mono);
+            _measure.font = font;
+            _measure.fontStyle = bold && !mono && !realBold ? FontStyles.Bold : FontStyles.Normal;
+            _measure.fontSize = heightPx * TmpPointsPerPx;
+            return _measure.GetPreferredValues(text).x;
+        }
+
+        // Below this the type is not legible over the board (STYLE-GUIDE 7,
+        // PresentationConfig.Style), so a text stops shrinking here and is
+        // allowed to run over its box instead: clipped is a layout bug you
+        // can see, unreadable is one you cannot.
+        static float MinTextPx => S.Px(11f);
+
         // Size the text at `heightPx`, or smaller if that would draw wider
-        // than `maxWidthPx` (0 = no limit). A translation that is longer than
-        // the English it replaces shrinks to its box rather than leaving it.
+        // than `maxWidthPx` (0 = no limit), down to the legibility floor.
         public static void FitText(TMP_Text mesh, string text, float heightPx, float maxWidthPx, bool mono)
         {
-            if (maxWidthPx > 0f)
-            {
-                float width = EstimateWidth(text ?? "", heightPx, mono);
-                if (width > maxWidthPx) heightPx *= maxWidthPx / width;
-            }
             mesh.fontSize = heightPx * TmpPointsPerPx;
+            if (maxWidthPx <= 0f || string.IsNullOrEmpty(text)) return;
+            float width = mesh.font != null ? mesh.GetPreferredValues(text).x : EstimateWidth(text, heightPx, mono);
+            if (width > maxWidthPx)
+            {
+                float fitted = Mathf.Max(MinTextPx, heightPx * maxWidthPx / width);
+                mesh.fontSize = fitted * TmpPointsPerPx;
+            }
+        }
+
+        // A chip's label size from its box: 42% of the height, capped at
+        // 1.4x the chip type (STYLE-GUIDE 7). One definition, so the box a
+        // label is measured for is the box it is drawn in.
+        public static float LabelPx(Vector2 chipSize) =>
+            Mathf.Min(chipSize.y * 0.42f, S.Px(S.ChipText) * 1.4f);
+
+        // A chip's box from its label: 12 px type, 8 x 14 padding (§7), the
+        // width measured in the face the label draws in.
+        public static Vector2 ChipBox(string label, bool mono = false, bool bold = true)
+        {
+            float height = S.Px(S.ChipPadY * 2f + S.ChipText * 1.25f);
+            float textPx = LabelPx(new Vector2(0f, height));
+            return new Vector2(S.Px(S.ChipPadX * 2f) + MeasureWidth(label, textPx, mono, bold), height);
+        }
+
+        // A badge's box from its widest reading: mono 13 px on 6 x 12 padding.
+        public static Vector2 BadgeBox(params string[] readings)
+        {
+            float height = S.Px(S.BadgePadY * 2f + S.BadgeText * 1.25f);
+            float textPx = LabelPx(new Vector2(0f, height));
+            float widest = 0f;
+            foreach (string r in readings) widest = Mathf.Max(widest, MeasureWidth(r, textPx, mono: true, bold: true));
+            return new Vector2(S.Px(S.BadgePadX * 2f) + widest, height);
         }
 
         public static TMP_Text MakeText(string name, Transform parent, string text, float heightPx, Color color, int sortingOrder,
@@ -208,7 +338,8 @@ namespace GridInfect.Game
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             var mesh = go.AddComponent<TextMeshPro>();
-            mesh.font = mono ? MonoFontAsset : UiFontAsset;
+            bool realBold = bold && !mono && UiBoldFontAsset != UiFontAsset;
+            mesh.font = mono ? MonoFontAsset : realBold ? UiBoldFontAsset : UiFontAsset;
             // Strings come from translators, not markup: a '<' in a label is
             // a '<'. TextMesh parsed tags by default; this does not.
             mesh.richText = false;
@@ -219,7 +350,7 @@ namespace GridInfect.Game
             // mirrored pseudolocale has already done to itself (docs/I18N.md).
             // It is set with the first shaped language, not before.
             mesh.isRightToLeftText = false;
-            mesh.fontStyle = bold && !mono ? FontStyles.Bold : FontStyles.Normal;
+            mesh.fontStyle = bold && !mono && !realBold ? FontStyles.Bold : FontStyles.Normal;
             mesh.text = text;
             FitText(mesh, text, heightPx, maxWidthPx, mono);
             // The rect is a point at the object's origin; the pivot and the
@@ -351,7 +482,7 @@ namespace GridInfect.Game
                 Ui.SetPos(right, sizePx.x / 2f + gap, 0f);
             }
 
-            float textPx = Mathf.Min(sizePx.y * 0.42f, S.Px(S.ChipText) * 1.4f);
+            float textPx = Ui.LabelPx(sizePx);
             // The label fits inside the chip's padding, or shrinks until it does.
             var text = Ui.MakeText("label", root.transform, label, textPx, textColor, sortingOrder + 1, mono, bold: true,
                 maxWidthPx: sizePx.x - S.Px(S.ChipPadX * 2f));

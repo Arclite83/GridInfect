@@ -30,7 +30,7 @@ namespace GridInfect.Game
         {
             float h = UnityEngine.Screen.height;
 
-            var title = Ui.MakeText("title", Root.transform, Str.WorldsTitle, L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.WorldsTitle, L.HeadingText, BoardTheme.Text, 2, maxWidthPx: L.TitleWidth);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
             Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
@@ -142,7 +142,7 @@ namespace GridInfect.Game
             float h = UnityEngine.Screen.height;
             World world = Worlds.Get(_worldId);
 
-            var title = Ui.MakeText("title", Root.transform, Str.WorldName(world.Id), L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.WorldName(world.Id), L.HeadingText, BoardTheme.Text, 2, maxWidthPx: L.TitleWidth);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
             Buttons.Add(UiButton.Make(Root.transform, Str.NavWorlds, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new WorldSelectScreen())));

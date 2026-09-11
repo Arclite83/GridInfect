@@ -113,8 +113,9 @@ namespace GridInfect.Game
             public static float TitleText => ShortEdge * 0.095f;
             public static float HeadingText => ShortEdge * 0.05f;
             public static float LabelText => ShortEdge * 0.04f;
-            // 0.037 is 14.4 px on the reference screen. Text does not
-            // wrap, so the rules sheet's longest line is what caps this.
+            // 0.037 is 14.4 px on the reference screen. A line longer than
+            // its room shrinks to fit (Ui.FitText), so this is the size a
+            // line that fits is drawn at, not a cap set by the longest one.
             public static float BodyText => ShortEdge * 0.037f;
 
             // Reading direction (docs/I18N.md): +1 left to right, -1 right
@@ -137,6 +138,11 @@ namespace GridInfect.Game
             // on the leading side.
             public static float ColumnX(int col, int count, float pitch) =>
                 Dir * (col - (count - 1) / 2f) * pitch;
+
+            // The room a centred title has between the back chip and its
+            // mirror on the trailing side. A world's name in German reached
+            // under WELTEN before this.
+            public static float TitleWidth => ContentWidth - 2f * (BackSize.x + Gap);
 
             // A back button lives in the top leading corner on every screen
             // that has one, sized so a thumb can reach it on the tallest phone.

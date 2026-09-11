@@ -47,7 +47,7 @@ namespace GridInfect.Game
         {
             float h = UnityEngine.Screen.height;
 
-            var title = Ui.MakeText("title", Root.transform, Str.RulesTitle, L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.RulesTitle, L.HeadingText, BoardTheme.Text, 2, maxWidthPx: L.TitleWidth);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
             Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
@@ -265,10 +265,15 @@ namespace GridInfect.Game
             y -= _pitch;
         }
 
+        // A centred line has the content width; a legend line runs from
+        // its column to the trailing edge. Either shrinks to fit.
         void Line(string name, string text, float x, float y, float size,
             TextAnchor anchor = TextAnchor.MiddleCenter)
         {
-            var mesh = Ui.MakeText(name, _body.transform, text, size, BoardTheme.Text, 12, anchor: anchor);
+            float room = anchor == TextAnchor.MiddleCenter
+                ? L.ContentWidth - S.Px(16f)
+                : Mathf.Abs(L.Trail(S.Px(8f)) - x);
+            var mesh = Ui.MakeText(name, _body.transform, text, size, BoardTheme.Text, 12, anchor: anchor, maxWidthPx: room);
             Ui.SetPos(mesh.gameObject, x, y);
         }
 

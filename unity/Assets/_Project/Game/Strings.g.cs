@@ -11,12 +11,28 @@ namespace GridInfect.Game
         public static readonly string[] Tags =
         {
             "en",
+            "de",
+            "es",
+            "fr",
+            "it",
+            "ja",
+            "pt-BR",
+            "ru",
+            "tr",
             "qps-ploc",
             "qps-plocm",
         };
 
         public static readonly bool[] IsPseudo =
         {
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
             false,
             true,
             true,
@@ -119,7 +135,6 @@ namespace GridInfect.Game
             "NEXT",   // board.popup.next
             "PLAY",   // board.popup.play
             "CALENDAR",   // board.popup.calendar
-            "SOLVED {0}",   // board.hud.solved
             "STREAK {0}",   // board.hud.streak
             "BEST {0}",   // board.hud.best
             "{0}/5",   // board.hud.runCount
@@ -186,6 +201,1326 @@ namespace GridInfect.Game
             "CROSSTALK",   // world.w15.name
             "SUPPOSE",   // world.w16.name
             "MASTERY",   // world.w17.name
+        };
+
+        // de
+        static readonly string[] De =
+        {
+            "MEN\u00dc",   // nav.menu
+            "WELTEN",   // nav.worlds
+            "{0}/{1}",   // common.page
+            "WELTEN",   // menu.worlds
+            "T\u00c4GLICH",   // menu.daily
+            "ENDLOS",   // menu.endless
+            "KLASSIK",   // menu.legacy
+            "TUTORIAL",   // menu.tutorial
+            "KEINE WERBUNG",   // menu.noAds
+            "ZUM ERSTEN MAL?",   // menu.offer.title
+            "Lern die Grundlagen in einer Minute.",   // menu.offer.line
+            "TUTORIAL",   // menu.offer.accept
+            "\u00dcBERSPRINGEN",   // menu.offer.skip
+            "EINSTELLUNGEN",   // settings.title
+            "DATENSCHUTZ",   // settings.privacy
+            "SPRACHE",   // settings.language
+            "L\u00d6SCHT JEDES GESCHAFFTE LEVEL\nUND JEDEN REKORD. SCHL\u00d6SSER BLEIBEN.",   // settings.eraseCaption
+            "V{0}   BUILD {1}",   // settings.build
+            "EDITOR",   // settings.buildEditor
+            "TON: AN",   // settings.soundOn
+            "TON: AUS",   // settings.soundOff
+            "FORTSCHRITT L\u00d6SCHEN",   // settings.reset
+            "NOCHMAL TIPPEN ZUM L\u00d6SCHEN",   // settings.resetArmed
+            "GR\u00dcN",   // settings.skin.green
+            "BLAU",   // settings.skin.blue
+            "BEIGE",   // settings.skin.tan
+            "ALLE WELTEN\nSCHAFFEN",   // settings.skin.wantWorlds
+            "GANZ KLASSIK\nSCHAFFEN",   // settings.skin.wantLegacy
+            "SPIELANLEITUNG",   // rules.title
+            "Infiziere jede Zelle des Bretts, um zu gewinnen.",   // rules.goal
+            "Zieh einen K\u00e4fer auf eine beliebige Zelle.",   // rules.intro
+            "Ein Strahl l\u00e4uft bis zum Rand, \u00fcber L\u00fccken hinweg.",   // rules.diagram
+            "Ein Sieg auf Absto\u00dfer oder Falle z\u00e4hlt trotzdem.",   // rules.note1
+            "Trifft ein Strahl eine Sperrzelle, springt der Zug zur\u00fcck.",   // rules.note2
+            "Infizier sie.",   // rules.cell.infect
+            "L\u00dcCKE",   // rules.cell.gap.name
+            "Keine Zelle: Strahlen kreuzen sie.",   // rules.cell.gap.line
+            "WAND",   // rules.cell.wall.name
+            "Blockiert einen Strahl.",   // rules.cell.wall.line
+            "ABSTOSSER",   // rules.cell.repel.name
+            "L\u00f6scht zur\u00fcck, wenn getroffen.",   // rules.cell.repel.line
+            "FALLE",   // rules.cell.trap.name
+            "Leert das Brett, wenn getroffen.",   // rules.cell.trap.line
+            "RELAIS",   // rules.cell.relay.name
+            "Feuert eigene Strahlen, wenn getroffen.",   // rules.cell.relay.line
+            "SPERRE",   // rules.cell.avoid.name
+            "Strahlen d\u00fcrfen sie nicht ber\u00fchren.",   // rules.cell.avoid.line
+            "Strahlen laufen bis zum Rand.",   // rules.spread.cardinal
+            "Oder von Ecke zu Ecke.",   // rules.spread.diagonal
+            "Ein Klecks nimmt die acht ringsum.",   // rules.spread.area
+            "KLASSIK",   // legacy.title
+            "FREIES SPIEL",   // freeplay.title
+            "ANF\u00c4NGER",   // freeplay.difficulty.beginner
+            "LEICHT",   // freeplay.difficulty.easy
+            "MITTEL",   // freeplay.difficulty.medium
+            "SCHWER",   // freeplay.difficulty.hard
+            "FORDERND",   // freeplay.difficulty.challenging
+            "WELTEN",   // worlds.title
+            "{0}  {1}",   // worlds.row
+            "{0}/{1}",   // worlds.progress
+            "T\u00c4GLICH",   // daily.title
+            "HEUTE",   // daily.today
+            "VERGANGEN",   // daily.past
+            "SERIE {0:00}",   // daily.streak
+            "{0} {1:00}/{2:00}",   // daily.monthCount
+            "{0} {1:00} {2}",   // daily.dateLine
+            "K\u00c4FER {0}",   // daily.bugs
+            "ZELLEN {0}",   // daily.cells
+            "GESCHAFFT",   // daily.complete
+            "ERZEUGE",   // daily.generating
+            "UNGESPIELT",   // daily.unplayed
+            "NOCHMAL",   // daily.playAgain
+            "START",   // daily.begin
+            "ENDLOS",   // endless.title
+            "REKORD {0}",   // endless.best
+            "RESET",   // board.reset
+            "KLASSIK",   // board.legacy
+            "T\u00c4GLICH",   // board.daily
+            "ENDLOS  {0}",   // board.endless
+            "LEVEL {0}",   // board.level
+            "TUTORIAL {0}/{1}",   // board.tutorialTitle
+            "START",   // board.begin
+            "TIPP",   // board.hint
+            "+1 L\u00d6SEN",   // board.plusSolve
+            "L\u00d6SEN {0:00}",   // board.solve
+            "GESCHAFFT",   // board.complete
+            "GESCHAFFT\nSerie gestartet",   // board.completeStreakStarted
+            "GESCHAFFT\n{0} Tage in Folge",   // board.completeStreakDays
+            "TUTORIAL GESCHAFFT",   // board.tutorialComplete
+            "MEN\u00dc",   // board.popup.menu
+            "NOCHMAL",   // board.popup.replay
+            "WEITER",   // board.popup.next
+            "SPIELEN",   // board.popup.play
+            "KALENDER",   // board.popup.calendar
+            "SERIE {0}",   // board.hud.streak
+            "REKORD {0}",   // board.hud.best
+            "{0}/5",   // board.hud.runCount
+            "STUFE {0}",   // tier.name
+            "S{0}",   // tier.short
+            "{0}-{1}",   // tier.band
+            "LADEN",   // loading.caption
+            "SPRACHE",   // language.title
+            "AUTO",   // language.auto
+            "MO",   // cal.day.1
+            "DI",   // cal.day.2
+            "MI",   // cal.day.3
+            "DO",   // cal.day.4
+            "FR",   // cal.day.5
+            "SA",   // cal.day.6
+            "SO",   // cal.day.7
+            "JANUAR",   // cal.month.1
+            "FEBRUAR",   // cal.month.2
+            "M\u00c4RZ",   // cal.month.3
+            "APRIL",   // cal.month.4
+            "MAI",   // cal.month.5
+            "JUNI",   // cal.month.6
+            "JULI",   // cal.month.7
+            "AUGUST",   // cal.month.8
+            "SEPTEMBER",   // cal.month.9
+            "OKTOBER",   // cal.month.10
+            "NOVEMBER",   // cal.month.11
+            "DEZEMBER",   // cal.month.12
+            "JAN",   // cal.month.1.short
+            "FEB",   // cal.month.2.short
+            "M\u00c4R",   // cal.month.3.short
+            "APR",   // cal.month.4.short
+            "MAI",   // cal.month.5.short
+            "JUN",   // cal.month.6.short
+            "JUL",   // cal.month.7.short
+            "AUG",   // cal.month.8.short
+            "SEP",   // cal.month.9.short
+            "OKT",   // cal.month.10.short
+            "NOV",   // cal.month.11.short
+            "DEZ",   // cal.month.12.short
+            "Zieh den K\u00e4fer auf die markierte Zelle.",   // tut.1.line
+            "Strahlen kreuzen L\u00fccken.",   // tut.2.line
+            "Zwei K\u00e4fer. Tipp einen, um ihn aufzuheben.",   // tut.3.line
+            "Eine Wand stoppt einen Strahl.",   // tut.4.line
+            "K\u00e4fer k\u00f6nnen auch diagonal sein.",   // tut.5.line
+            "Ein Klecks nimmt die acht Zellen ringsum.",   // tut.6.line
+            "Ein Strahl darf keine Sperrzelle ber\u00fchren.",   // tut.7.line
+            "Ein Absto\u00dfer l\u00f6scht den treffenden Strahl.",   // tut.8.line
+            "Eine Falle setzt das ganze Brett zur\u00fcck.",   // tut.9.line
+            "Leuchtet ein Relais, feuert es Strahlen.",   // tut.10.line
+            "ERSTE SCHRITTE",   // world.w01.name
+            "ZWEI LINIEN",   // world.w02.name
+            "ECKEN",   // world.w03.name
+            "KREUZUNGEN",   // world.w04.name
+            "SAUBER BLEIBEN",   // world.w05.name
+            "Z\u00c4HLEN",   // world.w06.name
+            "KORRIDORE",   // world.w07.name
+            "KLECKSE",   // world.w08.name
+            "LANGE REICHWEITE",   // world.w09.name
+            "VIER ARME",   // world.w10.name
+            "DIAGONALEN",   // world.w11.name
+            "ENG",   // world.w12.name
+            "RELAIS",   // world.w14.name
+            "\u00dcBERSPRECHEN",   // world.w15.name
+            "ANGENOMMEN",   // world.w16.name
+            "MEISTERSCHAFT",   // world.w17.name
+        };
+
+        // es
+        static readonly string[] Es =
+        {
+            "MEN\u00da",   // nav.menu
+            "MUNDOS",   // nav.worlds
+            "{0}/{1}",   // common.page
+            "MUNDOS",   // menu.worlds
+            "DIARIO",   // menu.daily
+            "SIN FIN",   // menu.endless
+            "CL\u00c1SICO",   // menu.legacy
+            "TUTORIAL",   // menu.tutorial
+            "SIN ANUNCIOS",   // menu.noAds
+            "\u00bfPRIMERA VEZ?",   // menu.offer.title
+            "Aprende lo b\u00e1sico en un minuto.",   // menu.offer.line
+            "TUTORIAL",   // menu.offer.accept
+            "SALTAR",   // menu.offer.skip
+            "AJUSTES",   // settings.title
+            "PRIVACIDAD",   // settings.privacy
+            "IDIOMA",   // settings.language
+            "BORRA CADA NIVEL SUPERADO\nY CADA MARCA. LOS CANDADOS SE QUEDAN.",   // settings.eraseCaption
+            "V{0}   BUILD {1}",   // settings.build
+            "EDITOR",   // settings.buildEditor
+            "SONIDO: S\u00cd",   // settings.soundOn
+            "SONIDO: NO",   // settings.soundOff
+            "BORRAR PROGRESO",   // settings.reset
+            "TOCA OTRA VEZ PARA BORRAR",   // settings.resetArmed
+            "VERDE",   // settings.skin.green
+            "AZUL",   // settings.skin.blue
+            "BEIGE",   // settings.skin.tan
+            "COMPLETA\nTODOS LOS MUNDOS",   // settings.skin.wantWorlds
+            "COMPLETA\nTODO CL\u00c1SICO",   // settings.skin.wantLegacy
+            "C\u00d3MO JUGAR",   // rules.title
+            "Infecta cada casilla del tablero para ganar.",   // rules.goal
+            "Arrastra un bicho a cualquier casilla.",   // rules.intro
+            "Un rayo llega al borde, saltando los huecos.",   // rules.diagram
+            "Ganar sobre un repulsor o trampa cuenta igual.",   // rules.note1
+            "Toca una vetada y la jugada rebota.",   // rules.note2
+            "Inf\u00e9ctala.",   // rules.cell.infect
+            "HUECO",   // rules.cell.gap.name
+            "No es casilla: los rayos lo cruzan.",   // rules.cell.gap.line
+            "MURO",   // rules.cell.wall.name
+            "Detiene un rayo.",   // rules.cell.wall.line
+            "REPULSOR",   // rules.cell.repel.name
+            "Borra hacia atr\u00e1s al ser tocado.",   // rules.cell.repel.line
+            "TRAMPA",   // rules.cell.trap.name
+            "Vac\u00eda el tablero al ser tocada.",   // rules.cell.trap.line
+            "REL\u00c9",   // rules.cell.relay.name
+            "Lanza sus propios rayos al ser tocado.",   // rules.cell.relay.line
+            "VETADA",   // rules.cell.avoid.name
+            "Los rayos no deben tocarla.",   // rules.cell.avoid.line
+            "Los rayos llegan al borde.",   // rules.spread.cardinal
+            "O de esquina a esquina.",   // rules.spread.diagonal
+            "Una mancha toma las ocho de alrededor.",   // rules.spread.area
+            "CL\u00c1SICO",   // legacy.title
+            "JUEGO LIBRE",   // freeplay.title
+            "PRINCIPIANTE",   // freeplay.difficulty.beginner
+            "F\u00c1CIL",   // freeplay.difficulty.easy
+            "MEDIO",   // freeplay.difficulty.medium
+            "DIF\u00cdCIL",   // freeplay.difficulty.hard
+            "EXIGENTE",   // freeplay.difficulty.challenging
+            "MUNDOS",   // worlds.title
+            "{0}  {1}",   // worlds.row
+            "{0}/{1}",   // worlds.progress
+            "DIARIO",   // daily.title
+            "HOY",   // daily.today
+            "PASADO",   // daily.past
+            "RACHA {0:00}",   // daily.streak
+            "{0} {1:00}/{2:00}",   // daily.monthCount
+            "{0} {1:00} {2}",   // daily.dateLine
+            "BICHOS {0}",   // daily.bugs
+            "CASILLAS {0}",   // daily.cells
+            "COMPLETO",   // daily.complete
+            "GENERANDO",   // daily.generating
+            "SIN JUGAR",   // daily.unplayed
+            "JUGAR OTRA VEZ",   // daily.playAgain
+            "EMPEZAR",   // daily.begin
+            "SIN FIN",   // endless.title
+            "MEJOR {0}",   // endless.best
+            "RESET",   // board.reset
+            "CL\u00c1SICO",   // board.legacy
+            "DIARIO",   // board.daily
+            "SIN FIN  {0}",   // board.endless
+            "NIVEL {0}",   // board.level
+            "TUTORIAL {0}/{1}",   // board.tutorialTitle
+            "EMPEZAR",   // board.begin
+            "PISTA",   // board.hint
+            "+1 RESOLVER",   // board.plusSolve
+            "RESOLVER {0:00}",   // board.solve
+            "COMPLETO",   // board.complete
+            "COMPLETO\nRacha iniciada",   // board.completeStreakStarted
+            "COMPLETO\n{0} d\u00edas seguidos",   // board.completeStreakDays
+            "TUTORIAL COMPLETO",   // board.tutorialComplete
+            "MEN\u00da",   // board.popup.menu
+            "REPETIR",   // board.popup.replay
+            "SIGUIENTE",   // board.popup.next
+            "JUGAR",   // board.popup.play
+            "CALENDARIO",   // board.popup.calendar
+            "RACHA {0}",   // board.hud.streak
+            "MEJOR {0}",   // board.hud.best
+            "{0}/5",   // board.hud.runCount
+            "NIVEL {0}",   // tier.name
+            "N{0}",   // tier.short
+            "{0}-{1}",   // tier.band
+            "CARGANDO",   // loading.caption
+            "IDIOMA",   // language.title
+            "AUTO",   // language.auto
+            "LUN",   // cal.day.1
+            "MAR",   // cal.day.2
+            "MI\u00c9",   // cal.day.3
+            "JUE",   // cal.day.4
+            "VIE",   // cal.day.5
+            "S\u00c1B",   // cal.day.6
+            "DOM",   // cal.day.7
+            "ENERO",   // cal.month.1
+            "FEBRERO",   // cal.month.2
+            "MARZO",   // cal.month.3
+            "ABRIL",   // cal.month.4
+            "MAYO",   // cal.month.5
+            "JUNIO",   // cal.month.6
+            "JULIO",   // cal.month.7
+            "AGOSTO",   // cal.month.8
+            "SEPTIEMBRE",   // cal.month.9
+            "OCTUBRE",   // cal.month.10
+            "NOVIEMBRE",   // cal.month.11
+            "DICIEMBRE",   // cal.month.12
+            "ENE",   // cal.month.1.short
+            "FEB",   // cal.month.2.short
+            "MAR",   // cal.month.3.short
+            "ABR",   // cal.month.4.short
+            "MAY",   // cal.month.5.short
+            "JUN",   // cal.month.6.short
+            "JUL",   // cal.month.7.short
+            "AGO",   // cal.month.8.short
+            "SEP",   // cal.month.9.short
+            "OCT",   // cal.month.10.short
+            "NOV",   // cal.month.11.short
+            "DIC",   // cal.month.12.short
+            "Arrastra el bicho a la casilla marcada.",   // tut.1.line
+            "Los rayos cruzan los huecos.",   // tut.2.line
+            "Dos bichos. Toca uno puesto para cogerlo.",   // tut.3.line
+            "Un muro detiene un rayo.",   // tut.4.line
+            "Los bichos tambi\u00e9n pueden ser diagonales.",   // tut.5.line
+            "Una mancha toma las ocho casillas vecinas.",   // tut.6.line
+            "Un rayo nunca debe tocar una casilla vetada.",   // tut.7.line
+            "Un repulsor borra el rayo que lo toc\u00f3.",   // tut.8.line
+            "Una trampa reinicia todo el tablero.",   // tut.9.line
+            "Un rel\u00e9 encendido lanza sus propios rayos.",   // tut.10.line
+            "PRIMEROS PASOS",   // world.w01.name
+            "DOS L\u00cdNEAS",   // world.w02.name
+            "ESQUINAS",   // world.w03.name
+            "CRUCES",   // world.w04.name
+            "MANTENER LIMPIO",   // world.w05.name
+            "CONTAR",   // world.w06.name
+            "PASILLOS",   // world.w07.name
+            "MANCHAS",   // world.w08.name
+            "LARGO ALCANCE",   // world.w09.name
+            "CUATRO BRAZOS",   // world.w10.name
+            "DIAGONALES",   // world.w11.name
+            "ESTRECHO",   // world.w12.name
+            "REL\u00c9S",   // world.w14.name
+            "DIAFON\u00cdA",   // world.w15.name
+            "SUPONGAMOS",   // world.w16.name
+            "MAESTR\u00cdA",   // world.w17.name
+        };
+
+        // fr
+        static readonly string[] Fr =
+        {
+            "MENU",   // nav.menu
+            "MONDES",   // nav.worlds
+            "{0}/{1}",   // common.page
+            "MONDES",   // menu.worlds
+            "QUOTIDIEN",   // menu.daily
+            "INFINI",   // menu.endless
+            "CLASSIQUE",   // menu.legacy
+            "TUTORIEL",   // menu.tutorial
+            "SANS PUB",   // menu.noAds
+            "PREMI\u00c8RE FOIS ?",   // menu.offer.title
+            "Apprends les bases en une minute.",   // menu.offer.line
+            "TUTORIEL",   // menu.offer.accept
+            "PASSER",   // menu.offer.skip
+            "R\u00c9GLAGES",   // settings.title
+            "CONFIDENTIALIT\u00c9",   // settings.privacy
+            "LANGUE",   // settings.language
+            "EFFACE CHAQUE NIVEAU R\u00c9USSI\nET CHAQUE SCORE. LES VERROUS RESTENT.",   // settings.eraseCaption
+            "V{0}   BUILD {1}",   // settings.build
+            "EDITOR",   // settings.buildEditor
+            "SON : OUI",   // settings.soundOn
+            "SON : NON",   // settings.soundOff
+            "EFFACER LA PROGRESSION",   // settings.reset
+            "TOUCHE ENCORE POUR EFFACER",   // settings.resetArmed
+            "VERT",   // settings.skin.green
+            "BLEU",   // settings.skin.blue
+            "BEIGE",   // settings.skin.tan
+            "FINIR\nTOUS LES MONDES",   // settings.skin.wantWorlds
+            "FINIR\nTOUT CLASSIQUE",   // settings.skin.wantLegacy
+            "COMMENT JOUER",   // rules.title
+            "Infecte chaque case du plateau pour gagner.",   // rules.goal
+            "Glisse un insecte sur n'importe quelle case.",   // rules.intro
+            "Un rayon file jusqu'au bord, par-dessus les trous.",   // rules.diagram
+            "Gagner sur un r\u00e9pulseur ou un pi\u00e8ge compte quand m\u00eame.",   // rules.note1
+            "Touche un interdit et le coup rebondit.",   // rules.note2
+            "Infecte-la.",   // rules.cell.infect
+            "TROU",   // rules.cell.gap.name
+            "Pas une case : les rayons la traversent.",   // rules.cell.gap.line
+            "MUR",   // rules.cell.wall.name
+            "Bloque un rayon.",   // rules.cell.wall.line
+            "R\u00c9PULSEUR",   // rules.cell.repel.name
+            "Efface en retour quand touch\u00e9.",   // rules.cell.repel.line
+            "PI\u00c8GE",   // rules.cell.trap.name
+            "Vide le plateau quand touch\u00e9.",   // rules.cell.trap.line
+            "RELAIS",   // rules.cell.relay.name
+            "Tire ses propres rayons quand touch\u00e9.",   // rules.cell.relay.line
+            "INTERDIT",   // rules.cell.avoid.name
+            "Les rayons ne doivent pas le toucher.",   // rules.cell.avoid.line
+            "Les rayons filent jusqu'au bord.",   // rules.spread.cardinal
+            "Ou de coin \u00e0 coin.",   // rules.spread.diagonal
+            "Une tache prend les huit autour.",   // rules.spread.area
+            "CLASSIQUE",   // legacy.title
+            "JEU LIBRE",   // freeplay.title
+            "D\u00c9BUTANT",   // freeplay.difficulty.beginner
+            "FACILE",   // freeplay.difficulty.easy
+            "MOYEN",   // freeplay.difficulty.medium
+            "DIFFICILE",   // freeplay.difficulty.hard
+            "CORS\u00c9",   // freeplay.difficulty.challenging
+            "MONDES",   // worlds.title
+            "{0}  {1}",   // worlds.row
+            "{0}/{1}",   // worlds.progress
+            "QUOTIDIEN",   // daily.title
+            "AUJOURD'HUI",   // daily.today
+            "PASS\u00c9",   // daily.past
+            "S\u00c9RIE {0:00}",   // daily.streak
+            "{0} {1:00}/{2:00}",   // daily.monthCount
+            "{0} {1:00} {2}",   // daily.dateLine
+            "INSECTES {0}",   // daily.bugs
+            "CASES {0}",   // daily.cells
+            "TERMIN\u00c9",   // daily.complete
+            "G\u00c9N\u00c9RATION",   // daily.generating
+            "NON JOU\u00c9",   // daily.unplayed
+            "REJOUER",   // daily.playAgain
+            "D\u00c9MARRER",   // daily.begin
+            "INFINI",   // endless.title
+            "RECORD {0}",   // endless.best
+            "RESET",   // board.reset
+            "CLASSIQUE",   // board.legacy
+            "QUOTIDIEN",   // board.daily
+            "INFINI  {0}",   // board.endless
+            "NIVEAU {0}",   // board.level
+            "TUTORIEL {0}/{1}",   // board.tutorialTitle
+            "D\u00c9MARRER",   // board.begin
+            "INDICE",   // board.hint
+            "+1 R\u00c9SOUDRE",   // board.plusSolve
+            "R\u00c9SOUDRE {0:00}",   // board.solve
+            "TERMIN\u00c9",   // board.complete
+            "TERMIN\u00c9\nS\u00e9rie lanc\u00e9e",   // board.completeStreakStarted
+            "TERMIN\u00c9\n{0} jours de suite",   // board.completeStreakDays
+            "TUTORIEL TERMIN\u00c9",   // board.tutorialComplete
+            "MENU",   // board.popup.menu
+            "REJOUER",   // board.popup.replay
+            "SUIVANT",   // board.popup.next
+            "JOUER",   // board.popup.play
+            "CALENDRIER",   // board.popup.calendar
+            "S\u00c9RIE {0}",   // board.hud.streak
+            "RECORD {0}",   // board.hud.best
+            "{0}/5",   // board.hud.runCount
+            "PALIER {0}",   // tier.name
+            "P{0}",   // tier.short
+            "{0}-{1}",   // tier.band
+            "CHARGEMENT",   // loading.caption
+            "LANGUE",   // language.title
+            "AUTO",   // language.auto
+            "LUN",   // cal.day.1
+            "MAR",   // cal.day.2
+            "MER",   // cal.day.3
+            "JEU",   // cal.day.4
+            "VEN",   // cal.day.5
+            "SAM",   // cal.day.6
+            "DIM",   // cal.day.7
+            "JANVIER",   // cal.month.1
+            "F\u00c9VRIER",   // cal.month.2
+            "MARS",   // cal.month.3
+            "AVRIL",   // cal.month.4
+            "MAI",   // cal.month.5
+            "JUIN",   // cal.month.6
+            "JUILLET",   // cal.month.7
+            "AO\u00dbT",   // cal.month.8
+            "SEPTEMBRE",   // cal.month.9
+            "OCTOBRE",   // cal.month.10
+            "NOVEMBRE",   // cal.month.11
+            "D\u00c9CEMBRE",   // cal.month.12
+            "JAN",   // cal.month.1.short
+            "F\u00c9V",   // cal.month.2.short
+            "MAR",   // cal.month.3.short
+            "AVR",   // cal.month.4.short
+            "MAI",   // cal.month.5.short
+            "JUN",   // cal.month.6.short
+            "JUL",   // cal.month.7.short
+            "AO\u00db",   // cal.month.8.short
+            "SEP",   // cal.month.9.short
+            "OCT",   // cal.month.10.short
+            "NOV",   // cal.month.11.short
+            "D\u00c9C",   // cal.month.12.short
+            "Glisse l'insecte sur la case marqu\u00e9e.",   // tut.1.line
+            "Les rayons traversent les trous.",   // tut.2.line
+            "Deux insectes. Touche-en un pour le prendre.",   // tut.3.line
+            "Un mur arr\u00eate un rayon.",   // tut.4.line
+            "Les insectes peuvent \u00eatre en diagonale.",   // tut.5.line
+            "Une tache prend les huit cases autour.",   // tut.6.line
+            "Un rayon ne doit jamais toucher un interdit.",   // tut.7.line
+            "Un r\u00e9pulseur efface le rayon qui l'a touch\u00e9.",   // tut.8.line
+            "Un pi\u00e8ge remet tout le plateau \u00e0 z\u00e9ro.",   // tut.9.line
+            "Un relais allum\u00e9 tire ses propres rayons.",   // tut.10.line
+            "PREMIERS PAS",   // world.w01.name
+            "DEUX LIGNES",   // world.w02.name
+            "COINS",   // world.w03.name
+            "CROISEMENTS",   // world.w04.name
+            "RESTER PROPRE",   // world.w05.name
+            "COMPTER",   // world.w06.name
+            "COULOIRS",   // world.w07.name
+            "TACHES",   // world.w08.name
+            "LONGUE PORT\u00c9E",   // world.w09.name
+            "QUATRE BRAS",   // world.w10.name
+            "DIAGONALES",   // world.w11.name
+            "SERR\u00c9",   // world.w12.name
+            "RELAIS",   // world.w14.name
+            "DIAPHONIE",   // world.w15.name
+            "SUPPOSONS",   // world.w16.name
+            "MA\u00ceTRISE",   // world.w17.name
+        };
+
+        // it
+        static readonly string[] It =
+        {
+            "MENU",   // nav.menu
+            "MONDI",   // nav.worlds
+            "{0}/{1}",   // common.page
+            "MONDI",   // menu.worlds
+            "GIORNALIERO",   // menu.daily
+            "INFINITO",   // menu.endless
+            "CLASSICO",   // menu.legacy
+            "TUTORIAL",   // menu.tutorial
+            "NIENTE PUBBLICIT\u00c0",   // menu.noAds
+            "PRIMA VOLTA?",   // menu.offer.title
+            "Impara le basi in un minuto.",   // menu.offer.line
+            "TUTORIAL",   // menu.offer.accept
+            "SALTA",   // menu.offer.skip
+            "IMPOSTAZIONI",   // settings.title
+            "PRIVACY",   // settings.privacy
+            "LINGUA",   // settings.language
+            "CANCELLA OGNI LIVELLO SUPERATO\nE OGNI RECORD. I LUCCHETTI RESTANO.",   // settings.eraseCaption
+            "V{0}   BUILD {1}",   // settings.build
+            "EDITOR",   // settings.buildEditor
+            "AUDIO: S\u00cc",   // settings.soundOn
+            "AUDIO: NO",   // settings.soundOff
+            "CANCELLA PROGRESSI",   // settings.reset
+            "TOCCA ANCORA PER CANCELLARE",   // settings.resetArmed
+            "VERDE",   // settings.skin.green
+            "BLU",   // settings.skin.blue
+            "BEIGE",   // settings.skin.tan
+            "FINISCI\nTUTTI I MONDI",   // settings.skin.wantWorlds
+            "FINISCI\nTUTTO IL CLASSICO",   // settings.skin.wantLegacy
+            "COME SI GIOCA",   // rules.title
+            "Infetta ogni cella della scacchiera per vincere.",   // rules.goal
+            "Trascina un insetto su una cella qualsiasi.",   // rules.intro
+            "Un raggio corre fino al bordo, sopra i vuoti.",   // rules.diagram
+            "Vincere su un repulsore o una trappola vale comunque.",   // rules.note1
+            "Tocca una vietata e la mossa rimbalza.",   // rules.note2
+            "Infettala.",   // rules.cell.infect
+            "VUOTO",   // rules.cell.gap.name
+            "Non \u00e8 una cella: i raggi lo attraversano.",   // rules.cell.gap.line
+            "MURO",   // rules.cell.wall.name
+            "Ferma un raggio.",   // rules.cell.wall.line
+            "REPULSORE",   // rules.cell.repel.name
+            "Cancella all'indietro se colpito.",   // rules.cell.repel.line
+            "TRAPPOLA",   // rules.cell.trap.name
+            "Svuota la scacchiera se colpita.",   // rules.cell.trap.line
+            "REL\u00c8",   // rules.cell.relay.name
+            "Spara i propri raggi se colpito.",   // rules.cell.relay.line
+            "VIETATA",   // rules.cell.avoid.name
+            "I raggi non devono toccarla.",   // rules.cell.avoid.line
+            "I raggi corrono fino al bordo.",   // rules.spread.cardinal
+            "O da angolo ad angolo.",   // rules.spread.diagonal
+            "Una macchia prende le otto intorno.",   // rules.spread.area
+            "CLASSICO",   // legacy.title
+            "GIOCO LIBERO",   // freeplay.title
+            "PRINCIPIANTE",   // freeplay.difficulty.beginner
+            "FACILE",   // freeplay.difficulty.easy
+            "MEDIO",   // freeplay.difficulty.medium
+            "DIFFICILE",   // freeplay.difficulty.hard
+            "IMPEGNATIVO",   // freeplay.difficulty.challenging
+            "MONDI",   // worlds.title
+            "{0}  {1}",   // worlds.row
+            "{0}/{1}",   // worlds.progress
+            "GIORNALIERO",   // daily.title
+            "OGGI",   // daily.today
+            "PASSATO",   // daily.past
+            "SERIE {0:00}",   // daily.streak
+            "{0} {1:00}/{2:00}",   // daily.monthCount
+            "{0} {1:00} {2}",   // daily.dateLine
+            "INSETTI {0}",   // daily.bugs
+            "CELLE {0}",   // daily.cells
+            "COMPLETO",   // daily.complete
+            "GENERAZIONE",   // daily.generating
+            "NON GIOCATO",   // daily.unplayed
+            "RIGIOCA",   // daily.playAgain
+            "INIZIA",   // daily.begin
+            "INFINITO",   // endless.title
+            "RECORD {0}",   // endless.best
+            "RESET",   // board.reset
+            "CLASSICO",   // board.legacy
+            "GIORNALIERO",   // board.daily
+            "INFINITO  {0}",   // board.endless
+            "LIVELLO {0}",   // board.level
+            "TUTORIAL {0}/{1}",   // board.tutorialTitle
+            "INIZIA",   // board.begin
+            "INDIZIO",   // board.hint
+            "+1 RISOLVI",   // board.plusSolve
+            "RISOLVI {0:00}",   // board.solve
+            "COMPLETO",   // board.complete
+            "COMPLETO\nSerie iniziata",   // board.completeStreakStarted
+            "COMPLETO\n{0} giorni di fila",   // board.completeStreakDays
+            "TUTORIAL COMPLETO",   // board.tutorialComplete
+            "MENU",   // board.popup.menu
+            "RIGIOCA",   // board.popup.replay
+            "AVANTI",   // board.popup.next
+            "GIOCA",   // board.popup.play
+            "CALENDARIO",   // board.popup.calendar
+            "SERIE {0}",   // board.hud.streak
+            "RECORD {0}",   // board.hud.best
+            "{0}/5",   // board.hud.runCount
+            "GRADO {0}",   // tier.name
+            "G{0}",   // tier.short
+            "{0}-{1}",   // tier.band
+            "CARICAMENTO",   // loading.caption
+            "LINGUA",   // language.title
+            "AUTO",   // language.auto
+            "LUN",   // cal.day.1
+            "MAR",   // cal.day.2
+            "MER",   // cal.day.3
+            "GIO",   // cal.day.4
+            "VEN",   // cal.day.5
+            "SAB",   // cal.day.6
+            "DOM",   // cal.day.7
+            "GENNAIO",   // cal.month.1
+            "FEBBRAIO",   // cal.month.2
+            "MARZO",   // cal.month.3
+            "APRILE",   // cal.month.4
+            "MAGGIO",   // cal.month.5
+            "GIUGNO",   // cal.month.6
+            "LUGLIO",   // cal.month.7
+            "AGOSTO",   // cal.month.8
+            "SETTEMBRE",   // cal.month.9
+            "OTTOBRE",   // cal.month.10
+            "NOVEMBRE",   // cal.month.11
+            "DICEMBRE",   // cal.month.12
+            "GEN",   // cal.month.1.short
+            "FEB",   // cal.month.2.short
+            "MAR",   // cal.month.3.short
+            "APR",   // cal.month.4.short
+            "MAG",   // cal.month.5.short
+            "GIU",   // cal.month.6.short
+            "LUG",   // cal.month.7.short
+            "AGO",   // cal.month.8.short
+            "SET",   // cal.month.9.short
+            "OTT",   // cal.month.10.short
+            "NOV",   // cal.month.11.short
+            "DIC",   // cal.month.12.short
+            "Trascina l'insetto sulla cella segnata.",   // tut.1.line
+            "I raggi attraversano i vuoti.",   // tut.2.line
+            "Due insetti. Tocca uno posato per prenderlo.",   // tut.3.line
+            "Un muro ferma un raggio.",   // tut.4.line
+            "Gli insetti possono anche essere diagonali.",   // tut.5.line
+            "Una macchia prende le otto celle intorno.",   // tut.6.line
+            "Un raggio non tocca mai una cella vietata.",   // tut.7.line
+            "Un repulsore cancella il raggio in arrivo.",   // tut.8.line
+            "Una trappola azzera tutta la scacchiera.",   // tut.9.line
+            "Un rel\u00e8 acceso spara i propri raggi.",   // tut.10.line
+            "PRIMI PASSI",   // world.w01.name
+            "DUE LINEE",   // world.w02.name
+            "ANGOLI",   // world.w03.name
+            "INCROCI",   // world.w04.name
+            "TENERE PULITO",   // world.w05.name
+            "CONTARE",   // world.w06.name
+            "CORRIDOI",   // world.w07.name
+            "MACCHIE",   // world.w08.name
+            "LUNGA PORTATA",   // world.w09.name
+            "QUATTRO BRACCIA",   // world.w10.name
+            "DIAGONALI",   // world.w11.name
+            "STRETTO",   // world.w12.name
+            "REL\u00c8",   // world.w14.name
+            "DIAFONIA",   // world.w15.name
+            "SUPPONIAMO",   // world.w16.name
+            "MAESTRIA",   // world.w17.name
+        };
+
+        // ja
+        static readonly string[] Ja =
+        {
+            "\u30e1\u30cb\u30e5\u30fc",   // nav.menu
+            "\u30ef\u30fc\u30eb\u30c9",   // nav.worlds
+            "{0}/{1}",   // common.page
+            "\u30ef\u30fc\u30eb\u30c9",   // menu.worlds
+            "\u30c7\u30a4\u30ea\u30fc",   // menu.daily
+            "\u30a8\u30f3\u30c9\u30ec\u30b9",   // menu.endless
+            "\u30af\u30e9\u30b7\u30c3\u30af",   // menu.legacy
+            "\u30c1\u30e5\u30fc\u30c8\u30ea\u30a2\u30eb",   // menu.tutorial
+            "\u5e83\u544a\u306a\u3057",   // menu.noAds
+            "\u306f\u3058\u3081\u3066\uff1f",   // menu.offer.title
+            "1\u5206\u3067\u57fa\u672c\u3092\u899a\u3048\u3088\u3046\u3002",   // menu.offer.line
+            "\u30c1\u30e5\u30fc\u30c8\u30ea\u30a2\u30eb",   // menu.offer.accept
+            "\u30b9\u30ad\u30c3\u30d7",   // menu.offer.skip
+            "\u8a2d\u5b9a",   // settings.title
+            "\u30d7\u30e9\u30a4\u30d0\u30b7\u30fc",   // settings.privacy
+            "\u8a00\u8a9e",   // settings.language
+            "\u30af\u30ea\u30a2\u8a18\u9332\u3068\u30b9\u30b3\u30a2\u3092\u3059\u3079\u3066\u6d88\u3057\u307e\u3059\u3002\n\u30ed\u30c3\u30af\u306f\u6b8b\u308a\u307e\u3059\u3002",   // settings.eraseCaption
+            "V{0}   BUILD {1}",   // settings.build
+            "EDITOR",   // settings.buildEditor
+            "\u30b5\u30a6\u30f3\u30c9: \u30aa\u30f3",   // settings.soundOn
+            "\u30b5\u30a6\u30f3\u30c9: \u30aa\u30d5",   // settings.soundOff
+            "\u9032\u884c\u72b6\u6cc1\u3092\u6d88\u53bb",   // settings.reset
+            "\u3082\u3046\u4e00\u5ea6\u30bf\u30c3\u30d7\u3067\u6d88\u53bb",   // settings.resetArmed
+            "\u30b0\u30ea\u30fc\u30f3",   // settings.skin.green
+            "\u30d6\u30eb\u30fc",   // settings.skin.blue
+            "\u30d9\u30fc\u30b8\u30e5",   // settings.skin.tan
+            "\u5168\u30ef\u30fc\u30eb\u30c9\u3092\n\u30af\u30ea\u30a2",   // settings.skin.wantWorlds
+            "\u30af\u30e9\u30b7\u30c3\u30af\u3092\n\u5168\u30af\u30ea\u30a2",   // settings.skin.wantLegacy
+            "\u904a\u3073\u65b9",   // rules.title
+            "\u76e4\u9762\u306e\u30de\u30b9\u3092\u3059\u3079\u3066\u611f\u67d3\u3055\u305b\u308c\u3070\u52dd\u3061\u3002",   // rules.goal
+            "\u866b\u3092\u597d\u304d\u306a\u30de\u30b9\u3078\u30c9\u30e9\u30c3\u30b0\u3002",   // rules.intro
+            "\u5149\u7dda\u306f\u9699\u9593\u3092\u8d8a\u3048\u3066\u7aef\u307e\u3067\u5c4a\u304f\u3002",   // rules.diagram
+            "\u53cd\u5c04\u3084\u7f60\u306e\u4e0a\u3067\u52dd\u3063\u3066\u3082\u30ab\u30a6\u30f3\u30c8\u3055\u308c\u308b\u3002",   // rules.note1
+            "\u7981\u6b62\u30de\u30b9\u306b\u89e6\u308c\u308b\u3068\u624b\u306f\u623b\u308b\u3002",   // rules.note2
+            "\u611f\u67d3\u3055\u305b\u308b\u3002",   // rules.cell.infect
+            "\u9699\u9593",   // rules.cell.gap.name
+            "\u30de\u30b9\u3067\u306f\u306a\u3044\u3002\u5149\u7dda\u304c\u901a\u308b\u3002",   // rules.cell.gap.line
+            "\u58c1",   // rules.cell.wall.name
+            "\u5149\u7dda\u3092\u6b62\u3081\u308b\u3002",   // rules.cell.wall.line
+            "\u53cd\u5c04",   // rules.cell.repel.name
+            "\u5f53\u305f\u308b\u3068\u5149\u7dda\u3092\u6d88\u3059\u3002",   // rules.cell.repel.line
+            "\u7f60",   // rules.cell.trap.name
+            "\u5f53\u305f\u308b\u3068\u76e4\u9762\u304c\u6d88\u3048\u308b\u3002",   // rules.cell.trap.line
+            "\u30ea\u30ec\u30fc",   // rules.cell.relay.name
+            "\u5f53\u305f\u308b\u3068\u81ea\u5206\u306e\u5149\u7dda\u3092\u653e\u3064\u3002",   // rules.cell.relay.line
+            "\u7981\u6b62",   // rules.cell.avoid.name
+            "\u5149\u7dda\u304c\u89e6\u308c\u3066\u306f\u3044\u3051\u306a\u3044\u3002",   // rules.cell.avoid.line
+            "\u5149\u7dda\u306f\u7aef\u307e\u3067\u5c4a\u304f\u3002",   // rules.spread.cardinal
+            "\u307e\u305f\u306f\u89d2\u304b\u3089\u89d2\u3078\u3002",   // rules.spread.diagonal
+            "\u30b7\u30df\u306f\u5468\u56f2\u516b\u30de\u30b9\u3092\u53d6\u308b\u3002",   // rules.spread.area
+            "\u30af\u30e9\u30b7\u30c3\u30af",   // legacy.title
+            "\u30d5\u30ea\u30fc\u30d7\u30ec\u30a4",   // freeplay.title
+            "\u5165\u9580",   // freeplay.difficulty.beginner
+            "\u304b\u3093\u305f\u3093",   // freeplay.difficulty.easy
+            "\u3075\u3064\u3046",   // freeplay.difficulty.medium
+            "\u3080\u305a\u304b\u3057\u3044",   // freeplay.difficulty.hard
+            "\u6fc0\u30e0\u30ba",   // freeplay.difficulty.challenging
+            "\u30ef\u30fc\u30eb\u30c9",   // worlds.title
+            "{0}  {1}",   // worlds.row
+            "{0}/{1}",   // worlds.progress
+            "\u30c7\u30a4\u30ea\u30fc",   // daily.title
+            "\u4eca\u65e5",   // daily.today
+            "\u904e\u53bb",   // daily.past
+            "\u9023\u7d9a {0:00}",   // daily.streak
+            "{0} {1:00}/{2:00}",   // daily.monthCount
+            "{2} {1:00} ({0})",   // daily.dateLine
+            "\u866b {0}",   // daily.bugs
+            "\u30de\u30b9 {0}",   // daily.cells
+            "\u30af\u30ea\u30a2",   // daily.complete
+            "\u751f\u6210\u4e2d",   // daily.generating
+            "\u672a\u30d7\u30ec\u30a4",   // daily.unplayed
+            "\u3082\u3046\u4e00\u5ea6",   // daily.playAgain
+            "\u30b9\u30bf\u30fc\u30c8",   // daily.begin
+            "\u30a8\u30f3\u30c9\u30ec\u30b9",   // endless.title
+            "\u30d9\u30b9\u30c8 {0}",   // endless.best
+            "\u30ea\u30bb\u30c3\u30c8",   // board.reset
+            "\u30af\u30e9\u30b7\u30c3\u30af",   // board.legacy
+            "\u30c7\u30a4\u30ea\u30fc",   // board.daily
+            "\u30a8\u30f3\u30c9\u30ec\u30b9  {0}",   // board.endless
+            "\u30ec\u30d9\u30eb {0}",   // board.level
+            "\u30c1\u30e5\u30fc\u30c8\u30ea\u30a2\u30eb {0}/{1}",   // board.tutorialTitle
+            "\u30b9\u30bf\u30fc\u30c8",   // board.begin
+            "\u30d2\u30f3\u30c8",   // board.hint
+            "+1 \u89e3\u304f",   // board.plusSolve
+            "\u89e3\u304f {0:00}",   // board.solve
+            "\u30af\u30ea\u30a2",   // board.complete
+            "\u30af\u30ea\u30a2\n\u9023\u7d9a\u8a18\u9332\u30b9\u30bf\u30fc\u30c8",   // board.completeStreakStarted
+            "\u30af\u30ea\u30a2\n{0}\u65e5\u9023\u7d9a",   // board.completeStreakDays
+            "\u30c1\u30e5\u30fc\u30c8\u30ea\u30a2\u30eb\u5b8c\u4e86",   // board.tutorialComplete
+            "\u30e1\u30cb\u30e5\u30fc",   // board.popup.menu
+            "\u30ea\u30d7\u30ec\u30a4",   // board.popup.replay
+            "\u6b21\u3078",   // board.popup.next
+            "\u30d7\u30ec\u30a4",   // board.popup.play
+            "\u30ab\u30ec\u30f3\u30c0\u30fc",   // board.popup.calendar
+            "\u9023\u7d9a {0}",   // board.hud.streak
+            "\u30d9\u30b9\u30c8 {0}",   // board.hud.best
+            "{0}/5",   // board.hud.runCount
+            "\u30c6\u30a3\u30a2 {0}",   // tier.name
+            "T{0}",   // tier.short
+            "{0}-{1}",   // tier.band
+            "\u8aad\u307f\u8fbc\u307f\u4e2d",   // loading.caption
+            "\u8a00\u8a9e",   // language.title
+            "AUTO",   // language.auto
+            "\u6708",   // cal.day.1
+            "\u706b",   // cal.day.2
+            "\u6c34",   // cal.day.3
+            "\u6728",   // cal.day.4
+            "\u91d1",   // cal.day.5
+            "\u571f",   // cal.day.6
+            "\u65e5",   // cal.day.7
+            "1\u6708",   // cal.month.1
+            "2\u6708",   // cal.month.2
+            "3\u6708",   // cal.month.3
+            "4\u6708",   // cal.month.4
+            "5\u6708",   // cal.month.5
+            "6\u6708",   // cal.month.6
+            "7\u6708",   // cal.month.7
+            "8\u6708",   // cal.month.8
+            "9\u6708",   // cal.month.9
+            "10\u6708",   // cal.month.10
+            "11\u6708",   // cal.month.11
+            "12\u6708",   // cal.month.12
+            "1\u6708",   // cal.month.1.short
+            "2\u6708",   // cal.month.2.short
+            "3\u6708",   // cal.month.3.short
+            "4\u6708",   // cal.month.4.short
+            "5\u6708",   // cal.month.5.short
+            "6\u6708",   // cal.month.6.short
+            "7\u6708",   // cal.month.7.short
+            "8\u6708",   // cal.month.8.short
+            "9\u6708",   // cal.month.9.short
+            "10\u6708",   // cal.month.10.short
+            "11\u6708",   // cal.month.11.short
+            "12\u6708",   // cal.month.12.short
+            "\u866b\u3092\u5370\u306e\u30de\u30b9\u3078\u30c9\u30e9\u30c3\u30b0\u3002",   // tut.1.line
+            "\u5149\u7dda\u306f\u9699\u9593\u3092\u8d8a\u3048\u308b\u3002",   // tut.2.line
+            "\u866b\u306f\u4e8c\u5339\u3002\u7f6e\u3044\u305f\u866b\u3092\u89e6\u308b\u3068\u62fe\u3048\u308b\u3002",   // tut.3.line
+            "\u58c1\u306f\u5149\u7dda\u3092\u6b62\u3081\u308b\u3002",   // tut.4.line
+            "\u866b\u306f\u659c\u3081\u306b\u3082\u306a\u308c\u308b\u3002",   // tut.5.line
+            "\u30b7\u30df\u306f\u5468\u56f2\u516b\u30de\u30b9\u3092\u53d6\u308b\u3002",   // tut.6.line
+            "\u5149\u7dda\u306f\u7981\u6b62\u30de\u30b9\u306b\u89e6\u308c\u3066\u306f\u306a\u3089\u306a\u3044\u3002",   // tut.7.line
+            "\u53cd\u5c04\u306f\u5f53\u305f\u3063\u305f\u5149\u7dda\u3092\u6d88\u3059\u3002",   // tut.8.line
+            "\u7f60\u306f\u76e4\u9762\u5168\u4f53\u3092\u30ea\u30bb\u30c3\u30c8\u3059\u308b\u3002",   // tut.9.line
+            "\u30ea\u30ec\u30fc\u306f\u70b9\u706f\u3059\u308b\u3068\u5149\u7dda\u3092\u653e\u3064\u3002",   // tut.10.line
+            "\u306f\u3058\u3081\u306e\u4e00\u6b69",   // world.w01.name
+            "\u4e8c\u672c\u306e\u7dda",   // world.w02.name
+            "\u56db\u9685",   // world.w03.name
+            "\u4ea4\u5dee",   // world.w04.name
+            "\u6c5a\u3055\u305a\u306b",   // world.w05.name
+            "\u6570\u3048\u308b",   // world.w06.name
+            "\u901a\u8def",   // world.w07.name
+            "\u30b7\u30df",   // world.w08.name
+            "\u9577\u3044\u5c04\u7a0b",   // world.w09.name
+            "\u56db\u672c\u306e\u8155",   // world.w10.name
+            "\u659c\u3081",   // world.w11.name
+            "\u304e\u3063\u3057\u308a",   // world.w12.name
+            "\u30ea\u30ec\u30fc",   // world.w14.name
+            "\u30af\u30ed\u30b9\u30c8\u30fc\u30af",   // world.w15.name
+            "\u4eee\u5b9a",   // world.w16.name
+            "\u719f\u7df4",   // world.w17.name
+        };
+
+        // pt-BR
+        static readonly string[] PtBR =
+        {
+            "MENU",   // nav.menu
+            "MUNDOS",   // nav.worlds
+            "{0}/{1}",   // common.page
+            "MUNDOS",   // menu.worlds
+            "DI\u00c1RIO",   // menu.daily
+            "SEM FIM",   // menu.endless
+            "CL\u00c1SSICO",   // menu.legacy
+            "TUTORIAL",   // menu.tutorial
+            "SEM AN\u00daNCIOS",   // menu.noAds
+            "PRIMEIRA VEZ?",   // menu.offer.title
+            "Aprenda o b\u00e1sico em um minuto.",   // menu.offer.line
+            "TUTORIAL",   // menu.offer.accept
+            "PULAR",   // menu.offer.skip
+            "AJUSTES",   // settings.title
+            "PRIVACIDADE",   // settings.privacy
+            "IDIOMA",   // settings.language
+            "APAGA CADA FASE VENCIDA\nE CADA RECORDE. OS CADEADOS FICAM.",   // settings.eraseCaption
+            "V{0}   BUILD {1}",   // settings.build
+            "EDITOR",   // settings.buildEditor
+            "SOM: LIGADO",   // settings.soundOn
+            "SOM: DESLIGADO",   // settings.soundOff
+            "APAGAR PROGRESSO",   // settings.reset
+            "TOQUE DE NOVO PARA APAGAR",   // settings.resetArmed
+            "VERDE",   // settings.skin.green
+            "AZUL",   // settings.skin.blue
+            "BEGE",   // settings.skin.tan
+            "VEN\u00c7A\nTODOS OS MUNDOS",   // settings.skin.wantWorlds
+            "VEN\u00c7A\nTODO O CL\u00c1SSICO",   // settings.skin.wantLegacy
+            "COMO JOGAR",   // rules.title
+            "Infecte cada c\u00e9lula do tabuleiro para vencer.",   // rules.goal
+            "Arraste um bicho para qualquer c\u00e9lula.",   // rules.intro
+            "Um raio vai at\u00e9 a borda, por cima dos v\u00e3os.",   // rules.diagram
+            "Vencer sobre repulsor ou armadilha vale igual.",   // rules.note1
+            "Toque uma vetada e a jogada volta.",   // rules.note2
+            "Infecte-a.",   // rules.cell.infect
+            "V\u00c3O",   // rules.cell.gap.name
+            "N\u00e3o \u00e9 c\u00e9lula: os raios o cruzam.",   // rules.cell.gap.line
+            "PAREDE",   // rules.cell.wall.name
+            "Barra um raio.",   // rules.cell.wall.line
+            "REPULSOR",   // rules.cell.repel.name
+            "Apaga de volta quando atingido.",   // rules.cell.repel.line
+            "ARMADILHA",   // rules.cell.trap.name
+            "Esvazia o tabuleiro quando atingida.",   // rules.cell.trap.line
+            "REL\u00c9",   // rules.cell.relay.name
+            "Dispara seus pr\u00f3prios raios quando atingido.",   // rules.cell.relay.line
+            "VETADA",   // rules.cell.avoid.name
+            "Os raios n\u00e3o devem toc\u00e1-la.",   // rules.cell.avoid.line
+            "Os raios v\u00e3o at\u00e9 a borda.",   // rules.spread.cardinal
+            "Ou de canto a canto.",   // rules.spread.diagonal
+            "Uma mancha toma as oito ao redor.",   // rules.spread.area
+            "CL\u00c1SSICO",   // legacy.title
+            "JOGO LIVRE",   // freeplay.title
+            "INICIANTE",   // freeplay.difficulty.beginner
+            "F\u00c1CIL",   // freeplay.difficulty.easy
+            "M\u00c9DIO",   // freeplay.difficulty.medium
+            "DIF\u00cdCIL",   // freeplay.difficulty.hard
+            "DESAFIADOR",   // freeplay.difficulty.challenging
+            "MUNDOS",   // worlds.title
+            "{0}  {1}",   // worlds.row
+            "{0}/{1}",   // worlds.progress
+            "DI\u00c1RIO",   // daily.title
+            "HOJE",   // daily.today
+            "PASSADO",   // daily.past
+            "S\u00c9RIE {0:00}",   // daily.streak
+            "{0} {1:00}/{2:00}",   // daily.monthCount
+            "{0} {1:00} {2}",   // daily.dateLine
+            "BICHOS {0}",   // daily.bugs
+            "C\u00c9LULAS {0}",   // daily.cells
+            "COMPLETO",   // daily.complete
+            "GERANDO",   // daily.generating
+            "N\u00c3O JOGADO",   // daily.unplayed
+            "JOGAR DE NOVO",   // daily.playAgain
+            "COME\u00c7AR",   // daily.begin
+            "SEM FIM",   // endless.title
+            "RECORDE {0}",   // endless.best
+            "RESET",   // board.reset
+            "CL\u00c1SSICO",   // board.legacy
+            "DI\u00c1RIO",   // board.daily
+            "SEM FIM  {0}",   // board.endless
+            "FASE {0}",   // board.level
+            "TUTORIAL {0}/{1}",   // board.tutorialTitle
+            "COME\u00c7AR",   // board.begin
+            "DICA",   // board.hint
+            "+1 RESOLVER",   // board.plusSolve
+            "RESOLVER {0:00}",   // board.solve
+            "COMPLETO",   // board.complete
+            "COMPLETO\nS\u00e9rie iniciada",   // board.completeStreakStarted
+            "COMPLETO\n{0} dias seguidos",   // board.completeStreakDays
+            "TUTORIAL COMPLETO",   // board.tutorialComplete
+            "MENU",   // board.popup.menu
+            "REPETIR",   // board.popup.replay
+            "PR\u00d3XIMA",   // board.popup.next
+            "JOGAR",   // board.popup.play
+            "CALEND\u00c1RIO",   // board.popup.calendar
+            "S\u00c9RIE {0}",   // board.hud.streak
+            "RECORDE {0}",   // board.hud.best
+            "{0}/5",   // board.hud.runCount
+            "N\u00cdVEL {0}",   // tier.name
+            "N{0}",   // tier.short
+            "{0}-{1}",   // tier.band
+            "CARREGANDO",   // loading.caption
+            "IDIOMA",   // language.title
+            "AUTO",   // language.auto
+            "SEG",   // cal.day.1
+            "TER",   // cal.day.2
+            "QUA",   // cal.day.3
+            "QUI",   // cal.day.4
+            "SEX",   // cal.day.5
+            "S\u00c1B",   // cal.day.6
+            "DOM",   // cal.day.7
+            "JANEIRO",   // cal.month.1
+            "FEVEREIRO",   // cal.month.2
+            "MAR\u00c7O",   // cal.month.3
+            "ABRIL",   // cal.month.4
+            "MAIO",   // cal.month.5
+            "JUNHO",   // cal.month.6
+            "JULHO",   // cal.month.7
+            "AGOSTO",   // cal.month.8
+            "SETEMBRO",   // cal.month.9
+            "OUTUBRO",   // cal.month.10
+            "NOVEMBRO",   // cal.month.11
+            "DEZEMBRO",   // cal.month.12
+            "JAN",   // cal.month.1.short
+            "FEV",   // cal.month.2.short
+            "MAR",   // cal.month.3.short
+            "ABR",   // cal.month.4.short
+            "MAI",   // cal.month.5.short
+            "JUN",   // cal.month.6.short
+            "JUL",   // cal.month.7.short
+            "AGO",   // cal.month.8.short
+            "SET",   // cal.month.9.short
+            "OUT",   // cal.month.10.short
+            "NOV",   // cal.month.11.short
+            "DEZ",   // cal.month.12.short
+            "Arraste o bicho at\u00e9 a c\u00e9lula marcada.",   // tut.1.line
+            "Raios cruzam os v\u00e3os.",   // tut.2.line
+            "Dois bichos. Toque em um para peg\u00e1-lo.",   // tut.3.line
+            "Uma parede barra um raio.",   // tut.4.line
+            "Bichos tamb\u00e9m podem ser diagonais.",   // tut.5.line
+            "Uma mancha toma as oito c\u00e9lulas ao redor.",   // tut.6.line
+            "Um raio nunca pode tocar uma c\u00e9lula vetada.",   // tut.7.line
+            "Um repulsor apaga o raio que o atingiu.",   // tut.8.line
+            "Uma armadilha reinicia o tabuleiro todo.",   // tut.9.line
+            "Um rel\u00e9 aceso dispara seus pr\u00f3prios raios.",   // tut.10.line
+            "PRIMEIROS PASSOS",   // world.w01.name
+            "DUAS LINHAS",   // world.w02.name
+            "CANTOS",   // world.w03.name
+            "CRUZAMENTOS",   // world.w04.name
+            "MANTER LIMPO",   // world.w05.name
+            "CONTAGEM",   // world.w06.name
+            "CORREDORES",   // world.w07.name
+            "MANCHAS",   // world.w08.name
+            "LONGO ALCANCE",   // world.w09.name
+            "QUATRO BRA\u00c7OS",   // world.w10.name
+            "DIAGONAIS",   // world.w11.name
+            "APERTADO",   // world.w12.name
+            "REL\u00c9S",   // world.w14.name
+            "DIAFONIA",   // world.w15.name
+            "SUPONHA",   // world.w16.name
+            "MAESTRIA",   // world.w17.name
+        };
+
+        // ru
+        static readonly string[] Ru =
+        {
+            "\u041c\u0415\u041d\u042e",   // nav.menu
+            "\u041c\u0418\u0420\u042b",   // nav.worlds
+            "{0}/{1}",   // common.page
+            "\u041c\u0418\u0420\u042b",   // menu.worlds
+            "\u0415\u0416\u0415\u0414\u041d\u0415\u0412\u041d\u041e",   // menu.daily
+            "\u0411\u0415\u0421\u041a\u041e\u041d\u0415\u0427\u041d\u041e",   // menu.endless
+            "\u041a\u041b\u0410\u0421\u0421\u0418\u041a\u0410",   // menu.legacy
+            "\u041e\u0411\u0423\u0427\u0415\u041d\u0418\u0415",   // menu.tutorial
+            "\u0411\u0415\u0417 \u0420\u0415\u041a\u041b\u0410\u041c\u042b",   // menu.noAds
+            "\u0412\u041f\u0415\u0420\u0412\u042b\u0415?",   // menu.offer.title
+            "\u041e\u0441\u0432\u043e\u0439 \u043e\u0441\u043d\u043e\u0432\u044b \u0437\u0430 \u043c\u0438\u043d\u0443\u0442\u0443.",   // menu.offer.line
+            "\u041e\u0411\u0423\u0427\u0415\u041d\u0418\u0415",   // menu.offer.accept
+            "\u041f\u0420\u041e\u041f\u0423\u0421\u0422\u0418\u0422\u042c",   // menu.offer.skip
+            "\u041d\u0410\u0421\u0422\u0420\u041e\u0419\u041a\u0418",   // settings.title
+            "\u041a\u041e\u041d\u0424\u0418\u0414\u0415\u041d\u0426\u0418\u0410\u041b\u042c\u041d\u041e\u0421\u0422\u042c",   // settings.privacy
+            "\u042f\u0417\u042b\u041a",   // settings.language
+            "\u0421\u0422\u0418\u0420\u0410\u0415\u0422 \u0412\u0421\u0415 \u041f\u0420\u041e\u0419\u0414\u0415\u041d\u041d\u042b\u0415 \u0423\u0420\u041e\u0412\u041d\u0418\n\u0418 \u0420\u0415\u041a\u041e\u0420\u0414\u042b. \u0417\u0410\u041c\u041a\u0418 \u041e\u0421\u0422\u0410\u042e\u0422\u0421\u042f.",   // settings.eraseCaption
+            "V{0}   BUILD {1}",   // settings.build
+            "EDITOR",   // settings.buildEditor
+            "\u0417\u0412\u0423\u041a: \u0412\u041a\u041b",   // settings.soundOn
+            "\u0417\u0412\u0423\u041a: \u0412\u042b\u041a\u041b",   // settings.soundOff
+            "\u0421\u0411\u0420\u041e\u0421\u0418\u0422\u042c \u041f\u0420\u041e\u0413\u0420\u0415\u0421\u0421",   // settings.reset
+            "\u041d\u0410\u0416\u041c\u0418 \u0415\u0429\u0401 \u0420\u0410\u0417, \u0427\u0422\u041e\u0411\u042b \u0421\u0422\u0415\u0420\u0415\u0422\u042c",   // settings.resetArmed
+            "\u0417\u0415\u041b\u0401\u041d\u042b\u0419",   // settings.skin.green
+            "\u0421\u0418\u041d\u0418\u0419",   // settings.skin.blue
+            "\u0411\u0415\u0416\u0415\u0412\u042b\u0419",   // settings.skin.tan
+            "\u041f\u0420\u041e\u0419\u0414\u0418\n\u0412\u0421\u0415 \u041c\u0418\u0420\u042b",   // settings.skin.wantWorlds
+            "\u041f\u0420\u041e\u0419\u0414\u0418\n\u0412\u0421\u042e \u041a\u041b\u0410\u0421\u0421\u0418\u041a\u0423",   // settings.skin.wantLegacy
+            "\u041a\u0410\u041a \u0418\u0413\u0420\u0410\u0422\u042c",   // rules.title
+            "\u0417\u0430\u0440\u0430\u0437\u0438 \u043a\u0430\u0436\u0434\u0443\u044e \u043a\u043b\u0435\u0442\u043a\u0443 \u043f\u043e\u043b\u044f, \u0447\u0442\u043e\u0431\u044b \u043f\u043e\u0431\u0435\u0434\u0438\u0442\u044c.",   // rules.goal
+            "\u041f\u0435\u0440\u0435\u0442\u0430\u0449\u0438 \u0436\u0443\u043a\u0430 \u043d\u0430 \u043b\u044e\u0431\u0443\u044e \u043a\u043b\u0435\u0442\u043a\u0443.",   // rules.intro
+            "\u041b\u0443\u0447 \u0438\u0434\u0451\u0442 \u0434\u043e \u043a\u0440\u0430\u044f, \u043c\u0438\u043d\u0443\u044f \u043f\u0443\u0441\u0442\u043e\u0442\u044b.",   // rules.diagram
+            "\u041f\u043e\u0431\u0435\u0434\u0430 \u043d\u0430 \u043e\u0442\u0440\u0430\u0436\u0430\u0442\u0435\u043b\u0435 \u0438\u043b\u0438 \u043b\u043e\u0432\u0443\u0448\u043a\u0435 \u0432\u0441\u0451 \u0440\u0430\u0432\u043d\u043e \u0437\u0430\u0441\u0447\u0438\u0442\u044b\u0432\u0430\u0435\u0442\u0441\u044f.",   // rules.note1
+            "\u0417\u0430\u0434\u0435\u043d\u044c \u0437\u0430\u043f\u0440\u0435\u0442\u043d\u0443\u044e \u043a\u043b\u0435\u0442\u043a\u0443 \u2014 \u0445\u043e\u0434 \u043e\u0442\u0441\u043a\u043e\u0447\u0438\u0442.",   // rules.note2
+            "\u0417\u0430\u0440\u0430\u0437\u0438 \u0435\u0451.",   // rules.cell.infect
+            "\u041f\u0423\u0421\u0422\u041e\u0422\u0410",   // rules.cell.gap.name
+            "\u041d\u0435 \u043a\u043b\u0435\u0442\u043a\u0430: \u043b\u0443\u0447\u0438 \u043f\u0440\u043e\u0445\u043e\u0434\u044f\u0442 \u0441\u043a\u0432\u043e\u0437\u044c.",   // rules.cell.gap.line
+            "\u0421\u0422\u0415\u041d\u0410",   // rules.cell.wall.name
+            "\u041e\u0441\u0442\u0430\u043d\u0430\u0432\u043b\u0438\u0432\u0430\u0435\u0442 \u043b\u0443\u0447.",   // rules.cell.wall.line
+            "\u041e\u0422\u0420\u0410\u0416\u0410\u0422\u0415\u041b\u042c",   // rules.cell.repel.name
+            "\u0421\u0442\u0438\u0440\u0430\u0435\u0442 \u043b\u0443\u0447 \u043f\u0440\u0438 \u043f\u043e\u043f\u0430\u0434\u0430\u043d\u0438\u0438.",   // rules.cell.repel.line
+            "\u041b\u041e\u0412\u0423\u0428\u041a\u0410",   // rules.cell.trap.name
+            "\u041e\u0447\u0438\u0449\u0430\u0435\u0442 \u043f\u043e\u043b\u0435 \u043f\u0440\u0438 \u043f\u043e\u043f\u0430\u0434\u0430\u043d\u0438\u0438.",   // rules.cell.trap.line
+            "\u0420\u0415\u041b\u0415",   // rules.cell.relay.name
+            "\u041f\u0443\u0441\u043a\u0430\u0435\u0442 \u0441\u0432\u043e\u0438 \u043b\u0443\u0447\u0438 \u043f\u0440\u0438 \u043f\u043e\u043f\u0430\u0434\u0430\u043d\u0438\u0438.",   // rules.cell.relay.line
+            "\u0417\u0410\u041f\u0420\u0415\u0422",   // rules.cell.avoid.name
+            "\u041b\u0443\u0447\u0438 \u043d\u0435 \u0434\u043e\u043b\u0436\u043d\u044b \u0435\u0433\u043e \u043a\u0430\u0441\u0430\u0442\u044c\u0441\u044f.",   // rules.cell.avoid.line
+            "\u041b\u0443\u0447\u0438 \u0438\u0434\u0443\u0442 \u0434\u043e \u043a\u0440\u0430\u044f.",   // rules.spread.cardinal
+            "\u0418\u043b\u0438 \u0438\u0437 \u0443\u0433\u043b\u0430 \u0432 \u0443\u0433\u043e\u043b.",   // rules.spread.diagonal
+            "\u041a\u043b\u044f\u043a\u0441\u0430 \u0431\u0435\u0440\u0451\u0442 \u0432\u043e\u0441\u0435\u043c\u044c \u043a\u043b\u0435\u0442\u043e\u043a \u0432\u043e\u043a\u0440\u0443\u0433.",   // rules.spread.area
+            "\u041a\u041b\u0410\u0421\u0421\u0418\u041a\u0410",   // legacy.title
+            "\u0421\u0412\u041e\u0411\u041e\u0414\u041d\u0410\u042f \u0418\u0413\u0420\u0410",   // freeplay.title
+            "\u041d\u041e\u0412\u0418\u0427\u041e\u041a",   // freeplay.difficulty.beginner
+            "\u041b\u0415\u0413\u041a\u041e",   // freeplay.difficulty.easy
+            "\u0421\u0420\u0415\u0414\u041d\u0415",   // freeplay.difficulty.medium
+            "\u0421\u041b\u041e\u0416\u041d\u041e",   // freeplay.difficulty.hard
+            "\u041e\u0427\u0415\u041d\u042c \u0421\u041b\u041e\u0416\u041d\u041e",   // freeplay.difficulty.challenging
+            "\u041c\u0418\u0420\u042b",   // worlds.title
+            "{0}  {1}",   // worlds.row
+            "{0}/{1}",   // worlds.progress
+            "\u0415\u0416\u0415\u0414\u041d\u0415\u0412\u041d\u041e",   // daily.title
+            "\u0421\u0415\u0413\u041e\u0414\u041d\u042f",   // daily.today
+            "\u041f\u0420\u041e\u0428\u041b\u041e\u0415",   // daily.past
+            "\u0421\u0415\u0420\u0418\u042f {0:00}",   // daily.streak
+            "{0} {1:00}/{2:00}",   // daily.monthCount
+            "{0} {1:00} {2}",   // daily.dateLine
+            "\u0416\u0423\u041a\u0418 {0}",   // daily.bugs
+            "\u041a\u041b\u0415\u0422\u041a\u0418 {0}",   // daily.cells
+            "\u0413\u041e\u0422\u041e\u0412\u041e",   // daily.complete
+            "\u0421\u041e\u0417\u0414\u0410\u041d\u0418\u0415",   // daily.generating
+            "\u041d\u0415 \u0421\u042b\u0413\u0420\u0410\u041d\u041e",   // daily.unplayed
+            "\u0415\u0429\u0401 \u0420\u0410\u0417",   // daily.playAgain
+            "\u041d\u0410\u0427\u0410\u0422\u042c",   // daily.begin
+            "\u0411\u0415\u0421\u041a\u041e\u041d\u0415\u0427\u041d\u041e",   // endless.title
+            "\u0420\u0415\u041a\u041e\u0420\u0414 {0}",   // endless.best
+            "\u0421\u0411\u0420\u041e\u0421",   // board.reset
+            "\u041a\u041b\u0410\u0421\u0421\u0418\u041a\u0410",   // board.legacy
+            "\u0415\u0416\u0415\u0414\u041d\u0415\u0412\u041d\u041e",   // board.daily
+            "\u0411\u0415\u0421\u041a\u041e\u041d\u0415\u0427\u041d\u041e  {0}",   // board.endless
+            "\u0423\u0420\u041e\u0412\u0415\u041d\u042c {0}",   // board.level
+            "\u041e\u0411\u0423\u0427\u0415\u041d\u0418\u0415 {0}/{1}",   // board.tutorialTitle
+            "\u041d\u0410\u0427\u0410\u0422\u042c",   // board.begin
+            "\u041f\u041e\u0414\u0421\u041a\u0410\u0417\u041a\u0410",   // board.hint
+            "+1 \u0420\u0415\u0428\u0418\u0422\u042c",   // board.plusSolve
+            "\u0420\u0415\u0428\u0418\u0422\u042c {0:00}",   // board.solve
+            "\u0413\u041e\u0422\u041e\u0412\u041e",   // board.complete
+            "\u0413\u041e\u0422\u041e\u0412\u041e\n\u0421\u0435\u0440\u0438\u044f \u043d\u0430\u0447\u0430\u043b\u0430\u0441\u044c",   // board.completeStreakStarted
+            "\u0413\u041e\u0422\u041e\u0412\u041e\n{0} \u0434\u043d\u0435\u0439 \u043f\u043e\u0434\u0440\u044f\u0434",   // board.completeStreakDays
+            "\u041e\u0411\u0423\u0427\u0415\u041d\u0418\u0415 \u041f\u0420\u041e\u0419\u0414\u0415\u041d\u041e",   // board.tutorialComplete
+            "\u041c\u0415\u041d\u042e",   // board.popup.menu
+            "\u0417\u0410\u041d\u041e\u0412\u041e",   // board.popup.replay
+            "\u0414\u0410\u041b\u042c\u0428\u0415",   // board.popup.next
+            "\u0418\u0413\u0420\u0410\u0422\u042c",   // board.popup.play
+            "\u041a\u0410\u041b\u0415\u041d\u0414\u0410\u0420\u042c",   // board.popup.calendar
+            "\u0421\u0415\u0420\u0418\u042f {0}",   // board.hud.streak
+            "\u0420\u0415\u041a\u041e\u0420\u0414 {0}",   // board.hud.best
+            "{0}/5",   // board.hud.runCount
+            "\u0423\u0420\u041e\u0412\u0415\u041d\u042c {0}",   // tier.name
+            "\u0423{0}",   // tier.short
+            "{0}-{1}",   // tier.band
+            "\u0417\u0410\u0413\u0420\u0423\u0417\u041a\u0410",   // loading.caption
+            "\u042f\u0417\u042b\u041a",   // language.title
+            "AUTO",   // language.auto
+            "\u041f\u041d",   // cal.day.1
+            "\u0412\u0422",   // cal.day.2
+            "\u0421\u0420",   // cal.day.3
+            "\u0427\u0422",   // cal.day.4
+            "\u041f\u0422",   // cal.day.5
+            "\u0421\u0411",   // cal.day.6
+            "\u0412\u0421",   // cal.day.7
+            "\u042f\u041d\u0412\u0410\u0420\u042c",   // cal.month.1
+            "\u0424\u0415\u0412\u0420\u0410\u041b\u042c",   // cal.month.2
+            "\u041c\u0410\u0420\u0422",   // cal.month.3
+            "\u0410\u041f\u0420\u0415\u041b\u042c",   // cal.month.4
+            "\u041c\u0410\u0419",   // cal.month.5
+            "\u0418\u042e\u041d\u042c",   // cal.month.6
+            "\u0418\u042e\u041b\u042c",   // cal.month.7
+            "\u0410\u0412\u0413\u0423\u0421\u0422",   // cal.month.8
+            "\u0421\u0415\u041d\u0422\u042f\u0411\u0420\u042c",   // cal.month.9
+            "\u041e\u041a\u0422\u042f\u0411\u0420\u042c",   // cal.month.10
+            "\u041d\u041e\u042f\u0411\u0420\u042c",   // cal.month.11
+            "\u0414\u0415\u041a\u0410\u0411\u0420\u042c",   // cal.month.12
+            "\u042f\u041d\u0412",   // cal.month.1.short
+            "\u0424\u0415\u0412",   // cal.month.2.short
+            "\u041c\u0410\u0420",   // cal.month.3.short
+            "\u0410\u041f\u0420",   // cal.month.4.short
+            "\u041c\u0410\u0419",   // cal.month.5.short
+            "\u0418\u042e\u041d",   // cal.month.6.short
+            "\u0418\u042e\u041b",   // cal.month.7.short
+            "\u0410\u0412\u0413",   // cal.month.8.short
+            "\u0421\u0415\u041d",   // cal.month.9.short
+            "\u041e\u041a\u0422",   // cal.month.10.short
+            "\u041d\u041e\u042f",   // cal.month.11.short
+            "\u0414\u0415\u041a",   // cal.month.12.short
+            "\u041f\u0435\u0440\u0435\u0442\u0430\u0449\u0438 \u0436\u0443\u043a\u0430 \u043d\u0430 \u043e\u0442\u043c\u0435\u0447\u0435\u043d\u043d\u0443\u044e \u043a\u043b\u0435\u0442\u043a\u0443.",   // tut.1.line
+            "\u041b\u0443\u0447\u0438 \u043f\u0440\u043e\u0445\u043e\u0434\u044f\u0442 \u0441\u043a\u0432\u043e\u0437\u044c \u043f\u0443\u0441\u0442\u043e\u0442\u044b.",   // tut.2.line
+            "\u0414\u0432\u0430 \u0436\u0443\u043a\u0430. \u041a\u043e\u0441\u043d\u0438\u0441\u044c \u043e\u0434\u043d\u043e\u0433\u043e, \u0447\u0442\u043e\u0431\u044b \u043f\u043e\u0434\u043d\u044f\u0442\u044c.",   // tut.3.line
+            "\u0421\u0442\u0435\u043d\u0430 \u043e\u0441\u0442\u0430\u043d\u0430\u0432\u043b\u0438\u0432\u0430\u0435\u0442 \u043b\u0443\u0447.",   // tut.4.line
+            "\u0416\u0443\u043a\u0438 \u0431\u044b\u0432\u0430\u044e\u0442 \u0438 \u0434\u0438\u0430\u0433\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u043c\u0438.",   // tut.5.line
+            "\u041a\u043b\u044f\u043a\u0441\u0430 \u0431\u0435\u0440\u0451\u0442 \u0432\u043e\u0441\u0435\u043c\u044c \u043a\u043b\u0435\u0442\u043e\u043a \u0432\u043e\u043a\u0440\u0443\u0433.",   // tut.6.line
+            "\u041b\u0443\u0447 \u043d\u0435 \u0434\u043e\u043b\u0436\u0435\u043d \u043a\u0430\u0441\u0430\u0442\u044c\u0441\u044f \u0437\u0430\u043f\u0440\u0435\u0442\u043d\u043e\u0439 \u043a\u043b\u0435\u0442\u043a\u0438.",   // tut.7.line
+            "\u041e\u0442\u0440\u0430\u0436\u0430\u0442\u0435\u043b\u044c \u0441\u0442\u0438\u0440\u0430\u0435\u0442 \u043f\u043e\u043f\u0430\u0432\u0448\u0438\u0439 \u0432 \u043d\u0435\u0433\u043e \u043b\u0443\u0447.",   // tut.8.line
+            "\u041b\u043e\u0432\u0443\u0448\u043a\u0430 \u0441\u0431\u0440\u0430\u0441\u044b\u0432\u0430\u0435\u0442 \u0432\u0441\u0451 \u043f\u043e\u043b\u0435.",   // tut.9.line
+            "\u0417\u0430\u0436\u0436\u0451\u043d\u043d\u043e\u0435 \u0440\u0435\u043b\u0435 \u043f\u0443\u0441\u043a\u0430\u0435\u0442 \u0441\u0432\u043e\u0438 \u043b\u0443\u0447\u0438.",   // tut.10.line
+            "\u041f\u0415\u0420\u0412\u042b\u0415 \u0428\u0410\u0413\u0418",   // world.w01.name
+            "\u0414\u0412\u0415 \u041b\u0418\u041d\u0418\u0418",   // world.w02.name
+            "\u0423\u0413\u041b\u042b",   // world.w03.name
+            "\u041f\u0415\u0420\u0415\u041a\u0420\u0401\u0421\u0422\u041a\u0418",   // world.w04.name
+            "\u0427\u0418\u0421\u0422\u041e\u0422\u0410",   // world.w05.name
+            "\u0421\u0427\u0401\u0422",   // world.w06.name
+            "\u041a\u041e\u0420\u0418\u0414\u041e\u0420\u042b",   // world.w07.name
+            "\u041a\u041b\u042f\u041a\u0421\u042b",   // world.w08.name
+            "\u0414\u0410\u041b\u042c\u041d\u0418\u0419 \u041b\u0423\u0427",   // world.w09.name
+            "\u0427\u0415\u0422\u042b\u0420\u0415 \u041b\u0423\u0427\u0410",   // world.w10.name
+            "\u0414\u0418\u0410\u0413\u041e\u041d\u0410\u041b\u0418",   // world.w11.name
+            "\u0422\u0415\u0421\u041d\u041e\u0422\u0410",   // world.w12.name
+            "\u0420\u0415\u041b\u0415",   // world.w14.name
+            "\u041d\u0410\u0412\u041e\u0414\u041a\u0418",   // world.w15.name
+            "\u0414\u041e\u041f\u0423\u0421\u0422\u0418\u041c",   // world.w16.name
+            "\u041c\u0410\u0421\u0422\u0415\u0420\u0421\u0422\u0412\u041e",   // world.w17.name
+        };
+
+        // tr
+        static readonly string[] Tr =
+        {
+            "MEN\u00dc",   // nav.menu
+            "D\u00dcNYALAR",   // nav.worlds
+            "{0}/{1}",   // common.page
+            "D\u00dcNYALAR",   // menu.worlds
+            "G\u00dcNL\u00dcK",   // menu.daily
+            "SONSUZ",   // menu.endless
+            "KLAS\u0130K",   // menu.legacy
+            "E\u011e\u0130T\u0130M",   // menu.tutorial
+            "REKLAMSIZ",   // menu.noAds
+            "\u0130LK KEZ M\u0130?",   // menu.offer.title
+            "Temelleri bir dakikada \u00f6\u011fren.",   // menu.offer.line
+            "E\u011e\u0130T\u0130M",   // menu.offer.accept
+            "ATLA",   // menu.offer.skip
+            "AYARLAR",   // settings.title
+            "G\u0130ZL\u0130L\u0130K",   // settings.privacy
+            "D\u0130L",   // settings.language
+            "GE\u00c7\u0130LEN HER B\u00d6L\u00dcM\u00dc VE HER SKORU\nS\u0130LER. K\u0130L\u0130TLER KALIR.",   // settings.eraseCaption
+            "V{0}   BUILD {1}",   // settings.build
+            "EDITOR",   // settings.buildEditor
+            "SES: A\u00c7IK",   // settings.soundOn
+            "SES: KAPALI",   // settings.soundOff
+            "\u0130LERLEMEY\u0130 S\u0130L",   // settings.reset
+            "S\u0130LMEK \u0130\u00c7\u0130N TEKRAR DOKUN",   // settings.resetArmed
+            "YE\u015e\u0130L",   // settings.skin.green
+            "MAV\u0130",   // settings.skin.blue
+            "BEJ",   // settings.skin.tan
+            "T\u00dcM D\u00dcNYALARI\nB\u0130T\u0130R",   // settings.skin.wantWorlds
+            "T\u00dcM KLAS\u0130\u011e\u0130\nB\u0130T\u0130R",   // settings.skin.wantLegacy
+            "NASIL OYNANIR",   // rules.title
+            "Kazanmak i\u00e7in tahtadaki her h\u00fccreyi enfekte et.",   // rules.goal
+            "Bir b\u00f6ce\u011fi herhangi bir h\u00fccreye s\u00fcr\u00fckle.",   // rules.intro
+            "I\u015f\u0131n bo\u015fluklar\u0131n \u00fcst\u00fcnden kenara kadar gider.",   // rules.diagram
+            "\u0130tici veya tuzakta kazanmak yine say\u0131l\u0131r.",   // rules.note1
+            "Yasak h\u00fccreye de\u011fersen hamle geri d\u00f6ner.",   // rules.note2
+            "Enfekte et.",   // rules.cell.infect
+            "BO\u015eLUK",   // rules.cell.gap.name
+            "H\u00fccre de\u011fil: \u0131\u015f\u0131nlar ge\u00e7er.",   // rules.cell.gap.line
+            "DUVAR",   // rules.cell.wall.name
+            "I\u015f\u0131n\u0131 durdurur.",   // rules.cell.wall.line
+            "\u0130T\u0130C\u0130",   // rules.cell.repel.name
+            "Vurulunca geri siler.",   // rules.cell.repel.line
+            "TUZAK",   // rules.cell.trap.name
+            "Vurulunca tahtay\u0131 bo\u015falt\u0131r.",   // rules.cell.trap.line
+            "R\u00d6LE",   // rules.cell.relay.name
+            "Vurulunca kendi \u0131\u015f\u0131nlar\u0131n\u0131 atar.",   // rules.cell.relay.line
+            "YASAK",   // rules.cell.avoid.name
+            "I\u015f\u0131nlar ona de\u011fmemeli.",   // rules.cell.avoid.line
+            "I\u015f\u0131nlar kenara kadar gider.",   // rules.spread.cardinal
+            "Ya da k\u00f6\u015feden k\u00f6\u015feye.",   // rules.spread.diagonal
+            "Leke \u00e7evresindeki sekizi al\u0131r.",   // rules.spread.area
+            "KLAS\u0130K",   // legacy.title
+            "SERBEST OYUN",   // freeplay.title
+            "BA\u015eLANGI\u00c7",   // freeplay.difficulty.beginner
+            "KOLAY",   // freeplay.difficulty.easy
+            "ORTA",   // freeplay.difficulty.medium
+            "ZOR",   // freeplay.difficulty.hard
+            "\u00c7ET\u0130N",   // freeplay.difficulty.challenging
+            "D\u00dcNYALAR",   // worlds.title
+            "{0}  {1}",   // worlds.row
+            "{0}/{1}",   // worlds.progress
+            "G\u00dcNL\u00dcK",   // daily.title
+            "BUG\u00dcN",   // daily.today
+            "GE\u00c7M\u0130\u015e",   // daily.past
+            "SER\u0130 {0:00}",   // daily.streak
+            "{0} {1:00}/{2:00}",   // daily.monthCount
+            "{0} {1:00} {2}",   // daily.dateLine
+            "B\u00d6CEK {0}",   // daily.bugs
+            "H\u00dcCRE {0}",   // daily.cells
+            "TAMAM",   // daily.complete
+            "\u00dcRET\u0130L\u0130YOR",   // daily.generating
+            "OYNANMADI",   // daily.unplayed
+            "TEKRAR OYNA",   // daily.playAgain
+            "BA\u015eLA",   // daily.begin
+            "SONSUZ",   // endless.title
+            "REKOR {0}",   // endless.best
+            "RESET",   // board.reset
+            "KLAS\u0130K",   // board.legacy
+            "G\u00dcNL\u00dcK",   // board.daily
+            "SONSUZ  {0}",   // board.endless
+            "B\u00d6L\u00dcM {0}",   // board.level
+            "E\u011e\u0130T\u0130M {0}/{1}",   // board.tutorialTitle
+            "BA\u015eLA",   // board.begin
+            "\u0130PUCU",   // board.hint
+            "+1 \u00c7\u00d6Z",   // board.plusSolve
+            "\u00c7\u00d6Z {0:00}",   // board.solve
+            "TAMAM",   // board.complete
+            "TAMAM\nSeri ba\u015flad\u0131",   // board.completeStreakStarted
+            "TAMAM\n{0} g\u00fcn \u00fcst \u00fcste",   // board.completeStreakDays
+            "E\u011e\u0130T\u0130M TAMAM",   // board.tutorialComplete
+            "MEN\u00dc",   // board.popup.menu
+            "TEKRAR",   // board.popup.replay
+            "SONRAK\u0130",   // board.popup.next
+            "OYNA",   // board.popup.play
+            "TAKV\u0130M",   // board.popup.calendar
+            "SER\u0130 {0}",   // board.hud.streak
+            "REKOR {0}",   // board.hud.best
+            "{0}/5",   // board.hud.runCount
+            "KADEME {0}",   // tier.name
+            "K{0}",   // tier.short
+            "{0}-{1}",   // tier.band
+            "Y\u00dcKLEN\u0130YOR",   // loading.caption
+            "D\u0130L",   // language.title
+            "AUTO",   // language.auto
+            "PZT",   // cal.day.1
+            "SAL",   // cal.day.2
+            "\u00c7AR",   // cal.day.3
+            "PER",   // cal.day.4
+            "CUM",   // cal.day.5
+            "CMT",   // cal.day.6
+            "PAZ",   // cal.day.7
+            "OCAK",   // cal.month.1
+            "\u015eUBAT",   // cal.month.2
+            "MART",   // cal.month.3
+            "N\u0130SAN",   // cal.month.4
+            "MAYIS",   // cal.month.5
+            "HAZ\u0130RAN",   // cal.month.6
+            "TEMMUZ",   // cal.month.7
+            "A\u011eUSTOS",   // cal.month.8
+            "EYL\u00dcL",   // cal.month.9
+            "EK\u0130M",   // cal.month.10
+            "KASIM",   // cal.month.11
+            "ARALIK",   // cal.month.12
+            "OCA",   // cal.month.1.short
+            "\u015eUB",   // cal.month.2.short
+            "MAR",   // cal.month.3.short
+            "N\u0130S",   // cal.month.4.short
+            "MAY",   // cal.month.5.short
+            "HAZ",   // cal.month.6.short
+            "TEM",   // cal.month.7.short
+            "A\u011eU",   // cal.month.8.short
+            "EYL",   // cal.month.9.short
+            "EK\u0130",   // cal.month.10.short
+            "KAS",   // cal.month.11.short
+            "ARA",   // cal.month.12.short
+            "B\u00f6ce\u011fi i\u015faretli h\u00fccreye s\u00fcr\u00fckle.",   // tut.1.line
+            "I\u015f\u0131nlar bo\u015fluklar\u0131 ge\u00e7er.",   // tut.2.line
+            "\u0130ki b\u00f6cek. Kald\u0131rmak i\u00e7in birine dokun.",   // tut.3.line
+            "Duvar \u0131\u015f\u0131n\u0131 durdurur.",   // tut.4.line
+            "B\u00f6cekler \u00e7apraz da olabilir.",   // tut.5.line
+            "Leke \u00e7evresindeki sekiz h\u00fccreyi al\u0131r.",   // tut.6.line
+            "I\u015f\u0131n yasak h\u00fccreye asla de\u011fmemeli.",   // tut.7.line
+            "\u0130tici, kendine \u00e7arpan \u0131\u015f\u0131n\u0131 siler.",   // tut.8.line
+            "Tuzak t\u00fcm tahtay\u0131 s\u0131f\u0131rlar.",   // tut.9.line
+            "Yanan r\u00f6le kendi \u0131\u015f\u0131nlar\u0131n\u0131 atar.",   // tut.10.line
+            "\u0130LK ADIMLAR",   // world.w01.name
+            "\u0130K\u0130 \u00c7\u0130ZG\u0130",   // world.w02.name
+            "K\u00d6\u015eELER",   // world.w03.name
+            "KES\u0130\u015eMELER",   // world.w04.name
+            "TEM\u0130Z TUT",   // world.w05.name
+            "SAYMA",   // world.w06.name
+            "KOR\u0130DORLAR",   // world.w07.name
+            "LEKELER",   // world.w08.name
+            "UZUN MENZ\u0130L",   // world.w09.name
+            "D\u00d6RT KOL",   // world.w10.name
+            "\u00c7APRAZLAR",   // world.w11.name
+            "DAR",   // world.w12.name
+            "R\u00d6LELER",   // world.w14.name
+            "\u00c7APRAZ KARI\u015eMA",   // world.w15.name
+            "VARSAYALIM",   // world.w16.name
+            "USTALIK",   // world.w17.name
         };
 
         // qps-ploc
@@ -285,7 +1620,6 @@ namespace GridInfect.Game
             "[\u00d1\u00c9XT\u00b7\u00b7]",   // board.popup.next
             "[PL\u00c1\u00dd\u00b7\u00b7]",   // board.popup.play
             "[\u00c7\u00c1L\u00c9\u00d1\u0110\u00c1R\u00b7\u00b7\u00b7]",   // board.popup.calendar
-            "[\u0160\u00d3LV\u00c9\u0110 \u00b7\u00b7{0}]",   // board.hud.solved
             "[\u0160TR\u00c9\u00c1K \u00b7\u00b7{0}]",   // board.hud.streak
             "[B\u00c9\u0160T \u00b7\u00b7{0}]",   // board.hud.best
             "[{0}/5]",   // board.hud.runCount
@@ -451,7 +1785,6 @@ namespace GridInfect.Game
             "TXEN",   // board.popup.next
             "YALP",   // board.popup.play
             "RADNELAC",   // board.popup.calendar
-            "{0} DEVLOS",   // board.hud.solved
             "{0} KAERTS",   // board.hud.streak
             "{0} TSEB",   // board.hud.best
             "5/{0}",   // board.hud.runCount
@@ -523,6 +1856,14 @@ namespace GridInfect.Game
         static readonly string[][] Tables =
         {
             En,
+            De,
+            Es,
+            Fr,
+            It,
+            Ja,
+            PtBR,
+            Ru,
+            Tr,
             QpsPloc,
             QpsPlocm,
         };
@@ -541,10 +1882,10 @@ namespace GridInfect.Game
 
         // ---- families ----
 
-        static readonly int[] MonthIdx = { 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122 };
-        static readonly int[] MonthShortIdx = { 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134 };
-        static readonly int[] DayIdx = { 104, 105, 106, 107, 108, 109, 110 };
-        static readonly int[] TutIdx = { 135, 136, 137, 138, 139, 140, 141, 142, 143, 144 };
+        static readonly int[] MonthIdx = { 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121 };
+        static readonly int[] MonthShortIdx = { 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133 };
+        static readonly int[] DayIdx = { 103, 104, 105, 106, 107, 108, 109 };
+        static readonly int[] TutIdx = { 134, 135, 136, 137, 138, 139, 140, 141, 142, 143 };
         static readonly int[] DifficultyIdx = { 52, 53, 54, 55, 56 };
 
         // Month 1-12, weekday 1-7 Monday first, tutorial step 1-based,
@@ -560,22 +1901,22 @@ namespace GridInfect.Game
         {
             switch (worldId)
             {
-                case "w01": return _v[145];
-                case "w02": return _v[146];
-                case "w03": return _v[147];
-                case "w04": return _v[148];
-                case "w05": return _v[149];
-                case "w06": return _v[150];
-                case "w07": return _v[151];
-                case "w08": return _v[152];
-                case "w09": return _v[153];
-                case "w10": return _v[154];
-                case "w11": return _v[155];
-                case "w12": return _v[156];
-                case "w14": return _v[157];
-                case "w15": return _v[158];
-                case "w16": return _v[159];
-                case "w17": return _v[160];
+                case "w01": return _v[144];
+                case "w02": return _v[145];
+                case "w03": return _v[146];
+                case "w04": return _v[147];
+                case "w05": return _v[148];
+                case "w06": return _v[149];
+                case "w07": return _v[150];
+                case "w08": return _v[151];
+                case "w09": return _v[152];
+                case "w10": return _v[153];
+                case "w11": return _v[154];
+                case "w12": return _v[155];
+                case "w14": return _v[156];
+                case "w15": return _v[157];
+                case "w16": return _v[158];
+                case "w17": return _v[159];
             }
             return worldId;
         }
@@ -676,72 +2017,71 @@ namespace GridInfect.Game
         public static string BoardPopupNext => _v[91];
         public static string BoardPopupPlay => _v[92];
         public static string BoardPopupCalendar => _v[93];
-        public static string BoardHudSolved => _v[94];
-        public static string BoardHudStreak => _v[95];
-        public static string BoardHudBest => _v[96];
-        public static string BoardHudRunCount => _v[97];
-        public static string TierName => _v[98];
-        public static string TierShort => _v[99];
-        public static string TierBand => _v[100];
-        public static string LoadingCaption => _v[101];
-        public static string LanguageTitle => _v[102];
-        public static string LanguageAuto => _v[103];
-        public static string CalDay1 => _v[104];
-        public static string CalDay2 => _v[105];
-        public static string CalDay3 => _v[106];
-        public static string CalDay4 => _v[107];
-        public static string CalDay5 => _v[108];
-        public static string CalDay6 => _v[109];
-        public static string CalDay7 => _v[110];
-        public static string CalMonth1 => _v[111];
-        public static string CalMonth2 => _v[112];
-        public static string CalMonth3 => _v[113];
-        public static string CalMonth4 => _v[114];
-        public static string CalMonth5 => _v[115];
-        public static string CalMonth6 => _v[116];
-        public static string CalMonth7 => _v[117];
-        public static string CalMonth8 => _v[118];
-        public static string CalMonth9 => _v[119];
-        public static string CalMonth10 => _v[120];
-        public static string CalMonth11 => _v[121];
-        public static string CalMonth12 => _v[122];
-        public static string CalMonth1Short => _v[123];
-        public static string CalMonth2Short => _v[124];
-        public static string CalMonth3Short => _v[125];
-        public static string CalMonth4Short => _v[126];
-        public static string CalMonth5Short => _v[127];
-        public static string CalMonth6Short => _v[128];
-        public static string CalMonth7Short => _v[129];
-        public static string CalMonth8Short => _v[130];
-        public static string CalMonth9Short => _v[131];
-        public static string CalMonth10Short => _v[132];
-        public static string CalMonth11Short => _v[133];
-        public static string CalMonth12Short => _v[134];
-        public static string Tut1Line => _v[135];
-        public static string Tut2Line => _v[136];
-        public static string Tut3Line => _v[137];
-        public static string Tut4Line => _v[138];
-        public static string Tut5Line => _v[139];
-        public static string Tut6Line => _v[140];
-        public static string Tut7Line => _v[141];
-        public static string Tut8Line => _v[142];
-        public static string Tut9Line => _v[143];
-        public static string Tut10Line => _v[144];
-        public static string WorldW01Name => _v[145];
-        public static string WorldW02Name => _v[146];
-        public static string WorldW03Name => _v[147];
-        public static string WorldW04Name => _v[148];
-        public static string WorldW05Name => _v[149];
-        public static string WorldW06Name => _v[150];
-        public static string WorldW07Name => _v[151];
-        public static string WorldW08Name => _v[152];
-        public static string WorldW09Name => _v[153];
-        public static string WorldW10Name => _v[154];
-        public static string WorldW11Name => _v[155];
-        public static string WorldW12Name => _v[156];
-        public static string WorldW14Name => _v[157];
-        public static string WorldW15Name => _v[158];
-        public static string WorldW16Name => _v[159];
-        public static string WorldW17Name => _v[160];
+        public static string BoardHudStreak => _v[94];
+        public static string BoardHudBest => _v[95];
+        public static string BoardHudRunCount => _v[96];
+        public static string TierName => _v[97];
+        public static string TierShort => _v[98];
+        public static string TierBand => _v[99];
+        public static string LoadingCaption => _v[100];
+        public static string LanguageTitle => _v[101];
+        public static string LanguageAuto => _v[102];
+        public static string CalDay1 => _v[103];
+        public static string CalDay2 => _v[104];
+        public static string CalDay3 => _v[105];
+        public static string CalDay4 => _v[106];
+        public static string CalDay5 => _v[107];
+        public static string CalDay6 => _v[108];
+        public static string CalDay7 => _v[109];
+        public static string CalMonth1 => _v[110];
+        public static string CalMonth2 => _v[111];
+        public static string CalMonth3 => _v[112];
+        public static string CalMonth4 => _v[113];
+        public static string CalMonth5 => _v[114];
+        public static string CalMonth6 => _v[115];
+        public static string CalMonth7 => _v[116];
+        public static string CalMonth8 => _v[117];
+        public static string CalMonth9 => _v[118];
+        public static string CalMonth10 => _v[119];
+        public static string CalMonth11 => _v[120];
+        public static string CalMonth12 => _v[121];
+        public static string CalMonth1Short => _v[122];
+        public static string CalMonth2Short => _v[123];
+        public static string CalMonth3Short => _v[124];
+        public static string CalMonth4Short => _v[125];
+        public static string CalMonth5Short => _v[126];
+        public static string CalMonth6Short => _v[127];
+        public static string CalMonth7Short => _v[128];
+        public static string CalMonth8Short => _v[129];
+        public static string CalMonth9Short => _v[130];
+        public static string CalMonth10Short => _v[131];
+        public static string CalMonth11Short => _v[132];
+        public static string CalMonth12Short => _v[133];
+        public static string Tut1Line => _v[134];
+        public static string Tut2Line => _v[135];
+        public static string Tut3Line => _v[136];
+        public static string Tut4Line => _v[137];
+        public static string Tut5Line => _v[138];
+        public static string Tut6Line => _v[139];
+        public static string Tut7Line => _v[140];
+        public static string Tut8Line => _v[141];
+        public static string Tut9Line => _v[142];
+        public static string Tut10Line => _v[143];
+        public static string WorldW01Name => _v[144];
+        public static string WorldW02Name => _v[145];
+        public static string WorldW03Name => _v[146];
+        public static string WorldW04Name => _v[147];
+        public static string WorldW05Name => _v[148];
+        public static string WorldW06Name => _v[149];
+        public static string WorldW07Name => _v[150];
+        public static string WorldW08Name => _v[151];
+        public static string WorldW09Name => _v[152];
+        public static string WorldW10Name => _v[153];
+        public static string WorldW11Name => _v[154];
+        public static string WorldW12Name => _v[155];
+        public static string WorldW14Name => _v[156];
+        public static string WorldW15Name => _v[157];
+        public static string WorldW16Name => _v[158];
+        public static string WorldW17Name => _v[159];
     }
 }

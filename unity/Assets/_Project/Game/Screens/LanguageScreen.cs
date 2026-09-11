@@ -22,7 +22,7 @@ namespace GridInfect.Game
 
         protected override void Build()
         {
-            var title = Ui.MakeText("title", Root.transform, Str.LanguageTitle, L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.LanguageTitle, L.HeadingText, BoardTheme.Text, 2, maxWidthPx: L.TitleWidth);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
             // Back is the gear, the same mark that opened settings from the
             // menu: a word for it crowded the title, and the mark needs no
@@ -66,6 +66,20 @@ namespace GridInfect.Game
                 BoardTheme.Chip(background), ink, () => Choose(tag), 20,
                 pads: true, padAlpha: background.a, mono: true);
             chip.Root.name = "lang:" + (tag.Length == 0 ? "auto" : tag);
+            // A non-Latin language carries a glyph of its own script on the
+            // chip's leading side, and the tag moves over to make room. A
+            // reader who cannot read the tag reads the mark.
+            int markPx = Mathf.RoundToInt(size.y * 0.62f);
+            var mark = BugGlyph.ScriptMark(tag, BoardPalette.Default, markPx);
+            if (mark != null)
+            {
+                var sprite = Ui.MakeSprite("mark", chip.Root.transform, mark, 22);
+                sprite.color = ink;
+                float inset = S.Px(S.ChipPadX) * 0.7f;
+                Ui.SetPos(sprite.gameObject, L.Dir * (-size.x / 2f + inset + markPx / 2f), 0f);
+                Ui.SetPos(chip.Label.gameObject, L.Dir * (inset + markPx) / 2f, 0f);
+                Ui.FitText(chip.Label, label, Ui.LabelPx(size), size.x - S.Px(S.ChipPadX * 2f) - inset - markPx, mono: true);
+            }
             Buttons.Add(chip);
         }
 

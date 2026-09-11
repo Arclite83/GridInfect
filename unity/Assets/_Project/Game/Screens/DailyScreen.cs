@@ -56,7 +56,7 @@ namespace GridInfect.Game
             _selected = _todayDate;
 
             // HUD (§7): the mode label between two chips.
-            var title = Ui.MakeText("title", Root.transform, Str.DailyTitle, L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.DailyTitle, L.HeadingText, BoardTheme.Text, 2, maxWidthPx: L.TitleWidth);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
             var caption = Ui.MakeText("caption", Root.transform, "GI-CAL REV B", S.Px(S.HudCaption), BoardTheme.TextDim, 2, mono: true);
             Ui.SetPos(caption.gameObject, 0f, L.TopBarY + L.HeadingText * 0.95f);
@@ -266,7 +266,7 @@ namespace GridInfect.Game
         // `leading`: hung inward from the leading edge, else from the trailing.
         void Badge(string name, string text, float edgeX, bool leading)
         {
-            var size = new Vector2(S.Px(S.BadgePadX * 2f + text.Length * S.BadgeText * 0.62f), S.Px(S.BadgePadY * 2f + S.BadgeText * 1.25f));
+            var size = Ui.BadgeBox(text);
             float x = leading ? edgeX + L.Dir * size.x / 2f : edgeX - L.Dir * size.x / 2f;
             var badge = UiButton.Make(_page.transform, text, new Vector2(x, _badgeY), size,
                 GlassStyle.Badge(BoardPalette.Default), BoardTheme.Copper,
@@ -468,7 +468,7 @@ namespace GridInfect.Game
     {
         protected override void Build()
         {
-            var title = Ui.MakeText("title", Root.transform, Str.EndlessTitle, L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.EndlessTitle, L.HeadingText, BoardTheme.Text, 2, maxWidthPx: L.TitleWidth);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
             Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));

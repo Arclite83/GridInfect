@@ -18,6 +18,7 @@ namespace TMPro
 
     public class TMP_FontAsset : Object
     {
+        public System.Collections.Generic.List<TMP_FontAsset> fallbackFontAssetTable { get; set; }
         public static TMP_FontAsset CreateFontAsset(Font font, int samplingPointSize, int atlasPadding,
             UnityEngine.TextCore.LowLevel.GlyphRenderMode renderMode, int atlasWidth, int atlasHeight,
             AtlasPopulationMode atlasPopulationMode, bool enableMultiAtlasSupport) => null;
