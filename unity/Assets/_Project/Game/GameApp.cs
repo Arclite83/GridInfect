@@ -118,6 +118,7 @@ namespace GridInfect.Game
         public void ApplyLanguage()
         {
             Str.Resolve(State.Profile.Lang);
+            Ui.OrderFallbacks();   // the language's own CJK face first
         }
 
         // A skin change touches everything that baked a colour when it was
