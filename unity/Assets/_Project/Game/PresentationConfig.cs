@@ -139,6 +139,11 @@ namespace GridInfect.Game
             public static float ColumnX(int col, int count, float pitch) =>
                 Dir * (col - (count - 1) / 2f) * pitch;
 
+            // The room a centred title has between the back chip and its
+            // mirror on the trailing side. A world's name in German reached
+            // under WELTEN before this.
+            public static float TitleWidth => ContentWidth - 2f * (BackSize.x + Gap);
+
             // A back button lives in the top leading corner on every screen
             // that has one, sized so a thumb can reach it on the tallest phone.
             public static UnityEngine.Vector2 BackSize =>

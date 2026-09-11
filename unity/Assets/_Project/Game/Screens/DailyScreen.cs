@@ -56,7 +56,7 @@ namespace GridInfect.Game
             _selected = _todayDate;
 
             // HUD (§7): the mode label between two chips.
-            var title = Ui.MakeText("title", Root.transform, Str.DailyTitle, L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.DailyTitle, L.HeadingText, BoardTheme.Text, 2, maxWidthPx: L.TitleWidth);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
             var caption = Ui.MakeText("caption", Root.transform, "GI-CAL REV B", S.Px(S.HudCaption), BoardTheme.TextDim, 2, mono: true);
             Ui.SetPos(caption.gameObject, 0f, L.TopBarY + L.HeadingText * 0.95f);
@@ -468,7 +468,7 @@ namespace GridInfect.Game
     {
         protected override void Build()
         {
-            var title = Ui.MakeText("title", Root.transform, Str.EndlessTitle, L.HeadingText, BoardTheme.Text, 2);
+            var title = Ui.MakeText("title", Root.transform, Str.EndlessTitle, L.HeadingText, BoardTheme.Text, 2, maxWidthPx: L.TitleWidth);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
             Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));

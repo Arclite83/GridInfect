@@ -170,6 +170,49 @@ namespace GridInfect.Game
             });
         }
 
+        // The language selector's mark for a non-Latin language: one glyph
+        // of its own script (SelectorGlyphs, generated from Noto outlines),
+        // fitted into the mark frame and filled in ink. Null for a tag with
+        // no mark, which is every Latin one — the chip is their mark.
+        public static Sprite ScriptMark(string tag, BoardPalette p, int sizePx)
+        {
+            float[][] src = SelectorGlyphs.Contours(tag);
+            if (src == null) return null;
+            return Cached($"script:{tag}:{sizePx}:{p.GlyphKey}", () =>
+            {
+                float minX = float.MaxValue, minY = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue;
+                foreach (float[] xy in src)
+                {
+                    for (int i = 0; i < xy.Length; i += 2)
+                    {
+                        minX = Mathf.Min(minX, xy[i]); maxX = Mathf.Max(maxX, xy[i]);
+                        minY = Mathf.Min(minY, xy[i + 1]); maxY = Mathf.Max(maxY, xy[i + 1]);
+                    }
+                }
+                // The glyph's box fills 30 of the 40-unit frame on its longer
+                // side and is centred, so a wide 繁 and a narrow Я read as the
+                // same weight of mark.
+                const float frame = 40f, fill = 30f;
+                float k = fill / Mathf.Max(maxX - minX, maxY - minY);
+                float ox = (frame - (maxX - minX) * k) / 2f - minX * k;
+                float oy = (frame - (maxY - minY) * k) / 2f - minY * k;
+                var fitted = new float[src.Length][];
+                for (int c = 0; c < src.Length; c++)
+                {
+                    fitted[c] = new float[src[c].Length];
+                    for (int i = 0; i < src[c].Length; i += 2)
+                    {
+                        fitted[c][i] = src[c][i] * k + ox;
+                        fitted[c][i + 1] = src[c][i + 1] * k + oy;
+                    }
+                }
+                var canvas = new GlyphCanvas(sizePx);
+                var field = canvas.PathField(fitted);
+                canvas.PaintField(field, (x, y) => p.Ink);
+                return canvas.ToSprite($"mark_SCRIPT_{tag}_{sizePx}");
+            });
+        }
+
         // The settings mark: a toothed ring. Drawn rather than typed — the
         // display face has no gear in it and a dynamic OS font is not a
         // promise across phones, so this joins the lock and the tick as one
