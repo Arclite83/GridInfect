@@ -10,12 +10,20 @@ use, so a language costs what it draws and not the whole of Noto:
     Fallback-Sans.ttf   Noto Sans, for Cyrillic and any Latin the design
                         faces lack (instanced at weight 500 to sit with
                         Chakra Petch Medium)
-    Fallback-JP.ttf     Noto Sans JP, for kana and kanji
+    Fallback-JP.ttf     Noto Sans JP, for Japanese
+    Fallback-KR.ttf     Noto Sans KR, for Korean
+    Fallback-SC.ttf     Noto Sans SC, for Simplified Chinese
+    Fallback-TC.ttf     Noto Sans TC, for Traditional Chinese
+
+Each is cut to the characters of the languages it serves, not to a
+script: kanji and hanzi share code points and Japan, the mainland and
+Taiwan draw many of them differently, so the same 直 has to come from the
+right face, and Ui orders the fallbacks by the language in force.
 
 Run it after a string file changes. The Noto sources are not in the repo
-(megabytes each); point --fonts at a folder holding NotoSans.ttf and
-NotoSansJP.ttf from google/fonts (ofl/notosans, ofl/notosansjp). Later
-scripts (Korean, the two Chinese) add a source and a line in SOURCES.
+(megabytes each); point --fonts at a folder holding them from google/fonts
+(ofl/notosans, ofl/notosansjp, ofl/notosanskr, ofl/notosanssc,
+ofl/notosanstc).
 
 Usage: python3 tools/subset_fonts.py --fonts <dir>
 """
@@ -36,10 +44,13 @@ STRINGS = ROOT / "docs" / "strings"
 FONTS = ROOT / "unity" / "Assets" / "_Project" / "Resources" / "Fonts"
 DESIGN = ["ChakraPetch-Medium.ttf", "ChakraPetch-Bold.ttf", "ShareTechMono-Regular.ttf"]
 
-# (output, source, weight, which missing characters it takes)
+# (output, source, weight, the language tags whose missing characters it carries)
 SOURCES = [
-    ("Fallback-JP.ttf", "NotoSansJP.ttf", 500, lambda cp: is_cjk(cp)),
-    ("Fallback-Sans.ttf", "NotoSans.ttf", 500, lambda cp: not is_cjk(cp)),
+    ("Fallback-Sans.ttf", "NotoSans.ttf", 500, ["en", "de", "fr", "es", "pt-BR", "it", "tr", "ru"]),
+    ("Fallback-JP.ttf", "NotoSansJP.ttf", 500, ["ja"]),
+    ("Fallback-KR.ttf", "NotoSansKR.ttf", 500, ["ko"]),
+    ("Fallback-SC.ttf", "NotoSansSC.ttf", 500, ["zh-Hans"]),
+    ("Fallback-TC.ttf", "NotoSansTC.ttf", 500, ["zh-Hant"]),
 ]
 
 
@@ -50,10 +61,11 @@ def is_cjk(cp):
     return 0x3000 <= cp <= 0x30FF or 0x4E00 <= cp <= 0x9FFF or 0xFF00 <= cp <= 0xFFEF
 
 
-def strings_codepoints():
+def strings_codepoints(tags):
     cps = set()
-    for path in sorted(STRINGS.glob("*.json")):
-        if path.stem.startswith("qps-"):
+    for tag in tags:
+        path = STRINGS / f"{tag}.json"
+        if not path.exists():
             continue
         data = json.loads(path.read_text(encoding="utf-8"))
         for key, value in data.items():
@@ -114,12 +126,9 @@ def main():
     args = ap.parse_args()
     src = Path(args.fonts)
 
-    needed = strings_codepoints() - covered_by_design()
-    needed = {cp for cp in needed if cp >= 0x20 and chr(cp) not in "\n"}
-    print(f"{len(needed)} code points the design faces do not carry")
-
-    for out_name, src_name, weight, take in SOURCES:
-        cps = {cp for cp in needed if take(cp)}
+    design = covered_by_design()
+    for out_name, src_name, weight, tags in SOURCES:
+        cps = {cp for cp in strings_codepoints(tags) - design if cp >= 0x20}
         out = FONTS / out_name
         if not cps:
             if out.exists():

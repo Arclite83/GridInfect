@@ -16,15 +16,21 @@ namespace GridInfect.Game
             "fr",
             "it",
             "ja",
+            "ko",
             "pt-BR",
             "ru",
             "tr",
+            "zh-Hans",
+            "zh-Hant",
             "qps-ploc",
             "qps-plocm",
         };
 
         public static readonly bool[] IsPseudo =
         {
+            false,
+            false,
+            false,
             false,
             false,
             false,
@@ -1028,6 +1034,171 @@ namespace GridInfect.Game
             "\u719f\u7df4",   // world.w17.name
         };
 
+        // ko
+        static readonly string[] Ko =
+        {
+            "\uba54\ub274",   // nav.menu
+            "\uc6d4\ub4dc",   // nav.worlds
+            "{0}/{1}",   // common.page
+            "\uc6d4\ub4dc",   // menu.worlds
+            "\ub370\uc77c\ub9ac",   // menu.daily
+            "\uc5d4\ub4dc\ub9ac\uc2a4",   // menu.endless
+            "\ud074\ub798\uc2dd",   // menu.legacy
+            "\ud29c\ud1a0\ub9ac\uc5bc",   // menu.tutorial
+            "\uad11\uace0 \uc81c\uac70",   // menu.noAds
+            "\ucc98\uc74c\uc774\uc2e0\uac00\uc694?",   // menu.offer.title
+            "1\ubd84 \ub9cc\uc5d0 \uae30\ubcf8\uc744 \uc775\ud600 \ubcf4\uc138\uc694.",   // menu.offer.line
+            "\ud29c\ud1a0\ub9ac\uc5bc",   // menu.offer.accept
+            "\uac74\ub108\ub6f0\uae30",   // menu.offer.skip
+            "\uc124\uc815",   // settings.title
+            "\uac1c\uc778\uc815\ubcf4",   // settings.privacy
+            "\uc5b8\uc5b4",   // settings.language
+            "\ud074\ub9ac\uc5b4\ud55c \ubaa8\ub4e0 \ub808\ubca8\uacfc \uae30\ub85d\uc744 \uc9c0\uc6c1\ub2c8\ub2e4.\n\uc7a0\uae08\uc740 \ub0a8\uc2b5\ub2c8\ub2e4.",   // settings.eraseCaption
+            "V{0}   BUILD {1}",   // settings.build
+            "EDITOR",   // settings.buildEditor
+            "\uc18c\ub9ac: \ucf1c\uc9d0",   // settings.soundOn
+            "\uc18c\ub9ac: \uaebc\uc9d0",   // settings.soundOff
+            "\uc9c4\ud589 \uc0c1\ud669 \uc9c0\uc6b0\uae30",   // settings.reset
+            "\uc9c0\uc6b0\ub824\uba74 \ud55c \ubc88 \ub354 \ud0ed",   // settings.resetArmed
+            "\ucd08\ub85d",   // settings.skin.green
+            "\ud30c\ub791",   // settings.skin.blue
+            "\ubca0\uc774\uc9c0",   // settings.skin.tan
+            "\ubaa8\ub4e0 \uc6d4\ub4dc\n\ud074\ub9ac\uc5b4",   // settings.skin.wantWorlds
+            "\ud074\ub798\uc2dd\n\uc804\ubd80 \ud074\ub9ac\uc5b4",   // settings.skin.wantLegacy
+            "\uac8c\uc784 \ubc29\ubc95",   // rules.title
+            "\ubcf4\ub4dc\uc758 \ubaa8\ub4e0 \uce78\uc744 \uac10\uc5fc\uc2dc\ud0a4\uba74 \uc2b9\ub9ac\ud569\ub2c8\ub2e4.",   // rules.goal
+            "\ubc8c\ub808\ub97c \uc544\ubb34 \uce78\uc5d0\ub098 \ub04c\uc5b4\ub2e4 \ub193\uc73c\uc138\uc694.",   // rules.intro
+            "\uad11\uc120\uc740 \ube48\ud2c8\uc744 \ub118\uc5b4 \ub05d\uae4c\uc9c0 \ubed7\uc2b5\ub2c8\ub2e4.",   // rules.diagram
+            "\ubc18\uc0ac\ub098 \ud568\uc815 \uc704\uc5d0\uc11c \uc774\uaca8\ub3c4 \uc778\uc815\ub429\ub2c8\ub2e4.",   // rules.note1
+            "\uae08\uc9c0 \uce78\uc5d0 \ub2ff\uc73c\uba74 \uc218\uac00 \ub418\ub3cc\uc544\uac11\ub2c8\ub2e4.",   // rules.note2
+            "\uac10\uc5fc\uc2dc\ud0a4\uc138\uc694.",   // rules.cell.infect
+            "\ube48\ud2c8",   // rules.cell.gap.name
+            "\uce78\uc774 \uc544\ub2d9\ub2c8\ub2e4. \uad11\uc120\uc774 \uc9c0\ub098\uac11\ub2c8\ub2e4.",   // rules.cell.gap.line
+            "\ubcbd",   // rules.cell.wall.name
+            "\uad11\uc120\uc744 \ub9c9\uc2b5\ub2c8\ub2e4.",   // rules.cell.wall.line
+            "\ubc18\uc0ac",   // rules.cell.repel.name
+            "\ub9de\uc73c\uba74 \ub418\ub3cc\ub824 \uc9c0\uc6c1\ub2c8\ub2e4.",   // rules.cell.repel.line
+            "\ud568\uc815",   // rules.cell.trap.name
+            "\ub9de\uc73c\uba74 \ubcf4\ub4dc\ub97c \ube44\uc6c1\ub2c8\ub2e4.",   // rules.cell.trap.line
+            "\ub9b4\ub808\uc774",   // rules.cell.relay.name
+            "\ub9de\uc73c\uba74 \uc790\uae30 \uad11\uc120\uc744 \uc3e9\ub2c8\ub2e4.",   // rules.cell.relay.line
+            "\uae08\uc9c0",   // rules.cell.avoid.name
+            "\uad11\uc120\uc774 \ub2ff\uc73c\uba74 \uc548 \ub429\ub2c8\ub2e4.",   // rules.cell.avoid.line
+            "\uad11\uc120\uc740 \ub05d\uae4c\uc9c0 \ubed7\uc2b5\ub2c8\ub2e4.",   // rules.spread.cardinal
+            "\ub610\ub294 \ubaa8\uc11c\ub9ac\uc5d0\uc11c \ubaa8\uc11c\ub9ac\ub85c.",   // rules.spread.diagonal
+            "\uc5bc\ub8e9\uc740 \uc8fc\ubcc0 \uc5ec\ub35f \uce78\uc744 \ucc28\uc9c0\ud569\ub2c8\ub2e4.",   // rules.spread.area
+            "\ud074\ub798\uc2dd",   // legacy.title
+            "\uc790\uc720 \ud50c\ub808\uc774",   // freeplay.title
+            "\uc785\ubb38",   // freeplay.difficulty.beginner
+            "\uc26c\uc6c0",   // freeplay.difficulty.easy
+            "\ubcf4\ud1b5",   // freeplay.difficulty.medium
+            "\uc5b4\ub824\uc6c0",   // freeplay.difficulty.hard
+            "\ub9e4\uc6b0 \uc5b4\ub824\uc6c0",   // freeplay.difficulty.challenging
+            "\uc6d4\ub4dc",   // worlds.title
+            "{0}  {1}",   // worlds.row
+            "{0}/{1}",   // worlds.progress
+            "\ub370\uc77c\ub9ac",   // daily.title
+            "\uc624\ub298",   // daily.today
+            "\uc9c0\ub09c \ub0a0",   // daily.past
+            "\uc5f0\uc18d {0:00}",   // daily.streak
+            "{0} {1:00}/{2:00}",   // daily.monthCount
+            "{2} {1:00} ({0})",   // daily.dateLine
+            "\ubc8c\ub808 {0}",   // daily.bugs
+            "\uce78 {0}",   // daily.cells
+            "\ud074\ub9ac\uc5b4",   // daily.complete
+            "\uc0dd\uc131 \uc911",   // daily.generating
+            "\ubbf8\ud50c\ub808\uc774",   // daily.unplayed
+            "\ub2e4\uc2dc \ud558\uae30",   // daily.playAgain
+            "\uc2dc\uc791",   // daily.begin
+            "\uc5d4\ub4dc\ub9ac\uc2a4",   // endless.title
+            "\ucd5c\uace0 {0}",   // endless.best
+            "\ub9ac\uc14b",   // board.reset
+            "\ud074\ub798\uc2dd",   // board.legacy
+            "\ub370\uc77c\ub9ac",   // board.daily
+            "\uc5d4\ub4dc\ub9ac\uc2a4  {0}",   // board.endless
+            "\ub808\ubca8 {0}",   // board.level
+            "\ud29c\ud1a0\ub9ac\uc5bc {0}/{1}",   // board.tutorialTitle
+            "\uc2dc\uc791",   // board.begin
+            "\ud78c\ud2b8",   // board.hint
+            "+1 \ud480\uae30",   // board.plusSolve
+            "\ud480\uae30 {0:00}",   // board.solve
+            "\ud074\ub9ac\uc5b4",   // board.complete
+            "\ud074\ub9ac\uc5b4\n\uc5f0\uc18d \uae30\ub85d \uc2dc\uc791",   // board.completeStreakStarted
+            "\ud074\ub9ac\uc5b4\n{0}\uc77c \uc5f0\uc18d",   // board.completeStreakDays
+            "\ud29c\ud1a0\ub9ac\uc5bc \uc644\ub8cc",   // board.tutorialComplete
+            "\uba54\ub274",   // board.popup.menu
+            "\ub2e4\uc2dc",   // board.popup.replay
+            "\ub2e4\uc74c",   // board.popup.next
+            "\ud50c\ub808\uc774",   // board.popup.play
+            "\ub2ec\ub825",   // board.popup.calendar
+            "\uc5f0\uc18d {0}",   // board.hud.streak
+            "\ucd5c\uace0 {0}",   // board.hud.best
+            "{0}/5",   // board.hud.runCount
+            "\ud2f0\uc5b4 {0}",   // tier.name
+            "T{0}",   // tier.short
+            "{0}-{1}",   // tier.band
+            "\ubd88\ub7ec\uc624\ub294 \uc911",   // loading.caption
+            "\uc5b8\uc5b4",   // language.title
+            "AUTO",   // language.auto
+            "\uc6d4",   // cal.day.1
+            "\ud654",   // cal.day.2
+            "\uc218",   // cal.day.3
+            "\ubaa9",   // cal.day.4
+            "\uae08",   // cal.day.5
+            "\ud1a0",   // cal.day.6
+            "\uc77c",   // cal.day.7
+            "1\uc6d4",   // cal.month.1
+            "2\uc6d4",   // cal.month.2
+            "3\uc6d4",   // cal.month.3
+            "4\uc6d4",   // cal.month.4
+            "5\uc6d4",   // cal.month.5
+            "6\uc6d4",   // cal.month.6
+            "7\uc6d4",   // cal.month.7
+            "8\uc6d4",   // cal.month.8
+            "9\uc6d4",   // cal.month.9
+            "10\uc6d4",   // cal.month.10
+            "11\uc6d4",   // cal.month.11
+            "12\uc6d4",   // cal.month.12
+            "1\uc6d4",   // cal.month.1.short
+            "2\uc6d4",   // cal.month.2.short
+            "3\uc6d4",   // cal.month.3.short
+            "4\uc6d4",   // cal.month.4.short
+            "5\uc6d4",   // cal.month.5.short
+            "6\uc6d4",   // cal.month.6.short
+            "7\uc6d4",   // cal.month.7.short
+            "8\uc6d4",   // cal.month.8.short
+            "9\uc6d4",   // cal.month.9.short
+            "10\uc6d4",   // cal.month.10.short
+            "11\uc6d4",   // cal.month.11.short
+            "12\uc6d4",   // cal.month.12.short
+            "\ubc8c\ub808\ub97c \ud45c\uc2dc\ub41c \uce78\uc73c\ub85c \ub04c\uc5b4\ub2e4 \ub193\uc73c\uc138\uc694.",   // tut.1.line
+            "\uad11\uc120\uc740 \ube48\ud2c8\uc744 \uc9c0\ub098\uac11\ub2c8\ub2e4.",   // tut.2.line
+            "\ubc8c\ub808 \ub458. \ub193\uc740 \ubc8c\ub808\ub97c \ud0ed\ud558\uba74 \uc9d1\uc2b5\ub2c8\ub2e4.",   // tut.3.line
+            "\ubcbd\uc740 \uad11\uc120\uc744 \ub9c9\uc2b5\ub2c8\ub2e4.",   // tut.4.line
+            "\ubc8c\ub808\ub294 \ub300\uac01\uc120\uc77c \uc218\ub3c4 \uc788\uc2b5\ub2c8\ub2e4.",   // tut.5.line
+            "\uc5bc\ub8e9\uc740 \uc8fc\ubcc0 \uc5ec\ub35f \uce78\uc744 \ucc28\uc9c0\ud569\ub2c8\ub2e4.",   // tut.6.line
+            "\uad11\uc120\uc740 \uae08\uc9c0 \uce78\uc5d0 \ub2ff\uc73c\uba74 \uc548 \ub429\ub2c8\ub2e4.",   // tut.7.line
+            "\ubc18\uc0ac\ub294 \uc790\uae30\ub97c \ub9de\ud78c \uad11\uc120\uc744 \uc9c0\uc6c1\ub2c8\ub2e4.",   // tut.8.line
+            "\ud568\uc815\uc740 \ubcf4\ub4dc \uc804\uccb4\ub97c \ub418\ub3cc\ub9bd\ub2c8\ub2e4.",   // tut.9.line
+            "\ub9b4\ub808\uc774\ub294 \ucf1c\uc9c0\uba74 \uc790\uae30 \uad11\uc120\uc744 \uc3e9\ub2c8\ub2e4.",   // tut.10.line
+            "\uccab\uac78\uc74c",   // world.w01.name
+            "\ub450 \uc904",   // world.w02.name
+            "\ubaa8\uc11c\ub9ac",   // world.w03.name
+            "\uad50\ucc28",   // world.w04.name
+            "\uae68\ub057\ud558\uac8c",   // world.w05.name
+            "\uc138\uae30",   // world.w06.name
+            "\ubcf5\ub3c4",   // world.w07.name
+            "\uc5bc\ub8e9",   // world.w08.name
+            "\uae34 \uc0ac\uc815\uac70\ub9ac",   // world.w09.name
+            "\ub124 \uac1c\uc758 \ud314",   // world.w10.name
+            "\ub300\uac01\uc120",   // world.w11.name
+            "\ube7d\ube7d\ud558\uac8c",   // world.w12.name
+            "\ub9b4\ub808\uc774",   // world.w14.name
+            "\ud63c\uc120",   // world.w15.name
+            "\uac00\uc815",   // world.w16.name
+            "\uc219\ub828",   // world.w17.name
+        };
+
         // pt-BR
         static readonly string[] PtBR =
         {
@@ -1523,6 +1694,336 @@ namespace GridInfect.Game
             "USTALIK",   // world.w17.name
         };
 
+        // zh-Hans
+        static readonly string[] ZhHans =
+        {
+            "\u83dc\u5355",   // nav.menu
+            "\u4e16\u754c",   // nav.worlds
+            "{0}/{1}",   // common.page
+            "\u4e16\u754c",   // menu.worlds
+            "\u6bcf\u65e5",   // menu.daily
+            "\u65e0\u5c3d",   // menu.endless
+            "\u7ecf\u5178",   // menu.legacy
+            "\u6559\u7a0b",   // menu.tutorial
+            "\u53bb\u5e7f\u544a",   // menu.noAds
+            "\u7b2c\u4e00\u6b21\u73a9\uff1f",   // menu.offer.title
+            "\u4e00\u5206\u949f\u5b66\u4f1a\u57fa\u7840\u3002",   // menu.offer.line
+            "\u6559\u7a0b",   // menu.offer.accept
+            "\u8df3\u8fc7",   // menu.offer.skip
+            "\u8bbe\u7f6e",   // settings.title
+            "\u9690\u79c1",   // settings.privacy
+            "\u8bed\u8a00",   // settings.language
+            "\u6e05\u9664\u6240\u6709\u5df2\u901a\u5173\u5173\u5361\u548c\u5206\u6570\u3002\n\u9501\u4f1a\u4fdd\u7559\u3002",   // settings.eraseCaption
+            "V{0}   BUILD {1}",   // settings.build
+            "EDITOR",   // settings.buildEditor
+            "\u58f0\u97f3\uff1a\u5f00",   // settings.soundOn
+            "\u58f0\u97f3\uff1a\u5173",   // settings.soundOff
+            "\u6e05\u9664\u8fdb\u5ea6",   // settings.reset
+            "\u518d\u70b9\u4e00\u6b21\u6e05\u9664",   // settings.resetArmed
+            "\u7eff\u8272",   // settings.skin.green
+            "\u84dd\u8272",   // settings.skin.blue
+            "\u7c73\u8272",   // settings.skin.tan
+            "\u901a\u5173\n\u6240\u6709\u4e16\u754c",   // settings.skin.wantWorlds
+            "\u901a\u5173\n\u5168\u90e8\u7ecf\u5178",   // settings.skin.wantLegacy
+            "\u73a9\u6cd5",   // rules.title
+            "\u611f\u67d3\u68cb\u76d8\u4e0a\u7684\u6bcf\u4e00\u683c\u5373\u83b7\u80dc\u3002",   // rules.goal
+            "\u628a\u866b\u5b50\u62d6\u5230\u4efb\u610f\u683c\u5b50\u3002",   // rules.intro
+            "\u5149\u7ebf\u8d8a\u8fc7\u7a7a\u9699\uff0c\u4e00\u76f4\u5c04\u5230\u8fb9\u7f18\u3002",   // rules.diagram
+            "\u5728\u53cd\u5c04\u6216\u9677\u9631\u4e0a\u83b7\u80dc\u540c\u6837\u7b97\u6570\u3002",   // rules.note1
+            "\u78b0\u5230\u7981\u533a\uff0c\u8fd9\u4e00\u6b65\u4f1a\u5f39\u56de\u3002",   // rules.note2
+            "\u611f\u67d3\u5b83\u3002",   // rules.cell.infect
+            "\u7a7a\u9699",   // rules.cell.gap.name
+            "\u4e0d\u662f\u683c\u5b50\uff1a\u5149\u7ebf\u7a7f\u8fc7\u3002",   // rules.cell.gap.line
+            "\u5899",   // rules.cell.wall.name
+            "\u6321\u4f4f\u5149\u7ebf\u3002",   // rules.cell.wall.line
+            "\u53cd\u5c04",   // rules.cell.repel.name
+            "\u88ab\u51fb\u4e2d\u65f6\u53cd\u5411\u6e05\u9664\u3002",   // rules.cell.repel.line
+            "\u9677\u9631",   // rules.cell.trap.name
+            "\u88ab\u51fb\u4e2d\u65f6\u6e05\u7a7a\u68cb\u76d8\u3002",   // rules.cell.trap.line
+            "\u4e2d\u7ee7",   // rules.cell.relay.name
+            "\u88ab\u51fb\u4e2d\u65f6\u53d1\u51fa\u81ea\u5df1\u7684\u5149\u7ebf\u3002",   // rules.cell.relay.line
+            "\u7981\u533a",   // rules.cell.avoid.name
+            "\u5149\u7ebf\u4e0d\u80fd\u78b0\u5230\u3002",   // rules.cell.avoid.line
+            "\u5149\u7ebf\u4e00\u76f4\u5c04\u5230\u8fb9\u7f18\u3002",   // rules.spread.cardinal
+            "\u6216\u4ece\u89d2\u5230\u89d2\u3002",   // rules.spread.diagonal
+            "\u58a8\u70b9\u5360\u636e\u5468\u56f4\u516b\u683c\u3002",   // rules.spread.area
+            "\u7ecf\u5178",   // legacy.title
+            "\u81ea\u7531\u6a21\u5f0f",   // freeplay.title
+            "\u5165\u95e8",   // freeplay.difficulty.beginner
+            "\u7b80\u5355",   // freeplay.difficulty.easy
+            "\u4e2d\u7b49",   // freeplay.difficulty.medium
+            "\u56f0\u96be",   // freeplay.difficulty.hard
+            "\u6311\u6218",   // freeplay.difficulty.challenging
+            "\u4e16\u754c",   // worlds.title
+            "{0}  {1}",   // worlds.row
+            "{0}/{1}",   // worlds.progress
+            "\u6bcf\u65e5",   // daily.title
+            "\u4eca\u5929",   // daily.today
+            "\u8fc7\u53bb",   // daily.past
+            "\u8fde\u7eed {0:00}",   // daily.streak
+            "{0} {1:00}/{2:00}",   // daily.monthCount
+            "{2} {1:00} ({0})",   // daily.dateLine
+            "\u866b\u5b50 {0}",   // daily.bugs
+            "\u683c\u5b50 {0}",   // daily.cells
+            "\u5b8c\u6210",   // daily.complete
+            "\u751f\u6210\u4e2d",   // daily.generating
+            "\u672a\u73a9",   // daily.unplayed
+            "\u518d\u73a9\u4e00\u6b21",   // daily.playAgain
+            "\u5f00\u59cb",   // daily.begin
+            "\u65e0\u5c3d",   // endless.title
+            "\u6700\u4f73 {0}",   // endless.best
+            "\u91cd\u7f6e",   // board.reset
+            "\u7ecf\u5178",   // board.legacy
+            "\u6bcf\u65e5",   // board.daily
+            "\u65e0\u5c3d  {0}",   // board.endless
+            "\u7b2c {0} \u5173",   // board.level
+            "\u6559\u7a0b {0}/{1}",   // board.tutorialTitle
+            "\u5f00\u59cb",   // board.begin
+            "\u63d0\u793a",   // board.hint
+            "+1 \u89e3\u9898",   // board.plusSolve
+            "\u89e3\u9898 {0:00}",   // board.solve
+            "\u5b8c\u6210",   // board.complete
+            "\u5b8c\u6210\n\u8fde\u7eed\u8bb0\u5f55\u5f00\u59cb",   // board.completeStreakStarted
+            "\u5b8c\u6210\n\u8fde\u7eed {0} \u5929",   // board.completeStreakDays
+            "\u6559\u7a0b\u5b8c\u6210",   // board.tutorialComplete
+            "\u83dc\u5355",   // board.popup.menu
+            "\u91cd\u73a9",   // board.popup.replay
+            "\u4e0b\u4e00\u5173",   // board.popup.next
+            "\u5f00\u59cb",   // board.popup.play
+            "\u65e5\u5386",   // board.popup.calendar
+            "\u8fde\u7eed {0}",   // board.hud.streak
+            "\u6700\u4f73 {0}",   // board.hud.best
+            "{0}/5",   // board.hud.runCount
+            "\u7b49\u7ea7 {0}",   // tier.name
+            "T{0}",   // tier.short
+            "{0}-{1}",   // tier.band
+            "\u52a0\u8f7d\u4e2d",   // loading.caption
+            "\u8bed\u8a00",   // language.title
+            "AUTO",   // language.auto
+            "\u4e00",   // cal.day.1
+            "\u4e8c",   // cal.day.2
+            "\u4e09",   // cal.day.3
+            "\u56db",   // cal.day.4
+            "\u4e94",   // cal.day.5
+            "\u516d",   // cal.day.6
+            "\u65e5",   // cal.day.7
+            "1\u6708",   // cal.month.1
+            "2\u6708",   // cal.month.2
+            "3\u6708",   // cal.month.3
+            "4\u6708",   // cal.month.4
+            "5\u6708",   // cal.month.5
+            "6\u6708",   // cal.month.6
+            "7\u6708",   // cal.month.7
+            "8\u6708",   // cal.month.8
+            "9\u6708",   // cal.month.9
+            "10\u6708",   // cal.month.10
+            "11\u6708",   // cal.month.11
+            "12\u6708",   // cal.month.12
+            "1\u6708",   // cal.month.1.short
+            "2\u6708",   // cal.month.2.short
+            "3\u6708",   // cal.month.3.short
+            "4\u6708",   // cal.month.4.short
+            "5\u6708",   // cal.month.5.short
+            "6\u6708",   // cal.month.6.short
+            "7\u6708",   // cal.month.7.short
+            "8\u6708",   // cal.month.8.short
+            "9\u6708",   // cal.month.9.short
+            "10\u6708",   // cal.month.10.short
+            "11\u6708",   // cal.month.11.short
+            "12\u6708",   // cal.month.12.short
+            "\u628a\u866b\u5b50\u62d6\u5230\u6807\u8bb0\u7684\u683c\u5b50\u3002",   // tut.1.line
+            "\u5149\u7ebf\u8d8a\u8fc7\u7a7a\u9699\u3002",   // tut.2.line
+            "\u4e24\u53ea\u866b\u5b50\u3002\u70b9\u5df2\u653e\u4e0b\u7684\u866b\u5b50\u53ef\u62ff\u8d77\u3002",   // tut.3.line
+            "\u5899\u6321\u4f4f\u5149\u7ebf\u3002",   // tut.4.line
+            "\u866b\u5b50\u4e5f\u53ef\u4ee5\u662f\u659c\u5411\u7684\u3002",   // tut.5.line
+            "\u58a8\u70b9\u5360\u636e\u5468\u56f4\u516b\u683c\u3002",   // tut.6.line
+            "\u5149\u7ebf\u4e0d\u80fd\u78b0\u5230\u7981\u533a\u3002",   // tut.7.line
+            "\u53cd\u5c04\u6e05\u9664\u51fb\u4e2d\u5b83\u7684\u5149\u7ebf\u3002",   // tut.8.line
+            "\u9677\u9631\u91cd\u7f6e\u6574\u4e2a\u68cb\u76d8\u3002",   // tut.9.line
+            "\u4e2d\u7ee7\u70b9\u4eae\u540e\u53d1\u51fa\u81ea\u5df1\u7684\u5149\u7ebf\u3002",   // tut.10.line
+            "\u7b2c\u4e00\u6b65",   // world.w01.name
+            "\u4e24\u6761\u7ebf",   // world.w02.name
+            "\u89d2\u843d",   // world.w03.name
+            "\u4ea4\u53c9",   // world.w04.name
+            "\u4fdd\u6301\u5e72\u51c0",   // world.w05.name
+            "\u8ba1\u6570",   // world.w06.name
+            "\u8d70\u5eca",   // world.w07.name
+            "\u58a8\u70b9",   // world.w08.name
+            "\u957f\u8ddd\u79bb",   // world.w09.name
+            "\u56db\u6761\u81c2",   // world.w10.name
+            "\u659c\u7ebf",   // world.w11.name
+            "\u7d27\u51d1",   // world.w12.name
+            "\u4e2d\u7ee7",   // world.w14.name
+            "\u4e32\u6270",   // world.w15.name
+            "\u5047\u8bbe",   // world.w16.name
+            "\u7cbe\u901a",   // world.w17.name
+        };
+
+        // zh-Hant
+        static readonly string[] ZhHant =
+        {
+            "\u9078\u55ae",   // nav.menu
+            "\u4e16\u754c",   // nav.worlds
+            "{0}/{1}",   // common.page
+            "\u4e16\u754c",   // menu.worlds
+            "\u6bcf\u65e5",   // menu.daily
+            "\u7121\u76e1",   // menu.endless
+            "\u7d93\u5178",   // menu.legacy
+            "\u6559\u5b78",   // menu.tutorial
+            "\u79fb\u9664\u5ee3\u544a",   // menu.noAds
+            "\u7b2c\u4e00\u6b21\u73a9\uff1f",   // menu.offer.title
+            "\u4e00\u5206\u9418\u5b78\u6703\u57fa\u790e\u3002",   // menu.offer.line
+            "\u6559\u5b78",   // menu.offer.accept
+            "\u7565\u904e",   // menu.offer.skip
+            "\u8a2d\u5b9a",   // settings.title
+            "\u96b1\u79c1",   // settings.privacy
+            "\u8a9e\u8a00",   // settings.language
+            "\u6e05\u9664\u6240\u6709\u5df2\u904e\u95dc\u7684\u95dc\u5361\u8207\u5206\u6578\u3002\n\u9396\u6703\u4fdd\u7559\u3002",   // settings.eraseCaption
+            "V{0}   BUILD {1}",   // settings.build
+            "EDITOR",   // settings.buildEditor
+            "\u97f3\u6548\uff1a\u958b",   // settings.soundOn
+            "\u97f3\u6548\uff1a\u95dc",   // settings.soundOff
+            "\u6e05\u9664\u9032\u5ea6",   // settings.reset
+            "\u518d\u9ede\u4e00\u6b21\u6e05\u9664",   // settings.resetArmed
+            "\u7da0\u8272",   // settings.skin.green
+            "\u85cd\u8272",   // settings.skin.blue
+            "\u7c73\u8272",   // settings.skin.tan
+            "\u7834\u95dc\n\u6240\u6709\u4e16\u754c",   // settings.skin.wantWorlds
+            "\u7834\u95dc\n\u5168\u90e8\u7d93\u5178",   // settings.skin.wantLegacy
+            "\u73a9\u6cd5",   // rules.title
+            "\u611f\u67d3\u68cb\u76e4\u4e0a\u7684\u6bcf\u4e00\u683c\u5373\u7372\u52dd\u3002",   // rules.goal
+            "\u628a\u87f2\u62d6\u5230\u4efb\u610f\u683c\u5b50\u3002",   // rules.intro
+            "\u5149\u7dda\u8d8a\u904e\u7a7a\u9699\uff0c\u4e00\u8def\u5c04\u5230\u908a\u7de3\u3002",   // rules.diagram
+            "\u5728\u53cd\u5c04\u6216\u9677\u9631\u4e0a\u7372\u52dd\u540c\u6a23\u7b97\u6578\u3002",   // rules.note1
+            "\u78b0\u5230\u7981\u5340\uff0c\u9019\u4e00\u6b65\u6703\u5f48\u56de\u3002",   // rules.note2
+            "\u611f\u67d3\u5b83\u3002",   // rules.cell.infect
+            "\u7a7a\u9699",   // rules.cell.gap.name
+            "\u4e0d\u662f\u683c\u5b50\uff1a\u5149\u7dda\u7a7f\u904e\u3002",   // rules.cell.gap.line
+            "\u7246",   // rules.cell.wall.name
+            "\u64cb\u4f4f\u5149\u7dda\u3002",   // rules.cell.wall.line
+            "\u53cd\u5c04",   // rules.cell.repel.name
+            "\u88ab\u64ca\u4e2d\u6642\u53cd\u5411\u6e05\u9664\u3002",   // rules.cell.repel.line
+            "\u9677\u9631",   // rules.cell.trap.name
+            "\u88ab\u64ca\u4e2d\u6642\u6e05\u7a7a\u68cb\u76e4\u3002",   // rules.cell.trap.line
+            "\u4e2d\u7e7c",   // rules.cell.relay.name
+            "\u88ab\u64ca\u4e2d\u6642\u767c\u51fa\u81ea\u5df1\u7684\u5149\u7dda\u3002",   // rules.cell.relay.line
+            "\u7981\u5340",   // rules.cell.avoid.name
+            "\u5149\u7dda\u4e0d\u80fd\u78b0\u5230\u3002",   // rules.cell.avoid.line
+            "\u5149\u7dda\u4e00\u8def\u5c04\u5230\u908a\u7de3\u3002",   // rules.spread.cardinal
+            "\u6216\u5f9e\u89d2\u5230\u89d2\u3002",   // rules.spread.diagonal
+            "\u58a8\u9ede\u4f54\u64da\u5468\u570d\u516b\u683c\u3002",   // rules.spread.area
+            "\u7d93\u5178",   // legacy.title
+            "\u81ea\u7531\u6a21\u5f0f",   // freeplay.title
+            "\u5165\u9580",   // freeplay.difficulty.beginner
+            "\u7c21\u55ae",   // freeplay.difficulty.easy
+            "\u4e2d\u7b49",   // freeplay.difficulty.medium
+            "\u56f0\u96e3",   // freeplay.difficulty.hard
+            "\u6311\u6230",   // freeplay.difficulty.challenging
+            "\u4e16\u754c",   // worlds.title
+            "{0}  {1}",   // worlds.row
+            "{0}/{1}",   // worlds.progress
+            "\u6bcf\u65e5",   // daily.title
+            "\u4eca\u5929",   // daily.today
+            "\u904e\u53bb",   // daily.past
+            "\u9023\u7e8c {0:00}",   // daily.streak
+            "{0} {1:00}/{2:00}",   // daily.monthCount
+            "{2} {1:00} ({0})",   // daily.dateLine
+            "\u87f2 {0}",   // daily.bugs
+            "\u683c\u5b50 {0}",   // daily.cells
+            "\u5b8c\u6210",   // daily.complete
+            "\u7522\u751f\u4e2d",   // daily.generating
+            "\u672a\u73a9",   // daily.unplayed
+            "\u518d\u73a9\u4e00\u6b21",   // daily.playAgain
+            "\u958b\u59cb",   // daily.begin
+            "\u7121\u76e1",   // endless.title
+            "\u6700\u4f73 {0}",   // endless.best
+            "\u91cd\u8a2d",   // board.reset
+            "\u7d93\u5178",   // board.legacy
+            "\u6bcf\u65e5",   // board.daily
+            "\u7121\u76e1  {0}",   // board.endless
+            "\u7b2c {0} \u95dc",   // board.level
+            "\u6559\u5b78 {0}/{1}",   // board.tutorialTitle
+            "\u958b\u59cb",   // board.begin
+            "\u63d0\u793a",   // board.hint
+            "+1 \u89e3\u984c",   // board.plusSolve
+            "\u89e3\u984c {0:00}",   // board.solve
+            "\u5b8c\u6210",   // board.complete
+            "\u5b8c\u6210\n\u9023\u7e8c\u7d00\u9304\u958b\u59cb",   // board.completeStreakStarted
+            "\u5b8c\u6210\n\u9023\u7e8c {0} \u5929",   // board.completeStreakDays
+            "\u6559\u5b78\u5b8c\u6210",   // board.tutorialComplete
+            "\u9078\u55ae",   // board.popup.menu
+            "\u91cd\u73a9",   // board.popup.replay
+            "\u4e0b\u4e00\u95dc",   // board.popup.next
+            "\u958b\u59cb",   // board.popup.play
+            "\u65e5\u66c6",   // board.popup.calendar
+            "\u9023\u7e8c {0}",   // board.hud.streak
+            "\u6700\u4f73 {0}",   // board.hud.best
+            "{0}/5",   // board.hud.runCount
+            "\u7b49\u7d1a {0}",   // tier.name
+            "T{0}",   // tier.short
+            "{0}-{1}",   // tier.band
+            "\u8f09\u5165\u4e2d",   // loading.caption
+            "\u8a9e\u8a00",   // language.title
+            "AUTO",   // language.auto
+            "\u4e00",   // cal.day.1
+            "\u4e8c",   // cal.day.2
+            "\u4e09",   // cal.day.3
+            "\u56db",   // cal.day.4
+            "\u4e94",   // cal.day.5
+            "\u516d",   // cal.day.6
+            "\u65e5",   // cal.day.7
+            "1\u6708",   // cal.month.1
+            "2\u6708",   // cal.month.2
+            "3\u6708",   // cal.month.3
+            "4\u6708",   // cal.month.4
+            "5\u6708",   // cal.month.5
+            "6\u6708",   // cal.month.6
+            "7\u6708",   // cal.month.7
+            "8\u6708",   // cal.month.8
+            "9\u6708",   // cal.month.9
+            "10\u6708",   // cal.month.10
+            "11\u6708",   // cal.month.11
+            "12\u6708",   // cal.month.12
+            "1\u6708",   // cal.month.1.short
+            "2\u6708",   // cal.month.2.short
+            "3\u6708",   // cal.month.3.short
+            "4\u6708",   // cal.month.4.short
+            "5\u6708",   // cal.month.5.short
+            "6\u6708",   // cal.month.6.short
+            "7\u6708",   // cal.month.7.short
+            "8\u6708",   // cal.month.8.short
+            "9\u6708",   // cal.month.9.short
+            "10\u6708",   // cal.month.10.short
+            "11\u6708",   // cal.month.11.short
+            "12\u6708",   // cal.month.12.short
+            "\u628a\u87f2\u62d6\u5230\u6a19\u8a18\u7684\u683c\u5b50\u3002",   // tut.1.line
+            "\u5149\u7dda\u8d8a\u904e\u7a7a\u9699\u3002",   // tut.2.line
+            "\u5169\u96bb\u87f2\u3002\u9ede\u5df2\u653e\u4e0b\u7684\u87f2\u53ef\u62ff\u8d77\u3002",   // tut.3.line
+            "\u7246\u64cb\u4f4f\u5149\u7dda\u3002",   // tut.4.line
+            "\u87f2\u4e5f\u53ef\u4ee5\u662f\u659c\u5411\u7684\u3002",   // tut.5.line
+            "\u58a8\u9ede\u4f54\u64da\u5468\u570d\u516b\u683c\u3002",   // tut.6.line
+            "\u5149\u7dda\u4e0d\u80fd\u78b0\u5230\u7981\u5340\u3002",   // tut.7.line
+            "\u53cd\u5c04\u6e05\u9664\u64ca\u4e2d\u5b83\u7684\u5149\u7dda\u3002",   // tut.8.line
+            "\u9677\u9631\u91cd\u8a2d\u6574\u500b\u68cb\u76e4\u3002",   // tut.9.line
+            "\u4e2d\u7e7c\u9ede\u4eae\u5f8c\u767c\u51fa\u81ea\u5df1\u7684\u5149\u7dda\u3002",   // tut.10.line
+            "\u7b2c\u4e00\u6b65",   // world.w01.name
+            "\u5169\u689d\u7dda",   // world.w02.name
+            "\u89d2\u843d",   // world.w03.name
+            "\u4ea4\u53c9",   // world.w04.name
+            "\u4fdd\u6301\u4e7e\u6de8",   // world.w05.name
+            "\u8a08\u6578",   // world.w06.name
+            "\u8d70\u5eca",   // world.w07.name
+            "\u58a8\u9ede",   // world.w08.name
+            "\u9577\u8ddd\u96e2",   // world.w09.name
+            "\u56db\u689d\u81c2",   // world.w10.name
+            "\u659c\u7dda",   // world.w11.name
+            "\u7dca\u6e4a",   // world.w12.name
+            "\u4e2d\u7e7c",   // world.w14.name
+            "\u4e32\u64fe",   // world.w15.name
+            "\u5047\u8a2d",   // world.w16.name
+            "\u7cbe\u901a",   // world.w17.name
+        };
+
         // qps-ploc
         static readonly string[] QpsPloc =
         {
@@ -1861,9 +2362,12 @@ namespace GridInfect.Game
             Fr,
             It,
             Ja,
+            Ko,
             PtBR,
             Ru,
             Tr,
+            ZhHans,
+            ZhHant,
             QpsPloc,
             QpsPlocm,
         };

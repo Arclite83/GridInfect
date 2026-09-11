@@ -71,14 +71,31 @@ namespace GridInfect.Game
             catch (System.Exception) { return null; }
         }
 
-        // The fallback faces (tools/subset_fonts.py): Noto, cut to the code
-        // points the string files use that the design faces do not carry —
-        // kana and kanji, Cyrillic, the odd Latin letter. Each design face
-        // falls through to these, in this order, for a glyph it lacks. A
-        // fallback that is not there is not an error: the tool has not been
-        // run for that script yet, and the OS face is what draws.
-        static readonly string[] FallbackFiles = { "Fallback-Sans", "Fallback-JP" };
+        // The fallback faces (tools/subset_fonts.py): Noto, cut per language
+        // to the code points its strings use that the design faces do not
+        // carry. Each design face falls through to these for a glyph it
+        // lacks — in an order that puts the language in force first, because
+        // kanji and hanzi share code points and Japan, the mainland and
+        // Taiwan draw many of them differently: the same 直 has to come from
+        // JP in Japanese and from TC in Traditional. A fallback that is not
+        // there is not an error: the tool has not been run for that script
+        // yet, and the OS face is what draws.
+        static readonly string[] FallbackFiles = { "Fallback-Sans", "Fallback-JP", "Fallback-KR", "Fallback-SC", "Fallback-TC" };
+        static readonly System.Collections.Generic.Dictionary<string, TMP_FontAsset> _fallbackAssets =
+            new System.Collections.Generic.Dictionary<string, TMP_FontAsset>();
         static System.Collections.Generic.List<TMP_FontAsset> _fallbacks;
+
+        static string PreferredFallback(string tag)
+        {
+            switch (tag)
+            {
+                case "ja": return "Fallback-JP";
+                case "ko": return "Fallback-KR";
+                case "zh-Hans": return "Fallback-SC";
+                case "zh-Hant": return "Fallback-TC";
+                default: return "Fallback-Sans";
+            }
+        }
 
         static System.Collections.Generic.List<TMP_FontAsset> Fallbacks
         {
@@ -90,10 +107,26 @@ namespace GridInfect.Game
                     foreach (string file in FallbackFiles)
                     {
                         var asset = MakeFontAsset(TryVendored(file));
-                        if (asset != null) _fallbacks.Add(asset);
+                        if (asset != null) _fallbackAssets[file] = asset;
                     }
+                    OrderFallbacks();
                 }
                 return _fallbacks;
+            }
+        }
+
+        // The language in force first, then the rest in file order. The
+        // list is shared by every face's fallback table, so ordering it in
+        // place re-orders them all; GameApp.ApplyLanguage calls this.
+        public static void OrderFallbacks()
+        {
+            if (_fallbacks == null) return;
+            _fallbacks.Clear();
+            string first = PreferredFallback(Str.CurrentTag);
+            if (_fallbackAssets.TryGetValue(first, out var preferred)) _fallbacks.Add(preferred);
+            foreach (string file in FallbackFiles)
+            {
+                if (file != first && _fallbackAssets.TryGetValue(file, out var asset)) _fallbacks.Add(asset);
             }
         }
 

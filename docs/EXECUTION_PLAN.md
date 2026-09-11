@@ -22,7 +22,7 @@ table below in the same PR.
 | 10 | Forbidden cells | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
 | 11 | Diagonal arms | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
 | 12 | Relay cells | Done | [#7](https://github.com/Arclite83/GridInfect/pull/7) |
-| 13 | Internationalization (`docs/I18N.md`) | In: the string pipeline and its gates, TextMeshPro over the vendored faces with Noto fallbacks, measured layout, direction-aware chrome, the language setting and selector with script marks, pseudolocales, and eight languages (`de fr es pt-BR it tr ru ja`). Open: Korean and Chinese; Arabic and Hebrew need shaping | [#21](https://github.com/Arclite83/GridInfect/pull/21) |
+| 13 | Internationalization (`docs/I18N.md`) | In: the string pipeline and its gates, TextMeshPro over the vendored faces with Noto fallbacks, measured layout, direction-aware chrome, the language setting and selector with script marks, pseudolocales, and eleven languages (`de fr es pt-BR it tr ru ja ko zh-Hans zh-Hant`). Open: Arabic and Hebrew need shaping | [#21](https://github.com/Arclite83/GridInfect/pull/21) |
 
 Stages 1–6 are the Android launch. 7–12 are post-launch worlds; the iOS
 follow slots in wherever it is ready.
