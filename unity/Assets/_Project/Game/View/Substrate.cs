@@ -79,10 +79,6 @@ namespace GridInfect.Game
             if (_legend != null) _legend.color = silk;
         }
 
-        // The board's own part number, bottom right: `GI-06`, `GI-DAILY`,
-        // `GI-T01`. The designation is real, so it is there; the build the
-        // player is actually running is in SETTINGS, where build data
-        // belongs. No board, no part number: the corner stays clear.
         public static void SetLevel(string level)
         {
             if (_legend == null) return;
