@@ -8,12 +8,14 @@ namespace GridInfect.Game
     // a small pool of sources, each set to its own pitch, rather than one
     // source whose pitch would smear across the whole wave.
     //
-    // And the one other sound the board makes: the chime on a solve. It is
-    // the same instrument. The clicks walk a chromatic ladder up from the
-    // root to the fifth; the chime plays that key's triad and tops it with
-    // the octave, so it lands as the resolution of what the player has been
-    // hearing rather than as a sound from somewhere else. Scheduled to
-    // follow the last click of the winning wave, never to overlap it.
+    // And the one other sound the board makes: the confirm on a solve. It
+    // is the same instrument's key — the clicks walk a chromatic ladder up
+    // from the root to the fifth, and this is the root and its octave — but
+    // it is a hardware sound, not a musical one: two gated pulse-wave
+    // blips, the second held a moment, done in a quarter of a second. The
+    // first cut was a four-note bell with long tails, and a bell is not
+    // what a circuit board says when it is done. Scheduled to follow the
+    // last click of the winning wave, never to overlap it.
     //
     // Both clips are synthesised, like every other asset in this project.
     // tools/render_audio.py renders the same formulas to WAV to listen to
@@ -23,7 +25,7 @@ namespace GridInfect.Game
         const int Sources = 8;
         const int SampleRate = 44100;
         const int ClickSamples = SampleRate * 30 / 1000;   // 30 ms
-        const int ChimeSamples = SampleRate * 900 / 1000;  // 0.9 s
+        const int ChimeSamples = SampleRate * 300 / 1000;  // 0.3 s
 
         // The click's root, and the chime's. The ladder tops out at +7
         // semitones (Vfx.HopPitchCapSemitones), the fifth: 1768 Hz.
@@ -35,7 +37,7 @@ namespace GridInfect.Game
         // a lower partial and is normalised to a fixed peak, so the level
         // here is the level.
         const float ClickVolume = 0.6f;
-        const float ChimeVolume = 0.6f;
+        const float ChimeVolume = 0.45f;
         const float Peak = 0.9f;
 
         readonly GameObject _root;
@@ -160,32 +162,32 @@ namespace GridInfect.Game
             return clip;
         }
 
-        // The chime: root, major third, fifth, octave — 1180, 1486, 1770,
-        // 2360 Hz — 90 ms apart, the last held longest. Each note is a sine
-        // with a little second harmonic for brightness and a quiet
-        // sub-octave for body, a 3 ms attack so it speaks rather than
-        // pops, and an exponential tail.
+        // The confirm: root then octave, 1180 and 2360 Hz, as pulse waves
+        // (odd harmonics, the chip-tone spectrum) under hard gates — 1 ms
+        // on, 6 ms off — so each blip starts and stops like a switch. The
+        // first is 45 ms; the second starts 70 ms in and holds 60 ms before
+        // a short fall. Nothing rings.
         static AudioClip BuildChime()
         {
             var samples = new float[ChimeSamples];
-            float[] notes = { Root, Root * 1.2599f, Root * 1.4983f, Root * 2f };   // +0, +4, +7, +12 semitones
-            const float NoteGap = 0.09f;
-            for (int k = 0; k < notes.Length; k++)
+            // (frequency, start s, gate length s, release s)
+            float[] freq = { Root, Root * 2f };
+            float[] start = { 0f, 0.07f };
+            float[] hold = { 0.045f, 0.06f };
+            float[] release = { 0.006f, 0.05f };
+            for (int k = 0; k < freq.Length; k++)
             {
-                float f = notes[k];
-                float start = k * NoteGap;
-                float tau = k == notes.Length - 1 ? 0.35f : 0.16f;
-                float gain = k == notes.Length - 1 ? 1f : 0.8f;
-                int first = Mathf.RoundToInt(start * SampleRate);
-                for (int n = first; n < ChimeSamples; n++)
+                float f = freq[k];
+                int first = Mathf.RoundToInt(start[k] * SampleRate);
+                int last = Mathf.Min(ChimeSamples, first + Mathf.RoundToInt((hold[k] + release[k] * 6f) * SampleRate));
+                for (int n = first; n < last; n++)
                 {
                     float t = (n - first) / (float)SampleRate;
-                    float attack = Mathf.Min(1f, t / 0.003f);
-                    float envelope = gain * attack * Mathf.Exp(-t / tau);
-                    float tone = Mathf.Sin(2f * Mathf.PI * f * t)
-                        + 0.25f * Mathf.Sin(2f * Mathf.PI * 2f * f * t)
-                        + 0.2f * Mathf.Sin(2f * Mathf.PI * (f / 2f) * t);
-                    samples[n] += tone * envelope;
+                    float attack = Mathf.Min(1f, t / 0.001f);
+                    float gate = t <= hold[k] ? 1f : Mathf.Exp(-(t - hold[k]) / release[k]);
+                    float w = 2f * Mathf.PI * f * t;
+                    float tone = Mathf.Sin(w) + Mathf.Sin(3f * w) / 3f + Mathf.Sin(5f * w) / 5f;
+                    samples[n] += tone * attack * gate;
                 }
             }
             Normalise(samples);

@@ -24,9 +24,9 @@ from pathlib import Path
 RATE = 44100
 ROOT = 1180.0
 CLICK_SAMPLES = RATE * 30 // 1000
-CHIME_SAMPLES = RATE * 900 // 1000
+CHIME_SAMPLES = RATE * 300 // 1000
 CLICK_VOLUME = 0.6
-CHIME_VOLUME = 0.6
+CHIME_VOLUME = 0.45
 PEAK = 0.9
 HOP = 0.040
 HOP_PITCH_CAP = 7
@@ -58,21 +58,20 @@ def build_click():
 
 def build_chime():
     out = [0.0] * CHIME_SAMPLES
-    notes = [ROOT, ROOT * 1.2599, ROOT * 1.4983, ROOT * 2.0]
-    gap = 0.09
-    for k, f in enumerate(notes):
-        last = k == len(notes) - 1
-        tau = 0.35 if last else 0.16
-        gain = 1.0 if last else 0.8
-        first = round(k * gap * RATE)
-        for n in range(first, CHIME_SAMPLES):
+    freq = [ROOT, ROOT * 2.0]
+    start = [0.0, 0.07]
+    hold = [0.045, 0.06]
+    release = [0.006, 0.05]
+    for k, f in enumerate(freq):
+        first = round(start[k] * RATE)
+        last = min(CHIME_SAMPLES, first + round((hold[k] + release[k] * 6) * RATE))
+        for n in range(first, last):
             t = (n - first) / RATE
-            attack = min(1.0, t / 0.003)
-            envelope = gain * attack * math.exp(-t / tau)
-            tone = (math.sin(2 * math.pi * f * t)
-                    + 0.25 * math.sin(2 * math.pi * 2 * f * t)
-                    + 0.2 * math.sin(2 * math.pi * (f / 2) * t))
-            out[n] += tone * envelope
+            attack = min(1.0, t / 0.001)
+            gate = 1.0 if t <= hold[k] else math.exp(-(t - hold[k]) / release[k])
+            w = 2 * math.pi * f * t
+            tone = math.sin(w) + math.sin(3 * w) / 3 + math.sin(5 * w) / 5
+            out[n] += tone * attack * gate
     return normalise(out)
 
 
@@ -126,10 +125,10 @@ def main():
     write(out / "click.wav", mix([(0.0, click, CLICK_VOLUME)], 0.3))
     ladder = [(d * HOP, resample_pitch(click, min(d, HOP_PITCH_CAP)), CLICK_VOLUME) for d in range(8)]
     write(out / "click-ladder.wav", mix(ladder, 0.6))
-    write(out / "chime.wav", mix([(0.0, chime, CHIME_VOLUME)], 1.0))
+    write(out / "chime.wav", mix([(0.0, chime, CHIME_VOLUME)], 0.5))
     wave_hops = [(d * HOP, resample_pitch(click, min(d, HOP_PITCH_CAP)), CLICK_VOLUME) for d in range(6)]
     solve = wave_hops + [(6 * HOP, chime, CHIME_VOLUME)]
-    write(out / "solve.wav", mix(solve, 1.3))
+    write(out / "solve.wav", mix(solve, 0.8))
 
 
 if __name__ == "__main__":
