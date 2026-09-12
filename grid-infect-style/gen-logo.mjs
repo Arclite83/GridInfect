@@ -21,19 +21,19 @@ const CS = args.includes("--cs");
 const OUT = args.find(a => !a.startsWith("--")) ?? join(here, "out", "logo");
 mkdirSync(OUT, { recursive: true });
 
-const S = tokens.skins.default;
+export const S = tokens.skins.default;
 const fontBuf = readFileSync(join(here, "fonts", "ChakraPetch-Bold.ttf"));
-const font = opentype.parse(fontBuf.buffer.slice(fontBuf.byteOffset, fontBuf.byteOffset + fontBuf.byteLength));
+export const font = opentype.parse(fontBuf.buffer.slice(fontBuf.byteOffset, fontBuf.byteOffset + fontBuf.byteLength));
 
 // ---------- type ----------
-const FS = 92, LS = 2;            // wordmark size and letter-spacing, px
+export const FS = 92, LS = 2;            // wordmark size and letter-spacing, px
 const opt = { kerning: true, letterSpacing: LS / FS };
 const advance = (t, fs = FS) => font.getAdvanceWidth(t, fs, { ...opt, letterSpacing: LS / FS }) ;
-const glyphs  = (t, x, y, fs = FS, ls = LS) => font.getPath(t, x, y, fs, { kerning: true, letterSpacing: ls / fs }).toPathData(2);
+export const glyphs  = (t, x, y, fs = FS, ls = LS) => font.getPath(t, x, y, fs, { kerning: true, letterSpacing: ls / fs }).toPathData(2);
 
 // ---------- materials ----------
 // k prefixes ids so several marks can share one HTML document.
-function defs(k, sc = 1) {
+export function defs(k, sc = 1, S = tokens.skins.default) {
   return `<defs>
 <linearGradient id="${k}dense" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".66"/><stop offset=".55" stop-color="#fff" stop-opacity=".30"/><stop offset="1" stop-color="#fff" stop-opacity=".44"/></linearGradient>
 <linearGradient id="${k}lit" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".92"/><stop offset=".12" stop-color="${S.infectHi}"/><stop offset=".55" stop-color="${S.infect}"/><stop offset="1" stop-color="${S.infectLo}"/></linearGradient>
@@ -44,12 +44,12 @@ function defs(k, sc = 1) {
 <filter id="${k}bugGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
 </defs>`;
 }
-const dense = (k, d, sw) => `<g filter="url(#${k}drop)"><path d="${d}" fill="url(#${k}dense)" stroke="rgba(255,255,255,.9)" stroke-width="${sw}" stroke-linejoin="round"/></g>`;
-const lit   = (k, d, sw) => `<path d="${d}" fill="${S.infect}" filter="url(#${k}glowBig)" opacity=".75"/><path d="${d}" fill="${S.infect}" filter="url(#${k}glow2)" opacity=".5"/><path d="${d}" fill="url(#${k}lit)" stroke="rgba(255,255,255,.6)" stroke-width="${sw}" stroke-linejoin="round"/>`;
-const bugAt = (k, x, y, size) => `<g transform="translate(${x - size/2} ${y - size/2}) scale(${size/40})"><rect x="6" y="6" width="28" height="28" rx="6" fill="${S.infect}" opacity=".35" filter="url(#${k}bugGlow)"/>${bug(["E"])}</g>`;
+export const dense = (k, d, sw) => `<g filter="url(#${k}drop)"><path d="${d}" fill="url(#${k}dense)" stroke="rgba(255,255,255,.9)" stroke-width="${sw}" stroke-linejoin="round"/></g>`;
+export const lit   = (k, d, sw) => `<path d="${d}" fill="${S.infect}" filter="url(#${k}glowBig)" opacity=".75"/><path d="${d}" fill="${S.infect}" filter="url(#${k}glow2)" opacity=".5"/><path d="${d}" fill="url(#${k}lit)" stroke="rgba(255,255,255,.6)" stroke-width="${sw}" stroke-linejoin="round"/>`;
+export const bugAt = (k, x, y, size) => `<g transform="translate(${x - size/2} ${y - size/2}) scale(${size/40})"><rect x="6" y="6" width="28" height="28" rx="6" fill="${S.infect}" opacity=".35" filter="url(#${k}bugGlow)"/>${bug(["E"])}</g>`;
 
 // ---------- board substrate (for the framed wordmark and the monogram) ----------
-function substrate(k, W, H, pitch, holes, label) {
+export function substrate(k, W, H, pitch, holes, label, S = tokens.skins.default) {
   let s = `<pattern id="${k}g1" width="${pitch}" height="${pitch}" patternUnits="userSpaceOnUse"><path d="M${pitch} 0 H0 V${pitch}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="${pitch/24}"/></pattern>
 <pattern id="${k}g2" width="${pitch/2}" height="${pitch/2}" patternUnits="userSpaceOnUse"><path d="M${pitch/2} 0 H0 V${pitch/2}" fill="none" stroke="rgba(0,0,0,.05)" stroke-width="${pitch/24}"/></pattern>
 <radialGradient id="${k}sheen" cx=".5" cy=".1" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`;
