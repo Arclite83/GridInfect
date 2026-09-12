@@ -34,9 +34,12 @@ namespace GridInfect.EditorTools
         const string IconAdaptiveBg = IconDir + "/icon_adaptive_bg_432.png";
         const string OutDir = "Builds";   // under unity/, git-ignored
 
-        // The one identifier the repo assumes (R-1203 says it must be yours:
-        // confirm ownership on Play and App Store Connect before uploading).
-        const string AppId = "com.bloodhoundstudios.gridinfect";
+        // R-1203, resolved 2026-09-11: the 2014 package could not be reused
+        // (its signing keystore is gone, and a published package name is not
+        // reusable for a new listing), so this is the remaster's own id on
+        // both stores. Created as a draft on Play; register it on App Store
+        // Connect before the iOS follow.
+        const string AppId = "com.bloodhoundstudios.gridinfect.app";
 
         [MenuItem("Grid Infect/Build/Android (AAB for Play)")]
         public static void Android() => BuildAndroid(appBundle: true);

@@ -203,12 +203,15 @@ What the script does on every build:
   Unset, the build is debug-signed: installable, not uploadable.
   `*.keystore` / `*.jks` are git-ignored.
 
-**Before the first Play upload** (R-1201, R-1203): confirm the application
-identifier `com.bloodhoundstudios.gridinfect` is yours on Play Console and
-App Store Connect, or change `MobileBuild.AppId` and the two entries in
-`ProjectSettings.asset`; create the upload key (`keytool -genkey -v
--keystore release.keystore -alias gridinfect -keyalg RSA -keysize 2048
--validity 10000`) and keep it outside the repo; bump `bundleVersion` and
+**Before the first Play upload** (R-1201, R-1203): the application
+identifier is `com.bloodhoundstudios.gridinfect.app` (`MobileBuild.AppId` and
+the two entries in `ProjectSettings.asset`; a draft app under that name
+exists on Play, and it still needs registering on App Store Connect before
+the iOS follow); create the upload key (`keytool -genkeypair -v
+-keystore gridinfect-upload.jks -alias upload -keyalg RSA -keysize 2048
+-validity 10000`) and keep it somewhere that outlives a laptop — a password
+manager with file attachments, not a machine — because losing the 2014 one
+is what cost the original package name; bump `bundleVersion` and
 `AndroidBundleVersionCode` per upload. The AdMob plugin (DEPENDENCIES §4)
 is still not imported, so this build serves no ads.
 

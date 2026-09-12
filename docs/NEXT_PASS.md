@@ -72,6 +72,12 @@ for a future level that wants it.
    for everyone, streaks, timer as a stat with a par, friends board only) is
    the headline. **Endless by grade**, no clock. No global leaderboards.
 6. **Naming.** Not "Grid Infect 2". New app on the stores regardless.
+   *Confirmed 2026-09-11, for a harder reason than intended:* the 2014
+   Android keystore is gone, the app predates Play App Signing, and a
+   published package name cannot be reused for a new listing, so
+   `com.bloodhoundstudios.gridinfect` is burned in both directions. The
+   remaster is `com.bloodhoundstudios.gridinfect.app` on both stores —
+   same on iOS for one identity rather than because iOS forced it.
 7. **Platform.** Mobile only. Android first, iOS fast follow. Web, premium,
    Steam, subscription catalogues: considered and rejected.
 8. **Monetisation.** Interstitial on solve (existing cadence rules), rewarded
