@@ -152,7 +152,7 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 |---|---|---|---|
 | R-1201 | MVP | Android internal-testing release on Play as an AAB targeting API 36 (mandatory for new apps from 2026-08-31). Full settings in DEPENDENCIES §7. | **NEW** (Play policy) |
 | R-1202 | LATER | iOS build + TestFlight distribution. | **NEW** |
-| R-1203 | MVP | A fresh application identifier owned by the user (`com.bloodhoundstudios.gridinfect` and app id 478989149128 are not assumed available — see UNKNOWN). | **NEW — needs input** |
+| R-1203 | MVP | Application identifier `com.bloodhoundstudios.gridinfect.app` on both stores. The 2014 package is unusable: its signing keystore is gone (the app predates Play App Signing), and a published package name cannot be reused for a new listing. Draft app created on Play 2026-09-11. | resolved; `ADMOB_SETUP.md` §0 |
 
 ## 13. Architecture & test (hard constraints, restated as requirements)
 
@@ -181,7 +181,7 @@ individually.
 9. **R-1001** — colorblind-safe tile encoding as an art-direction constraint.
 10. **R-1104** — 60 fps target instead of the original 90.
 11. **R-901/902** — replacement music/font/SFX (originals have unverified licenses).
-12. **R-1203** — new bundle ID (needs your naming decision).
+12. **R-1203** — new bundle ID: `com.bloodhoundstudios.gridinfect.app`, decided 2026-09-11.
 
 ## UNKNOWN — what the ingest specs did not answer
 

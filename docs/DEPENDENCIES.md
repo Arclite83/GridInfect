@@ -248,7 +248,7 @@ Edit-mode only, editor on macOS, no device, no player build (R-1302):
 | Color space | **Linear** | Correct blending under URP, and the min spec (GLES3/Metal) supports it everywhere we ship; gamma's only advantage was hardware we don't target |
 | Texture compression | **Android ETC2, iOS ASTC** | The API-23/GLES3 floor guarantees ETC2 decode but not ASTC (Adreno 3xx-era), so ASTC-for-Android would silently decompress on the oldest devices; on iOS every supported device decodes ASTC |
 | Frame rate | `Application.targetFrameRate = 60` | R-1104 — the original's 90 buys nothing in a turn-based puzzle and costs battery |
-| App ID | new, user-supplied (R-1203) | old `com.bloodhoundstudios.gridinfect` ownership unverified — UNKNOWN |
+| App ID | `com.bloodhoundstudios.gridinfect.app` (R-1203) | the 2014 package's keystore is gone; a published name cannot be reused for a new listing, so it is burned both ways |
 
 ## 9. Wave summary
 

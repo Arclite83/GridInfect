@@ -124,6 +124,7 @@ python3 docs/tools/verify_test_vectors.py   # sanity: vectors self-verify
   tests, the `AdCadence`/`AdConfig` assets, the SDK adapters fenced behind
   `GRIDINFECT_ADMOB`/`GRIDINFECT_IAP`, and an assembly-boundary gate keeping
   the SDKs inside `GridInfect.Services` (R-1303). What is left is account-side
-  and device-side: `docs/ADMOB_SETUP.md` is the order of operations, starting
-  with whether the 2014 Android keystore still exists, because that decides
-  whether `com.bloodhoundstudios.gridinfect` can be reused at all.
+  and device-side: `docs/ADMOB_SETUP.md` is the order of operations. The
+  application identifier is `com.bloodhoundstudios.gridinfect.app` on both
+  stores (R-1203): the 2014 package's keystore is gone, which makes it
+  unusable in both directions.
