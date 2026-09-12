@@ -192,9 +192,7 @@ What the script does on every build:
   makes it the only scene in the list. A player needs one scene; the game
   needs nothing in it (§2).
 - Assigns the icons under `Assets/_Project/Art/Icon/` to every icon slot the
-  installed platform module exposes (without Android or iOS Build Support
-  installed only the default slot is set, which is what the first apply on
-  2026-09-11 did; install the modules in Hub and run the apply again): `icon_1024.png` (the tile with the bug on
+  installed platform module exposes: `icon_1024.png` (the tile with the bug on
   it, STYLE-GUIDE §12 round 4) everywhere, and for Android's adaptive icon
   the background substrate under the 62% foreground, with
   `icon_adaptive_mono_432.png` as the monochrome layer where the kind has a
@@ -202,9 +200,16 @@ What the script does on every build:
   renders the four from the same numbers (STYLE-GUIDE §12.1) and copies
   them here; `gen-logo.mjs --png` still writes the reference rasters.
 - Signs Android from the environment, never from the repo:
-  `GI_KEYSTORE` (path), `GI_KEYSTORE_PASS`, `GI_KEYALIAS`, `GI_KEYALIAS_PASS`.
-  Unset, the build is debug-signed: installable, not uploadable.
-  `*.keystore` / `*.jks` are git-ignored.
+  `GI_KEYSTORE` (absolute path to the `.jks`), `GI_KEYSTORE_PASS`,
+  `GI_KEYALIAS`, `GI_KEYALIAS_PASS`. Unset, the build is debug-signed:
+  installable, not uploadable. `*.keystore` / `*.jks` are git-ignored.
+  An editor launched from Hub or Finder does not inherit the shell's
+  environment on macOS, so build the AAB from a terminal that has the four
+  exported, with the `-batchmode -executeMethod` line at the top of
+  `MobileBuild.cs` (Unity's own keytool is at
+  `<editor>/PlaybackEngines/AndroidPlayer/OpenJDK/bin/keytool`). The build
+  leaves the keystore path and alias in `ProjectSettings.asset`; do not
+  commit that hunk.
 
 **Before the first Play upload** (R-1201, R-1203): the application
 identifier is `com.bloodhoundstudios.gridinfect.app` (`MobileBuild.AppId` and
