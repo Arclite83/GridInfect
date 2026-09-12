@@ -19,8 +19,10 @@ namespace GridInfect.EditorTools
     // The scene: the game boots from RuntimeInitializeOnLoadMethod and needs
     // no scene content, but a player needs one scene in the list, so an
     // empty Main.unity is created and listed if it is missing. The icons:
-    // the monogram exports under Art/Icon, assigned to every icon slot the
-    // installed platform modules expose (adaptive: background + foreground).
+    // the tile exports under Art/Icon (gen-logo.mjs icon()), assigned to
+    // every icon slot the installed platform modules expose (adaptive:
+    // background + foreground, and the monochrome layer where the module
+    // has a third slot for it).
     // The signing key for Android comes from the environment, never from
     // the repo (see .gitignore): GI_KEYSTORE, GI_KEYSTORE_PASS, GI_KEYALIAS,
     // GI_KEYALIAS_PASS. Without them the build is debug-signed, which is
@@ -32,6 +34,7 @@ namespace GridInfect.EditorTools
         const string IconMain = IconDir + "/icon_1024.png";
         const string IconAdaptiveFg = IconDir + "/icon_adaptive_fg_432.png";
         const string IconAdaptiveBg = IconDir + "/icon_adaptive_bg_432.png";
+        const string IconAdaptiveMono = IconDir + "/icon_adaptive_mono_432.png";
         const string OutDir = "Builds";   // under unity/, git-ignored
 
         // R-1203, resolved 2026-09-11: the 2014 package could not be reused
@@ -113,8 +116,9 @@ namespace GridInfect.EditorTools
             ApplyIcons(target);
         }
 
-        // Every icon kind the platform module exposes gets the monogram;
-        // adaptive kinds get the background layer under the foreground. The
+        // Every icon kind the platform module exposes gets the tile; adaptive
+        // kinds get the background layer under the foreground, plus the
+        // monochrome layer when the kind has three slots (themed icons). The
         // kinds are enumerated rather than named so this compiles without
         // the Android or iOS module installed.
         static void ApplyIcons(NamedBuildTarget target)
@@ -132,13 +136,18 @@ namespace GridInfect.EditorTools
             }
             var fg = AssetDatabase.LoadAssetAtPath<Texture2D>(IconAdaptiveFg);
             var bg = AssetDatabase.LoadAssetAtPath<Texture2D>(IconAdaptiveBg);
+            var mono = AssetDatabase.LoadAssetAtPath<Texture2D>(IconAdaptiveMono);
             foreach (PlatformIconKind kind in PlayerSettings.GetSupportedIconKinds(target))
             {
                 PlatformIcon[] icons = PlayerSettings.GetPlatformIcons(target, kind);
                 bool adaptive = kind.ToString().IndexOf("Adaptive", StringComparison.OrdinalIgnoreCase) >= 0;
                 foreach (PlatformIcon icon in icons)
                 {
-                    if (adaptive && icon.maxLayerCount >= 2 && fg != null && bg != null)
+                    if (adaptive && icon.maxLayerCount >= 3 && fg != null && bg != null && mono != null)
+                    {
+                        icon.SetTextures(bg, fg, mono);
+                    }
+                    else if (adaptive && icon.maxLayerCount >= 2 && fg != null && bg != null)
                     {
                         icon.SetTextures(bg, fg);
                     }
