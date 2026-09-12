@@ -73,7 +73,8 @@ already fences off the rest):
 
 Never committed (ignored): `Library/`, `Temp/`, `Logs/`, `obj/`,
 `UserSettings/` (per-user editor layout), `unity/*.csproj` / `unity/*.sln`
-(IDE files Unity regenerates on demand), builds.
+(IDE files Unity regenerates on demand), builds, and `*.utmp` / `*.tmp`
+(the editor's mid-save temp copies; a crash leaves them next to the asset).
 
 Once the metas are in, a `.meta` appearing or disappearing in `git status`
 is a real change (asset added/removed) — commit it with the asset, and never

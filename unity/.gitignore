@@ -13,6 +13,21 @@
 # with sane defaults on first open; commit more of it from the Mac once the
 # editor has written it.
 
+# Editor temp/autosave droppings (a crash mid-save leaves <asset>.utmp behind)
+*.utmp
+*.utmp.meta
+*.tmp
+*.pidb
+*.pidb.meta
+*.mdb
+*.mdb.meta
+*.booproj
+*.svd
+*.opendb
+*.VC.db
+*.unityproj
+*.userprefs
+
 # IDE / OS
 *.csproj
 *.sln

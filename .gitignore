@@ -77,6 +77,24 @@ unity/Assets/InitTestScene*.unity*
 unity/Assets/_Recovery/
 unity/Assets/_Recovery.meta
 
+# Editor temp/autosave droppings: Unity writes <asset>.utmp beside the file
+# it is saving and normally deletes it; a crash or kill mid-save leaves it
+# behind. Same for the other generated caches below (mono/Boo era + VS).
+*.utmp
+*.utmp.meta
+*.tmp
+*.pidb
+*.pidb.meta
+*.mdb
+*.mdb.meta
+*.booproj
+*.svd
+*.opendb
+*.VC.db
+*.unityproj
+*.userprefs
+crashlytics-build.properties
+
 # Unity crash/report droppings and packaged output
 sysinfo.txt
 *.stackdump
