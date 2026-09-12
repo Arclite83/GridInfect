@@ -19,8 +19,10 @@ namespace GridInfect.EditorTools
     // The scene: the game boots from RuntimeInitializeOnLoadMethod and needs
     // no scene content, but a player needs one scene in the list, so an
     // empty Main.unity is created and listed if it is missing. The icons:
-    // the monogram exports under Art/Icon, assigned to every icon slot the
-    // installed platform modules expose (adaptive: background + foreground).
+    // the monogram exports under Art/Icon (grid-infect-style/gen-media.mjs
+    // --install), assigned to every icon slot the installed platform modules
+    // expose (adaptive: background + foreground, plus the monochrome layer
+    // for Android 13 themed icons where the slot has a third layer).
     // The signing key for Android comes from the environment, never from
     // the repo (see .gitignore): GI_KEYSTORE, GI_KEYSTORE_PASS, GI_KEYALIAS,
     // GI_KEYALIAS_PASS. Without them the build is debug-signed, which is
@@ -32,6 +34,7 @@ namespace GridInfect.EditorTools
         const string IconMain = IconDir + "/icon_1024.png";
         const string IconAdaptiveFg = IconDir + "/icon_adaptive_fg_432.png";
         const string IconAdaptiveBg = IconDir + "/icon_adaptive_bg_432.png";
+        const string IconAdaptiveMono = IconDir + "/icon_adaptive_mono_432.png";
         const string OutDir = "Builds";   // under unity/, git-ignored
 
         // R-1203, resolved 2026-09-11: the 2014 package could not be reused
@@ -114,9 +117,12 @@ namespace GridInfect.EditorTools
         }
 
         // Every icon kind the platform module exposes gets the monogram;
-        // adaptive kinds get the background layer under the foreground. The
-        // kinds are enumerated rather than named so this compiles without
-        // the Android or iOS module installed.
+        // adaptive kinds get the background layer under the foreground and,
+        // when the slot exposes a third layer, the monochrome silhouette the
+        // launcher tints for themed icons. The kinds are enumerated rather
+        // than named, and the layers assigned by count, so this compiles
+        // without the Android or iOS module installed and on an editor whose
+        // adaptive slot has only two layers.
         static void ApplyIcons(NamedBuildTarget target)
         {
             var main = AssetDatabase.LoadAssetAtPath<Texture2D>(IconMain);
@@ -132,14 +138,21 @@ namespace GridInfect.EditorTools
             }
             var fg = AssetDatabase.LoadAssetAtPath<Texture2D>(IconAdaptiveFg);
             var bg = AssetDatabase.LoadAssetAtPath<Texture2D>(IconAdaptiveBg);
+            var mono = AssetDatabase.LoadAssetAtPath<Texture2D>(IconAdaptiveMono);
             foreach (PlatformIconKind kind in PlayerSettings.GetSupportedIconKinds(target))
             {
                 PlatformIcon[] icons = PlayerSettings.GetPlatformIcons(target, kind);
                 bool adaptive = kind.ToString().IndexOf("Adaptive", StringComparison.OrdinalIgnoreCase) >= 0;
                 foreach (PlatformIcon icon in icons)
                 {
-                    if (adaptive && icon.maxLayerCount >= 2 && fg != null && bg != null)
+                    if (adaptive && icon.maxLayerCount >= 3 && fg != null && bg != null && mono != null)
                     {
+                        icon.SetTextures(bg, fg, mono);
+                    }
+                    else if (adaptive && icon.maxLayerCount >= 2 && fg != null && bg != null)
+                    {
+                        if (mono == null) Debug.LogWarning($"[build] {IconAdaptiveMono} missing: no monochrome layer");
+                        else Debug.LogWarning($"[build] {kind} exposes {icon.maxLayerCount} layers: no monochrome layer assigned");
                         icon.SetTextures(bg, fg);
                     }
                     else

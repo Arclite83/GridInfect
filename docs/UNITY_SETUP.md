@@ -196,8 +196,12 @@ What the script does on every build:
   installed only the default slot is set, which is what the first apply on
   2026-09-11 did; install the modules in Hub and run the apply again): `icon_1024.png` (the monogram, on the
   substrate) everywhere, and for Android's adaptive icon the background
-  substrate under the 62% foreground. These are exports of
-  `grid-infect-style/gen-logo.mjs --png`; regenerate there, copy here.
+  substrate under the transparent 62% foreground, plus the monochrome
+  silhouette (`icon_adaptive_mono_432.png`) as the third layer for Android
+  13 themed icons where the editor's adaptive slot exposes one (assigned by
+  layer count, with a warning when it does not). These are
+  `grid-infect-style/gen-media.mjs --install` (STYLE-GUIDE §12.1); a
+  regenerate there copies here.
 - Signs Android from the environment, never from the repo:
   `GI_KEYSTORE` (path), `GI_KEYSTORE_PASS`, `GI_KEYALIAS`, `GI_KEYALIAS_PASS`.
   Unset, the build is debug-signed: installable, not uploadable.

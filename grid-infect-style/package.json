@@ -2,8 +2,16 @@
   "name": "grid-infect-style",
   "private": true,
   "type": "module",
-  "description": "Grid Infect visual asset generators. node gen-assets.mjs out; node gen-logo.mjs [--png]",
+  "description": "Grid Infect visual asset generators. node gen-assets.mjs out; node gen-logo.mjs [--png]; node gen-media.mjs [--only id|--check|--install] (store and press media from media.manifest.json)",
+  "scripts": {
+    "media": "node gen-media.mjs",
+    "media:check": "node gen-media.mjs --check",
+    "media:install": "node gen-media.mjs --install"
+  },
   "dependencies": {
     "opentype.js": "^2.0.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1"
   }
 }

@@ -15,25 +15,28 @@ import opentype from "opentype.js";
 import { bug, tokens } from "./gen-assets.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const args = process.argv.slice(2);
+// gen-media.mjs imports the materials, substrate and marks from here; argv
+// is only read, and out/logo only created, when this file is the entry.
+const MAIN = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+const args = MAIN ? process.argv.slice(2) : [];
 const PNG = args.includes("--png");
 const CS = args.includes("--cs");
 const OUT = args.find(a => !a.startsWith("--")) ?? join(here, "out", "logo");
-mkdirSync(OUT, { recursive: true });
+if (MAIN) mkdirSync(OUT, { recursive: true });
 
-const S = tokens.skins.default;
+export const S = tokens.skins.default;
 const fontBuf = readFileSync(join(here, "fonts", "ChakraPetch-Bold.ttf"));
-const font = opentype.parse(fontBuf.buffer.slice(fontBuf.byteOffset, fontBuf.byteOffset + fontBuf.byteLength));
+export const font = opentype.parse(fontBuf.buffer.slice(fontBuf.byteOffset, fontBuf.byteOffset + fontBuf.byteLength));
 
 // ---------- type ----------
-const FS = 92, LS = 2;            // wordmark size and letter-spacing, px
+export const FS = 92, LS = 2;            // wordmark size and letter-spacing, px
 const opt = { kerning: true, letterSpacing: LS / FS };
-const advance = (t, fs = FS) => font.getAdvanceWidth(t, fs, { ...opt, letterSpacing: LS / FS }) ;
-const glyphs  = (t, x, y, fs = FS, ls = LS) => font.getPath(t, x, y, fs, { kerning: true, letterSpacing: ls / fs }).toPathData(2);
+export const advance = (t, fs = FS) => font.getAdvanceWidth(t, fs, { ...opt, letterSpacing: LS / FS }) ;
+export const glyphs  = (t, x, y, fs = FS, ls = LS) => font.getPath(t, x, y, fs, { kerning: true, letterSpacing: ls / fs }).toPathData(2);
 
 // ---------- materials ----------
 // k prefixes ids so several marks can share one HTML document.
-function defs(k, sc = 1) {
+export function defs(k, sc = 1) {
   return `<defs>
 <linearGradient id="${k}dense" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".66"/><stop offset=".55" stop-color="#fff" stop-opacity=".30"/><stop offset="1" stop-color="#fff" stop-opacity=".44"/></linearGradient>
 <linearGradient id="${k}lit" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".92"/><stop offset=".12" stop-color="${S.infectHi}"/><stop offset=".55" stop-color="${S.infect}"/><stop offset="1" stop-color="${S.infectLo}"/></linearGradient>
@@ -44,12 +47,12 @@ function defs(k, sc = 1) {
 <filter id="${k}bugGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
 </defs>`;
 }
-const dense = (k, d, sw) => `<g filter="url(#${k}drop)"><path d="${d}" fill="url(#${k}dense)" stroke="rgba(255,255,255,.9)" stroke-width="${sw}" stroke-linejoin="round"/></g>`;
-const lit   = (k, d, sw) => `<path d="${d}" fill="${S.infect}" filter="url(#${k}glowBig)" opacity=".75"/><path d="${d}" fill="${S.infect}" filter="url(#${k}glow2)" opacity=".5"/><path d="${d}" fill="url(#${k}lit)" stroke="rgba(255,255,255,.6)" stroke-width="${sw}" stroke-linejoin="round"/>`;
-const bugAt = (k, x, y, size) => `<g transform="translate(${x - size/2} ${y - size/2}) scale(${size/40})"><rect x="6" y="6" width="28" height="28" rx="6" fill="${S.infect}" opacity=".35" filter="url(#${k}bugGlow)"/>${bug(["E"])}</g>`;
+export const dense = (k, d, sw) => `<g filter="url(#${k}drop)"><path d="${d}" fill="url(#${k}dense)" stroke="rgba(255,255,255,.9)" stroke-width="${sw}" stroke-linejoin="round"/></g>`;
+export const lit   = (k, d, sw) => `<path d="${d}" fill="${S.infect}" filter="url(#${k}glowBig)" opacity=".75"/><path d="${d}" fill="${S.infect}" filter="url(#${k}glow2)" opacity=".5"/><path d="${d}" fill="url(#${k}lit)" stroke="rgba(255,255,255,.6)" stroke-width="${sw}" stroke-linejoin="round"/>`;
+export const bugAt = (k, x, y, size) => `<g transform="translate(${x - size/2} ${y - size/2}) scale(${size/40})"><rect x="6" y="6" width="28" height="28" rx="6" fill="${S.infect}" opacity=".35" filter="url(#${k}bugGlow)"/>${bug(["E"])}</g>`;
 
 // ---------- board substrate (for the framed wordmark and the monogram) ----------
-function substrate(k, W, H, pitch, holes, label) {
+export function substrate(k, W, H, pitch, holes, label) {
   let s = `<pattern id="${k}g1" width="${pitch}" height="${pitch}" patternUnits="userSpaceOnUse"><path d="M${pitch} 0 H0 V${pitch}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="${pitch/24}"/></pattern>
 <pattern id="${k}g2" width="${pitch/2}" height="${pitch/2}" patternUnits="userSpaceOnUse"><path d="M${pitch/2} 0 H0 V${pitch/2}" fill="none" stroke="rgba(0,0,0,.05)" stroke-width="${pitch/24}"/></pattern>
 <radialGradient id="${k}sheen" cx=".5" cy=".1" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`;
@@ -60,7 +63,7 @@ function substrate(k, W, H, pitch, holes, label) {
 }
 
 // ---------- wordmark ----------
-const GAP = 96, BUG = 56;
+export const GAP = 96, BUG = 56;
 const wG = advance("GRID"), wI = advance("INFECT");
 const total = wG + GAP + wI;
 export function wordmark({ framed = false } = {}) {
@@ -72,7 +75,8 @@ export function wordmark({ framed = false } = {}) {
   s += dense(k, glyphs("GRID", x0, base), 1.4);
   s += lit(k, glyphs("INFECT", x0 + wG + GAP, base), 1.3);
   s += bugAt(k, x0 + wG + GAP / 2, mid, BUG);
-  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" id="${framed ? "wordmark_board" : "wordmark"}">\n${s}\n</svg>\n`, W, H };
+  // inner is the same content without the <svg> wrapper, for compositing (gen-media.mjs).
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" id="${framed ? "wordmark_board" : "wordmark"}">\n${s}\n</svg>\n`, inner: s, W, H };
 }
 
 // ---------- monogram ----------
@@ -86,7 +90,7 @@ export function monogram({ side = 1024, adaptive = false } = {}) {
            + bugAt(k, s0 * 0.615, s0 * 0.5, s0 * 0.27);
   if (adaptive) mark = `<g transform="translate(${s0 * 0.19} ${s0 * 0.19}) scale(.62)">${mark}</g>`;
   s += mark;
-  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s0} ${s0}" id="${adaptive ? "monogram_adaptive" : "monogram"}">\n${s}\n</svg>\n`, W: s0, H: s0 };
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s0} ${s0}" id="${adaptive ? "monogram_adaptive" : "monogram"}">\n${s}\n</svg>\n`, inner: s, W: s0, H: s0 };
 }
 
 // The adaptive icon's background layer: the monogram's substrate with no
@@ -95,7 +99,7 @@ export function monogram({ side = 1024, adaptive = false } = {}) {
 export function monogramBackground({ side = 1024 } = {}) {
   const k = "mb";
   const s = defs(k, side / 168) + substrate(k, side, side, side / 8, false);
-  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${side} ${side}" id="monogram_bg">\n${s}\n</svg>\n`, W: side, H: side };
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${side} ${side}" id="monogram_bg">\n${s}\n</svg>\n`, inner: s, W: side, H: side };
 }
 
 // ---------- C# outlines (title screen) ----------
@@ -163,7 +167,6 @@ ${letters.map(l => `        static readonly float[][] ${l} =\n        {\n${conto
 }
 
 // ---------- emit ----------
-const MAIN = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (MAIN) {
   const files = {
     "wordmark":          wordmark(),

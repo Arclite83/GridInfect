@@ -119,3 +119,7 @@ tools/style-bench/glyphs/obj/
 
 # node deps for the style generators (grid-infect-style/package.json)
 node_modules/
+
+# store and press media, and the raw device captures they frame (grid-infect-style/media.manifest.json)
+grid-infect-style/out/store/
+grid-infect-style/out/raw/

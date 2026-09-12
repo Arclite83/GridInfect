@@ -125,7 +125,25 @@ Title screen: the wordmark composites on the live substrate. Motion: GRID presen
 
 As built (2026-09-09): `gen-logo.mjs --cs` emits the nine letters' outlines and the two words' pen positions to `unity/.../View/LogoGlyphs.g.cs`; `View/TitleRaster.cs` draws each letter as a sprite through the glyph rasteriser (distance field; the drop shadow and glows are the field under a Gaussian, the gradients run over the word's box as the SVG's do) and `View/TitleView.cs` lays them out at one scale to the content width. No font and no bitmap in the build. The motion plays once per launch: the bug lands 0.25 s in over 0.12 s from 1.6× its size, then each INFECT letter fades from dense to lit over two hops, one hop apart. The dense letters stay under the lit ones. `tools/style-bench/glyphs` renders the same mark headlessly (`dotnet run -- title <scale> out.png [dormant]`) for checking against `out/logo/wordmark.svg`.
 
-Icons: `monogram_1024.png` is the app icon on both stores; Android's adaptive icon is `monogram_adaptive_432.png` over `monogram_bg_432.png` (the substrate alone, same generator). The copies under `unity/Assets/_Project/Art/Icon/` are what the build script assigns; regenerate here and copy.
+Icons: the store and launcher files are §12.1 below, rendered by `gen-media.mjs`; `monogram_1024.png` and the adaptive pair here stay as the §12 reference renders of the mark.
 
 Rejected and why (all three rounds are in `reference/logo-rounds.html`): trace-drawn letters in the 2013 manner, disciplined to 45° routing (loses the glass system and reads as etched circuitry, not a mark); pixel-font letters as tiles on a board well (needs two lines, reads as a menu); silkscreen Chakra Petch (interchangeable with any title); dark-glass "well" G and solid-ink G for the monogram (dark glass reads solid but changes the concept from components to well, solid ink is paint).
 
+### 12.1 Icons and store media (2026-09-12)
+Regenerate with `node gen-media.mjs` (needs the playwright devDependency and a Chromium; `CHROMIUM=` and `PLAYWRIGHT=` as in `tools/style-bench/run.mjs`). `media.manifest.json` is the only place a store dimension, format, alpha rule or upload cap is written; `--check` reads it back against `out/store/` and fails on any missing file, wrong size, wrong alpha channel or oversize file; `--only <id>` renders one; `--install` copies the four icon variants into `unity/Assets/_Project/Art/Icon/`, which `MobileBuild.cs` assigns. Output is deterministic (two runs give byte-identical PNGs) and git-ignored; the raw device captures a screenshot frame composites go under `out/raw/<device>/<n>.png`, also ignored.
+
+Icon-only contrast changes. The §12 monogram is tuned for 1024 px; on a launcher at 48 px the dense G's 0.9% rim disappears and its 30–66% glass reads as a stain on the mask. The four icon variants, and only they, change three numbers. Everything else (letter geometry, the lit I, the bug, the substrate) is §12 unchanged, and the wordmark never takes these.
+
+| change | §12 | icons |
+|---|---|---|
+| dense rim | white 90%, 0.9% of the side | white 100%, 1.4% of the side |
+| dense fill | white 66% → 30% (55%) → 44% | white 78% → 42% (55%) → 56% |
+| bug backing glow | infect 35% | infect 50% |
+
+The four variants (`monogram_icon_*`):
+- `main`: substrate under the mark, opaque, no corner rounding (the platforms mask it). 1024 for the App Store and Unity's `icon_1024.png`, 512 for Play (`monogram_icon_play`, same composition; Play caps it at 1 MB and both stores reject an alpha channel).
+- `fg`: the mark alone at 62% inside the adaptive safe zone on a transparent ground, 432 px. It carries alpha so the launcher's parallax shows the background; the earlier opaque foreground hid it.
+- `bg`: the substrate alone, 432 px, opaque, the same numbers as `monogram_bg`.
+- `mono`: the mark as one flat white silhouette on transparent at the same 62%, no gradient, glow or shadow. Android 13 themed icons tint it; the bug keeps its leads and wires so it still reads as a component at launcher size.
+
+Media compositions: `feature_graphic` (Play 1024×500, wordmark at 76% of the width, clear of the store's edge overlays), `banner_wide` (press 1920×640, wordmark at 58%), `social_header` (1500×500, wordmark at 52%, sitting high so a profile avatar clears it), all on the substrate at the framed wordmark's scale (holes, silkscreen and grid pitch scale with `w/880`). `screenshot_frame` takes a raw capture and composites it on the substrate at the screen's scale (`w/390`), framed like the board well (§4: well radius, 3 px black 18% ring, 1 px white 14% rim, the tile shadow), under a caption in Chakra Petch Bold at the HUD level size (26 reference px × the frame's scale, §11) in ink, letter-spaced as the wordmark. Captions in the manifest are placeholders until the store copy is written.
