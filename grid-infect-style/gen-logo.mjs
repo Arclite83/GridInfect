@@ -17,11 +17,15 @@ import opentype from "opentype.js";
 import { bug, tokens } from "./gen-assets.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const args = process.argv.slice(2);
+// gen-media.mjs and gen-icon-rounds.mjs import the materials, substrate and
+// marks from here; argv is only read, and out/logo only created, when this
+// file is the entry.
+const MAIN = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+const args = MAIN ? process.argv.slice(2) : [];
 const PNG = args.includes("--png");
 const CS = args.includes("--cs");
 const OUT = args.find(a => !a.startsWith("--")) ?? join(here, "out", "logo");
-mkdirSync(OUT, { recursive: true });
+if (MAIN) mkdirSync(OUT, { recursive: true });
 
 export const S = tokens.skins.default;
 const fontBuf = readFileSync(join(here, "fonts", "ChakraPetch-Bold.ttf"));
@@ -30,7 +34,7 @@ export const font = opentype.parse(fontBuf.buffer.slice(fontBuf.byteOffset, font
 // ---------- type ----------
 export const FS = 92, LS = 2;            // wordmark size and letter-spacing, px
 const opt = { kerning: true, letterSpacing: LS / FS };
-const advance = (t, fs = FS) => font.getAdvanceWidth(t, fs, { ...opt, letterSpacing: LS / FS }) ;
+export const advance = (t, fs = FS) => font.getAdvanceWidth(t, fs, { ...opt, letterSpacing: LS / FS }) ;
 export const glyphs  = (t, x, y, fs = FS, ls = LS) => font.getPath(t, x, y, fs, { kerning: true, letterSpacing: ls / fs }).toPathData(2);
 
 // ---------- materials ----------
@@ -74,7 +78,8 @@ export function wordmark({ framed = false } = {}) {
   s += dense(k, glyphs("GRID", x0, base), 1.4);
   s += lit(k, glyphs("INFECT", x0 + wG + GAP, base), 1.3);
   s += bugAt(k, x0 + wG + GAP / 2, mid, BUG);
-  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" id="${framed ? "wordmark_board" : "wordmark"}">\n${s}\n</svg>\n`, W, H };
+  // inner is the same content without the <svg> wrapper, for compositing (gen-media.mjs).
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" id="${framed ? "wordmark_board" : "wordmark"}">\n${s}\n</svg>\n`, inner: s, W, H };
 }
 
 // ---------- monogram ----------
@@ -88,7 +93,7 @@ export function monogram({ side = 1024, adaptive = false } = {}) {
            + bugAt(k, s0 * 0.615, s0 * 0.5, s0 * 0.27);
   if (adaptive) mark = `<g transform="translate(${s0 * 0.19} ${s0 * 0.19}) scale(.62)">${mark}</g>`;
   s += mark;
-  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s0} ${s0}" id="${adaptive ? "monogram_adaptive" : "monogram"}">\n${s}\n</svg>\n`, W: s0, H: s0 };
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s0} ${s0}" id="${adaptive ? "monogram_adaptive" : "monogram"}">\n${s}\n</svg>\n`, inner: s, W: s0, H: s0 };
 }
 
 // The adaptive icon's background layer: the monogram's substrate with no
@@ -97,7 +102,7 @@ export function monogram({ side = 1024, adaptive = false } = {}) {
 export function monogramBackground({ side = 1024 } = {}) {
   const k = "mb";
   const s = defs(k, side / 168) + substrate(k, side, side, side / 8, false);
-  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${side} ${side}" id="monogram_bg">\n${s}\n</svg>\n`, W: side, H: side };
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${side} ${side}" id="monogram_bg">\n${s}\n</svg>\n`, inner: s, W: side, H: side };
 }
 
 // ---------- app icon (round 4, 2026-09-12: the tile) ----------
@@ -123,8 +128,8 @@ export function tileMonoMark(side) {
        + `<rect x="28" y="16.5" width="10" height="7" rx="1.5" fill="#fff"/>`
        + `<path d="M20 9 L30 14.5 L30 25.5 L20 31 L10 25.5 L10 14.5 Z M23.2 20 A3.2 3.2 0 1 0 16.8 20 A3.2 3.2 0 1 0 23.2 20 Z" fill="#fff" fill-rule="evenodd"/></g>`;
 }
-const adaptiveInset = (mark, side) => `<g transform="translate(${side * 0.19} ${side * 0.19}) scale(.62)">${mark}</g>`;
-const box = (id, side, body) => ({ svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${side} ${side}" id="${id}">\n${body}\n</svg>\n`, W: side, H: side });
+export const adaptiveInset = (mark, side) => `<g transform="translate(${side * 0.19} ${side * 0.19}) scale(.62)">${mark}</g>`;
+const box = (id, side, body) => ({ svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${side} ${side}" id="${id}">\n${body}\n</svg>\n`, inner: body, W: side, H: side });
 
 export function icon({ side = 1024, adaptive = false } = {}) {
   const k = adaptive ? "ia" : "i";
@@ -237,7 +242,6 @@ async function rasteriser() {
 }
 
 // ---------- emit ----------
-const MAIN = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (MAIN) {
   const files = {
     "wordmark":          wordmark(),

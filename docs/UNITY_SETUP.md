@@ -198,8 +198,9 @@ What the script does on every build:
   it, STYLE-GUIDE §12 round 4) everywhere, and for Android's adaptive icon
   the background substrate under the 62% foreground, with
   `icon_adaptive_mono_432.png` as the monochrome layer where the kind has a
-  third slot (themed icons). These are exports of
-  `grid-infect-style/gen-logo.mjs --png`; regenerate there, copy here.
+  third slot (themed icons). `grid-infect-style/gen-media.mjs --install`
+  renders the four from the same numbers (STYLE-GUIDE §12.1) and copies
+  them here; `gen-logo.mjs --png` still writes the reference rasters.
 - Signs Android from the environment, never from the repo:
   `GI_KEYSTORE` (path), `GI_KEYSTORE_PASS`, `GI_KEYALIAS`, `GI_KEYALIAS_PASS`.
   Unset, the build is debug-signed: installable, not uploadable.

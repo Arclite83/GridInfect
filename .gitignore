@@ -123,3 +123,7 @@ node_modules/
 # icon round rasters (gen-icon-rounds.mjs --png); the sheet screenshot is the committed record
 grid-infect-style/out/icon-rounds/*.png
 !grid-infect-style/out/icon-rounds/sheet.png
+
+# store and press media, and the raw device captures they frame (grid-infect-style/media.manifest.json)
+grid-infect-style/out/store/
+grid-infect-style/out/raw/
