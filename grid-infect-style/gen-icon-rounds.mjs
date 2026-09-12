@@ -11,7 +11,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { execFileSync } from "node:child_process";
 import { bug, tokens } from "./gen-assets.mjs";
-import { S, font, glyphs, defs, dense, lit, bugAt, substrate } from "./gen-logo.mjs";
+import { S, glyphs, defs, dense, lit, bugAt, substrate, ICON_SKIN, tileMark, tileMonoMark } from "./gen-logo.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const OUT = join(here, "out", "icon-rounds");
@@ -23,7 +23,7 @@ const s0 = 1024, sc = s0 / 168;
 const CAP = 0.7, G_L = 0.055, G_R = 0.631, I_L = 0.07, I_R = 0.206;
 
 // A darker mask for the icon only: the lock's gradient shifted one stop down.
-const DARK = { ...S, maskHi: S.mask, mask: S.maskLo, maskLo: "#456a35" };
+const DARK = ICON_SKIN;
 
 // Opaque glass: the dense gradient with the alpha lifted so the letter holds
 // against the mask at 48 px. Rim and shadow as the lock.
@@ -67,21 +67,14 @@ C.D = { name: "G + bug", note: "G opaque glass at 100% of the side (cap 70%), bu
            mark: solid(k, glyphs("G", gx, base, fs, 0), s0 * 0.011) + bugAt(k, gx + 0.352 * fs, base - 0.345 * fs, s0 * 0.30) };
 } };
 
-// E. The bug on a placed tile: what a cell looks like on the board. No letters.
-C.E = { name: "Tile", note: "A board tile (dense glass, tileRadius) at 72% with bug_E at 58% on it. The game's most distinctive shape and nothing else. Reads as the game, not as a name.", make(k) {
-  const t = s0 * 0.72, r = s0 * 0.08, x = (s0 - t) / 2;
-  const tile = `<g filter="url(#${k}drop)"><rect x="${x}" y="${x}" width="${t}" height="${t}" rx="${r}" fill="url(#${k}dense)" stroke="rgba(255,255,255,.9)" stroke-width="${s0 * 0.008}"/></g>`;
-  return { ground: defs(k, sc, DARK) + substrate(k, s0, s0, s0 / 8, false, undefined, DARK),
-           mark: tile + bugAt(k, s0 * 0.5, s0 * 0.5, s0 * 0.58) };
+// E. The bug on a placed tile: what a cell looks like on the board. No letters. The pick; gen-logo.mjs icon().
+C.E = { name: "Tile", note: "A board tile (dense glass, tileRadius) at 72% with bug_E at 58% on it. The game's most distinctive shape and nothing else. Reads as the game, not as a name. Picked 2026-09-12.", make(k) {
+  return { ground: defs(k, sc, DARK) + substrate(k, s0, s0, s0 / 8, false, undefined, DARK), mark: tileMark(k, s0) };
 } };
 
-// F. Monochrome layer (Android 13 themed icons, iOS tinted): C's silhouette.
-C.F = { name: "Mono (C)", note: "Android themed-icon / iOS tinted layer for C: flat white silhouette on transparent, the bug as its hexagon core and E lead. The launcher tints it.", mono: true, make(k) {
-  const fs = s0 * 0.84, cap = fs * CAP, base = s0 * 0.5 + cap / 2;
-  const gW = (G_R - G_L) * fs, iW = (I_R - I_L) * fs, gap = s0 * 0.24;
-  const x0 = (s0 - (gW + gap + iW)) / 2, bx = x0 + gW + gap / 2, bs = s0 * 0.28;
-  const hex = `<g transform="translate(${bx - bs / 2} ${s0 * 0.5 - bs / 2}) scale(${bs / 40})" fill="#fff"><polygon points="20,9 30,14.5 30,25.5 20,31 10,25.5 10,14.5"/><rect x="29" y="17" width="9" height="6" rx="1"/><circle cx="20" cy="20" r="3" fill="#000" opacity=".0"/></g>`;
-  return { ground: "", mark: `<g fill="#fff"><path d="${glyphs("G", x0 - G_L * fs, base, fs, 0)}"/><path d="${glyphs("I", x0 + gW + gap - I_L * fs, base, fs, 0)}"/></g>` + hex };
+// F. Monochrome layer (Android 13 themed icons, iOS tinted): E's bug as a silhouette.
+C.F = { name: "Mono (E)", note: "Android themed-icon / iOS tinted layer for E: the bug flat, hollow core, E lead and pins, on transparent. The launcher tints it. gen-logo.mjs iconMono().", mono: true, make() {
+  return { ground: "", mark: tileMonoMark(s0) };
 } };
 
 // ---------- emit ----------
@@ -151,7 +144,7 @@ img{display:block}
 <div class="wrap">
 <div class="eyebrow">2026-09-12 · icon round 4</div>
 <h1>App icon at drawer sizes</h1>
-<p class="lede">iOS squircle at 160/96/48/29, Android adaptive (mark at 62%, circle mask) at 108, and the adaptive icon on a light and a dark home screen. A and B keep the lock's layout; C to E change it; F is the themed-icon layer.</p>
+<p class="lede">iOS squircle at 160/96/48/29, Android adaptive (mark at 62%, circle mask) at 108, and the adaptive icon on a light and a dark home screen. A and B keep the lock's layout; C to E change it; F is the themed-icon layer. Picked: E, with F.</p>
 ${ids.map(row).join("\n")}
 </div>`;
 writeFileSync(join(OUT, "sheet.html"), html);

@@ -194,9 +194,11 @@ What the script does on every build:
 - Assigns the icons under `Assets/_Project/Art/Icon/` to every icon slot the
   installed platform module exposes (without Android or iOS Build Support
   installed only the default slot is set, which is what the first apply on
-  2026-09-11 did; install the modules in Hub and run the apply again): `icon_1024.png` (the monogram, on the
-  substrate) everywhere, and for Android's adaptive icon the background
-  substrate under the 62% foreground. These are exports of
+  2026-09-11 did; install the modules in Hub and run the apply again): `icon_1024.png` (the tile with the bug on
+  it, STYLE-GUIDE §12 round 4) everywhere, and for Android's adaptive icon
+  the background substrate under the 62% foreground, with
+  `icon_adaptive_mono_432.png` as the monochrome layer where the kind has a
+  third slot (themed icons). These are exports of
   `grid-infect-style/gen-logo.mjs --png`; regenerate there, copy here.
 - Signs Android from the environment, never from the repo:
   `GI_KEYSTORE` (path), `GI_KEYSTORE_PASS`, `GI_KEYALIAS`, `GI_KEYALIAS_PASS`.
