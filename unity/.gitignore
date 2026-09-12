@@ -13,7 +13,9 @@
 # with sane defaults on first open; commit more of it from the Mac once the
 # editor has written it.
 
-# Editor temp/autosave droppings (a crash mid-save leaves <asset>.utmp behind)
+# Editor/build temp droppings. .utmp is both the IL2CPP/Android native build
+# cache directory (unity/.utmp/) and the editor's orphaned mid-save copy
+# (<asset>.utmp); the bare pattern matches both, so do not narrow it.
 *.utmp
 *.utmp.meta
 *.tmp

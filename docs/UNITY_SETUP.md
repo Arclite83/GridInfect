@@ -73,8 +73,10 @@ already fences off the rest):
 
 Never committed (ignored): `Library/`, `Temp/`, `Logs/`, `obj/`,
 `UserSettings/` (per-user editor layout), `unity/*.csproj` / `unity/*.sln`
-(IDE files Unity regenerates on demand), builds, and `*.utmp` / `*.tmp`
-(the editor's mid-save temp copies; a crash leaves them next to the asset).
+(IDE files Unity regenerates on demand), builds, and `*.utmp` / `*.tmp` —
+which covers both `unity/.utmp/`, the IL2CPP and Android native build cache
+a player build leaves behind, and `<asset>.utmp`, the editor's mid-save copy
+orphaned in `Assets/` by a crash.
 
 Once the metas are in, a `.meta` appearing or disappearing in `git status`
 is a real change (asset added/removed) — commit it with the asset, and never
@@ -210,7 +212,11 @@ What the script does on every build:
   `MobileBuild.cs` (Unity's own keytool is at
   `<editor>/PlaybackEngines/AndroidPlayer/OpenJDK/bin/keytool`). The build
   leaves the keystore path and alias in `ProjectSettings.asset`; do not
-  commit that hunk.
+  commit that hunk. A build also rewrites
+  `Plugins/Android/GoogleMobileAdsPlugin.androidlib/AndroidManifest.xml` —
+  `GoogleMobileAds/Editor/AndroidBuildPreProcessor.cs` injects the AdMob app
+  ID (already committed, in `GoogleMobileAdsSettings.asset`) and the editor
+  version string. That hunk is build output too; leave it uncommitted.
 
 **Before the first Play upload** (R-1201, R-1203): the application
 identifier is `com.bloodhoundstudios.gridinfect.app` (`MobileBuild.AppId` and
