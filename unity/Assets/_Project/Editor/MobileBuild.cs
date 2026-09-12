@@ -19,10 +19,10 @@ namespace GridInfect.EditorTools
     // The scene: the game boots from RuntimeInitializeOnLoadMethod and needs
     // no scene content, but a player needs one scene in the list, so an
     // empty Main.unity is created and listed if it is missing. The icons:
-    // the monogram exports under Art/Icon (grid-infect-style/gen-media.mjs
-    // --install), assigned to every icon slot the installed platform modules
-    // expose (adaptive: background + foreground, plus the monochrome layer
-    // for Android 13 themed icons where the slot has a third layer).
+    // the tile exports under Art/Icon (gen-logo.mjs icon()), assigned to
+    // every icon slot the installed platform modules expose (adaptive:
+    // background + foreground, and the monochrome layer where the module
+    // has a third slot for it).
     // The signing key for Android comes from the environment, never from
     // the repo (see .gitignore): GI_KEYSTORE, GI_KEYSTORE_PASS, GI_KEYALIAS,
     // GI_KEYALIAS_PASS. Without them the build is debug-signed, which is
@@ -116,13 +116,11 @@ namespace GridInfect.EditorTools
             ApplyIcons(target);
         }
 
-        // Every icon kind the platform module exposes gets the monogram;
-        // adaptive kinds get the background layer under the foreground and,
-        // when the slot exposes a third layer, the monochrome silhouette the
-        // launcher tints for themed icons. The kinds are enumerated rather
-        // than named, and the layers assigned by count, so this compiles
-        // without the Android or iOS module installed and on an editor whose
-        // adaptive slot has only two layers.
+        // Every icon kind the platform module exposes gets the tile; adaptive
+        // kinds get the background layer under the foreground, plus the
+        // monochrome layer when the kind has three slots (themed icons). The
+        // kinds are enumerated rather than named so this compiles without
+        // the Android or iOS module installed.
         static void ApplyIcons(NamedBuildTarget target)
         {
             var main = AssetDatabase.LoadAssetAtPath<Texture2D>(IconMain);
@@ -151,8 +149,6 @@ namespace GridInfect.EditorTools
                     }
                     else if (adaptive && icon.maxLayerCount >= 2 && fg != null && bg != null)
                     {
-                        if (mono == null) Debug.LogWarning($"[build] {IconAdaptiveMono} missing: no monochrome layer");
-                        else Debug.LogWarning($"[build] {kind} exposes {icon.maxLayerCount} layers: no monochrome layer assigned");
                         icon.SetTextures(bg, fg);
                     }
                     else

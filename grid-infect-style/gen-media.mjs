@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Grid Infect store and press media (STYLE-GUIDE §12, §12.1 for the icons).
+// Grid Infect store and press media (STYLE-GUIDE §12.1).
 // node gen-media.mjs              renders every entry of media.manifest.json
 // node gen-media.mjs --only <id>  renders one
 // node gen-media.mjs --check      reads the manifest, exits 1 if any output is
@@ -15,8 +15,8 @@
 import { mkdirSync, readFileSync, existsSync, copyFileSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { bug, tokens } from "./gen-assets.mjs";
-import { S, FS, LS, glyphs, advance, defs, lit, substrate, wordmark, monogramBackground } from "./gen-logo.mjs";
+import { tokens } from "./gen-assets.mjs";
+import { S, FS, LS, glyphs, advance, defs, substrate, wordmark, ICON_SKIN, tileMark, adaptiveInset, icon, iconBackground, iconMono } from "./gen-logo.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
@@ -61,27 +61,6 @@ function caption(text, cx, top, fs, fill = INK, lineHeight = 1.2) {
   }).join("");
 }
 
-// ---------- icon-only materials (STYLE-GUIDE §12.1) ----------
-// The monogram at 48 px on a launcher: the dense G loses its rim and its
-// glass reads as a stain on the mask. Icons only: a heavier, fully opaque
-// rim, a denser fill, a stronger backing glow under the bug. Nothing else
-// changes, and the wordmark and the 1024 monogram reference keep §12.
-const ICON = { rim: 0.014, denseStops: [".78", ".42", ".56"], glow: ".5", mark: 0.62, offset: 0.19 };
-function iconDefs(k, sc) {
-  const [a, b, c] = ICON.denseStops;
-  return defs(k, sc) + `<defs><linearGradient id="${k}denseIcon" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="${a}"/><stop offset=".55" stop-color="#fff" stop-opacity="${b}"/><stop offset="1" stop-color="#fff" stop-opacity="${c}"/></linearGradient></defs>`;
-}
-const denseIcon = (k, d, sw) => `<g filter="url(#${k}drop)"><path d="${d}" fill="url(#${k}denseIcon)" stroke="#fff" stroke-width="${sw}" stroke-linejoin="round"/></g>`;
-const bugIconAt = (k, x, y, size) => `<g transform="translate(${x - size/2} ${y - size/2}) scale(${size/40})"><rect x="6" y="6" width="28" height="28" rx="6" fill="${S.infect}" opacity="${ICON.glow}" filter="url(#${k}bugGlow)"/>${bug(["E"])}</g>`;
-// The monogram's mark (§12 geometry) with the icon materials.
-function iconMark(k, s0) {
-  const fs = s0 * 0.7, base = s0 * 0.5 + fs * 0.36;
-  return denseIcon(k, glyphs("G", s0 * 0.03, base, fs, 0), s0 * ICON.rim)
-       + lit(k, glyphs("I", s0 * 0.745, base, fs, 0), s0 * 0.009)
-       + bugIconAt(k, s0 * 0.615, s0 * 0.5, s0 * 0.27);
-}
-const adaptive = (s0, mark) => `<g transform="translate(${s0 * ICON.offset} ${s0 * ICON.offset}) scale(${ICON.mark})">${mark}</g>`;
-
 // ---------- compositions ----------
 // Each takes the manifest entry and returns an SVG document of exactly w×h.
 const COMPOSE = {
@@ -112,34 +91,26 @@ const COMPOSE = {
     if (e.caption) s += caption(e.caption, W / 2, H * 0.46 + mh / 2 + 8 * sc, tokens.type.hudChip * sc);
     return svgDoc(W, H, s);
   },
-  // Store icon (App Store 1024, Play 512, unity icon_1024): §12 substrate
-  // under the §12.1 mark. No corner rounding; the platforms mask it.
+  // App icon (STYLE-GUIDE §12 round 4): the tile with bug_E on the icon's
+  // darker substrate. App Store 1024, Play 512, unity icon_1024. No corner
+  // rounding; the platforms mask it.
   icon_main(e) {
-    const s0 = e.w, k = "im";
-    return svgDoc(e.w, e.h, iconDefs(k, s0 / 168) + substrate(k, s0, s0, s0 / 8, false) + iconMark(k, s0));
+    return svgDoc(e.w, e.h, icon({ side: e.w }).inner);
   },
-  // Adaptive foreground: the mark alone at 62% inside the safe zone on a
-  // transparent ground, so the launcher's parallax shows the background.
+  // Adaptive foreground: the tile alone at the 62% inset on a transparent
+  // ground, so the launcher's parallax shows the background layer.
   icon_fg(e) {
-    const s0 = e.w, k = "if";
-    return svgDoc(e.w, e.h, iconDefs(k, s0 / 168) + adaptive(s0, iconMark(k, s0)));
+    const k = "if";
+    return svgDoc(e.w, e.h, defs(k, e.w / 168, ICON_SKIN) + adaptiveInset(tileMark(k, e.w), e.w));
   },
-  // Adaptive background: the substrate alone, same numbers as monogram_bg.
+  // Adaptive background: the icon's substrate with nothing on it.
   icon_bg(e) {
-    const m = monogramBackground({ side: e.w });
-    return svgDoc(e.w, e.h, m.inner);
+    return svgDoc(e.w, e.h, iconBackground({ side: e.w }).inner);
   },
-  // Themed-icon monochrome layer (Android 13+): the mark as one flat white
-  // silhouette on transparent, no gradient, glow or shadow (the launcher
-  // tints it), at the adaptive 62%.
+  // Monochrome layer (Android 13 themed icons, iOS tinted): the bug as a
+  // flat white silhouette at the adaptive inset, transparent.
   icon_mono(e) {
-    const s0 = e.w, k = "iz", fs = s0 * 0.7, base = s0 * 0.5 + fs * 0.36;
-    const flat = `<filter id="${k}flat" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0"/></filter>`;
-    const size = s0 * 0.27, bx = s0 * 0.615, by = s0 * 0.5;
-    const mark = `<path d="${glyphs("G", s0 * 0.03, base, fs, 0)}" fill="#fff" stroke="#fff" stroke-width="${s0 * ICON.rim}" stroke-linejoin="round"/>`
-      + `<path d="${glyphs("I", s0 * 0.745, base, fs, 0)}" fill="#fff" stroke="#fff" stroke-width="${s0 * 0.009}" stroke-linejoin="round"/>`
-      + `<g filter="url(#${k}flat)" transform="translate(${bx - size/2} ${by - size/2}) scale(${size/40})">${bug(["E"])}</g>`;
-    return svgDoc(e.w, e.h, `<defs>${flat}</defs>` + adaptive(s0, mark));
+    return svgDoc(e.w, e.h, iconMono({ side: e.w }).inner);
   },
   // A device capture from out/raw/<device>/<n>.png on the substrate, caption
   // above it in Chakra Petch at the HUD level size times the frame's scale

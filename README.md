@@ -106,8 +106,9 @@ python3 docs/tools/verify_test_vectors.py   # sanity: vectors self-verify
   the three shaders have not been compiled by Unity yet.
 - Title and icons: the locked wordmark (`grid-infect-style/STYLE-GUIDE.md`
   §12) is drawn at runtime from the font's outlines (`View/TitleRaster.cs`,
-  generated `LogoGlyphs.g.cs`), and the monogram exports are wired in as
-  the app icons by the build script.
+  generated `LogoGlyphs.g.cs`), and the app icon is a board tile with the
+  bug on it (§12, round 4), wired in by the build script with a
+  monochrome layer for themed icons.
 - Mobile builds: `docs/UNITY_SETUP.md` §8. Player settings are set (IL2CPP,
   ARM64, API 36, iOS 15, portrait, app id), `Editor/MobileBuild.cs` builds
   APK/AAB/Xcode from the menu or `-executeMethod`, and a manual GitHub

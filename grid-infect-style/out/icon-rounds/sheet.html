@@ -1,0 +1,97 @@
+<!doctype html><meta charset="utf-8"><title>Grid Infect icon round 4</title>
+<style>
+:root{--ground:#121810;--panel:#182016;--line:#2a352a;--paper:#e6e9dc;--muted:#98a38d;--dim:#6b7562;--copper:#c9a648}
+html,body{background:var(--ground);color:var(--paper);font-family:"Chakra Petch",system-ui,sans-serif;font-size:15px;line-height:1.45;margin:0}
+.wrap{max-width:1200px;margin:0 auto;padding:32px 28px 48px}
+h1{font-size:28px;font-weight:600;margin:0 0 4px}h2{font-size:20px;font-weight:600;margin:0}
+.lede{color:var(--muted);max-width:80ch;margin:0 0 8px}
+.eyebrow{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.15em;color:var(--copper)}
+.row{display:grid;grid-template-columns:250px 1fr 150px 150px;gap:20px;align-items:center;padding:18px 0;border-top:1px solid var(--line)}
+.who p{font-size:13.5px;color:var(--muted);margin:4px 0 0}
+.sizes{display:flex;gap:22px;align-items:flex-end}
+.sz{display:flex;flex-direction:column;align-items:center;gap:6px}
+.cap{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--dim);letter-spacing:.08em}
+img{display:block}
+.ios{border-radius:22.5%}
+.and{border-radius:50%}
+.home{height:118px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:11px}
+.home.light{background:linear-gradient(160deg,#eef1ea,#c9d3c2 60%,#a9b8a0);color:#1a2418}
+.home.dark{background:linear-gradient(160deg,#25303a,#141a20 60%,#0b0f13);color:#dfe6ec}
+</style>
+<div class="wrap">
+<div class="eyebrow">2026-09-12 · icon round 4</div>
+<h1>App icon at drawer sizes</h1>
+<p class="lede">iOS squircle at 160/96/48/29, Android adaptive (mark at 62%, circle mask) at 108, and the adaptive icon on a light and a dark home screen. A and B keep the lock's layout; C to E change it; F is the themed-icon layer. Picked: E, with F.</p>
+<div class="row">
+  <div class="who"><div class="eyebrow">A</div><h2>Lock</h2><p>As built. G dense glass at 70% of the side, lit I, bug_E between. The G reads as a ghost below 96 px.</p></div>
+  <div class="sizes">
+    <div class="sz"><img src="A.png" width="160" height="160" class="ios"><span class="cap">160 iOS</span></div>
+    <div class="sz"><img src="A_adaptive.png" width="108" height="108" class="and"><span class="cap">108 adaptive</span></div>
+    <div class="sz"><img src="A.png" width="96" height="96" class="ios"><span class="cap">96</span></div>
+    <div class="sz"><img src="A.png" width="48" height="48" class="ios"><span class="cap">48</span></div>
+    <div class="sz"><img src="A.png" width="29" height="29" class="ios"><span class="cap">29</span></div>
+  </div>
+  <div class="home light"><img src="A_adaptive.png" width="56" height="56" class="and"><span>Grid Infect</span></div>
+  <div class="home dark"><img src="A_adaptive.png" width="56" height="56" class="and"><span>Grid Infect</span></div>
+</div>
+<div class="row">
+  <div class="who"><div class="eyebrow">B</div><h2>Contrast</h2><p>Same layout. G opaque glass (96/84/92% white), mask shifted one stop darker for the icon only. Smallest change that separates the G.</p></div>
+  <div class="sizes">
+    <div class="sz"><img src="B.png" width="160" height="160" class="ios"><span class="cap">160 iOS</span></div>
+    <div class="sz"><img src="B_adaptive.png" width="108" height="108" class="and"><span class="cap">108 adaptive</span></div>
+    <div class="sz"><img src="B.png" width="96" height="96" class="ios"><span class="cap">96</span></div>
+    <div class="sz"><img src="B.png" width="48" height="48" class="ios"><span class="cap">48</span></div>
+    <div class="sz"><img src="B.png" width="29" height="29" class="ios"><span class="cap">29</span></div>
+  </div>
+  <div class="home light"><img src="B_adaptive.png" width="56" height="56" class="and"><span>Grid Infect</span></div>
+  <div class="home dark"><img src="B_adaptive.png" width="56" height="56" class="and"><span>Grid Infect</span></div>
+</div>
+<div class="row">
+  <div class="who"><div class="eyebrow">C</div><h2>Fill</h2><p>B's materials. Type at 84% of the side (cap 59%), bug at 28%, gap closed so the mark spans 84% of the width. Uses the square instead of a band across it.</p></div>
+  <div class="sizes">
+    <div class="sz"><img src="C.png" width="160" height="160" class="ios"><span class="cap">160 iOS</span></div>
+    <div class="sz"><img src="C_adaptive.png" width="108" height="108" class="and"><span class="cap">108 adaptive</span></div>
+    <div class="sz"><img src="C.png" width="96" height="96" class="ios"><span class="cap">96</span></div>
+    <div class="sz"><img src="C.png" width="48" height="48" class="ios"><span class="cap">48</span></div>
+    <div class="sz"><img src="C.png" width="29" height="29" class="ios"><span class="cap">29</span></div>
+  </div>
+  <div class="home light"><img src="C_adaptive.png" width="56" height="56" class="and"><span>Grid Infect</span></div>
+  <div class="home dark"><img src="C_adaptive.png" width="56" height="56" class="and"><span>Grid Infect</span></div>
+</div>
+<div class="row">
+  <div class="who"><div class="eyebrow">D</div><h2>G + bug</h2><p>G opaque glass at 100% of the side (cap 70%), bug_E at 30% sitting in the counter, tip on the G's bar. One shape, so it survives 29 px. Drops the lit I.</p></div>
+  <div class="sizes">
+    <div class="sz"><img src="D.png" width="160" height="160" class="ios"><span class="cap">160 iOS</span></div>
+    <div class="sz"><img src="D_adaptive.png" width="108" height="108" class="and"><span class="cap">108 adaptive</span></div>
+    <div class="sz"><img src="D.png" width="96" height="96" class="ios"><span class="cap">96</span></div>
+    <div class="sz"><img src="D.png" width="48" height="48" class="ios"><span class="cap">48</span></div>
+    <div class="sz"><img src="D.png" width="29" height="29" class="ios"><span class="cap">29</span></div>
+  </div>
+  <div class="home light"><img src="D_adaptive.png" width="56" height="56" class="and"><span>Grid Infect</span></div>
+  <div class="home dark"><img src="D_adaptive.png" width="56" height="56" class="and"><span>Grid Infect</span></div>
+</div>
+<div class="row">
+  <div class="who"><div class="eyebrow">E</div><h2>Tile</h2><p>A board tile (dense glass, tileRadius) at 72% with bug_E at 58% on it. The game's most distinctive shape and nothing else. Reads as the game, not as a name. Picked 2026-09-12.</p></div>
+  <div class="sizes">
+    <div class="sz"><img src="E.png" width="160" height="160" class="ios"><span class="cap">160 iOS</span></div>
+    <div class="sz"><img src="E_adaptive.png" width="108" height="108" class="and"><span class="cap">108 adaptive</span></div>
+    <div class="sz"><img src="E.png" width="96" height="96" class="ios"><span class="cap">96</span></div>
+    <div class="sz"><img src="E.png" width="48" height="48" class="ios"><span class="cap">48</span></div>
+    <div class="sz"><img src="E.png" width="29" height="29" class="ios"><span class="cap">29</span></div>
+  </div>
+  <div class="home light"><img src="E_adaptive.png" width="56" height="56" class="and"><span>Grid Infect</span></div>
+  <div class="home dark"><img src="E_adaptive.png" width="56" height="56" class="and"><span>Grid Infect</span></div>
+</div>
+<div class="row">
+  <div class="who"><div class="eyebrow">F</div><h2>Mono (E)</h2><p>Android themed-icon / iOS tinted layer for E: the bug flat, hollow core, E lead and pins, on transparent. The launcher tints it. gen-logo.mjs iconMono().</p></div>
+  <div class="sizes">
+    <div class="sz"><img src="F_tint_light.png" width="160" height="160" class="and"><span class="cap">160 iOS</span></div>
+    <div class="sz"><img src="F_tint_light.png" width="108" height="108" class="and"><span class="cap">108 adaptive</span></div>
+    <div class="sz"><img src="F_tint_light.png" width="96" height="96" class="and"><span class="cap">96</span></div>
+    <div class="sz"><img src="F_tint_light.png" width="48" height="48" class="and"><span class="cap">48</span></div>
+    <div class="sz"><img src="F_tint_light.png" width="29" height="29" class="and"><span class="cap">29</span></div>
+  </div>
+  <div class="home light"><img src="F_tint_light.png" width="56" height="56" class="and"><span>Grid Infect</span></div>
+  <div class="home dark"><img src="F_tint_dark.png" width="56" height="56" class="and"><span>Grid Infect</span></div>
+</div>
+</div>
