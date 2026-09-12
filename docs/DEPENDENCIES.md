@@ -158,7 +158,7 @@ before wave 2.
    Android manifest / Info.plist at build).
 3. **Consent before ads (R-801)**: on boot,
    `ConsentInformation.Update()` → `ConsentForm.LoadAndShowConsentFormIfRequired()`
-   → only when `ConsentInformation.CanRequestAds` → `MobileAds.Initialize()`
+   → only when `ConsentInformation.CanRequestAds()` → `MobileAds.Initialize()`
    → load the interstitial. The GDPR message itself is configured in AdMob
    console ▸ Privacy & messaging. Settings screen calls
    `ConsentForm.ShowPrivacyOptionsForm()` when

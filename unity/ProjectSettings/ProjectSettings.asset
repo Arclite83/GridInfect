@@ -828,7 +828,10 @@ PlayerSettings:
   webGLCloseOnQuit: 0
   webWasm2023: 1
   webEnableSubmoduleStrippingCompatibility: 0
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    Android: GRIDINFECT_ADMOB
+    Standalone: GRIDINFECT_ADMOB
+    iPhone: GRIDINFECT_ADMOB
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

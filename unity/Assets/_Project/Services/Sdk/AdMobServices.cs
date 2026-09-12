@@ -1,27 +1,26 @@
 // The AdMob + UMP implementations of IAdService and IConsentService.
 //
-// UNVERIFIED AGAINST THE REAL SDK. Nothing in this file has ever been
-// compiled: the Google Mobile Ads plugin is a .unitypackage, not a registry
-// package, so it cannot be restored in CI or in an authoring session. The
-// GRIDINFECT_ADMOB define keeps the whole file out of every build until you
-// import the plugin and add the symbol, which is deliberate — an unverified
-// SDK call must not be able to reach a player.
+// NOT YET COMPILED BY UNITY. The plugin (GMA v11.5.0) is committed now, so
+// this file is one editor open away from its first compile; until that has
+// happened, GRIDINFECT_ADMOB (set in ProjectSettings for Android, iOS and
+// Standalone) is the only thing standing between it and a player.
 //
-// Provenance, so you know what to check and what not to bother checking:
+// What has been checked, and how: every call below was read against the
+// public metadata of the committed GoogleMobileAds.dll, .Core.dll and
+// .Ump.dll (2026-09-12) — method vs property, parameter lists, event and
+// field shapes. One mismatch was found and fixed (CanRequestAds is a method).
+// That is a signature check, not a compile: a using that IntelliSense
+// rejects, or a namespace the metadata reader did not show, is still
+// possible. When Unity has compiled it, delete this header down to the
+// provenance note and say so in the commit.
 //
-//   * The consent sequence (ConsentInformation.Update → ConsentForm
-//     .LoadAndShowConsentFormIfRequired → CanRequestAds → MobileAds.Initialize),
-//     ShowPrivacyOptionsForm, PrivacyOptionsRequirementStatus and
-//     RequestConfiguration.TestDeviceIds are all transcribed from
-//     DEPENDENCIES §5 step 3–4, which was written against the official
-//     quick-start. Treat those as sound.
-//   * The ad-loading calls (InterstitialAd.Load, RewardedAd.Load, the
-//     FullScreenContentCallback events, the Reward payload) are NOT in that
-//     document. They are the part to check against IntelliSense on first
-//     import, and the part most likely to need a small edit.
-//
-// When it compiles, delete this header down to the provenance note and say so
-// in the commit. Leaving the warning on verified code is its own bug.
+// Provenance: the consent sequence (ConsentInformation.Update → ConsentForm
+// .LoadAndShowConsentFormIfRequired → CanRequestAds → MobileAds.Initialize),
+// ShowPrivacyOptionsForm, PrivacyOptionsRequirementStatus and
+// RequestConfiguration.TestDeviceIds come from DEPENDENCIES §5 step 3–4. The
+// ad-loading calls (InterstitialAd.Load, RewardedAd.Load, the
+// FullScreenContentCallback events, the Reward payload) were written from
+// the plugin's own API and confirmed against its metadata as above.
 
 #if GRIDINFECT_ADMOB
 using System;
@@ -49,7 +48,7 @@ namespace GridInfect.Services
                 ConsentForm.LoadAndShowConsentFormIfRequired(formError =>
                 {
                     if (formError != null) { outcome?.Invoke(ConsentOutcome.Unavailable); return; }
-                    outcome?.Invoke(ConsentInformation.CanRequestAds
+                    outcome?.Invoke(ConsentInformation.CanRequestAds()
                         ? ConsentOutcome.Obtained
                         : ConsentOutcome.Declined);
                 });
@@ -63,7 +62,7 @@ namespace GridInfect.Services
         public void ShowPrivacyOptions(Action closed) =>
             ConsentForm.ShowPrivacyOptionsForm(_ => closed?.Invoke());
 
-        public bool CanRequestAds => ConsentInformation.CanRequestAds;
+        public bool CanRequestAds => ConsentInformation.CanRequestAds();
     }
 
     public sealed class AdMobAdService : IAdService
@@ -76,6 +75,10 @@ namespace GridInfect.Services
 
         public void Initialize(Action ready)
         {
+            // Every callback below touches game state (the solved popup, the
+            // wallet). Without this the SDK raises them on its own thread.
+            MobileAds.RaiseAdEventsOnUnityMainThread = true;
+
             // R-604: registered devices see test ads even against production
             // unit ids. Clicking a live ad on your own device is how accounts
             // get banned, so this is not optional bookkeeping.
