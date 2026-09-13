@@ -275,10 +275,13 @@ actions and tests stay so old logs replay. Two modes replace it.
 ### 5.2 Endless
 
 - `endless.begin { grade, seed }`: a grade G1–G5 and a seed (the adapter
-  picks it at boot from the wall clock; it enters the log). Level n of the
-  run is the first accepted seed from `seed + n × 100000` under
+  picks it from the wall clock when the previous one is taken, and keeps
+  the pick in a player pref across launches so an untaken seed's warmed
+  openers are still the cache's; it enters the log). Level n of the run is
+  the first accepted seed from `seed + n × 100000` under
   `DailySpec.Endless`, through `LevelCache`: the opening board per grade is
-  warmed from boot, and during a run the next board is warmed while the
+  warmed from boot (a cache hit on every launch but the first and the one
+  after a run), and during a run the next board is warmed while the
   current one is played (`Warmup.AfterAction`).
 - `endless.advance`: the current board is solved; streak +1 if the board
   saw no full reset (`LevelSession.Resets == 0`), else back to 1; best
