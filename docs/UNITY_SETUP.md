@@ -174,7 +174,20 @@ and icon assignment without building (run it once after the first open and
 commit what it changes in `ProjectSettings/ProjectSettings.asset`, which is
 where the icon slots are serialized).
 
-**Headless:**
+**From a terminal:**
+
+```sh
+tools/build-android.sh              # APK, debug-signed
+tools/build-android.sh --install    # and adb install -r it
+tools/build-android.sh aab          # signed AAB for Play, next versionCode
+```
+
+The script finds the Hub editor for the pinned version (`UNITY=/path/to/Unity`
+overrides), sources `~/.gridinfect/build.env` for the four `GI_*` signing
+variables (`GI_BUILD_ENV` overrides the path; keep the file outside the repo),
+refuses an `aab` without a keystore, and writes the editor log to
+`unity/Builds/build-<format>.log`. The editor must be closed: batchmode
+cannot open a project the editor holds. The raw lines it wraps:
 
 ```sh
 Unity -batchmode -quit -projectPath unity -executeMethod GridInfect.EditorTools.MobileBuild.AndroidApk
@@ -201,15 +214,20 @@ What the script does on every build:
   them here; `gen-logo.mjs --png` still writes the reference rasters.
 - Signs Android from the environment, never from the repo:
   `GI_KEYSTORE` (absolute path to the `.jks`), `GI_KEYSTORE_PASS`,
-  `GI_KEYALIAS`, `GI_KEYALIAS_PASS`. Unset, the build is debug-signed:
-  installable, not uploadable. `*.keystore` / `*.jks` are git-ignored.
-  An editor launched from Hub or Finder does not inherit the shell's
-  environment on macOS, so build the AAB from a terminal that has the four
-  exported, with the `-batchmode -executeMethod` line at the top of
-  `MobileBuild.cs` (Unity's own keytool is at
-  `<editor>/PlaybackEngines/AndroidPlayer/OpenJDK/bin/keytool`). The build
-  leaves the keystore path and alias in `ProjectSettings.asset`; do not
-  commit that hunk.
+  `GI_KEYALIAS`, `GI_KEYALIAS_PASS`. Unset, an APK is debug-signed
+  (installable, not uploadable) and an AAB refuses to build. `*.keystore` /
+  `*.jks` are git-ignored. An editor launched from Hub or Finder does not
+  inherit the shell's environment on macOS, so build the AAB with
+  `tools/build-android.sh aab` from a terminal (Unity's own keytool is at
+  `<editor>/PlaybackEngines/AndroidPlayer/OpenJDK/bin/keytool`). The key
+  is held in memory for the build and cleared before settings are saved,
+  so nothing about it reaches `ProjectSettings.asset`.
+- Takes the next `AndroidBundleVersionCode` on every AAB build and writes
+  it to `ProjectSettings.asset`. Play rejects an upload whose versionCode
+  it has already seen on any track, so commit that hunk after each upload
+  build, or the next machine starts from a used number. `GI_VERSION_CODE`
+  forces a specific value (CI can pass a run number). APK builds keep the
+  stored code. `bundleVersion` (the `0.1.0` players see) is still by hand.
 
 **Before the first Play upload** (R-1201, R-1203): the application
 identifier is `com.bloodhoundstudios.gridinfect.app` (`MobileBuild.AppId` and
@@ -219,8 +237,8 @@ the iOS follow); create the upload key (`keytool -genkeypair -v
 -keystore gridinfect-upload.jks -alias upload -keyalg RSA -keysize 2048
 -validity 10000`) and keep it somewhere that outlives a laptop — a password
 manager with file attachments, not a machine — because losing the 2014 one
-is what cost the original package name; bump `bundleVersion` and
-`AndroidBundleVersionCode` per upload. The AdMob plugin (DEPENDENCIES §4)
+is what cost the original package name; bump `bundleVersion` when the
+player-facing version changes (the versionCode bumps itself). The AdMob plugin (DEPENDENCIES §4)
 is still not imported, so this build serves no ads.
 
 **CI:** `.github/workflows/mobile-build.yml` builds Android on demand

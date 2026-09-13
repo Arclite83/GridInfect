@@ -25,8 +25,10 @@ namespace GridInfect.EditorTools
     // has a third slot for it).
     // The signing key for Android comes from the environment, never from
     // the repo (see .gitignore): GI_KEYSTORE, GI_KEYSTORE_PASS, GI_KEYALIAS,
-    // GI_KEYALIAS_PASS. Without them the build is debug-signed, which is
-    // fine for a local install and not for Play.
+    // GI_KEYALIAS_PASS. Without them an APK is debug-signed, which is fine
+    // for a local install; an AAB refuses to build, since Play would refuse
+    // it anyway. Each AAB build also takes the next versionCode
+    // (NextVersionCode). tools/build-android.sh wraps the headless line.
     public static class MobileBuild
     {
         const string ScenePath = "Assets/_Project/Scenes/Main.unity";
@@ -55,7 +57,7 @@ namespace GridInfect.EditorTools
         {
             Prepare();
             ApplyIos();
-            Run(BuildTarget.iOS, Path.Combine(OutDir, "ios"));
+            if (!Run(BuildTarget.iOS, Path.Combine(OutDir, "ios"))) Fail($"[build] {BuildTarget.iOS} failed");
         }
 
         [MenuItem("Grid Infect/Apply player settings and icons")]
@@ -89,21 +91,57 @@ namespace GridInfect.EditorTools
             PlayerSettings.Android.targetSdkVersion = (AndroidSdkVersions)36;         // Play mandate (R-1201)
             PlayerSettings.SetManagedStrippingLevel(target, ManagedStrippingLevel.Medium);
             ApplyIcons(target);
+        }
 
-            string keystore = Environment.GetEnvironmentVariable("GI_KEYSTORE");
-            if (!string.IsNullOrEmpty(keystore))
+        // Play refuses an upload whose versionCode it has seen on any track,
+        // so every AAB build takes a fresh one: GI_VERSION_CODE when set (CI
+        // can pass a run number), otherwise the stored code plus one. The
+        // bump is written to ProjectSettings.asset before signing is applied,
+        // so that hunk is safe to commit and should be: the next build counts
+        // on from it. An APK keeps the stored code; a sideload only has to be
+        // no lower than what the device already has.
+        static int NextVersionCode(bool appBundle)
+        {
+            string env = Environment.GetEnvironmentVariable("GI_VERSION_CODE");
+            if (!string.IsNullOrEmpty(env))
             {
-                PlayerSettings.Android.useCustomKeystore = true;
-                PlayerSettings.Android.keystoreName = keystore;
-                PlayerSettings.Android.keystorePass = Environment.GetEnvironmentVariable("GI_KEYSTORE_PASS") ?? "";
-                PlayerSettings.Android.keyaliasName = Environment.GetEnvironmentVariable("GI_KEYALIAS") ?? "";
-                PlayerSettings.Android.keyaliasPass = Environment.GetEnvironmentVariable("GI_KEYALIAS_PASS") ?? "";
+                if (!int.TryParse(env, out int forced) || forced <= 0)
+                    throw new BuildFailedException($"[build] GI_VERSION_CODE '{env}' is not a positive integer");
+                return forced;
             }
-            else
+            int current = PlayerSettings.Android.bundleVersionCode;
+            return appBundle ? current + 1 : current;
+        }
+
+        // The key from the environment, held in memory for the build only:
+        // ClearSigning takes it back out before the settings are saved, so
+        // the keystore path never lands in ProjectSettings.asset.
+        static bool ApplySigning()
+        {
+            string keystore = Environment.GetEnvironmentVariable("GI_KEYSTORE");
+            if (string.IsNullOrEmpty(keystore))
             {
                 PlayerSettings.Android.useCustomKeystore = false;
                 Debug.LogWarning("[build] GI_KEYSTORE not set: debug-signed, not uploadable to Play");
+                return false;
             }
+            if (!File.Exists(keystore))
+                throw new BuildFailedException($"[build] GI_KEYSTORE '{keystore}' does not exist");
+            PlayerSettings.Android.useCustomKeystore = true;
+            PlayerSettings.Android.keystoreName = keystore;
+            PlayerSettings.Android.keystorePass = Environment.GetEnvironmentVariable("GI_KEYSTORE_PASS") ?? "";
+            PlayerSettings.Android.keyaliasName = Environment.GetEnvironmentVariable("GI_KEYALIAS") ?? "";
+            PlayerSettings.Android.keyaliasPass = Environment.GetEnvironmentVariable("GI_KEYALIAS_PASS") ?? "";
+            return true;
+        }
+
+        static void ClearSigning()
+        {
+            PlayerSettings.Android.useCustomKeystore = false;
+            PlayerSettings.Android.keystoreName = "";
+            PlayerSettings.Android.keystorePass = "";
+            PlayerSettings.Android.keyaliasName = "";
+            PlayerSettings.Android.keyaliasPass = "";
         }
 
         static void ApplyIos()
@@ -178,11 +216,29 @@ namespace GridInfect.EditorTools
         {
             Prepare();
             ApplyAndroid();
+            int code = NextVersionCode(appBundle);
+            PlayerSettings.Android.bundleVersionCode = code;
+            AssetDatabase.SaveAssets();   // the bump, and nothing about the key
+            Debug.Log($"[build] version {PlayerSettings.bundleVersion} ({code})");
+
+            bool signed = ApplySigning();
+            if (appBundle && !signed)
+                throw new BuildFailedException("[build] an AAB for Play needs GI_KEYSTORE; the APK target is the unsigned one");
             EditorUserBuildSettings.buildAppBundle = appBundle;
-            Run(BuildTarget.Android, Path.Combine(OutDir, appBundle ? "gridinfect.aab" : "gridinfect.apk"));
+            bool ok;
+            try
+            {
+                ok = Run(BuildTarget.Android, Path.Combine(OutDir, appBundle ? "gridinfect.aab" : "gridinfect.apk"));
+            }
+            finally
+            {
+                ClearSigning();
+                AssetDatabase.SaveAssets();
+            }
+            if (!ok) Fail($"[build] {BuildTarget.Android} failed");
         }
 
-        static void Run(BuildTarget target, string location)
+        static bool Run(BuildTarget target, string location)
         {
             Directory.CreateDirectory(OutDir);
             var options = new BuildPlayerOptions
@@ -197,9 +253,16 @@ namespace GridInfect.EditorTools
             if (summary.result == UnityEditor.Build.Reporting.BuildResult.Succeeded)
             {
                 Debug.Log($"[build] {target} -> {summary.outputPath} ({summary.totalSize / (1024 * 1024)} MB, {summary.totalTime.TotalSeconds:F0} s)");
-                return;
+                return true;
             }
-            string message = $"[build] {target} failed: {summary.result}, {summary.totalErrors} errors";
+            Debug.LogError($"[build] {target} failed: {summary.result}, {summary.totalErrors} errors");
+            return false;
+        }
+
+        // A failed build exits non-zero headless (the wrapper and CI key off
+        // it) and throws in the editor, where an exit would kill the session.
+        static void Fail(string message)
+        {
             Debug.LogError(message);
             if (Application.isBatchMode) EditorApplication.Exit(1);
             else throw new BuildFailedException(message);
