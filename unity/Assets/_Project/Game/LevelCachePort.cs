@@ -50,18 +50,48 @@ namespace GridInfect.Game
             }
         }
 
+        // A board landed: write the file. The JSON of up to Capacity boards
+        // is built and written on the worker, not on the frame that noticed
+        // (a burst of warm boards at boot would otherwise be a burst of
+        // hitches); one write in flight at a time, and a board that lands
+        // while one is in flight is picked up by the next call. Runs behind
+        // whatever the player is waiting on and ahead of the idle warming.
+        const int SavePriority = 5;
+        bool _saving;
+
         public void SaveIfDirty(LevelCache cache)
         {
-            if (!cache.Dirty) return;
+            if (!cache.Dirty || _saving) return;
             cache.Dirty = false;
+            _saving = true;
+            Work.Shared.Run(() => Write(cache), SavePriority, "levels:save", ok =>
+            {
+                _saving = false;
+                if (!ok) cache.Dirty = true;
+            });
+        }
+
+        // Leaving the process (pause, quit): the write happens here and now,
+        // whatever is in flight — a job the worker has not reached yet will
+        // not land before Android takes the process.
+        public void SaveNow(LevelCache cache)
+        {
+            if (!cache.Dirty && !_saving) return;
+            cache.Dirty = false;
+            if (!Write(cache)) cache.Dirty = true;
+        }
+
+        bool Write(LevelCache cache)
+        {
             try
             {
                 File.WriteAllText(_path, cache.ToJson());
+                return true;
             }
             catch (Exception e)
             {
-                cache.Dirty = true;
                 Debug.LogWarning($"[levels] write failed (will retry): {e.Message}");
+                return false;
             }
         }
     }

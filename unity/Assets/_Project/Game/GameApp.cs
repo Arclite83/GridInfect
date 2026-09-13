@@ -66,6 +66,15 @@ namespace GridInfect.Game
         {
             Application.targetFrameRate = PresentationConfig.TargetFrameRate;
 
+            // The generator's seed scan fans across the cores (Work.Map). On
+            // a phone every core is also the frame's: the main thread, the
+            // render thread and the audio mixer have nowhere to go when the
+            // scan takes all of them, and the menu stutters for as long as
+            // the warmer runs (a G5 opener is tens of core-seconds). Leave it
+            // half, so a frame always has a core of its own; the scan only
+            // takes longer in the background, where it was already waiting.
+            Work.Shared.Parallelism = Mathf.Max(1, System.Environment.ProcessorCount / 2);
+
             _camera = Camera.main;
             if (_camera == null)
             {
@@ -273,13 +282,13 @@ namespace GridInfect.Game
         void OnApplicationPause(bool paused)
         {
             if (!paused) return;
-            _levels?.SaveIfDirty(LevelCache.Shared);
+            _levels?.SaveNow(LevelCache.Shared);
             Ads?.Flush();
         }
 
         void OnApplicationQuit()
         {
-            _levels?.SaveIfDirty(LevelCache.Shared);
+            _levels?.SaveNow(LevelCache.Shared);
             Ads?.Flush();
         }
 

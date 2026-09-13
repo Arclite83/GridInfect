@@ -67,12 +67,20 @@ namespace GridInfect.Game
             _caption.text = text;
             Ui.FitText(_caption, text, S.Px(S.HudCaption), _captionMaxW, mono: true);
             for (int i = 0; i < 3; i++) if (_hud[i] != null) _hud[i].gameObject.SetActive(false);
+            _hudLeading = _hudMiddle = _hudTrailing = null;   // the next SetHud shows them again
         }
 
         readonly TMP_Text[] _hud = new TMP_Text[3];
 
+        // Endless and Free Play call this every frame; the text only changes
+        // once a second at most. Setting it anyway would re-measure and
+        // re-lay three labels a frame (FitText asks TMP for the width).
+        string _hudLeading, _hudMiddle, _hudTrailing;
+
         void SetHud(string leading, string middle, string trailing)
         {
+            if (leading == _hudLeading && middle == _hudMiddle && trailing == _hudTrailing) return;
+            _hudLeading = leading; _hudMiddle = middle; _hudTrailing = trailing;
             _caption.text = "";
             string[] texts = { leading, middle, trailing };
             float third = _captionMaxW / 3f - L.Gap;

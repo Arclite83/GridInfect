@@ -238,7 +238,9 @@ actions and tests stay so old logs replay. Two modes replace it.
   pregenerated. `LevelCache` memoises that function on the device and
   has the kernel's `Work` scheduler run it ahead of time, one job at a
   time in priority order, each job scanning its seed range across the
-  cores and taking the lowest accepted seed (`Warmup`: today's board at
+  cores (half of them on the device, so the frame keeps its own:
+  `GameApp.Awake` sets `Work.Shared.Parallelism`) and taking the lowest
+  accepted seed (`Warmup`: today's board at
   boot, then the recent unsolved days, then Endless's opening boards; the
   calendar's visible month while it is open); a board the cache has not
   reached yet generates behind the loading card (`LoadingCard`: a row of
