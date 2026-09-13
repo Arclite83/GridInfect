@@ -79,30 +79,26 @@ namespace GridInfect.Game
             // menu shared both edges with the stack under it and read as
             // one more row of it rather than as something on top.
             public static float PlateWidth => ContentWidth - ButtonHeight;
-            public static float TopBarY => H * TopBarPct;
+            // The device's safe area (UnityEngine.Screen.safeArea) as insets
+            // from the screen's edges, in screen px. The camera maps one
+            // world unit to one screen px (GameApp), so these subtract
+            // straight off a position measured from the edge. Zero on a
+            // screen without a cutout or home bar.
+            public static float SafeTop => H - UnityEngine.Screen.safeArea.yMax;
+            public static float SafeBottom => UnityEngine.Screen.safeArea.yMin;
+
+            // Every menu's top bar line. The design line is TopBarPct from
+            // the centre; a cutout deeper than the design allows for pushes
+            // it down so the bar's chips clear the cutout by a Gap.
+            public static float TopBarY =>
+                UnityEngine.Mathf.Min(H * TopBarPct, H / 2f - SafeTop - Gap - BarHeight / 2f);
 
             // How far the board's HUD stack (chip row, level label, badge
             // row, and the well's top under them) sits below where the
-            // guide hangs it. The guide measures the band from the top edge
-            // (56 px, items bottom-aligned), which put the chips 32 px from
-            // the top on the reference screen: under the camera cutout on
-            // any phone that has one, while every other screen's top bar
-            // sat at TopBarY and cleared it. So the chips are centred on
-            // TopBarY like the menus' back chip, and everything under them
-            // keeps its guide distance from the band. Zero on a screen
-            // where the guide's own placement is already the lower one.
-            //
-            // Positive y is up, so the guide's chip centre (near the top
-            // edge) is the larger number and the drop is guide minus bar.
-            // The other way round it was negative on every phone and the
-            // clamp made it zero, which left the HUD under the cutout.
-            public static float HudDrop =>
-                UnityEngine.Mathf.Max(0f, GuideChipY - TopBarY);
-
-            // Where the guide alone would centre the HUD chips: bottom-
-            // aligned in the 56 px band, 10 px up from its bottom edge.
-            static float GuideChipY =>
-                H / 2f - Style.Px(Style.HudHeight - Style.HudBottomPad) + Style.ChipHeight / 2f;
+            // guide hangs it. The guide measures its 56 px band from the
+            // top edge; on a phone with a camera cutout that edge is the
+            // safe area's top, so the whole stack drops by the inset.
+            public static float HudDrop => SafeTop;
 
             public static float ButtonHeight => ShortEdge * 0.11f;
             // The top-bar chips. 0.075 was a 29 px chip on the reference

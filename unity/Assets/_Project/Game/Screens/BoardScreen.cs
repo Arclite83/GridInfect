@@ -12,8 +12,8 @@ namespace GridInfect.Game
     // row carrying the mono caption on the left and the SOLVE counter badge
     // under the right chip, the well below, and a 96 px tray of component
     // slots along the bottom. The whole HUD stack hangs Layout.HudDrop
-    // lower than the guide draws it, so its chips sit on the same line as
-    // every menu's top bar and clear a camera cutout the way the menus do.
+    // (the safe area's top inset) lower than the guide draws it, so the
+    // band is measured from under a camera cutout rather than the edge.
     //
     // The caption sits on the badge row rather than stacked over the title:
     // the badge needs a row of its own (the title is far too wide to share the
@@ -101,8 +101,8 @@ namespace GridInfect.Game
             float w = ScreenW, h = ScreenH;
 
             // HUD: items bottom-aligned in the 56 px band, 22 px in from
-            // either edge, the band itself dropped to the menus' top bar
-            // line (Layout.HudDrop). Same top bar as every other screen:
+            // either edge, the band itself dropped below the camera cutout
+            // (Layout.HudDrop). Same top bar as every other screen:
             // back on the leading side, the screen's one action on the
             // trailing. The HUD measures from the screen rather than
             // Layout's content width, so it carries the direction sign
