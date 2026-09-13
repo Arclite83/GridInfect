@@ -73,7 +73,10 @@ already fences off the rest):
 
 Never committed (ignored): `Library/`, `Temp/`, `Logs/`, `obj/`,
 `UserSettings/` (per-user editor layout), `unity/*.csproj` / `unity/*.sln`
-(IDE files Unity regenerates on demand), builds.
+(IDE files Unity regenerates on demand), builds, and `*.utmp` / `*.tmp` —
+which covers both `unity/.utmp/`, the IL2CPP and Android native build cache
+a player build leaves behind, and `<asset>.utmp`, the editor's mid-save copy
+orphaned in `Assets/` by a crash.
 
 Once the metas are in, a `.meta` appearing or disappearing in `git status`
 is a real change (asset added/removed) — commit it with the asset, and never
@@ -222,6 +225,11 @@ What the script does on every build:
   `<editor>/PlaybackEngines/AndroidPlayer/OpenJDK/bin/keytool`). The key
   is held in memory for the build and cleared before settings are saved,
   so nothing about it reaches `ProjectSettings.asset`.
+  A build does still rewrite
+  `Plugins/Android/GoogleMobileAdsPlugin.androidlib/AndroidManifest.xml` —
+  `GoogleMobileAds/Editor/AndroidBuildPreProcessor.cs` injects the AdMob app
+  ID (already committed, in `GoogleMobileAdsSettings.asset`) and the editor
+  version string. That hunk is build output; leave it uncommitted.
 - Takes the next `AndroidBundleVersionCode` on every AAB build and writes
   it to `ProjectSettings.asset`. Play rejects an upload whose versionCode
   it has already seen on any track, so commit that hunk after each upload

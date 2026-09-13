@@ -77,6 +77,29 @@ unity/Assets/InitTestScene*.unity*
 unity/Assets/_Recovery/
 unity/Assets/_Recovery.meta
 
+# Editor/build temp droppings. Two different things share the .utmp name:
+# unity/.utmp/ is the IL2CPP + Android native build cache (RelWithDebInfo/,
+# tools/, hash_key.txt) the player build leaves behind, and <asset>.utmp is
+# the editor's mid-save copy, orphaned in Assets/ by a crash or kill. The
+# bare pattern catches both -- `*` also matches the empty string, so it
+# matches the dotted directory name. Keep it bare; narrowing it to
+# Assets/**/*.utmp would let the build cache back into git status. Same for
+# the other generated caches below (mono/Boo era + VS).
+*.utmp
+*.utmp.meta
+*.tmp
+*.pidb
+*.pidb.meta
+*.mdb
+*.mdb.meta
+*.booproj
+*.svd
+*.opendb
+*.VC.db
+*.unityproj
+*.userprefs
+crashlytics-build.properties
+
 # Unity crash/report droppings and packaged output
 sysinfo.txt
 *.stackdump
