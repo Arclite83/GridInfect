@@ -91,6 +91,7 @@ unity/
       Engine/            #   Bloodhound.Engine — game-agnostic kernel (asmdef)
       Core/              #   GridInfect.Core — pure C# rules, no UnityEngine (asmdef)
       Game/              #   Unity adapter: screens, views, input (asmdef)
+      Resources/         #   config assets, fonts, and the three shaders (see §6.1)
       Editor/            #   editor-only tooling (asmdef, Editor platform)
       Tests/EditMode/    #   NUnit suites (asmdef)
       Scenes/            #   Main.unity
@@ -116,7 +117,7 @@ so work down it rather than judging the whole thing at once.
 
 | # | Check | If it's wrong |
 |---|---|---|
-| 1 | **Console is clean on Play.** | `[board] shader 'GridInfect/Board' not found` means the shader failed to compile — Unity logs the real error separately. The board draws nothing; everything else still works. |
+| 1 | **Console is clean on Play.** | `[board] shader 'GridInfect/Board' not found` means the shader failed to compile — Unity logs the real error separately. The board draws nothing; everything else still works. In a **player** the same line means the shader was stripped: the three shaders are found by name (`Shader.Find`) and nothing built references them, so they live under `_Project/Resources/Shaders/`, which is what keeps them in the build. Do not move them out. |
 | 2 | **The board draws at all.** Six columns, eleven rows, empty cells as plates and holes as bare background. | If cells and holes look the same, `CellPlate` isn't reaching the material. If the whole quad is black, suspect the state texture (`RGBAFloat`, point-filtered) or `_BoardRect`. |
 | 3 | **Drop a piece — traces, then ink.** A beam races out, the blot dissolves in behind it, the cell settles hard-edged. | If the dissolve looks like static rather than ink, the blot histogram is the suspect (`BoardNoise` rank-normalises for exactly this reason). |
 | 4 | **The hot fill blooms and the cooled fill does not.** | Post-processing has to be on for the camera — `BoardBloom.Ensure` sets `renderPostProcessing`, and the Volume is created at runtime on the Default layer, so check the camera's Volume Mask if nothing glows. Threshold is 1.0 by design: only HDR output blooms. |
