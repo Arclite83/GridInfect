@@ -27,8 +27,8 @@ namespace GridInfect.Services
     // uses. Two reasons: the continuation reaches game state and, through
     // MobileAds.Initialize, Unity objects that only the main thread may
     // create; and an exception thrown while still on the Android thread
-    // leaves Unity's Java proxy as an uncaught java.lang.Error and kills the
-    // process, with nothing in the Unity log.
+    // would leave Unity's Java proxy as an uncaught java.lang.Error and kill
+    // the process, with nothing in the Unity log.
     public sealed class UmpConsentService : IConsentService
     {
         static void OnMain(Action action) => MobileAdsEventExecutor.ExecuteInUpdate(action);

@@ -1,21 +1,14 @@
-#if UNITY_ANDROID && !UNITY_EDITOR
-using System;
-using UnityEngine;
-
-namespace GridInfect.Game
-{
     // Diagnostic for the launch crash of 2026-09-13: every Java-to-C#
     // callback died with UnsatisfiedLinkError on
     // com.unity3d.player.ReflectionHelper.nativeProxyInvoke, the bridge Unity
-    // registers for AndroidJavaProxy, on both application entry points.
-    // Unity 6.5's notes record JNI natives being "deregistered prematurely"
-    // (UUM-137662, another class), so this fires a callback of our own from
-    // the Android main looper once a second and logs each arrival. Where
-    // "[jni]" stops in logcat relative to the FATAL says whether the bridge
-    // ever worked in this process. The proxy and handler are held in statics
-    // on purpose: if deregistration follows the last proxy being collected,
-    // a permanently live one is the workaround, and this file becomes it.
-    // Development builds only (GameApp).
+    // registers for AndroidJavaProxy. Cause: the Android JNI built-in module
+    // (com.unity.modules.androidjni) was not in Packages/manifest.json. The
+    // precompiled AdMob DLLs still compiled and their outgoing Java calls
+    // still worked, but the module's native side, which registers that
+    // bridge, was not in the player. This fires a Runnable proxy of our own
+    // from the Android main looper once a second and logs each arrival, so
+    // a development build shows "[jni]" ticks in logcat when the bridge is
+    // present. Development builds only (GameApp).
     static class JniProbe
     {
         sealed class Tick : AndroidJavaProxy

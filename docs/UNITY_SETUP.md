@@ -232,12 +232,18 @@ What the script does on every build:
   `GoogleMobileAds/Editor/AndroidBuildPreProcessor.cs` injects the AdMob app
   ID (already committed, in `GoogleMobileAdsSettings.asset`) and the editor
   version string. That hunk is build output; leave it uncommitted.
-- Sets the Android application entry point to **Activity**, not
-  GameActivity. Under GameActivity the first Java-to-C# callback (the
-  consent SDK's, seconds after launch) crashes the process with
-  `UnsatisfiedLinkError: ReflectionHelper.nativeProxyInvoke`; that was the
-  first internal-testing build's crash-after-splash. Do not re-tick
-  GameActivity in Player Settings; the build script sets it back anyway.
+- Sets the Android application entry point to **Activity**, the classic
+  one every third-party Android plugin is tested against.
+- Needs the **Android JNI** built-in module (`com.unity.modules.androidjni`
+  in `Packages/manifest.json`). The manifest is a deliberately short module
+  list, and this one was missing: the AdMob DLLs are precompiled, so nothing
+  failed to build, and their calls *into* Java worked, but the module's
+  native side is what registers the Java-to-C# callback bridge. Without it
+  the first callback (the consent SDK's, seconds after launch) killed the
+  process with `UnsatisfiedLinkError: ReflectionHelper.nativeProxyInvoke`.
+  That was the first internal-testing build's crash-after-splash. Any
+  script of ours that names `AndroidJavaObject` fails to compile without
+  the module, which is how it was found; the plugin's DLLs do not.
 - Takes the next `AndroidBundleVersionCode` on every AAB build and writes
   it to `ProjectSettings.asset`. Play rejects an upload whose versionCode
   it has already seen on any track, so commit that hunk after each upload
