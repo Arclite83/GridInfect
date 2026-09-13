@@ -234,6 +234,27 @@ namespace GridInfect.Game
             });
         }
 
+        // The language mark: a globe, the one sign for "language" that
+        // needs no language. It is the settings screen's way into the
+        // selector, and it has to be findable by a player looking at a
+        // screen in a script they cannot read — which is exactly the
+        // player a labelled LANGUAGE row fails. A rim, one meridian and
+        // the equator; two rings and a line is the least a globe can be
+        // and still read at 28 px. The rim carries the chip stroke; the
+        // two lines inside it are lighter, because three 4.4 strokes in a
+        // 30-unit disc close the meridian up into a bar.
+        public static Sprite Globe(BoardPalette p, int sizePx)
+        {
+            return Cached($"globe:{sizePx}:{p.GlyphKey}", () =>
+            {
+                var c = new GlyphCanvas(sizePx);
+                c.Stroke(Ellipse(13f, 13f), 4.2f, p.Ink, false, true);
+                c.Stroke(Ellipse(6f, 13f), 3.4f, p.Ink, false, true);
+                c.Stroke(new[] { 7f, 20f, 33f, 20f }, 3.4f, p.Ink, false);
+                return c.ToSprite($"mark_GLOBE_{sizePx}");
+            });
+        }
+
         // ---- cell marks, for the legend on the rules sheet ----
         //
         // The board itself draws these in the shader (GridInfectBoard, the
@@ -291,14 +312,17 @@ namespace GridInfect.Game
 
         // A closed polyline circle: the canvas paints over, never through, so
         // an annulus is a stroke rather than a disc with a hole in it.
-        static float[] Ring(float radius, int steps = 32)
+        static float[] Ring(float radius, int steps = 32) => Ellipse(radius, radius, steps);
+
+        // A closed ellipse on the frame's centre, as a polyline for Stroke.
+        static float[] Ellipse(float rx, float ry, int steps = 32)
         {
             var xy = new float[steps * 2];
             for (int i = 0; i < steps; i++)
             {
                 float a = i * Mathf.PI * 2f / steps;
-                xy[i * 2] = 20f + Mathf.Cos(a) * radius;
-                xy[i * 2 + 1] = 20f + Mathf.Sin(a) * radius;
+                xy[i * 2] = 20f + Mathf.Cos(a) * rx;
+                xy[i * 2 + 1] = 20f + Mathf.Sin(a) * ry;
             }
             return xy;
         }

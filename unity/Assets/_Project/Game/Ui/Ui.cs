@@ -355,7 +355,7 @@ namespace GridInfect.Game
         // width measured in the face the label draws in.
         public static Vector2 ChipBox(string label, bool mono = false, bool bold = true)
         {
-            float height = S.Px(S.ChipPadY * 2f + S.ChipText * 1.25f);
+            float height = S.ChipHeight;
             float textPx = LabelPx(new Vector2(0f, height));
             return new Vector2(S.Px(S.ChipPadX * 2f) + MeasureWidth(label, textPx, mono, bold), height);
         }

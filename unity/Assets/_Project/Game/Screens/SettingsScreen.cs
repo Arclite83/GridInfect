@@ -18,10 +18,11 @@ namespace GridInfect.Game
         UiButton _erase;
         bool _armed;
 
-        // Sound, skins, language: the stack the privacy row joins when the
-        // consent SDK asks for one. The count sizes the stack's centre, so
-        // the optional row is not in it and hangs below.
-        const int Rows = 3;
+        // Sound, skins: the stack the privacy row joins when the consent
+        // SDK asks for one. The count sizes the stack's centre, so the
+        // optional row is not in it and hangs below. Language is not a row
+        // either; it is the globe chip in the top trailing corner.
+        const int Rows = 2;
 
         protected override void Build()
         {
@@ -32,6 +33,32 @@ namespace GridInfect.Game
             Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
 
+            // Language: the globe, an icon chip in the trailing corner where
+            // the menu keeps its gear. It was a LANGUAGE row in the stack,
+            // which is fine until the language is one you cannot read — the
+            // one time you need the row, its label is the thing you are
+            // looking past. A drawn mark is the same in every language, and
+            // the corner is where a player already looks for the way into a
+            // settings-like screen. The selector's back chip is the gear,
+            // so the pair reads as one thing in two states.
+            var icon = new Vector2(L.IconChip, L.IconChip);
+            var globeAt = new Vector2(-L.BackPos.x, L.BackPos.y);
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "language",
+                BugGlyph.Globe(BoardPalette.Default, UiButton.IconPx(icon)),
+                globeAt, icon, () => App.Screens.Show(new LanguageScreen())));
+            // Under the globe, the language in force by its own name
+            // (language.name is the one string each table says about
+            // itself), so the chip says what it is set to and not only
+            // that it is settable. Mono, the readout face; hung from the
+            // chip's trailing edge and growing inward, so a long name
+            // (Português (Brasil)) runs toward the title and never off the
+            // screen. It can grow as far as the back chip's width before
+            // it shrinks.
+            float namePx = S.Px(S.SmallText);
+            var name = Ui.MakeText("language:name", Root.transform, Str.LanguageName, namePx, BoardTheme.Text, 2,
+                mono: true, anchor: L.Trailing, maxWidthPx: L.BackSize.x);
+            Ui.SetPos(name.gameObject, globeAt.x + L.Dir * icon.x / 2f, globeAt.y - icon.y / 2f - L.Gap * 0.4f - namePx / 2f);
+
             var size = new Vector2(L.ContentWidth, L.ButtonHeight);
             int row = 0;
             _sound = UiButton.Make(Root.transform, "", new Vector2(0f, L.StackRowY(row++, Rows, L.ButtonHeight, 0f)), size,
@@ -40,10 +67,6 @@ namespace GridInfect.Game
             RefreshSound();
 
             BuildSkins(L.StackRowY(row++, Rows, L.ButtonHeight, 0f));
-
-            Buttons.Add(UiButton.Make(Root.transform, Str.SettingsLanguage,
-                new Vector2(0f, L.StackRowY(row++, Rows, L.ButtonHeight, 0f)), size,
-                BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new LanguageScreen())));
 
             // R-802: the privacy options entry, whenever the consent SDK says
             // one is required.

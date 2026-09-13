@@ -154,6 +154,7 @@ namespace GridInfect.Game
             "LOADING",   // loading.caption
             "LANGUAGE",   // language.title
             "AUTO",   // language.auto
+            "English",   // language.name
             "MON",   // cal.day.1
             "TUE",   // cal.day.2
             "WED",   // cal.day.3
@@ -321,6 +322,7 @@ namespace GridInfect.Game
             "\u062c\u0627\u0631 \u0627\u0644\u062a\u062d\u0645\u064a\u0644",   // loading.caption
             "\u0627\u0644\u0644\u063a\u0629",   // language.title
             "AUTO",   // language.auto
+            "\u0627\u0644\u0639\u0631\u0628\u064a\u0629",   // language.name
             "\u0625\u062b\u0646",   // cal.day.1
             "\u062b\u0644\u0627",   // cal.day.2
             "\u0623\u0631\u0628",   // cal.day.3
@@ -488,6 +490,7 @@ namespace GridInfect.Game
             "LADEN",   // loading.caption
             "SPRACHE",   // language.title
             "AUTO",   // language.auto
+            "Deutsch",   // language.name
             "MO",   // cal.day.1
             "DI",   // cal.day.2
             "MI",   // cal.day.3
@@ -655,6 +658,7 @@ namespace GridInfect.Game
             "CARGANDO",   // loading.caption
             "IDIOMA",   // language.title
             "AUTO",   // language.auto
+            "Espa\u00f1ol",   // language.name
             "LUN",   // cal.day.1
             "MAR",   // cal.day.2
             "MI\u00c9",   // cal.day.3
@@ -822,6 +826,7 @@ namespace GridInfect.Game
             "CHARGEMENT",   // loading.caption
             "LANGUE",   // language.title
             "AUTO",   // language.auto
+            "Fran\u00e7ais",   // language.name
             "LUN",   // cal.day.1
             "MAR",   // cal.day.2
             "MER",   // cal.day.3
@@ -989,6 +994,7 @@ namespace GridInfect.Game
             "\u05d8\u05d5\u05e2\u05df",   // loading.caption
             "\u05e9\u05e4\u05d4",   // language.title
             "AUTO",   // language.auto
+            "\u05e2\u05d1\u05e8\u05d9\u05ea",   // language.name
             "\u05d1'",   // cal.day.1
             "\u05d2'",   // cal.day.2
             "\u05d3'",   // cal.day.3
@@ -1156,6 +1162,7 @@ namespace GridInfect.Game
             "CARICAMENTO",   // loading.caption
             "LINGUA",   // language.title
             "AUTO",   // language.auto
+            "Italiano",   // language.name
             "LUN",   // cal.day.1
             "MAR",   // cal.day.2
             "MER",   // cal.day.3
@@ -1323,6 +1330,7 @@ namespace GridInfect.Game
             "\u8aad\u307f\u8fbc\u307f\u4e2d",   // loading.caption
             "\u8a00\u8a9e",   // language.title
             "AUTO",   // language.auto
+            "\u65e5\u672c\u8a9e",   // language.name
             "\u6708",   // cal.day.1
             "\u706b",   // cal.day.2
             "\u6c34",   // cal.day.3
@@ -1490,6 +1498,7 @@ namespace GridInfect.Game
             "\ubd88\ub7ec\uc624\ub294 \uc911",   // loading.caption
             "\uc5b8\uc5b4",   // language.title
             "AUTO",   // language.auto
+            "\ud55c\uad6d\uc5b4",   // language.name
             "\uc6d4",   // cal.day.1
             "\ud654",   // cal.day.2
             "\uc218",   // cal.day.3
@@ -1657,6 +1666,7 @@ namespace GridInfect.Game
             "CARREGANDO",   // loading.caption
             "IDIOMA",   // language.title
             "AUTO",   // language.auto
+            "Portugu\u00eas (Brasil)",   // language.name
             "SEG",   // cal.day.1
             "TER",   // cal.day.2
             "QUA",   // cal.day.3
@@ -1824,6 +1834,7 @@ namespace GridInfect.Game
             "\u0417\u0410\u0413\u0420\u0423\u0417\u041a\u0410",   // loading.caption
             "\u042f\u0417\u042b\u041a",   // language.title
             "AUTO",   // language.auto
+            "\u0420\u0443\u0441\u0441\u043a\u0438\u0439",   // language.name
             "\u041f\u041d",   // cal.day.1
             "\u0412\u0422",   // cal.day.2
             "\u0421\u0420",   // cal.day.3
@@ -1991,6 +2002,7 @@ namespace GridInfect.Game
             "Y\u00dcKLEN\u0130YOR",   // loading.caption
             "D\u0130L",   // language.title
             "AUTO",   // language.auto
+            "T\u00fcrk\u00e7e",   // language.name
             "PZT",   // cal.day.1
             "SAL",   // cal.day.2
             "\u00c7AR",   // cal.day.3
@@ -2158,6 +2170,7 @@ namespace GridInfect.Game
             "\u52a0\u8f7d\u4e2d",   // loading.caption
             "\u8bed\u8a00",   // language.title
             "AUTO",   // language.auto
+            "\u7b80\u4f53\u4e2d\u6587",   // language.name
             "\u4e00",   // cal.day.1
             "\u4e8c",   // cal.day.2
             "\u4e09",   // cal.day.3
@@ -2325,6 +2338,7 @@ namespace GridInfect.Game
             "\u8f09\u5165\u4e2d",   // loading.caption
             "\u8a9e\u8a00",   // language.title
             "AUTO",   // language.auto
+            "\u7e41\u9ad4\u4e2d\u6587",   // language.name
             "\u4e00",   // cal.day.1
             "\u4e8c",   // cal.day.2
             "\u4e09",   // cal.day.3
@@ -2492,6 +2506,7 @@ namespace GridInfect.Game
             "[L\u00d3\u00c1\u0110\u00cd\u00d1\u011e\u00b7\u00b7\u00b7]",   // loading.caption
             "[L\u00c1\u00d1\u011e\u00da\u00c1\u011e\u00c9\u00b7\u00b7\u00b7]",   // language.title
             "[\u00c1\u00daT\u00d3\u00b7\u00b7]",   // language.auto
+            "[\u00c9\u00f1\u011fl\u00ed\u0161h\u00b7\u00b7\u00b7]",   // language.name
             "[M\u00d3\u00d1\u00b7]",   // cal.day.1
             "[T\u00da\u00c9\u00b7]",   // cal.day.2
             "[W\u00c9\u0110\u00b7]",   // cal.day.3
@@ -2584,10 +2599,10 @@ namespace GridInfect.Game
 
         // ---- families ----
 
-        static readonly int[] MonthIdx = { 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123 };
-        static readonly int[] MonthShortIdx = { 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135 };
-        static readonly int[] DayIdx = { 105, 106, 107, 108, 109, 110, 111 };
-        static readonly int[] TutIdx = { 136, 137, 138, 139, 140, 141, 142, 143, 144, 145 };
+        static readonly int[] MonthIdx = { 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124 };
+        static readonly int[] MonthShortIdx = { 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136 };
+        static readonly int[] DayIdx = { 106, 107, 108, 109, 110, 111, 112 };
+        static readonly int[] TutIdx = { 137, 138, 139, 140, 141, 142, 143, 144, 145, 146 };
         static readonly int[] DifficultyIdx = { 53, 54, 55, 56, 57 };
 
         // Month 1-12, weekday 1-7 Monday first, tutorial step 1-based,
@@ -2603,22 +2618,22 @@ namespace GridInfect.Game
         {
             switch (worldId)
             {
-                case "w01": return _v[146];
-                case "w02": return _v[147];
-                case "w03": return _v[148];
-                case "w04": return _v[149];
-                case "w05": return _v[150];
-                case "w06": return _v[151];
-                case "w07": return _v[152];
-                case "w08": return _v[153];
-                case "w09": return _v[154];
-                case "w10": return _v[155];
-                case "w11": return _v[156];
-                case "w12": return _v[157];
-                case "w14": return _v[158];
-                case "w15": return _v[159];
-                case "w16": return _v[160];
-                case "w17": return _v[161];
+                case "w01": return _v[147];
+                case "w02": return _v[148];
+                case "w03": return _v[149];
+                case "w04": return _v[150];
+                case "w05": return _v[151];
+                case "w06": return _v[152];
+                case "w07": return _v[153];
+                case "w08": return _v[154];
+                case "w09": return _v[155];
+                case "w10": return _v[156];
+                case "w11": return _v[157];
+                case "w12": return _v[158];
+                case "w14": return _v[159];
+                case "w15": return _v[160];
+                case "w16": return _v[161];
+                case "w17": return _v[162];
             }
             return worldId;
         }
@@ -2730,62 +2745,63 @@ namespace GridInfect.Game
         public static string LoadingCaption => _v[102];
         public static string LanguageTitle => _v[103];
         public static string LanguageAuto => _v[104];
-        public static string CalDay1 => _v[105];
-        public static string CalDay2 => _v[106];
-        public static string CalDay3 => _v[107];
-        public static string CalDay4 => _v[108];
-        public static string CalDay5 => _v[109];
-        public static string CalDay6 => _v[110];
-        public static string CalDay7 => _v[111];
-        public static string CalMonth1 => _v[112];
-        public static string CalMonth2 => _v[113];
-        public static string CalMonth3 => _v[114];
-        public static string CalMonth4 => _v[115];
-        public static string CalMonth5 => _v[116];
-        public static string CalMonth6 => _v[117];
-        public static string CalMonth7 => _v[118];
-        public static string CalMonth8 => _v[119];
-        public static string CalMonth9 => _v[120];
-        public static string CalMonth10 => _v[121];
-        public static string CalMonth11 => _v[122];
-        public static string CalMonth12 => _v[123];
-        public static string CalMonth1Short => _v[124];
-        public static string CalMonth2Short => _v[125];
-        public static string CalMonth3Short => _v[126];
-        public static string CalMonth4Short => _v[127];
-        public static string CalMonth5Short => _v[128];
-        public static string CalMonth6Short => _v[129];
-        public static string CalMonth7Short => _v[130];
-        public static string CalMonth8Short => _v[131];
-        public static string CalMonth9Short => _v[132];
-        public static string CalMonth10Short => _v[133];
-        public static string CalMonth11Short => _v[134];
-        public static string CalMonth12Short => _v[135];
-        public static string Tut1Line => _v[136];
-        public static string Tut2Line => _v[137];
-        public static string Tut3Line => _v[138];
-        public static string Tut4Line => _v[139];
-        public static string Tut5Line => _v[140];
-        public static string Tut6Line => _v[141];
-        public static string Tut7Line => _v[142];
-        public static string Tut8Line => _v[143];
-        public static string Tut9Line => _v[144];
-        public static string Tut10Line => _v[145];
-        public static string WorldW01Name => _v[146];
-        public static string WorldW02Name => _v[147];
-        public static string WorldW03Name => _v[148];
-        public static string WorldW04Name => _v[149];
-        public static string WorldW05Name => _v[150];
-        public static string WorldW06Name => _v[151];
-        public static string WorldW07Name => _v[152];
-        public static string WorldW08Name => _v[153];
-        public static string WorldW09Name => _v[154];
-        public static string WorldW10Name => _v[155];
-        public static string WorldW11Name => _v[156];
-        public static string WorldW12Name => _v[157];
-        public static string WorldW14Name => _v[158];
-        public static string WorldW15Name => _v[159];
-        public static string WorldW16Name => _v[160];
-        public static string WorldW17Name => _v[161];
+        public static string LanguageName => _v[105];
+        public static string CalDay1 => _v[106];
+        public static string CalDay2 => _v[107];
+        public static string CalDay3 => _v[108];
+        public static string CalDay4 => _v[109];
+        public static string CalDay5 => _v[110];
+        public static string CalDay6 => _v[111];
+        public static string CalDay7 => _v[112];
+        public static string CalMonth1 => _v[113];
+        public static string CalMonth2 => _v[114];
+        public static string CalMonth3 => _v[115];
+        public static string CalMonth4 => _v[116];
+        public static string CalMonth5 => _v[117];
+        public static string CalMonth6 => _v[118];
+        public static string CalMonth7 => _v[119];
+        public static string CalMonth8 => _v[120];
+        public static string CalMonth9 => _v[121];
+        public static string CalMonth10 => _v[122];
+        public static string CalMonth11 => _v[123];
+        public static string CalMonth12 => _v[124];
+        public static string CalMonth1Short => _v[125];
+        public static string CalMonth2Short => _v[126];
+        public static string CalMonth3Short => _v[127];
+        public static string CalMonth4Short => _v[128];
+        public static string CalMonth5Short => _v[129];
+        public static string CalMonth6Short => _v[130];
+        public static string CalMonth7Short => _v[131];
+        public static string CalMonth8Short => _v[132];
+        public static string CalMonth9Short => _v[133];
+        public static string CalMonth10Short => _v[134];
+        public static string CalMonth11Short => _v[135];
+        public static string CalMonth12Short => _v[136];
+        public static string Tut1Line => _v[137];
+        public static string Tut2Line => _v[138];
+        public static string Tut3Line => _v[139];
+        public static string Tut4Line => _v[140];
+        public static string Tut5Line => _v[141];
+        public static string Tut6Line => _v[142];
+        public static string Tut7Line => _v[143];
+        public static string Tut8Line => _v[144];
+        public static string Tut9Line => _v[145];
+        public static string Tut10Line => _v[146];
+        public static string WorldW01Name => _v[147];
+        public static string WorldW02Name => _v[148];
+        public static string WorldW03Name => _v[149];
+        public static string WorldW04Name => _v[150];
+        public static string WorldW05Name => _v[151];
+        public static string WorldW06Name => _v[152];
+        public static string WorldW07Name => _v[153];
+        public static string WorldW08Name => _v[154];
+        public static string WorldW09Name => _v[155];
+        public static string WorldW10Name => _v[156];
+        public static string WorldW11Name => _v[157];
+        public static string WorldW12Name => _v[158];
+        public static string WorldW14Name => _v[159];
+        public static string WorldW15Name => _v[160];
+        public static string WorldW16Name => _v[161];
+        public static string WorldW17Name => _v[162];
     }
 }
