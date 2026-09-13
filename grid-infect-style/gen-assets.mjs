@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Grid Infect visual assets generator (style lock 2026-09-04).
+// Grid Infect visual assets generator.
 // node gen-assets.mjs [outDir]  ->  glyph SVGs, board background SVG, tokens.json
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -25,8 +25,8 @@ export const tokens = {
                glyphEdge:"#1e2e00", glyphWire:"#141f00" },
   },
   neutrals: { tip:"#ffffff", blockerBody:"#cfd8e0", blockerEdge:"#4d565f", wellBg:"rgba(0,0,0,.36)" },
-  layout: { screen:[390,844], boardTop:138, cell:54, gap:5, wellPad:14, wellRadius:12, tileRadius:6,
-            glyphOnTile:44, trayNext:58, trayQueued:40, traySlot:74, traySlotQueued:54, hudHeight:96 },
+  layout: { screen:[390,844], boardTop:88, cell:54, gap:5, wellPad:14, wellRadius:12, tileRadius:6,
+            glyphOnTile:44, trayNext:58, trayQueued:40, traySlot:74, traySlotQueued:54, hudHeight:56 },
   type: { display:"Chakra Petch 500", mono:"Share Tech Mono", hudLevel:26, hudChip:12, silkscreen:9 },
 };
 

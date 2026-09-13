@@ -4,8 +4,8 @@ using S = GridInfect.Game.PresentationConfig.Style;
 namespace GridInfect.Game
 {
     // UI chrome, all derived from the palette so a skin swap restyles the
-    // menus with the board (STYLE-GUIDE §2: mask plus infection is the skin,
-    // everything else is constant). Nothing here is a literal hue: the
+    // menus with the board (STYLE-GUIDE §2: mask, copper and infection are
+    // the skin, everything else is constant). Nothing here is a literal hue: the
     // constants are alphas and tints of white and black from §5 and §7.
     public static class BoardTheme
     {
@@ -16,11 +16,9 @@ namespace GridInfect.Game
         public static Color Background => P.MaskLo;
 
         public static Color Text => P.Ink;
-        // There is no dim ink any more. At 70% alpha the ink sat at 3.1:1 on
-        // the mask and 2.4:1 on its dark end — the HUD caption, the page
-        // counter and every mono readout were the least legible type on
-        // screen. Hierarchy is carried by size and by the mono face; the
-        // name stays so a caller reads as "secondary", and gets full ink.
+        // There is no dim ink (STYLE-GUIDE §11): hierarchy is carried by
+        // size and by the mono face. The name stays so a caller reads as
+        // "secondary", and gets full ink.
         public static Color TextDim => P.Ink;
         // The one legitimate low-contrast state: a control that cannot be
         // pressed right now (a pager at its last page). WCAG exempts it.
@@ -36,8 +34,7 @@ namespace GridInfect.Game
         public static readonly Color PanelDim = new Color(0f, 0f, 0f, 0.55f);
 
         // Glass fills. Buttons are chips (§7): white 42% to 14%. There is no
-        // dimmed chip any more — nothing is locked, and the two places that
-        // used one for "secondary" only made it hard to read.
+        // dimmed chip: a secondary control is full glass, only smaller.
         public static Color ButtonBg => P.Tip;
 
         // A select tile. Dormant glass unsolved, infected glass solved:
@@ -167,9 +164,8 @@ namespace GridInfect.Game
             {
                 // A coloured chip: the infection (or any accent) lit from
                 // inside, the way an infected tile is. The top stop leans
-                // toward white only a little: at 0.35 the white label sat at
-                // 3.0:1 against the top of the chip and 4.0:1 at its centre;
-                // at 0.12 it clears 4.5:1 where the type is.
+                // toward white by 0.12, which keeps the white label above
+                // 4.5:1 where the type sits (STYLE-GUIDE §11).
                 g.FillTop = BoardPalette.Alpha(Color.Lerp(tint, P.Tip, 0.12f), 0.95f);
                 g.FillBottom = BoardPalette.Alpha(tint, 0.9f);
                 g.Glow = BoardPalette.Alpha(tint, 0.45f);
