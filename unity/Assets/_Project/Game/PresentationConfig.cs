@@ -91,9 +91,18 @@ namespace GridInfect.Game
             // TopBarY like the menus' back chip, and everything under them
             // keeps its guide distance from the band. Zero on a screen
             // where the guide's own placement is already the lower one.
+            //
+            // Positive y is up, so the guide's chip centre (near the top
+            // edge) is the larger number and the drop is guide minus bar.
+            // The other way round it was negative on every phone and the
+            // clamp made it zero, which left the HUD under the cutout.
             public static float HudDrop =>
-                UnityEngine.Mathf.Max(0f,
-                    TopBarY - (H / 2f - Style.Px(Style.HudHeight - Style.HudBottomPad) + Style.ChipHeight / 2f));
+                UnityEngine.Mathf.Max(0f, GuideChipY - TopBarY);
+
+            // Where the guide alone would centre the HUD chips: bottom-
+            // aligned in the 56 px band, 10 px up from its bottom edge.
+            static float GuideChipY =>
+                H / 2f - Style.Px(Style.HudHeight - Style.HudBottomPad) + Style.ChipHeight / 2f;
 
             public static float ButtonHeight => ShortEdge * 0.11f;
             // The top-bar chips. 0.075 was a 29 px chip on the reference
