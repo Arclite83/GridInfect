@@ -231,6 +231,12 @@ What the script does on every build:
   `GoogleMobileAds/Editor/AndroidBuildPreProcessor.cs` injects the AdMob app
   ID (already committed, in `GoogleMobileAdsSettings.asset`) and the editor
   version string. That hunk is build output; leave it uncommitted.
+- Sets the Android application entry point to **Activity**, not
+  GameActivity. Under GameActivity the first Java-to-C# callback (the
+  consent SDK's, seconds after launch) crashes the process with
+  `UnsatisfiedLinkError: ReflectionHelper.nativeProxyInvoke`; that was the
+  first internal-testing build's crash-after-splash. Do not re-tick
+  GameActivity in Player Settings; the build script sets it back anyway.
 - Takes the next `AndroidBundleVersionCode` on every AAB build and writes
   it to `ProjectSettings.asset`. Play rejects an upload whose versionCode
   it has already seen on any track, so commit that hunk after each upload

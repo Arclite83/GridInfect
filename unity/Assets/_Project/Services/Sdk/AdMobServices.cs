@@ -1,18 +1,5 @@
 // The AdMob + UMP implementations of IAdService and IConsentService.
-//
-// NOT YET COMPILED BY UNITY. The plugin (GMA v11.5.0) is committed now, so
-// this file is one editor open away from its first compile; until that has
-// happened, GRIDINFECT_ADMOB (set in ProjectSettings for Android, iOS and
-// Standalone) is the only thing standing between it and a player.
-//
-// What has been checked, and how: every call below was read against the
-// public metadata of the committed GoogleMobileAds.dll, .Core.dll and
-// .Ump.dll (2026-09-12) — method vs property, parameter lists, event and
-// field shapes. One mismatch was found and fixed (CanRequestAds is a method).
-// That is a signature check, not a compile: a using that IntelliSense
-// rejects, or a namespace the metadata reader did not show, is still
-// possible. When Unity has compiled it, delete this header down to the
-// provenance note and say so in the commit.
+// Compiled and run on device 2026-09-13 (GMA v11.5.0).
 //
 // Provenance: the consent sequence (ConsentInformation.Update → ConsentForm
 // .LoadAndShowConsentFormIfRequired → CanRequestAds → MobileAds.Initialize),
@@ -25,6 +12,7 @@
 #if GRIDINFECT_ADMOB
 using System;
 using GoogleMobileAds.Api;
+using GoogleMobileAds.Common;
 using GoogleMobileAds.Ump.Api;
 using UnityEngine;
 
@@ -32,12 +20,27 @@ namespace GridInfect.Services
 {
     // R-801: update consent info, show the form when required, then report.
     // Gameplay never waits on any of this — a failure path still calls back.
+    //
+    // UMP raises its callbacks on the Android UI thread, not Unity's. The
+    // plugin's RaiseAdEventsOnUnityMainThread covers ad events only, so the
+    // consent ones are hopped by hand through the same executor the plugin
+    // uses. Two reasons: the continuation reaches game state and, through
+    // MobileAds.Initialize, Unity objects that only the main thread may
+    // create; and an exception thrown while still on the Android thread
+    // leaves Unity's Java proxy as an uncaught java.lang.Error and kills the
+    // process, with nothing in the Unity log.
     public sealed class UmpConsentService : IConsentService
     {
+        static void OnMain(Action action) => MobileAdsEventExecutor.ExecuteInUpdate(action);
+
         public void Request(Action<ConsentOutcome> outcome)
         {
+            // Creates the executor's GameObject; must run on the main thread,
+            // and MobileAds.Initialize (which would) only comes after consent.
+            MobileAdsEventExecutor.Initialize();
+
             var parameters = new ConsentRequestParameters();
-            ConsentInformation.Update(parameters, error =>
+            ConsentInformation.Update(parameters, error => OnMain(() =>
             {
                 if (error != null)
                 {
@@ -45,14 +48,14 @@ namespace GridInfect.Services
                     return;
                 }
 
-                ConsentForm.LoadAndShowConsentFormIfRequired(formError =>
+                ConsentForm.LoadAndShowConsentFormIfRequired(formError => OnMain(() =>
                 {
                     if (formError != null) { outcome?.Invoke(ConsentOutcome.Unavailable); return; }
                     outcome?.Invoke(ConsentInformation.CanRequestAds()
                         ? ConsentOutcome.Obtained
                         : ConsentOutcome.Declined);
-                });
-            });
+                }));
+            }));
         }
 
         // R-802: the settings entry exists only while UMP says one is required.
@@ -60,7 +63,7 @@ namespace GridInfect.Services
             ConsentInformation.PrivacyOptionsRequirementStatus == PrivacyOptionsRequirementStatus.Required;
 
         public void ShowPrivacyOptions(Action closed) =>
-            ConsentForm.ShowPrivacyOptionsForm(_ => closed?.Invoke());
+            ConsentForm.ShowPrivacyOptionsForm(_ => OnMain(() => closed?.Invoke()));
 
         public bool CanRequestAds => ConsentInformation.CanRequestAds();
     }

@@ -89,6 +89,12 @@ namespace GridInfect.EditorTools
             PlayerSettings.SetScriptingBackend(target, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;   // DEPENDENCIES §8
             PlayerSettings.Android.targetSdkVersion = (AndroidSdkVersions)36;         // Play mandate (R-1201)
+            // Activity, not GameActivity. Under GameActivity the first Java-to-C#
+            // callback (an AndroidJavaProxy: the consent SDK's, on launch) dies
+            // with UnsatisfiedLinkError on ReflectionHelper.nativeProxyInvoke,
+            // the bridge Unity never registers on that entry path (6000.5.10f1;
+            // Unity issue tracker lists the same class under [GameActivity]).
+            PlayerSettings.Android.applicationEntry = AndroidApplicationEntry.Activity;
             PlayerSettings.SetManagedStrippingLevel(target, ManagedStrippingLevel.Medium);
             ApplyIcons(target);
         }
