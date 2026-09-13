@@ -266,6 +266,8 @@ namespace UnityEngine
         public bool SetData(float[] data, int offsetSamples) => true;
     }
 
+    public sealed class AudioListener : Behaviour { }
+
     public sealed class AudioSource : Behaviour
     {
         public AudioClip clip { get; set; }

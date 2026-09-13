@@ -78,6 +78,12 @@ namespace GridInfect.Game
             _camera.transform.position = new Vector3(0f, 0f, -10f);
             _camera.clearFlags = CameraClearFlags.SolidColor;
             _camera.backgroundColor = BoardTheme.Background;
+            // The ear. Unity plays nothing without an AudioListener somewhere
+            // in the scene, and the camera is built here rather than saved
+            // in one, so no scene ever carried it: the clicks and the chime
+            // were synthesised, scheduled and played into silence on every
+            // platform. One listener, on the camera, like a default scene's.
+            if (_camera.gameObject.GetComponent<AudioListener>() == null) _camera.gameObject.AddComponent<AudioListener>();
 
             // The PCB under every screen, and the bloom that gives the
             // infection its halo. Both outlive any one screen.
