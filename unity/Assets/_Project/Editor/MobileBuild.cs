@@ -241,13 +241,19 @@ namespace GridInfect.EditorTools
         static bool Run(BuildTarget target, string location)
         {
             Directory.CreateDirectory(OutDir);
+            // GI_DEV=1: a development build. Logcat then carries full C#
+            // stack traces with method names and the player's own log at
+            // every level, which is what a crash on launch needs. Slower and
+            // bigger; never for an upload.
+            bool dev = Environment.GetEnvironmentVariable("GI_DEV") == "1";
             var options = new BuildPlayerOptions
             {
                 scenes = new[] { ScenePath },
                 locationPathName = location,
                 target = target,
-                options = BuildOptions.None,
+                options = dev ? BuildOptions.Development : BuildOptions.None,
             };
+            if (dev) Debug.Log("[build] development build (GI_DEV=1)");
             var report = BuildPipeline.BuildPlayer(options);
             var summary = report.summary;
             if (summary.result == UnityEditor.Build.Reporting.BuildResult.Succeeded)

@@ -182,6 +182,7 @@ where the icon slots are serialized).
 ```sh
 tools/build-android.sh              # APK, debug-signed
 tools/build-android.sh --install    # and adb install -r it
+tools/build-android.sh --dev        # development build: C# stacks in logcat
 tools/build-android.sh aab          # signed AAB for Play, next versionCode
 ```
 
