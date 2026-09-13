@@ -81,6 +81,20 @@ namespace GridInfect.Game
             public static float PlateWidth => ContentWidth - ButtonHeight;
             public static float TopBarY => H * TopBarPct;
 
+            // How far the board's HUD stack (chip row, level label, badge
+            // row, and the well's top under them) sits below where the
+            // guide hangs it. The guide measures the band from the top edge
+            // (56 px, items bottom-aligned), which put the chips 32 px from
+            // the top on the reference screen: under the camera cutout on
+            // any phone that has one, while every other screen's top bar
+            // sat at TopBarY and cleared it. So the chips are centred on
+            // TopBarY like the menus' back chip, and everything under them
+            // keeps its guide distance from the band. Zero on a screen
+            // where the guide's own placement is already the lower one.
+            public static float HudDrop =>
+                UnityEngine.Mathf.Max(0f,
+                    TopBarY - (H / 2f - Style.Px(Style.HudHeight - Style.HudBottomPad) + Style.ChipHeight / 2f));
+
             public static float ButtonHeight => ShortEdge * 0.11f;
             // The top-bar chips. 0.075 was a 29 px chip on the reference
             // screen: under the 44 px touch minimum and too short for its
@@ -237,6 +251,10 @@ namespace GridInfect.Game
             public const float BadgeTop = 52f;
             public const float BadgePadX = 12f;
             public const float BadgePadY = 6f;
+
+            // A chip's box height on this device: 12 px type on 8 px pads.
+            // Width comes from the label (Ui.ChipBox); the height never does.
+            public static float ChipHeight => Px(ChipPadY * 2f + ChipText * 1.25f);
 
             // §8 tray
             public const float TrayHeight = 96f;

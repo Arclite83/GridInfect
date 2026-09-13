@@ -24,7 +24,9 @@ namespace GridInfect.Game
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
             // Back is the gear, the same mark that opened settings from the
             // menu: a word for it crowded the title, and the mark needs no
-            // translating.
+            // translating. Settings opens this screen from a globe chip in
+            // its own trailing corner, so the two marks are the two ends of
+            // one move.
             var chip = new Vector2(L.IconChip, L.IconChip);
             Buttons.Add(UiButton.MakeIcon(Root.transform, "settings", BugGlyph.Gear(BoardPalette.Default, UiButton.IconPx(chip)),
                 L.BackPos, chip, () => App.Screens.Show(new SettingsScreen())));

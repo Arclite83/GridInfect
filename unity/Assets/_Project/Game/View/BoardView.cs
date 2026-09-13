@@ -303,12 +303,14 @@ namespace GridInfect.Game
         // The band the lattice gets: above the tray and the well's bottom
         // pad, below the HUD and the well's top pad (STYLE-GUIDE §4: board top
         // 88, tray 96). Measured in the guide's px, so it is independent of
-        // the cell size and the fit below cannot chase its own tail.
+        // the cell size and the fit below cannot chase its own tail. The top
+        // follows the HUD down by Layout.HudDrop, or the badge row would
+        // land on the well.
         static void MeasureBand(out float bottom, out float top)
         {
             float h = UnityEngine.Screen.height;
             bottom = Style.Px(Style.TrayHeight + Style.WellPad);
-            top = h - Style.Px(Style.BoardTop + Style.WellPad);
+            top = h - Style.Px(Style.BoardTop + Style.WellPad) - PresentationConfig.Layout.HudDrop;
         }
 
         // Whichever of the three binds. Height caps the cell at CellMaxPx (and,

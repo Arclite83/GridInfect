@@ -18,10 +18,11 @@ namespace GridInfect.Game
         UiButton _erase;
         bool _armed;
 
-        // Sound, skins, language: the stack the privacy row joins when the
-        // consent SDK asks for one. The count sizes the stack's centre, so
-        // the optional row is not in it and hangs below.
-        const int Rows = 3;
+        // Sound, skins: the stack the privacy row joins when the consent
+        // SDK asks for one. The count sizes the stack's centre, so the
+        // optional row is not in it and hangs below. Language is not a row
+        // either; it is the globe chip in the top trailing corner.
+        const int Rows = 2;
 
         protected override void Build()
         {
@@ -32,6 +33,19 @@ namespace GridInfect.Game
             Buttons.Add(UiButton.Make(Root.transform, Str.NavMenu, L.BackPos, L.BackSize,
                 BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new MainMenuScreen())));
 
+            // Language: the globe, an icon chip in the trailing corner where
+            // the menu keeps its gear. It was a LANGUAGE row in the stack,
+            // which is fine until the language is one you cannot read — the
+            // one time you need the row, its label is the thing you are
+            // looking past. A drawn mark is the same in every language, and
+            // the corner is where a player already looks for the way into a
+            // settings-like screen. The selector's back chip is the gear,
+            // so the pair reads as one thing in two states.
+            var icon = new Vector2(L.IconChip, L.IconChip);
+            Buttons.Add(UiButton.MakeIcon(Root.transform, "language",
+                BugGlyph.Globe(BoardPalette.Default, UiButton.IconPx(icon)),
+                new Vector2(-L.BackPos.x, L.BackPos.y), icon, () => App.Screens.Show(new LanguageScreen())));
+
             var size = new Vector2(L.ContentWidth, L.ButtonHeight);
             int row = 0;
             _sound = UiButton.Make(Root.transform, "", new Vector2(0f, L.StackRowY(row++, Rows, L.ButtonHeight, 0f)), size,
@@ -40,10 +54,6 @@ namespace GridInfect.Game
             RefreshSound();
 
             BuildSkins(L.StackRowY(row++, Rows, L.ButtonHeight, 0f));
-
-            Buttons.Add(UiButton.Make(Root.transform, Str.SettingsLanguage,
-                new Vector2(0f, L.StackRowY(row++, Rows, L.ButtonHeight, 0f)), size,
-                BoardTheme.ButtonBg, BoardTheme.Text, () => App.Screens.Show(new LanguageScreen())));
 
             // R-802: the privacy options entry, whenever the consent SDK says
             // one is required.
