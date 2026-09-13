@@ -26,7 +26,7 @@ namespace GridInfect.Game
         public Color Mask = Hex("#7FAE66");
         public Color MaskHi = Hex("#97C27C");
         public Color MaskLo = Hex("#5F8B4A");
-        public Color Ink = Hex("#0C190A");          // type on the mask: 4.5:1 on MaskLo (was #1D3316 at 3.4:1)
+        public Color Ink = Hex("#0C190A");          // type on the mask: 4.5:1 on MaskLo
 
         // ---- skin: copper. Points only (pads, vias, holes), never lines ----
         public Color Copper = Hex("#C9A648");
@@ -44,8 +44,8 @@ namespace GridInfect.Game
         public Color GlyphEdge = Hex("#4A0018");    // leads, body outline
         public Color GlyphWire = Hex("#300010");    // bond wires, stubs, pads
 
-        // The glass of a cell still to infect. Not a neutral: it is read
-        // against the solder mask, so it inverts on a light one.
+        // The glass of a dormant component. Not a neutral: it is read
+        // against the solder mask, so breadboard's light mask inverts it.
         public Color Space = Hex("#FFFFFF");
 
         // ---- neutrals, constant across skins ----
@@ -55,10 +55,9 @@ namespace GridInfect.Game
         public Color WellBg = Alpha(Hex("#000000"), 0.36f);
         public Color Shade = Hex("#000000");        // shadows, insets, the well's ring
 
-        // ---- states the guide does not draw ----
-        // Grid Infect ships a repel switch, a reset trap and a forbidden cell
-        // alongside empty / infected / blocker. They are tints on the guide's
-        // component glass plus a shape glyph each (R-1001), never a literal.
+        // ---- switch, trap and warning ----
+        // Tints on the component glass plus a shape glyph each, so colour is
+        // never the only cue.
         public Color RepelSwitch = Hex("#4F5BFF");  // indigo tint, diamond glyph: cool, far from every red, still not the ice
         public Color ResetTrap = Hex("#0D0D12");    // near-black tint, X glyph
         public Color Conflict = Hex("#4DE3FF");     // ice overprint on a tripped ray, a warned arm, a refused drop: never red, red is infection
@@ -87,8 +86,8 @@ namespace GridInfect.Game
 
         public static Color Alpha(Color c, float a) => new Color(c.r, c.g, c.b, a);
 
-        // The three skins of STYLE-GUIDE §2. Mask and infection move; copper
-        // is gold on the two green/blue masks and bare copper on breadboard.
+        // The three skins of STYLE-GUIDE §2. Mask, copper and infection move;
+        // copper is gold on green and blue and bare copper on breadboard.
         public static class Skins
         {
             public static void Apply(BoardPalette p, SkinId skin)
@@ -109,9 +108,8 @@ namespace GridInfect.Game
                         p.Infect = Hex("#7FD100"); p.InfectHi = Hex("#C8FF55"); p.InfectLo = Hex("#3F7300");
                         p.InfectGlow = Alpha(Hex("#7FD100"), 0.5f);
                         p.GlyphEdge = Hex("#1E2E00"); p.GlyphWire = Hex("#141F00");
-                        // The one skin whose mask is lighter than its glass:
-                        // white on cream had no cell edge at all, so a space
-                        // is a recess here rather than a highlight.
+                        // The one skin whose mask is lighter than white glass:
+                        // a dormant component is a dark recess, not a highlight.
                         p.Space = Hex("#4A3A22");
                         break;
                     default:

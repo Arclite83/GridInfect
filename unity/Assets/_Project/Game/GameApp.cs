@@ -45,15 +45,34 @@ namespace GridInfect.Game
         // The seed the next Endless run will start from. Picked ahead of
         // time so the cache can have its opening boards ready before the
         // player asks (Warmup); TakeEndlessSeed hands it over and picks the
-        // one after.
+        // one after. The pick outlives the process: a seed nobody took is
+        // as fresh next launch as it was, and its openers are already in
+        // the cache, so boot does not spend a G5 scan (the widest one, tens
+        // of core-seconds on a phone) on every launch.
         public ulong EndlessSeed { get; private set; }
+
+        const string EndlessSeedPref = "gridinfect.endlessSeed";
 
         public ulong TakeEndlessSeed()
         {
             ulong seed = EndlessSeed;
-            EndlessSeed = (ulong)NowMs() ^ (seed << 7);
+            SetEndlessSeed((ulong)NowMs() ^ (seed << 7));
             Warmup.EndlessOpeners(LevelCache.Shared, EndlessSeed, 30);
             return seed;
+        }
+
+        void SetEndlessSeed(ulong seed)
+        {
+            EndlessSeed = seed;
+            PlayerPrefs.SetString(EndlessSeedPref, seed.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+
+        ulong PendingEndlessSeed()
+        {
+            string stored = PlayerPrefs.GetString(EndlessSeedPref, "");
+            return ulong.TryParse(stored, System.Globalization.NumberStyles.None,
+                System.Globalization.CultureInfo.InvariantCulture, out ulong seed) && seed != 0
+                ? seed : (ulong)NowMs();
         }
 
         // Local until a friends board lands (stage 4 leaves the hook).
@@ -65,6 +84,15 @@ namespace GridInfect.Game
         void Awake()
         {
             Application.targetFrameRate = PresentationConfig.TargetFrameRate;
+
+            // The generator's seed scan fans across the cores (Work.Map). On
+            // a phone every core is also the frame's: the main thread, the
+            // render thread and the audio mixer have nowhere to go when the
+            // scan takes all of them, and the menu stutters for as long as
+            // the warmer runs (a G5 opener is tens of core-seconds). Leave it
+            // half, so a frame always has a core of its own; the scan only
+            // takes longer in the background, where it was already waiting.
+            Work.Shared.Parallelism = Mathf.Max(1, System.Environment.ProcessorCount / 2);
 
             _camera = Camera.main;
             if (_camera == null)
@@ -101,7 +129,7 @@ namespace GridInfect.Game
             // then the recent archive, then Endless's opening boards; in
             // Endless, the next board while the current one is played.
             _levels = new LevelCachePort(Application.persistentDataPath);
-            EndlessSeed = (ulong)NowMs();
+            SetEndlessSeed(PendingEndlessSeed());
             _levels.LoadAsync(LevelCache.Shared, () =>
                 Warmup.AtBoot(LevelCache.Shared, System.DateTime.UtcNow, State.Profile, EndlessSeed));
 
@@ -279,13 +307,13 @@ namespace GridInfect.Game
         void OnApplicationPause(bool paused)
         {
             if (!paused) return;
-            _levels?.SaveIfDirty(LevelCache.Shared);
+            _levels?.SaveNow(LevelCache.Shared);
             Ads?.Flush();
         }
 
         void OnApplicationQuit()
         {
-            _levels?.SaveIfDirty(LevelCache.Shared);
+            _levels?.SaveNow(LevelCache.Shared);
             Ads?.Flush();
         }
 

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grid Infect, the three skins</title>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1b1d22;--bg2:#24272d;--line:#33373f;--fg:#e4e6ea;--mute:#9aa0aa;--s:1}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,sans-serif;padding:28px 20px 60px}
+h1{font:500 20px/1.2 'Chakra Petch',system-ui,sans-serif;margin:0 0 6px;letter-spacing:.02em;text-wrap:balance}
+p.sub{margin:0 0 26px;color:var(--mute);max-width:64ch;font-size:13px}
+p.sub code{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--fg)}
+.row{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+.col{width:390px;max-width:100%}
+.col h3{font:500 15px 'Chakra Petch',system-ui,sans-serif;margin:0 0 2px;letter-spacing:.04em;text-transform:uppercase}
+.col .n{font-size:12px;color:var(--mute);margin:0 0 12px;min-height:54px;max-width:60ch}
+.frame{width:calc(390px * var(--s));height:calc(844px * var(--s))}
+.screen{width:390px;height:844px;position:relative;overflow:hidden;border-radius:30px;box-shadow:0 30px 70px rgba(0,0,0,.7),inset 0 0 0 2px rgba(255,255,255,.06);font-family:'Chakra Petch',sans-serif;transform:scale(var(--s));transform-origin:top left}
+.screen>svg.bg{position:absolute;inset:0;width:100%;height:100%}
+.hud{position:absolute;top:0;left:0;right:0;height:96px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 22px 12px;color:var(--ink)}
+.hud .lvl{font-size:26px;letter-spacing:.06em}
+.chip{font-size:12px;font-weight:700;letter-spacing:.1em;padding:8px 14px;border-radius:7px;background:linear-gradient(160deg,rgba(255,255,255,.42),rgba(255,255,255,.14));box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 0 0 1px rgba(255,255,255,.3),0 4px 10px rgba(0,0,0,.25);color:var(--ink);position:relative}
+.chip:before,.chip:after{content:"";position:absolute;top:50%;width:5px;height:5px;border-radius:50%;background:var(--cu-hi);box-shadow:0 0 4px var(--cu-hi);transform:translateY(-50%)}
+.chip:before{left:-9px}.chip:after{right:-9px}
+.cap{position:absolute;left:22px;top:112px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:.2em;color:var(--ink)}
+.badge{position:absolute;right:22px;top:104px;font-family:'Share Tech Mono',monospace;font-size:13px;padding:6px 12px;border-radius:7px;background:rgba(0,0,0,.6);color:var(--cu-hi);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--cu-hi) 50%,transparent);letter-spacing:.12em}
+.board{position:absolute;left:50%;top:138px;transform:translateX(-50%);display:grid;grid-template-columns:repeat(5,54px);grid-auto-rows:54px;gap:5px;padding:14px;border-radius:12px;background:rgba(0,0,0,.36);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 0 60px rgba(0,0,0,.5),0 0 0 3px rgba(0,0,0,.18)}
+.c{position:relative;border-radius:6px}
+.c svg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:44px;height:44px;z-index:1}
+.c.out{background:rgba(0,0,0,.05);box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+.c.pad{background:radial-gradient(circle,var(--cu-hi) 0 4.5px,var(--cu) 5.5px,transparent 6.5px)}
+.c.chip2,.c.half{background:linear-gradient(160deg,var(--sp34),var(--sp08) 55%,var(--sp16));box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 0 0 1px rgba(255,255,255,.25),0 7px 16px rgba(0,0,0,.38)}
+.c.chip2 .dot{position:absolute;left:50%;top:50%;width:9px;height:9px;transform:translate(-50%,-50%);border-radius:50%;background:var(--cu-hi);box-shadow:0 0 7px var(--cu-hi)}
+.c.inf{background:linear-gradient(160deg,var(--inf-top),var(--inf) 55%,var(--inf-lo));box-shadow:inset 0 1px 0 rgba(255,255,255,.85),inset 0 0 0 1px rgba(255,255,255,.4),0 0 26px var(--inf),0 0 64px var(--inf-glow),0 7px 16px rgba(0,0,0,.38)}
+.c.half{overflow:hidden}
+.c.half:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 100%,var(--inf) 0 16px,var(--inf-glow) 26px,transparent 38px)}
+.c.trace{background:radial-gradient(circle,var(--inf-glow),transparent 70%);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--inf) 50%,transparent)}
+.c.shield{background:linear-gradient(160deg,rgba(255,255,255,.6),rgba(255,255,255,.2));box-shadow:inset 0 1px 0 #fff,inset 0 0 0 2px rgba(255,255,255,.75),0 7px 16px rgba(0,0,0,.38)}
+.tray{position:absolute;left:0;right:0;bottom:0;height:150px;display:flex;align-items:center;justify-content:center;gap:30px}
+.tray .slot{width:74px;height:74px;border-radius:12px;position:relative;background:rgba(0,0,0,.3);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 0 24px rgba(0,0,0,.5)}
+.tray .slot svg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:58px}
+.tray .slot.q{width:54px;height:54px;opacity:.75}
+.tray .slot.q svg{width:40px;height:40px}
+.tray .slot.next{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 0 24px rgba(0,0,0,.5),0 0 22px color-mix(in srgb,var(--inf) 45%,transparent)}
+.tray .lbl{position:absolute;left:50%;bottom:-20px;transform:translateX(-50%);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--ink);white-space:nowrap}
+.tokens{margin-top:16px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.tok{display:flex;flex-direction:column;gap:5px}
+.tok .sw{height:34px;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.tok .k{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.tok .v{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--fg)}
+.legend{margin-top:34px;border-top:1px solid var(--line);padding-top:18px;color:var(--mute);font-size:13px;max-width:70ch}
+.legend b{color:var(--fg);font-weight:500}
+@media (max-width:460px){:root{--s:.86}.tokens{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+
+<h1>The three skins, same board</h1>
+<p class="sub">Same level, same placements, same bug queue. Only the skin layer moves: mask, copper and infection hue (STYLE-GUIDE §2). Values are the locked ones in <code>out/tokens.json</code>, mirrored by <code>BoardPalette.Skins.Apply</code>. The glass, the well, the blocker and the white tips are constant.</p>
+<div class="row" id="row"></div>
+<div class="legend"><b>Reading the board.</b> Dormant components carry a copper dot. Lit ones are the infection inside the glass with the 26 px near glow and 64 px halo. The half-lit cell mid-column shows a bleed entering from below. The shield tile is the blocker. The tray holds the next bug and two queued. Breadboard is the one skin whose mask is lighter than the glass, so its dormant components are a dark recess (space <code style="font-family:'Share Tech Mono'">#4a3a22</code>) rather than a white highlight.</div>
+
+<script>
+const SKINS=[
+ {id:"default",title:"Default",note:"Green mask, gold copper, deep rose red infection. Ship default. Red is infection, and infection is success. Ink #0c190a clears 4.5:1 on the mask shadow.",
+  mask:"#7fae66",maskHi:"#97c27c",maskLo:"#5f8b4a",ink:"#0c190a",copper:"#c9a648",copperHi:"#f3e2a8",copperLo:"#7d6120",
+  infect:"#d9204f",infectHi:"#ff6e93",infectLo:"#8f0a32",infectGlow:"rgba(217,32,79,.55)",glyphEdge:"#4a0018",glyphWire:"#300010",space:"#ffffff",hole:"#2a3a24"},
+ {id:"blue",title:"Blue",note:"Blue mask, gold copper, amber infection. Unlockable. Complementary hue against the mask gives the widest separation; ink flips to light #e6efff.",
+  mask:"#2e5aa8",maskHi:"#3f70c4",maskLo:"#1f3f7a",ink:"#e6efff",copper:"#d9a441",copperHi:"#ffe08a",copperLo:"#7a5410",
+  infect:"#ff8a00",infectHi:"#ffb347",infectLo:"#c25a00",infectGlow:"rgba(255,138,0,.55)",glyphEdge:"#4a2600",glyphWire:"#3a1d00",space:"#ffffff",hole:"#14264a"},
+ {id:"breadboard",title:"Breadboard",note:"Cream mask, bare copper, lime infection. Unlockable. Lime replaced red on 2026-09-09: red read as paint on cream. Space inverts to a dark recess so a cell still has an edge.",
+  mask:"#e9dcb8",maskHi:"#f4ead0",maskLo:"#cdbb8c",ink:"#3c2e12",copper:"#c46a3a",copperHi:"#f0a878",copperLo:"#7a3a18",
+  infect:"#7fd100",infectHi:"#c8ff55",infectLo:"#3f7300",infectGlow:"rgba(127,209,0,.5)",glyphEdge:"#1e2e00",glyphWire:"#141f00",space:"#4a3a22",hole:"#8a7650"}
+];
+
+const hex2=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const rgba=(h,a)=>{const[r,g,b]=hex2(h);return `rgba(${r},${g},${b},${a})`};
+const lerp=(a,b,t)=>{const A=hex2(a),B=hex2(b);return "#"+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,"0")).join("")};
+
+const ANG={N:0,E:90,S:180,W:270,NE:45,SE:135,SW:225,NW:315};
+const ORTH=["N","E","S","W"];
+const VERTS=[{a:45,s:["N","E"]},{a:135,s:["E","S"]},{a:225,s:["S","W"]},{a:315,s:["W","N"]}];
+function glyphs(sk){
+ const F=sk.infect,E=sk.glyphEdge,W=sk.glyphWire;
+ const rot=a=>`transform="rotate(${a} 20 20)"`;
+ const lead=a=>`<g ${rot(a)}><rect x="17" y="2" width="6" height="12" rx="1" fill="${E}"/><rect x="18" y="2" width="4" height="5" fill="#fff"/></g>`;
+ const bond=a=>`<g ${rot(a)} fill="none" stroke="${W}" stroke-width="1"><path d="M14.5 14 L14.5 7 Q14.5 4.5 17 4.5"/><path d="M25.5 14 L25.5 7 Q25.5 4.5 23 4.5"/></g>`;
+ const stubs=a=>`<g ${rot(a)} stroke="${W}" stroke-width="1" fill="${W}"><line x1="25.5" y1="7.5" x2="28.5" y2="7.5"/><circle cx="29.1" cy="7.5" r="1.1"/><line x1="14.5" y1="7.5" x2="11.5" y2="7.5"/><circle cx="10.9" cy="7.5" r="1.1"/></g>`;
+ const pin=(a,t,len,pad)=>`<g transform="rotate(${a} 20 20) translate(${t} 0)" stroke="${W}" stroke-width="1.1" fill="${W}"><line x1="20" y1="10.5" x2="20" y2="${10.5-len}"/>${pad?`<circle cx="20" cy="${10.5-len-0.6}" r="1.1"/>`:""}</g>`;
+ const core=(fill=F,edge=E)=>`<polygon points="20,9 30,14.5 30,25.5 20,31 10,25.5 10,14.5" fill="${fill}" stroke="${edge}" stroke-width="1.6" stroke-linejoin="round"/><polygon points="20,11 28,15.5 20,20 12,15.5" fill="rgba(255,255,255,.4)"/><circle cx="20" cy="20" r="3" fill="#fff"/>`;
+ function body(active){let o="";for(const d of ORTH){if(active.has(d))continue;o+=pin(ANG[d],-4,3.5,true)+pin(ANG[d],0,2.5,false)+pin(ANG[d],4,3.5,true);}for(const v of VERTS){const diag=v.s.join("");if(v.s.some(s=>active.has(s))||active.has(diag))continue;o+=pin(v.a,0,2.5,false);}return o;}
+ const v1b=dirs=>{let o="";for(const d of dirs)o+=lead(ANG[d])+bond(ANG[d])+stubs(ANG[d]);return o+body(new Set(dirs))+core();};
+ const D2=(diags,orth=[])=>{let o="";for(const d of orth)o+=lead(ANG[d])+bond(ANG[d])+stubs(ANG[d]);for(const d of diags)o+=`<g ${rot(ANG[d])}><line x1="20" y1="14.5" x2="20" y2="6.5" stroke="${E}" stroke-width="2.6"/><g fill="none" stroke="${W}" stroke-width="1"><path d="M17.6 13.5 L17.6 8.5 Q17.6 6.6 18.6 6.6"/><path d="M22.4 13.5 L22.4 8.5 Q22.4 6.6 21.4 6.6"/><line x1="17.6" y1="9.5" x2="14.6" y2="9.5"/><line x1="22.4" y1="9.5" x2="25.4" y2="9.5"/></g><circle cx="14" cy="9.5" r="1.1" fill="${W}"/><circle cx="26" cy="9.5" r="1.1" fill="${W}"/><circle cx="20" cy="5.5" r="3.2" fill="${E}"/><circle cx="20" cy="5.5" r="2.1" fill="#fff"/></g>`;return o+body(new Set([...orth,...diags]))+core();};
+ const M4=()=>body(new Set())+core("#cfd8e0","#4d565f").replace('<circle cx="20" cy="20" r="3" fill="#fff"/>','<path d="M20 14 L25 16.5 V21 Q25 25 20 27 Q15 25 15 21 V16.5 Z" fill="#4d565f"/><path d="M20 16 L23.5 17.8 V21 Q23.5 23.6 20 25 V16 Z" fill="#fff" opacity=".85"/>');
+ return {v1b,D2,M4};
+}
+const svg=inner=>`<svg viewBox="0 0 40 40" aria-hidden="true">${inner}</svg>`;
+
+function background(sk,i){
+ const p=`s${i}`;
+ const defs=`<defs>
+ <linearGradient id="${p}mask" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${sk.maskHi}"/><stop offset=".7" stop-color="${sk.mask}"/><stop offset="1" stop-color="${sk.maskLo}"/></linearGradient>
+ <pattern id="${p}g1" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0 H0 V24" fill="none" stroke="rgba(255,255,255,.07)"/></pattern>
+ <pattern id="${p}g2" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M12 0 H0 V12" fill="none" stroke="rgba(0,0,0,.05)"/></pattern>
+ <radialGradient id="${p}sheen" cx=".5" cy=".12" r=".5"><stop offset="0" stop-color="rgba(255,255,255,.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></radialGradient>
+ <radialGradient id="${p}vig" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="rgba(0,0,0,0)"/><stop offset="1" stop-color="rgba(0,0,0,.28)"/></radialGradient>
+ </defs>`;
+ const R=`<rect width="390" height="844"`;
+ const tt=["12,140 12,300 26,314 26,700","378,140 378,240 364,254 364,720","60,808 150,808 164,822 240,822","230,20 300,20 314,34 350,34"];
+ const tone=tt.map(q=>`<polyline points="${q}" fill="none" stroke="rgba(0,0,0,.14)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><polyline points="${q}" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="1" stroke-linejoin="round" stroke-linecap="round" transform="translate(0 -1.5)"/>`).join("")
+  +[[12,140],[26,700],[378,140],[364,720],[60,808],[240,822],[230,20],[350,34]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="4" fill="rgba(0,0,0,.18)"/><circle cx="${x}" cy="${y}" r="1.6" fill="rgba(255,255,255,.35)"/>`).join("");
+ const holes=[[22,22],[368,22],[22,822],[368,822]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="9" fill="${sk.copper}" opacity=".7"/><circle cx="${x}" cy="${y}" r="5" fill="${sk.hole}"/>`).join("");
+ const vias=[[18,420],[372,470],[110,812],[280,812],[120,32],[270,32]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5" fill="${sk.copper}" opacity=".55"/><circle cx="${x}" cy="${y}" r="2.2" fill="${sk.hole}"/>`).join("");
+ const silk=`<g font-family="Share Tech Mono, monospace" font-size="9" fill="rgba(255,255,255,.55)" letter-spacing="1.5"><text x="44" y="30">BLOODHOUND STUDIOS</text><text x="290" y="835">GI-06</text><text x="44" y="835">© 2026</text></g>`;
+ return `<svg class="bg" viewBox="0 0 390 844">${defs}${R} fill="url(#${p}mask)"/>${R} fill="url(#${p}g1)"/>${R} fill="url(#${p}g2)"/>${R} fill="url(#${p}sheen)"/>${tone}${vias}${holes}${silk}${R} fill="url(#${p}vig)"/></svg>`;
+}
+
+const grid=["....." ,"....G" ,"P...P" ,"Pxx.P" ,"PS..." ,"Ph..." ,"Px..." ,"BPPP." ,"P...."];
+const map={".":"out","P":"chip2","B":"inf","G":"inf","x":"trace","S":"shield","h":"half"};
+
+function screen(sk,i){
+ const g=glyphs(sk);
+ const glyphFor={B:g.v1b(ORTH),G:g.D2(["SW"])};
+ let cells="";
+ for(const line of grid)for(const ch of line){const cls=map[ch]||"out";let inner=cls==="chip2"?'<span class="dot"></span>':"";if(glyphFor[ch])inner=svg(glyphFor[ch]);if(cls==="shield")inner=svg(g.M4());cells+=`<div class="c ${cls}">${inner}</div>`;}
+ const tray=`<div class="slot next">${svg(g.v1b(["N","E","W"]))}<span class="lbl">NEXT</span></div><div class="slot q">${svg(g.v1b(["N"]))}</div><div class="slot q">${svg(g.D2(["NE","SW"]))}</div>`;
+ const vars=`--mask:${sk.mask};--ink:${sk.ink};--cu:${sk.copper};--cu-hi:${sk.copperHi};--inf:${sk.infect};--inf-lo:${sk.infectLo};--inf-glow:${sk.infectGlow};--inf-top:${rgba(lerp(sk.infectHi,"#ffffff",.45),.9)};--sp34:${rgba(sk.space,.34)};--sp08:${rgba(sk.space,.08)};--sp16:${rgba(sk.space,.16)}`;
+ const toks=[["mask",sk.mask],["copper",sk.copper],["infect",sk.infect],["ink",sk.ink],["space",sk.space]].map(([k,v])=>`<div class="tok"><div class="sw" style="background:${v}"></div><span class="k">${k}</span><span class="v">${v}</span></div>`).join("");
+ return `<div class="col"><h3>${sk.title}</h3><p class="n">${sk.note}</p>
+ <div class="frame"><div class="screen" style="${vars}">
+  ${background(sk,i)}
+  <div class="hud"><span class="chip">MENU</span><div class="lvl">LEVEL 6</div><span class="chip">RESET</span></div>
+  <span class="cap">LEGACY</span>
+  <span class="badge">SOLVE 03</span>
+  <div class="board">${cells}</div>
+  <div class="tray">${tray}</div>
+ </div></div>
+ <div class="tokens">${toks}</div></div>`;
+}
+document.getElementById("row").innerHTML=SKINS.map(screen).join("");
+</script>
+</body>
+</html>
