@@ -105,6 +105,9 @@ namespace GridInfect.Game
                 Warmup.AfterAction(LevelCache.Shared, State);
             };
 
+#if UNITY_ANDROID && !UNITY_EDITOR && DEVELOPMENT_BUILD
+            JniProbe.Start();   // see JniProbe: the launch-crash diagnostic
+#endif
             Ads = AdGate.Create();
             Ads.Start();
 
