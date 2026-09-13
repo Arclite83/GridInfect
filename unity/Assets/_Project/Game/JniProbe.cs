@@ -1,3 +1,9 @@
+#if UNITY_ANDROID && !UNITY_EDITOR
+using System;
+using UnityEngine;
+
+namespace GridInfect.Game
+{
     // Diagnostic for the launch crash of 2026-09-13: every Java-to-C#
     // callback died with UnsatisfiedLinkError on
     // com.unity3d.player.ReflectionHelper.nativeProxyInvoke, the bridge Unity
