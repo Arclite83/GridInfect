@@ -26,7 +26,7 @@ circuit look this section used to describe was the proof of concept; the
 timeline, spread rule, architecture and legibility rules below are unchanged.
 
 Palette lives in a `BoardPalette` ScriptableObject and nothing samples a
-literal colour. A skin is mask colour plus infection hue; everything else is
+literal colour. A skin is mask colour, copper and infection hue; everything else is
 constant. New skins are a palette swap.
 
 | Element | Default | Blue | Breadboard |
@@ -39,8 +39,8 @@ constant. New skins are a palette swap.
 | Copper highlight | `#F3E2A8` | `#FFE08A` | `#F0A878` |
 | Copper shadow | `#7D6120` | `#7A5410` | `#7A3A18` |
 | Infection | `#D9204F` | `#FF8A00` | `#7FD100` |
-| Infection highlight | `#FF7CC4` | `#FFB347` | `#C8FF55` |
-| Infection shadow | `#B3086A` | `#C25A00` | `#3F7300` |
+| Infection highlight | `#FF6E93` | `#FFB347` | `#C8FF55` |
+| Infection shadow | `#8F0A32` | `#C25A00` | `#3F7300` |
 | Glyph edge | `#4A0018` | `#4A2600` | `#1E2E00` |
 | Glyph wire | `#300010` | `#3A1D00` | `#141F00` |
 
@@ -142,7 +142,7 @@ These override any juice decision.
 
 - A cell is hard-edged and static within 350 ms of its trace landing. Flicker and ghost exist only during dissolve.
 - State is carried by fill, hatch, and glyph. Never by glow alone. A cooled infected cell is still unambiguous against an empty cell.
-- Conflict is a red overprint plus an X glyph, not a colour shift.
+- Conflict is the ice overprint plus an X glyph, not a colour shift. Red is the infection.
 - Input is never blocked by animation. Placement during a bleed is legal and the new wave starts on the same frame.
 
 ## Juice layers
