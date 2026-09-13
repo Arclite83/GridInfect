@@ -109,6 +109,14 @@ if [ $install -eq 1 ] && [ "$format" = apk ]; then
     dir=$(dirname "$dir")
   done
   [ -n "$adb" ] || adb=adb
-  "$adb" install -r "$out"
+  # A copy delivered by Play is signed with Google's key; a debug APK cannot
+  # update it in place. Remove it and retry (the app has no data worth keeping).
+  if ! "$adb" install -r "$out" 2>&1 | tee /dev/stderr | grep -q INSTALL_FAILED_UPDATE_INCOMPATIBLE; then
+    :
+  else
+    echo "signature mismatch with the installed copy; uninstalling it and retrying"
+    "$adb" uninstall com.bloodhoundstudios.gridinfect.app
+    "$adb" install -r "$out"
+  fi
   echo "installed; for the crash: \"$adb\" logcat -c, launch, then \"$adb\" logcat -d > crash.txt"
 fi
