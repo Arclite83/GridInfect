@@ -101,7 +101,7 @@ is marked **NEW — needs approval**. See the UNKNOWN section at the end.
 | R-604 | MVP | Development builds use Google's demo ad unit IDs plus registered test-device IDs; production unit IDs exist only in the release config asset (see DEPENDENCIES §5). | **NEW — needs approval** |
 | R-605 | MVP | Play compliance for ads: `AD_ID` permission declared (the plugin adds it), Data safety form covers ads/device identifiers, app is declared not child-directed. | **NEW — needs approval** |
 | R-606 | LATER | Minimal analytics event set (level start/solve/fail-reset, ad shown/clicked, session) to tune the ad cadence in R-602. | **NEW — needs approval** |
-| R-607 | MVP | Rewarded ad = one Lock (`locks.grant { 1, "rewarded" }`), offered from the board's LOCK button when the wallet is empty; uncapped. | NEXT_PASS decision 8; stage 5–6 |
+| R-607 | MVP | Rewarded ad = one Lock (`locks.grant { 1, "rewarded" }`), offered from the board's SOLVE button (reading `+1 SOLVE`) when the wallet is empty; uncapped. | NEXT_PASS decision 8; stage 5–6 |
 
 ## 7. Remove-ads IAP (all NEW)
 

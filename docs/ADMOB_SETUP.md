@@ -230,7 +230,7 @@ second does.
 `GI_KEYSTORE` in the environment it is debug-signed, which installs fine and
 uploads nowhere. Leave `AdConfig.UseTestAds` on. Solve nine boards outside
 the tutorial and the ninth's popup should carry a test interstitial; the
-LOCK button at an empty wallet should offer a test rewarded ad. That is
+SOLVE button at an empty wallet (reading `+1 SOLVE`) should offer a test rewarded ad. That is
 the whole acceptance for "ads work", and it needs nothing from Play.
 
 **Internal-testing AAB.** Generate the key (§1), export the four `GI_*`

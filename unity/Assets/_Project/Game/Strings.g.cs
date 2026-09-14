@@ -65,7 +65,7 @@ namespace GridInfect.Game
             "SETTINGS",   // settings.title
             "PRIVACY OPTIONS",   // settings.privacy
             "LANGUAGE",   // settings.language
-            "ERASES EVERY LEVEL BEATEN\nAND EVERY SCORE. LOCKS ARE KEPT.",   // settings.eraseCaption
+            "ERASES EVERY LEVEL BEATEN\nAND EVERY SCORE. SOLVES ARE KEPT.",   // settings.eraseCaption
             "V{0}   BUILD {1}",   // settings.build
             "EDITOR",   // settings.buildEditor
             "SOUND: ON",   // settings.soundOn
@@ -132,7 +132,7 @@ namespace GridInfect.Game
             "LEVEL {0}",   // board.level
             "TUTORIAL {0}/{1}",   // board.tutorialTitle
             "BEGIN",   // board.begin
-            "HINT",   // board.hint
+            "FREE SOLVE",   // board.freeSolve
             "+1 SOLVE",   // board.plusSolve
             "SOLVE {0:00}",   // board.solve
             "COMPLETE",   // board.complete
@@ -233,7 +233,7 @@ namespace GridInfect.Game
             "\u0627\u0644\u0625\u0639\u062f\u0627\u062f\u0627\u062a",   // settings.title
             "\u0627\u0644\u062e\u0635\u0648\u0635\u064a\u0629",   // settings.privacy
             "\u0627\u0644\u0644\u063a\u0629",   // settings.language
-            "\u064a\u0645\u0633\u062d \u0643\u0644 \u0645\u0633\u062a\u0648\u0649 \u0645\u0643\u062a\u0645\u0644\n\u0648\u0643\u0644 \u0646\u062a\u064a\u062c\u0629. \u0627\u0644\u0623\u0642\u0641\u0627\u0644 \u062a\u0628\u0642\u0649.",   // settings.eraseCaption
+            "\u064a\u0645\u0633\u062d \u0643\u0644 \u0645\u0633\u062a\u0648\u0649 \u0645\u0643\u062a\u0645\u0644\n\u0648\u0643\u0644 \u0646\u062a\u064a\u062c\u0629. \u0627\u0644\u062d\u0644\u0648\u0644 \u062a\u0628\u0642\u0649.",   // settings.eraseCaption
             "V{0}   BUILD {1}",   // settings.build
             "EDITOR",   // settings.buildEditor
             "\u0627\u0644\u0635\u0648\u062a: \u0645\u0634\u063a\u0644",   // settings.soundOn
@@ -300,7 +300,7 @@ namespace GridInfect.Game
             "\u0627\u0644\u0645\u0633\u062a\u0648\u0649 {0}",   // board.level
             "\u062a\u0639\u0644\u064a\u0645\u064a {0}/{1}",   // board.tutorialTitle
             "\u0627\u0628\u062f\u0623",   // board.begin
-            "\u062a\u0644\u0645\u064a\u062d",   // board.hint
+            "\u062d\u0644 \u0645\u062c\u0627\u0646\u064a",   // board.freeSolve
             "+1 \u062d\u0644",   // board.plusSolve
             "\u062d\u0644 {0:00}",   // board.solve
             "\u0645\u0643\u062a\u0645\u0644",   // board.complete
@@ -401,7 +401,7 @@ namespace GridInfect.Game
             "EINSTELLUNGEN",   // settings.title
             "DATENSCHUTZ",   // settings.privacy
             "SPRACHE",   // settings.language
-            "L\u00d6SCHT JEDES GESCHAFFTE LEVEL\nUND JEDEN REKORD. SCHL\u00d6SSER BLEIBEN.",   // settings.eraseCaption
+            "L\u00d6SCHT JEDES GESCHAFFTE LEVEL\nUND JEDEN REKORD. L\u00d6SUNGEN BLEIBEN.",   // settings.eraseCaption
             "V{0}   BUILD {1}",   // settings.build
             "EDITOR",   // settings.buildEditor
             "TON: AN",   // settings.soundOn
@@ -468,7 +468,7 @@ namespace GridInfect.Game
             "LEVEL {0}",   // board.level
             "TUTORIAL {0}/{1}",   // board.tutorialTitle
             "START",   // board.begin
-            "TIPP",   // board.hint
+            "GRATIS L\u00d6SEN",   // board.freeSolve
             "+1 L\u00d6SEN",   // board.plusSolve
             "L\u00d6SEN {0:00}",   // board.solve
             "GESCHAFFT",   // board.complete
@@ -569,7 +569,7 @@ namespace GridInfect.Game
             "AJUSTES",   // settings.title
             "PRIVACIDAD",   // settings.privacy
             "IDIOMA",   // settings.language
-            "BORRA CADA NIVEL SUPERADO\nY CADA MARCA. LOS CANDADOS SE QUEDAN.",   // settings.eraseCaption
+            "BORRA CADA NIVEL SUPERADO\nY CADA MARCA. LAS SOLUCIONES SE QUEDAN.",   // settings.eraseCaption
             "V{0}   BUILD {1}",   // settings.build
             "EDITOR",   // settings.buildEditor
             "SONIDO: S\u00cd",   // settings.soundOn
@@ -636,7 +636,7 @@ namespace GridInfect.Game
             "NIVEL {0}",   // board.level
             "TUTORIAL {0}/{1}",   // board.tutorialTitle
             "EMPEZAR",   // board.begin
-            "PISTA",   // board.hint
+            "RESOLVER GRATIS",   // board.freeSolve
             "+1 RESOLVER",   // board.plusSolve
             "RESOLVER {0:00}",   // board.solve
             "COMPLETO",   // board.complete
@@ -737,7 +737,7 @@ namespace GridInfect.Game
             "R\u00c9GLAGES",   // settings.title
             "CONFIDENTIALIT\u00c9",   // settings.privacy
             "LANGUE",   // settings.language
-            "EFFACE CHAQUE NIVEAU R\u00c9USSI\nET CHAQUE SCORE. LES VERROUS RESTENT.",   // settings.eraseCaption
+            "EFFACE CHAQUE NIVEAU R\u00c9USSI\nET CHAQUE SCORE. LES SOLUTIONS RESTENT.",   // settings.eraseCaption
             "V{0}   BUILD {1}",   // settings.build
             "EDITOR",   // settings.buildEditor
             "SON : OUI",   // settings.soundOn
@@ -804,7 +804,7 @@ namespace GridInfect.Game
             "NIVEAU {0}",   // board.level
             "TUTORIEL {0}/{1}",   // board.tutorialTitle
             "D\u00c9MARRER",   // board.begin
-            "INDICE",   // board.hint
+            "R\u00c9SOUDRE OFFERT",   // board.freeSolve
             "+1 R\u00c9SOUDRE",   // board.plusSolve
             "R\u00c9SOUDRE {0:00}",   // board.solve
             "TERMIN\u00c9",   // board.complete
@@ -905,7 +905,7 @@ namespace GridInfect.Game
             "\u05d4\u05d2\u05d3\u05e8\u05d5\u05ea",   // settings.title
             "\u05e4\u05e8\u05d8\u05d9\u05d5\u05ea",   // settings.privacy
             "\u05e9\u05e4\u05d4",   // settings.language
-            "\u05de\u05d5\u05d7\u05e7 \u05db\u05dc \u05e9\u05dc\u05d1 \u05e9\u05d4\u05d5\u05e9\u05dc\u05dd\n\u05d5\u05db\u05dc \u05ea\u05d5\u05e6\u05d0\u05d4. \u05d4\u05de\u05e0\u05e2\u05d5\u05dc\u05d9\u05dd \u05e0\u05e9\u05d0\u05e8\u05d9\u05dd.",   // settings.eraseCaption
+            "\u05de\u05d5\u05d7\u05e7 \u05db\u05dc \u05e9\u05dc\u05d1 \u05e9\u05d4\u05d5\u05e9\u05dc\u05dd\n\u05d5\u05db\u05dc \u05ea\u05d5\u05e6\u05d0\u05d4. \u05d4\u05e4\u05ea\u05e8\u05d5\u05e0\u05d5\u05ea \u05e0\u05e9\u05d0\u05e8\u05d9\u05dd.",   // settings.eraseCaption
             "V{0}   BUILD {1}",   // settings.build
             "EDITOR",   // settings.buildEditor
             "\u05e6\u05dc\u05d9\u05dc: \u05e4\u05d5\u05e2\u05dc",   // settings.soundOn
@@ -972,7 +972,7 @@ namespace GridInfect.Game
             "\u05e9\u05dc\u05d1 {0}",   // board.level
             "\u05d4\u05d3\u05e8\u05db\u05d4 {0}/{1}",   // board.tutorialTitle
             "\u05d4\u05ea\u05d7\u05dc",   // board.begin
-            "\u05e8\u05de\u05d6",   // board.hint
+            "\u05e4\u05ea\u05e8\u05d5\u05df \u05d7\u05d9\u05e0\u05dd",   // board.freeSolve
             "+1 \u05e4\u05ea\u05e8\u05d5\u05df",   // board.plusSolve
             "\u05e4\u05ea\u05e8\u05d5\u05df {0:00}",   // board.solve
             "\u05d4\u05d5\u05e9\u05dc\u05dd",   // board.complete
@@ -1073,7 +1073,7 @@ namespace GridInfect.Game
             "IMPOSTAZIONI",   // settings.title
             "PRIVACY",   // settings.privacy
             "LINGUA",   // settings.language
-            "CANCELLA OGNI LIVELLO SUPERATO\nE OGNI RECORD. I LUCCHETTI RESTANO.",   // settings.eraseCaption
+            "CANCELLA OGNI LIVELLO SUPERATO\nE OGNI RECORD. LE SOLUZIONI RESTANO.",   // settings.eraseCaption
             "V{0}   BUILD {1}",   // settings.build
             "EDITOR",   // settings.buildEditor
             "AUDIO: S\u00cc",   // settings.soundOn
@@ -1140,7 +1140,7 @@ namespace GridInfect.Game
             "LIVELLO {0}",   // board.level
             "TUTORIAL {0}/{1}",   // board.tutorialTitle
             "INIZIA",   // board.begin
-            "INDIZIO",   // board.hint
+            "RISOLVI GRATIS",   // board.freeSolve
             "+1 RISOLVI",   // board.plusSolve
             "RISOLVI {0:00}",   // board.solve
             "COMPLETO",   // board.complete
@@ -1241,7 +1241,7 @@ namespace GridInfect.Game
             "\u8a2d\u5b9a",   // settings.title
             "\u30d7\u30e9\u30a4\u30d0\u30b7\u30fc",   // settings.privacy
             "\u8a00\u8a9e",   // settings.language
-            "\u30af\u30ea\u30a2\u8a18\u9332\u3068\u30b9\u30b3\u30a2\u3092\u3059\u3079\u3066\u6d88\u3057\u307e\u3059\u3002\n\u30ed\u30c3\u30af\u306f\u6b8b\u308a\u307e\u3059\u3002",   // settings.eraseCaption
+            "\u30af\u30ea\u30a2\u8a18\u9332\u3068\u30b9\u30b3\u30a2\u3092\u3059\u3079\u3066\u6d88\u3057\u307e\u3059\u3002\n\u89e3\u304f\u56de\u6570\u306f\u6b8b\u308a\u307e\u3059\u3002",   // settings.eraseCaption
             "V{0}   BUILD {1}",   // settings.build
             "EDITOR",   // settings.buildEditor
             "\u30b5\u30a6\u30f3\u30c9: \u30aa\u30f3",   // settings.soundOn
@@ -1308,7 +1308,7 @@ namespace GridInfect.Game
             "\u30ec\u30d9\u30eb {0}",   // board.level
             "\u30c1\u30e5\u30fc\u30c8\u30ea\u30a2\u30eb {0}/{1}",   // board.tutorialTitle
             "\u30b9\u30bf\u30fc\u30c8",   // board.begin
-            "\u30d2\u30f3\u30c8",   // board.hint
+            "\u7121\u6599\u3067\u89e3\u304f",   // board.freeSolve
             "+1 \u89e3\u304f",   // board.plusSolve
             "\u89e3\u304f {0:00}",   // board.solve
             "\u30af\u30ea\u30a2",   // board.complete
@@ -1409,7 +1409,7 @@ namespace GridInfect.Game
             "\uc124\uc815",   // settings.title
             "\uac1c\uc778\uc815\ubcf4",   // settings.privacy
             "\uc5b8\uc5b4",   // settings.language
-            "\ud074\ub9ac\uc5b4\ud55c \ubaa8\ub4e0 \ub808\ubca8\uacfc \uae30\ub85d\uc744 \uc9c0\uc6c1\ub2c8\ub2e4.\n\uc7a0\uae08\uc740 \ub0a8\uc2b5\ub2c8\ub2e4.",   // settings.eraseCaption
+            "\ud074\ub9ac\uc5b4\ud55c \ubaa8\ub4e0 \ub808\ubca8\uacfc \uae30\ub85d\uc744 \uc9c0\uc6c1\ub2c8\ub2e4.\n\ud480\uae30 \ud69f\uc218\ub294 \ub0a8\uc2b5\ub2c8\ub2e4.",   // settings.eraseCaption
             "V{0}   BUILD {1}",   // settings.build
             "EDITOR",   // settings.buildEditor
             "\uc18c\ub9ac: \ucf1c\uc9d0",   // settings.soundOn
@@ -1476,7 +1476,7 @@ namespace GridInfect.Game
             "\ub808\ubca8 {0}",   // board.level
             "\ud29c\ud1a0\ub9ac\uc5bc {0}/{1}",   // board.tutorialTitle
             "\uc2dc\uc791",   // board.begin
-            "\ud78c\ud2b8",   // board.hint
+            "\ubb34\ub8cc \ud480\uae30",   // board.freeSolve
             "+1 \ud480\uae30",   // board.plusSolve
             "\ud480\uae30 {0:00}",   // board.solve
             "\ud074\ub9ac\uc5b4",   // board.complete
@@ -1577,7 +1577,7 @@ namespace GridInfect.Game
             "AJUSTES",   // settings.title
             "PRIVACIDADE",   // settings.privacy
             "IDIOMA",   // settings.language
-            "APAGA CADA FASE VENCIDA\nE CADA RECORDE. OS CADEADOS FICAM.",   // settings.eraseCaption
+            "APAGA CADA FASE VENCIDA\nE CADA RECORDE. AS SOLU\u00c7\u00d5ES FICAM.",   // settings.eraseCaption
             "V{0}   BUILD {1}",   // settings.build
             "EDITOR",   // settings.buildEditor
             "SOM: LIGADO",   // settings.soundOn
@@ -1644,7 +1644,7 @@ namespace GridInfect.Game
             "FASE {0}",   // board.level
             "TUTORIAL {0}/{1}",   // board.tutorialTitle
             "COME\u00c7AR",   // board.begin
-            "DICA",   // board.hint
+            "RESOLVER GR\u00c1TIS",   // board.freeSolve
             "+1 RESOLVER",   // board.plusSolve
             "RESOLVER {0:00}",   // board.solve
             "COMPLETO",   // board.complete
@@ -1745,7 +1745,7 @@ namespace GridInfect.Game
             "\u041d\u0410\u0421\u0422\u0420\u041e\u0419\u041a\u0418",   // settings.title
             "\u041a\u041e\u041d\u0424\u0418\u0414\u0415\u041d\u0426\u0418\u0410\u041b\u042c\u041d\u041e\u0421\u0422\u042c",   // settings.privacy
             "\u042f\u0417\u042b\u041a",   // settings.language
-            "\u0421\u0422\u0418\u0420\u0410\u0415\u0422 \u0412\u0421\u0415 \u041f\u0420\u041e\u0419\u0414\u0415\u041d\u041d\u042b\u0415 \u0423\u0420\u041e\u0412\u041d\u0418\n\u0418 \u0420\u0415\u041a\u041e\u0420\u0414\u042b. \u0417\u0410\u041c\u041a\u0418 \u041e\u0421\u0422\u0410\u042e\u0422\u0421\u042f.",   // settings.eraseCaption
+            "\u0421\u0422\u0418\u0420\u0410\u0415\u0422 \u0412\u0421\u0415 \u041f\u0420\u041e\u0419\u0414\u0415\u041d\u041d\u042b\u0415 \u0423\u0420\u041e\u0412\u041d\u0418\n\u0418 \u0420\u0415\u041a\u041e\u0420\u0414\u042b. \u0420\u0415\u0428\u0415\u041d\u0418\u042f \u041e\u0421\u0422\u0410\u042e\u0422\u0421\u042f.",   // settings.eraseCaption
             "V{0}   BUILD {1}",   // settings.build
             "EDITOR",   // settings.buildEditor
             "\u0417\u0412\u0423\u041a: \u0412\u041a\u041b",   // settings.soundOn
@@ -1812,7 +1812,7 @@ namespace GridInfect.Game
             "\u0423\u0420\u041e\u0412\u0415\u041d\u042c {0}",   // board.level
             "\u041e\u0411\u0423\u0427\u0415\u041d\u0418\u0415 {0}/{1}",   // board.tutorialTitle
             "\u041d\u0410\u0427\u0410\u0422\u042c",   // board.begin
-            "\u041f\u041e\u0414\u0421\u041a\u0410\u0417\u041a\u0410",   // board.hint
+            "\u0420\u0415\u0428\u0418\u0422\u042c \u0411\u0415\u0421\u041f\u041b\u0410\u0422\u041d\u041e",   // board.freeSolve
             "+1 \u0420\u0415\u0428\u0418\u0422\u042c",   // board.plusSolve
             "\u0420\u0415\u0428\u0418\u0422\u042c {0:00}",   // board.solve
             "\u0413\u041e\u0422\u041e\u0412\u041e",   // board.complete
@@ -1913,7 +1913,7 @@ namespace GridInfect.Game
             "AYARLAR",   // settings.title
             "G\u0130ZL\u0130L\u0130K",   // settings.privacy
             "D\u0130L",   // settings.language
-            "GE\u00c7\u0130LEN HER B\u00d6L\u00dcM\u00dc VE HER SKORU\nS\u0130LER. K\u0130L\u0130TLER KALIR.",   // settings.eraseCaption
+            "GE\u00c7\u0130LEN HER B\u00d6L\u00dcM\u00dc VE HER SKORU\nS\u0130LER. \u00c7\u00d6Z\u00dcMLER KALIR.",   // settings.eraseCaption
             "V{0}   BUILD {1}",   // settings.build
             "EDITOR",   // settings.buildEditor
             "SES: A\u00c7IK",   // settings.soundOn
@@ -1980,7 +1980,7 @@ namespace GridInfect.Game
             "B\u00d6L\u00dcM {0}",   // board.level
             "E\u011e\u0130T\u0130M {0}/{1}",   // board.tutorialTitle
             "BA\u015eLA",   // board.begin
-            "\u0130PUCU",   // board.hint
+            "\u00dcCRETS\u0130Z \u00c7\u00d6Z",   // board.freeSolve
             "+1 \u00c7\u00d6Z",   // board.plusSolve
             "\u00c7\u00d6Z {0:00}",   // board.solve
             "TAMAM",   // board.complete
@@ -2081,7 +2081,7 @@ namespace GridInfect.Game
             "\u8bbe\u7f6e",   // settings.title
             "\u9690\u79c1",   // settings.privacy
             "\u8bed\u8a00",   // settings.language
-            "\u6e05\u9664\u6240\u6709\u5df2\u901a\u5173\u5173\u5361\u548c\u5206\u6570\u3002\n\u9501\u4f1a\u4fdd\u7559\u3002",   // settings.eraseCaption
+            "\u6e05\u9664\u6240\u6709\u5df2\u901a\u5173\u5173\u5361\u548c\u5206\u6570\u3002\n\u89e3\u9898\u6b21\u6570\u4f1a\u4fdd\u7559\u3002",   // settings.eraseCaption
             "V{0}   BUILD {1}",   // settings.build
             "EDITOR",   // settings.buildEditor
             "\u58f0\u97f3\uff1a\u5f00",   // settings.soundOn
@@ -2148,7 +2148,7 @@ namespace GridInfect.Game
             "\u7b2c {0} \u5173",   // board.level
             "\u6559\u7a0b {0}/{1}",   // board.tutorialTitle
             "\u5f00\u59cb",   // board.begin
-            "\u63d0\u793a",   // board.hint
+            "\u514d\u8d39\u89e3\u9898",   // board.freeSolve
             "+1 \u89e3\u9898",   // board.plusSolve
             "\u89e3\u9898 {0:00}",   // board.solve
             "\u5b8c\u6210",   // board.complete
@@ -2249,7 +2249,7 @@ namespace GridInfect.Game
             "\u8a2d\u5b9a",   // settings.title
             "\u96b1\u79c1",   // settings.privacy
             "\u8a9e\u8a00",   // settings.language
-            "\u6e05\u9664\u6240\u6709\u5df2\u904e\u95dc\u7684\u95dc\u5361\u8207\u5206\u6578\u3002\n\u9396\u6703\u4fdd\u7559\u3002",   // settings.eraseCaption
+            "\u6e05\u9664\u6240\u6709\u5df2\u904e\u95dc\u7684\u95dc\u5361\u8207\u5206\u6578\u3002\n\u89e3\u984c\u6b21\u6578\u6703\u4fdd\u7559\u3002",   // settings.eraseCaption
             "V{0}   BUILD {1}",   // settings.build
             "EDITOR",   // settings.buildEditor
             "\u97f3\u6548\uff1a\u958b",   // settings.soundOn
@@ -2316,7 +2316,7 @@ namespace GridInfect.Game
             "\u7b2c {0} \u95dc",   // board.level
             "\u6559\u5b78 {0}/{1}",   // board.tutorialTitle
             "\u958b\u59cb",   // board.begin
-            "\u63d0\u793a",   // board.hint
+            "\u514d\u8cbb\u89e3\u984c",   // board.freeSolve
             "+1 \u89e3\u984c",   // board.plusSolve
             "\u89e3\u984c {0:00}",   // board.solve
             "\u5b8c\u6210",   // board.complete
@@ -2417,7 +2417,7 @@ namespace GridInfect.Game
             "[\u0160\u00c9TT\u00cd\u00d1\u011e\u0160\u00b7\u00b7\u00b7]",   // settings.title
             "[PR\u00cdV\u00c1\u00c7\u00dd \u00d3PT\u00cd\u00d3\u00d1\u0160\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]",   // settings.privacy
             "[L\u00c1\u00d1\u011e\u00da\u00c1\u011e\u00c9\u00b7\u00b7\u00b7]",   // settings.language
-            "[\u00c9R\u00c1\u0160\u00c9\u0160 \u00c9V\u00c9R\u00dd L\u00c9V\u00c9L B\u00c9\u00c1T\u00c9\u00d1\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]\n[\u00c1\u00d1\u0110 \u00c9V\u00c9R\u00dd \u0160\u00c7\u00d3R\u00c9. L\u00d3\u00c7K\u0160 \u00c1R\u00c9 K\u00c9PT.\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]",   // settings.eraseCaption
+            "[\u00c9R\u00c1\u0160\u00c9\u0160 \u00c9V\u00c9R\u00dd L\u00c9V\u00c9L B\u00c9\u00c1T\u00c9\u00d1\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]\n[\u00c1\u00d1\u0110 \u00c9V\u00c9R\u00dd \u0160\u00c7\u00d3R\u00c9. \u0160\u00d3LV\u00c9\u0160 \u00c1R\u00c9 K\u00c9PT.\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]",   // settings.eraseCaption
             "[V\u00b7{0}   B\u00da\u00cdL\u0110 \u00b7\u00b7{1}]",   // settings.build
             "[\u00c9\u0110\u00cdT\u00d3R\u00b7\u00b7]",   // settings.buildEditor
             "[\u0160\u00d3\u00da\u00d1\u0110: \u00d3\u00d1\u00b7\u00b7\u00b7]",   // settings.soundOn
@@ -2484,7 +2484,7 @@ namespace GridInfect.Game
             "[L\u00c9V\u00c9L \u00b7\u00b7{0}]",   // board.level
             "[T\u00daT\u00d3R\u00cd\u00c1L \u00b7\u00b7\u00b7{0}/{1}]",   // board.tutorialTitle
             "[B\u00c9\u011e\u00cd\u00d1\u00b7\u00b7]",   // board.begin
-            "[H\u00cd\u00d1T\u00b7\u00b7]",   // board.hint
+            "[FR\u00c9\u00c9 \u0160\u00d3LV\u00c9\u00b7\u00b7\u00b7\u00b7]",   // board.freeSolve
             "[+1 \u0160\u00d3LV\u00c9\u00b7\u00b7]",   // board.plusSolve
             "[\u0160\u00d3LV\u00c9 \u00b7\u00b7{0:00}]",   // board.solve
             "[\u00c7\u00d3MPL\u00c9T\u00c9\u00b7\u00b7\u00b7]",   // board.complete
@@ -2723,7 +2723,7 @@ namespace GridInfect.Game
         public static string BoardLevel => _v[80];
         public static string BoardTutorialTitle => _v[81];
         public static string BoardBegin => _v[82];
-        public static string BoardHint => _v[83];
+        public static string BoardFreeSolve => _v[83];
         public static string BoardPlusSolve => _v[84];
         public static string BoardSolve => _v[85];
         public static string BoardComplete => _v[86];
