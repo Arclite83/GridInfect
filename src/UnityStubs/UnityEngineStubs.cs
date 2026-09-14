@@ -60,6 +60,8 @@ namespace UnityEngine
     {
         public float x, y, width, height;
         public Rect(float x, float y, float width, float height) { this.x = x; this.y = y; this.width = width; this.height = height; }
+        public float yMin => y;
+        public float yMax => y + height;
         public bool Contains(Vector2 point) => false;
     }
 
@@ -317,6 +319,7 @@ namespace UnityEngine
     {
         public static int width => 1280;
         public static int height => 720;
+        public static Rect safeArea => new Rect(0f, 0f, width, height);
     }
 
     public static class QualitySettings
