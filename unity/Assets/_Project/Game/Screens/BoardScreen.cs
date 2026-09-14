@@ -129,7 +129,7 @@ namespace GridInfect.Game
             // solution cell and locks it. The counter badge under RESET, off
             // the board: mono 13 px copperHi on black 35%, sized to the widest
             // thing it ever says in this language so it never changes shape.
-            var badge = Ui.BadgeBox(Str.Fmt(Str.BoardSolve, 99), Str.BoardPlusSolve, Str.BoardHint);
+            var badge = Ui.BadgeBox(Str.Fmt(Str.BoardSolve, 99), Str.BoardPlusSolve, Str.BoardFreeSolve);
             float badgeY = h / 2f - S.Px(S.BadgeTop) - L.HudDrop - badge.y / 2f;
             _captionMaxW = w - 2f * S.Px(S.HudInset) - badge.x - L.Gap;
             _lockButton = UiButton.Make(Root.transform, "",
@@ -576,18 +576,20 @@ namespace GridInfect.Game
         // With an empty wallet the button becomes the rewarded placement
         // (NEXT_PASS decision 8): watch an ad, earn one lock. On a replay the
         // tool costs nothing (piece.lock never touches the wallet there), so
-        // the button says HINT instead of counting down a price it will not
-        // charge — and stays live at wallet 0.
+        // the button says FREE SOLVE instead of counting down a price it will
+        // not charge — and stays live at wallet 0.
         void RefreshLockLabel()
         {
             if (_lockButton?.Label == null || Tutorial) return;
             bool replay = Queries.IsReplay(App.State);
             int locks = App.State.Profile.Locks;
             bool rewarded = !replay && locks == 0 && App.Ads.RewardedAvailable;
-            // "SOLVE", not "LOCK": what the player buys is one piece solved
-            // for them. Locking is what the rules then do to it, which is the
-            // mechanism, not the offer.
-            _lockButton.Label.text = replay ? Str.BoardHint
+            // "SOLVE", never "LOCK" or "HINT": what the player buys is one
+            // piece solved for them, and the same word names it whether it
+            // costs (SOLVE nn), is earned (+1 SOLVE) or is free (FREE SOLVE).
+            // Locking is what the rules then do to it, which is the mechanism,
+            // not the offer.
+            _lockButton.Label.text = replay ? Str.BoardFreeSolve
                 : rewarded ? Str.BoardPlusSolve
                 : Str.Fmt(Str.BoardSolve, locks);
             _lockButton.OnClick = rewarded ? EarnLock : (System.Action)LockPiece;

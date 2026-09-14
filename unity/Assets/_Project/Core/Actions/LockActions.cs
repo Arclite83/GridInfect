@@ -13,8 +13,8 @@ namespace GridInfect.Core
     // back to the tray.
     //
     // On a replay (Queries.IsReplay) the lock is free and the wallet is not
-    // even consulted: the level is already beaten, so a hint on it is not a
-    // shortcut past anything the player has not already done.
+    // even consulted: the level is already beaten, so a free solve on it is
+    // not a shortcut past anything the player has not already done.
     public sealed class LockPieceAction : GameAction<GameState>
     {
         public override string Name => "piece.lock";

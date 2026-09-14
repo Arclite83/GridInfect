@@ -101,7 +101,9 @@ stored solution per level, which generator v2 produces and the classic
 vectors already hold — so Legacy can have Solve too.
 
 The button reads `SOLVE nn`, `+1 SOLVE` at an empty wallet with a rewarded ad
-available, and `HINT` on a replay (where it costs nothing). It was called
+available, and `FREE SOLVE` on a replay (where it costs nothing). One word
+for one tool: the player never reads "hint" or "lock" anywhere, and the
+settings erase caption counts solves, not locks. It was called
 "Lock" and that is still its name throughout the code, the `piece.lock`
 action and the `"locks"` save key — but locking is the mechanism, not the
 offer. What the player buys is one piece solved for them, so that is what the

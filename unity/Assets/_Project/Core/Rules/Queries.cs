@@ -56,7 +56,7 @@ namespace GridInfect.Core
             profile.SolvedClassic.Count >= ClassicLevels.Count;
 
         // A replay: the level in play has already been beaten once, so the
-        // Lock tool is on the house (a hint cannot cost what the player has
+        // Lock tool is on the house (a solve cannot cost what the player has
         // already paid). Read straight off the solved set now that one
         // exists — the old proxy was progression, which could not see the
         // last Legacy level because it opens nothing.
