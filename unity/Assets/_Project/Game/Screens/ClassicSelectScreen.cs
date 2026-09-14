@@ -39,8 +39,13 @@ namespace GridInfect.Game
 
             var title = Ui.MakeText("title", Root.transform, Str.LegacyTitle, L.HeadingText, BoardTheme.Text, 2, maxWidthPx: L.TitleWidth);
             Ui.SetPos(title.gameObject, 0f, L.TopBarY);
+            // The caption spans the content width, so it hangs under the
+            // menu chip's bottom edge rather than under the title's: hung
+            // from the title it started inside the chip's box and ran under
+            // MENÜ (and, less visibly, MENU). Half a Gap of clearance keeps
+            // it off the chip's glass.
             float captionPx = L.BodyText * 0.8f;
-            float captionY = L.TopBarY - L.HeadingText * 0.55f - captionPx * 0.7f;
+            float captionY = L.TopBarY - L.BackSize.y / 2f - L.Gap / 2f - captionPx / 2f;
             var caption = Ui.MakeText("caption", Root.transform, Str.LegacyCaption, captionPx, BoardTheme.TextDim, 2,
                 maxWidthPx: L.ContentWidth);
             Ui.SetPos(caption.gameObject, 0f, captionY);
