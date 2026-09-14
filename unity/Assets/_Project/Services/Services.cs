@@ -42,6 +42,10 @@ namespace GridInfect.Services
 
     public interface IPurchaseService
     {
+        // ready fires when the store has answered the ownership question, one
+        // way or the other, and never before: RemoveAdsOwned is meaningless
+        // until it does. It can fire more than once (a later receipt query
+        // answers again), so handlers have to be idempotent.
         void Initialize(Action ready);
         // R-701: the single non-consumable; owning it suppresses interstitials only.
         bool RemoveAdsOwned { get; }
