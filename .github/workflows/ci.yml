@@ -23,6 +23,7 @@ jobs:
           python3 tools/bake_levels.py
           python3 tools/gen_undo_fixtures.py
           python3 tools/gen_level_metrics_golden.py
+          python3 tools/gen_last_piece_golden.py
           python3 tools/bake_worlds.py
           python3 tools/sync_palette_asset.py
           python3 tools/bake_strings.py
@@ -30,6 +31,7 @@ jobs:
                                   unity/Assets/_Project/Core/Levels/WorldData.g.cs \
                                   unity/Assets/_Project/Tests/EditMode/UndoFixtures.g.cs \
                                   docs/level_metrics_classic.json \
+                                  docs/last_piece_classic.json \
                                   unity/Assets/_Project/Resources/BoardPalette.asset \
                                   unity/Assets/_Project/Game/Strings.g.cs
 

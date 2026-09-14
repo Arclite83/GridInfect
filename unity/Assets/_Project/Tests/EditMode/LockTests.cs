@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using GridInfect.Core.Solving;
 using NUnit.Framework;
 
@@ -42,6 +43,93 @@ namespace GridInfect.Core.Tests
                     Assert.That(d.State.Profile.Locks, Is.EqualTo(55 - locks));
                 }
             }
+        }
+
+        // The last-piece bug: on a board with a switch or a trap the Lock
+        // tool used to pin whatever the deducer forced next, which on 13 of
+        // the 128 Legacy levels was a placement that only wins last — a
+        // locked piece never comes up again, so the board could not be
+        // finished afterwards. Lock now passes over any placement whose
+        // arms reach a switch or a trap until it is the one that wins.
+        [Test]
+        public void LockNeverStrandsALegacyLevel()
+        {
+            var declined = new List<int>();
+            for (int id = 0; id < ClassicLevels.Count; id++)
+            {
+                var d = Rich();
+                Assert.That(d.Dispatch(GridInfectActions.LevelLoad, Inputs.LevelLoad(id)).Applied);
+                var s = d.State.Session;
+                int locks = 0;
+                while (!s.Solved)
+                {
+                    var lockResult = d.Dispatch(GridInfectActions.PieceLock);
+                    if (!lockResult.Applied)
+                    {
+                        // Declining is allowed — stranding the board is not.
+                        declined.Add(id);
+                        break;
+                    }
+                    Assert.That(d.Dispatch(GridInfectActions.BoardResolve).Applied);
+                    locks++;
+                    Assert.That(locks, Is.LessThanOrEqualTo(s.Pieces.Length), $"level {id}: too many locks");
+                    if (s.Solved) break;
+                    Assert.That(SolutionCounter.Count(s.Def, Pinned(s), 64), Is.GreaterThanOrEqualTo(1),
+                        $"level {id}: lock {locks} left the level unwinnable");
+                }
+            }
+            // Legacy 27 (id 26) is the one board where every placement
+            // reaches the switch, so the tool runs out of pieces it can
+            // pin without stranding the level and says so rather than
+            // pinning one anyway.
+            Assert.That(declined, Is.EqualTo(new List<int> { 26 }));
+        }
+
+        // The same from where a player actually asks for a hint: some of
+        // the solution already down, correctly, in the order the vector
+        // records it.
+        [Test]
+        public void LockNeverStrandsALegacyLevelUnderAPartialSolve()
+        {
+            for (int id = 0; id < ClassicLevels.Count; id++)
+            {
+                var solution = ClassicLevels.Solution(id);
+                for (int placed = 0; placed < solution.Length - 1; placed++)
+                {
+                    var d = Rich();
+                    Assert.That(d.Dispatch(GridInfectActions.LevelLoad, Inputs.LevelLoad(id)).Applied);
+                    var s = d.State.Session;
+                    bool alive = true;
+                    for (int n = 0; n < placed && alive; n++)
+                    {
+                        var (piece, cell) = solution[n];
+                        Assert.That(d.Dispatch(GridInfectActions.PiecePlace,
+                            Inputs.PiecePlace(piece, cell / Grid.Width, cell % Grid.Width)).Applied);
+                        d.Dispatch(GridInfectActions.BoardResolve);
+                        alive = !s.Solved;
+                    }
+                    if (!alive) continue;
+                    var lockResult = d.Dispatch(GridInfectActions.PieceLock);
+                    if (!lockResult.Applied) continue;
+                    d.Dispatch(GridInfectActions.BoardResolve);
+                    if (s.Solved) continue;
+                    Assert.That(SolutionCounter.Count(s.Def, Pinned(s), 64), Is.GreaterThanOrEqualTo(1),
+                        $"level {id}: a lock after {placed} correct pieces left the level unwinnable");
+                }
+            }
+        }
+
+        // What the player cannot undo: the locked pieces alone. Their own
+        // go back to the tray on a reset, so the level is winnable as long
+        // as something wins with these pinned.
+        static PieceState[] Pinned(LevelSession s)
+        {
+            var pinned = new PieceState[s.Pieces.Length];
+            for (int k = 0; k < pinned.Length; k++)
+            {
+                if (s.Pieces[k].Locked) pinned[k] = s.Pieces[k];
+            }
+            return pinned;
         }
 
         [Test]

@@ -8,7 +8,9 @@ namespace GridInfect.Core
     // and lock it there (NEXT_PASS "Lock"). Which piece: the deducer's next
     // forced placement given the player's currently correct pieces; failing
     // that, the unplaced piece with the largest coverage in the stored
-    // solution. A player piece on the target cell goes back to the tray.
+    // solution — in both cases one the board will take now and not only at
+    // the end (Lock.ChooseTarget). A player piece on the target cell goes
+    // back to the tray.
     //
     // On a replay (Queries.IsReplay) the lock is free and the wallet is not
     // even consulted: the level is already beaten, so a hint on it is not a
@@ -119,41 +121,124 @@ namespace GridInfect.Core
 
         // The next placement to lock: (piece index, cell), or null when
         // every solution cell is already correctly held.
+        //
+        // Order matters on a board with a switch or a trap: a placement
+        // whose arm ends on a trap resets the board, and one whose arm ends
+        // on a switch repels the infection back off the cells behind it —
+        // neither of which happens to the placement that *wins*, because
+        // the win check runs first (RULES §4.1). So such a placement is
+        // often the level's last piece, and the player can play one early
+        // and lift it again where a lock never comes up. A candidate whose
+        // arms reach a switch or a trap is therefore passed over until it
+        // is the placement that wins. Every last piece reaches one — that
+        // is what makes it last — so the arm test never misses one, and
+        // no search is needed to find it.
+        //
+        // On a board where the arm test rules out everything (Legacy 26 is
+        // the only one that ships), the exact question gets asked instead:
+        // would this level still be winnable with the piece pinned
+        // (PlacementOrder.KeepsWinnable). It is the slow way round and the
+        // arm test almost always answers first.
         public static (int piece, int cell)? ChooseTarget(GameState state)
         {
             var s = state.Session;
             var correct = CorrectPieces(state);
             var map = new LineMap(s.Def);
+            return Pick(state, map, correct, exact: false) ?? Pick(state, map, correct, exact: true);
+        }
 
-            // 1. The deducer's next forced placement from the correct pieces,
-            //    preferring one whose arms trip no trap (a locked tripper
-            //    resets the board every time a later placement trips).
+        static (int piece, int cell)? Pick(GameState state, LineMap map, PieceState[] correct, bool exact)
+        {
+            var s = state.Session;
+
+            // 1. The deducer's next forced placement from the correct pieces.
             var solve = Deducer.Solve(s.Def, correct);
             if (solve.Solved && solve.Trace.Length > 0)
             {
-                var candidates = new List<(int piece, int cell)>();
-                foreach (var d in solve.Trace) candidates.Add((d.Piece, d.Cell));
-                foreach (var c in candidates)
+                foreach (var d in solve.Trace)
                 {
-                    if (!map.TripsTrap(s.Def.Specs[c.piece], c.cell)) return Resolve(state, correct, c);
+                    var target = Resolve(state, correct, (d.Piece, d.Cell));
+                    if (Safe(state, map, target, exact)) return target;
                 }
-                return Resolve(state, correct, candidates[0]);
             }
 
-            // 2. Fallback: the unclaimed stored placement with the largest coverage.
+            // 2. Fallback: the unclaimed stored placement with the largest
+            //    coverage, skipping any the guard rules out.
             var claimed = ClaimedEntries(state, correct);
-            int best = -1, bestCoverage = -1;
+            var ranked = new List<(int index, int coverage)>();
             for (int n = 0; n < state.Solution.Length; n++)
             {
                 if (claimed[n]) continue;
                 var (piece, cell) = state.Solution[n];
-                int coverage = map.Coverage(s.Def.Specs[piece], cell).Count;
-                bool trips = map.TripsTrap(s.Def.Specs[piece], cell);
-                int score = coverage - (trips ? 1000 : 0);
-                if (score > bestCoverage) { best = n; bestCoverage = score; }
+                ranked.Add((n, map.Coverage(s.Def.Specs[piece], cell).Count));
             }
-            if (best < 0) return null;
-            return Resolve(state, correct, state.Solution[best]);
+            ranked.Sort((a, b) => b.coverage.CompareTo(a.coverage));
+            foreach (var (index, _) in ranked)
+            {
+                var target = Resolve(state, correct, state.Solution[index]);
+                if (Safe(state, map, target, exact)) return target;
+            }
+            return null;
+        }
+
+        // May this placement be pinned now? A board with neither switch nor
+        // trap never un-infects a cell, so order cannot matter there and
+        // anything goes. Everywhere else the placement that wins is always
+        // safe — it wins iff its spread takes every cell the live board
+        // still leaves uninfected, and only while no piece of the player's
+        // has to be evicted off the cell first, since that eviction would
+        // un-infect cells of its own. Anything else that reaches a switch
+        // or a trap waits, unless `exact` is set, when the level itself is
+        // asked whether it survives the pin.
+        static bool Safe(GameState state, LineMap map, (int piece, int cell)? target, bool exact)
+        {
+            if (target == null) return false;
+            if (!map.HasDynamics) return true;
+            var s = state.Session;
+            var (piece, cell) = target.Value;
+            var spread = map.Spread(s.Def.Specs[piece], cell);
+            if (!spread.Trips && !spread.Switches) return true;
+            if (!Occupied(s, cell) && Covers(spread, s)) return true;
+            return exact && KeepsWinnable(s, piece, cell);
+        }
+
+        // The pinned set as it would stand — the locks already down, plus
+        // this one — put to the solver. The player's own pieces are not in
+        // it: those they can lift, and a full reset lifts them anyway.
+        static bool KeepsWinnable(LevelSession s, int piece, int cell)
+        {
+            var pinned = new PieceState[s.Pieces.Length];
+            for (int k = 0; k < pinned.Length; k++)
+            {
+                if (s.Pieces[k].Locked) pinned[k] = s.Pieces[k];
+            }
+            pinned[piece] = new PieceState
+            {
+                Tile = s.Pieces[piece].Tile, Placed = true, Locked = true,
+                I = (sbyte)(cell / Grid.Width), J = (sbyte)(cell % Grid.Width),
+            };
+            return PlacementOrder.KeepsWinnable(s.Def, pinned);
+        }
+
+        static bool Occupied(LevelSession s, int cell)
+        {
+            int i = cell / Grid.Width, j = cell % Grid.Width;
+            for (int k = 0; k < s.Pieces.Length; k++)
+            {
+                if (s.Pieces[k].Placed && s.Pieces[k].I == i && s.Pieces[k].J == j) return true;
+            }
+            return false;
+        }
+
+        // Does this placement's spread take every cell the live board still
+        // leaves uninfected? Then placing it wins.
+        static bool Covers(LineMap.SpreadResult spread, LevelSession s)
+        {
+            for (int loc = 0; loc < Grid.Cells; loc++)
+            {
+                if (s.Board[loc] == Cell.Active && !spread.Covered.Has(loc)) return false;
+            }
+            return true;
         }
 
         // Map a (piece, cell) from a solver or the stored solution to an
