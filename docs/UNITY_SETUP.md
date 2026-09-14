@@ -197,7 +197,8 @@ the source changes: the cut is committed, and the `.meta`'s guid is what
 tools/build-android.sh              # APK, debug-signed
 tools/build-android.sh --install    # and adb install -r it
 tools/build-android.sh --dev        # development build: C# stacks in logcat
-tools/build-android.sh aab          # signed AAB for Play, next versionCode
+tools/build-android.sh aab          # signed AAB for Play, next versionCode, committed
+tools/build-android.sh aab --no-commit   # same, but leave the versionCode hunk in the tree
 ```
 
 The script finds the Hub editor for the pinned version (`UNITY=/path/to/Unity`
@@ -259,10 +260,15 @@ What the script does on every build:
   the module, which is how it was found; the plugin's DLLs do not.
 - Takes the next `AndroidBundleVersionCode` on every AAB build and writes
   it to `ProjectSettings.asset`. Play rejects an upload whose versionCode
-  it has already seen on any track, so commit that hunk after each upload
-  build, or the next machine starts from a used number. `GI_VERSION_CODE`
-  forces a specific value (CI can pass a run number). APK builds keep the
-  stored code. `bundleVersion` (the `0.1.0` players see) is still by hand.
+  it has already seen on any track, so that hunk has to be committed after
+  each upload build, or the next machine starts from a used number.
+  `tools/build-android.sh aab` commits it itself as `build <code>` once the
+  bundle exists (`--no-commit` leaves it; a `ProjectSettings.asset` that was
+  already dirty before the build is left alone too, with a message). Push
+  is still yours. A build from the editor menu leaves the hunk to commit by
+  hand. `GI_VERSION_CODE` forces a specific value (CI can pass a run
+  number). APK builds keep the stored code. `bundleVersion` (the `0.1.0`
+  players see) is still by hand.
 
 **Before the first Play upload** (R-1201, R-1203): the application
 identifier is `com.bloodhoundstudios.gridinfect.app` (`MobileBuild.AppId` and
