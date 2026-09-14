@@ -104,7 +104,7 @@ live in `Queries` and carry zero rules.
 | `endless.begin` | `grade, seed` | DailyActions | start an Endless run: no clock, boards from the logged seed (`EndlessRun.SeedAt` — one definition, shared with the warmer and the loading card) |
 | `endless.advance` | — | DailyActions | solved: streak +1 (or 1 after a reset), best per grade, next board |
 | `endless.abort` | — | DailyActions | leave a run |
-| `piece.lock` | — | LockActions | spend one lock: the deducer's next forced placement from the player's correct pieces (fallback: largest-coverage unplaced piece of the stored solution), evicting a player piece on that cell, placed and locked; rejects at wallet 0 or nothing left. Free on a replay (`Queries.IsReplay`): an already-beaten level never charges for a hint |
+| `piece.lock` | — | LockActions | spend one lock: the deducer's next forced placement from the player's correct pieces (fallback: largest-coverage unplaced piece of the stored solution), evicting a player piece on that cell, placed and locked; rejects at wallet 0 or nothing left. A placement whose arms reach a switch or a trap waits: on such a board it is often the level's **last piece** (only ever wins last, RULES §4.1) and a lock never comes up again, so it is offered only as the placement that wins — the arm test is a superset of the last pieces, proven against the oracle in `docs/last_piece_classic.json`. Free on a replay (`Queries.IsReplay`): an already-beaten level never charges for a hint |
 | `locks.grant` | `amount, reason` | LockActions | `"rewarded"` (an ad) is uncapped; other reasons (`"streak"`, dispatched by the adapter on every 7th daily) top up to the cap |
 | `tutorial.load` | `index` | TutorialActions | enter a tutorial step (`TutorialLevels`: ten hand-authored boards, one mechanic and one sentence each, every one with exactly one solution); the stored solution is the marks the board screen draws. Nothing is gated: the forward chevron's gate is the adapter's |
 | `tutorial.solved` | `index` | TutorialActions | a step has been beaten; keeps the highest beaten plus one (where the series resumes, how far forward opens). Survives `progress.reset` |
@@ -157,7 +157,10 @@ layered:
 4. **Solver**: `SolutionCounter` mirrors the `tools/level_metrics.py` search step for
    step and is pinned to its output on all 128 levels
    (`docs/level_metrics_classic.json`); `Deducer` may only report a solve on
-   a level that counter finds unique. The solver reads `Rules` on scratch
+   a level that counter finds unique. `PlacementOrder` names the placements a
+   solution will not accept before the end — the last piece — and is pinned to
+   its own oracle over the same 128 levels (`docs/last_piece_classic.json`,
+   `tools/gen_last_piece_golden.py`: 84 of them have one). The solver reads `Rules` on scratch
    sessions to check placement order; it never touches game state.
 5. **Constructor**: every accepted level is unique by the counter with its
    locks fixed, its stored solution wins through the real rules, and each
@@ -198,13 +201,15 @@ change policy (§9), not by a test.
   levels replaying their recorded solutions against per-step golden boards
   (`VectorReplayTests`), the undo path against the Python reference
   (`UndoTests`), the solution counter against `tools/level_metrics.py` on
-  all 128 levels and the classic grade table (`SolverTests`), generator v1
+  all 128 levels and the classic grade table (`SolverTests`), the last piece
+  against `tools/gen_last_piece_golden.py` (`PlacementOrderTests`), generator v1
   and v2 golden seeds (`GeneratorTests`, `GeneratorV2Tests`), the rules of
   every element (`RulesV2Tests`, `ElementTests`, `RulesEdgeTests`), the
   Lock tool (`LockTests`) and the save codec (`SaveAndProgressTests`).
 - **CI** (`.github/workflows/ci.yml`) runs the suite on every push and
   re-derives every generated file (`ClassicLevelData.g.cs`,
-  `WorldData.g.cs`, `UndoFixtures.g.cs`, `docs/level_metrics_classic.json`)
+  `WorldData.g.cs`, `UndoFixtures.g.cs`, `docs/level_metrics_classic.json`,
+  `docs/last_piece_classic.json`)
   to fail a stale bake.
 
 ## 7. Performance posture

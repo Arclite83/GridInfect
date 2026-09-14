@@ -107,9 +107,18 @@ namespace GridInfect.Core.Solving
         // The first feasible covering set in search order, as (piece, cell)
         // placements in an order that wins through the real rules. Null when
         // the level has no solution.
-        public static (int piece, int cell)[] FirstSolution(LevelDef def)
+        public static (int piece, int cell)[] FirstSolution(LevelDef def) => FirstSolution(def, null, int.MaxValue);
+
+        // The same with some pieces already fixed (the Lock tool's guard,
+        // PlacementOrder.KeepsWinnable): the fixed pieces are in every set
+        // the search reaches and go down first in the order it checks, as
+        // locked pieces do in play. Null when nothing wins with them pinned
+        // — including when the search hits `cap` first, so the guard errs
+        // toward leaving a piece alone.
+        public static (int piece, int cell)[] FirstSolution(LevelDef def, PieceState[] placed, int cap)
         {
-            var search = Search.Rent(def, int.MaxValue);
+            var search = Search.Rent(def, cap);
+            Fix(search, def, placed);
             search.StopAtFirstFeasible = true;
             search.Run();
             var first = search.FirstFeasible;
@@ -519,7 +528,7 @@ namespace GridInfect.Core.Solving
 
                 if (StopAtFirstFeasible)
                 {
-                    var order = WinningOrder(_def, set, 0, Map);
+                    var order = WinningOrder(_def, set, _fixedDepth, Map);
                     if (order != null)
                     {
                         FirstFeasible = order;
