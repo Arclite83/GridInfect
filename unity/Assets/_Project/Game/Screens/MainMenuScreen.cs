@@ -12,6 +12,7 @@ namespace GridInfect.Game
     public sealed class MainMenuScreen : AppScreen
     {
         TitleView _title;
+        UiButton _noAds;
 
         protected override void Build()
         {
@@ -90,17 +91,40 @@ namespace GridInfect.Game
             // watch should not have to sit through one to learn they can.
             // Once owned it leaves the layout entirely; no spent control is
             // left behind saying "Purchased".
+            //
+            // The store answers after this screen is built: AdGate.Start
+            // fires the receipt query at boot and the menu goes up the same
+            // frame, so on a cold start RemoveAdsOwned is still the default
+            // here. An owner would see the chip on every launch until a tap
+            // on it came back true. So the chip listens, and drops itself
+            // in place when the receipt arrives; not a rebuild, which would
+            // restart the first-open offer if it were up.
             if (!App.Ads.Purchases.RemoveAdsOwned)
             {
                 var noAds = new Vector2(L.ContentWidth * 0.42f, L.BarHeight);
                 float x = (L.ContentWidth - noAds.x) / 2f * L.Dir;   // trailing side
                 float y = below - L.BarHeight / 2f - L.Gap - noAds.y / 2f;
-                Buttons.Add(UiButton.Make(Root.transform, Str.MenuNoAds,
+                _noAds = UiButton.Make(Root.transform, Str.MenuNoAds,
                     new Vector2(x, y), noAds,
-                    BoardTheme.ButtonBg, BoardTheme.Text, OpenRemoveAds));
+                    BoardTheme.ButtonBg, BoardTheme.Text, OpenRemoveAds);
+                Buttons.Add(_noAds);
+                App.Ads.PurchasesReady += OnPurchasesReady;
             }
 
             if (!App.State.Profile.TutorialSeen) OfferTutorial();
+        }
+
+        protected override void OnExit()
+        {
+            App.Ads.PurchasesReady -= OnPurchasesReady;
+        }
+
+        void OnPurchasesReady()
+        {
+            if (_noAds == null || !App.Ads.Purchases.RemoveAdsOwned) return;
+            Buttons.Remove(_noAds);
+            Object.Destroy(_noAds.Root);
+            _noAds = null;
         }
 
         // The root: back leaves the app, as Android expects. Not while the

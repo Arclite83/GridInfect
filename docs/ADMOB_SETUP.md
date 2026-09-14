@@ -8,7 +8,7 @@ the editor, and what is already done in the repo.
 Everything in the repo half is on `main` already. The browser half is yours —
 it needs accounts this project cannot reach.
 
-## Where this stands (2026-09-12)
+## Where this stands (2026-09-14)
 
 | Done | Where it shows |
 |---|---|
@@ -19,6 +19,10 @@ it needs accounts this project cannot reach.
 | GMA plugin v11.5.0 imported and committed, all of it | `Assets/GoogleMobileAds`, `Assets/ExternalDependencyManager`, `Assets/Plugins/{Android,iOS}` |
 | `GRIDINFECT_ADMOB` set for Android, iOS and Standalone | `ProjectSettings.asset` — no editor step left |
 | `Services/Sdk/AdMobServices.cs` checked against the 11.5.0 DLL metadata | one fix: `CanRequestAds` is a method |
+| Test ads on device (2026-09-13) | the AdMob adapter header |
+| `com.unity.purchasing` 5.4.3 in the manifest, `Unity.Purchasing` referenced by the Services asmdef | `GRIDINFECT_IAP` raises itself; §3.5 |
+| `Services/Sdk/UnityIapPurchaseService.cs` checked against the 5.4.3 source | one fix: the failure-description constructor; the file header says what was checked |
+| The NO ADS chip drops itself once the store reports the receipt | `AdGate.PurchasesReady`, `MainMenuScreen` |
 
 | Open | Blocked on |
 |---|---|
@@ -26,9 +30,9 @@ it needs accounts this project cannot reach.
 | App Store Connect privacy step | the same URL |
 | Unit IDs into `AdConfig` | nothing; §3.3 |
 | Android dependency resolution (EDM) has not run | nothing; §3.2 |
-| First editor compile of `Services/Sdk/` | opening the project with the define now set |
-| Sideload APK with test ads | the two above |
-| Unity IAP | after ads work; §3.5 |
+| First editor compile of `UnityIapPurchaseService.cs` | opening the project with the package now in the manifest |
+| `packages-lock.json` | the same open: Unity adds the purchasing and services-core entries itself; commit that hunk |
+| `remove_ads` product on Play, licence testers, an AAB with the billing permission on internal testing | §4 |
 
 ---
 
@@ -193,19 +197,28 @@ Keep `AdConfig.UseTestAds` on for every build that is not a store release.
    **Other Settings ▸ Script Compilation ▸ Scripting Define Symbols**. It is
    per-platform, which is why it is not visible until a platform tab is
    selected.
-5. For IAP, add `com.unity.purchasing` 5.4.2 to the manifest. No symbol
-   needed: the Services asmdef carries a `versionDefine` that raises
-   `GRIDINFECT_IAP` when the package is present. Leave this until test ads
-   are on a device; a second unverified SDK on the same day doubles the
-   things to sort out.
+5. **IAP is in the manifest** (`com.unity.purchasing` 5.4.3) and the
+   Services asmdef references its assembly, `Unity.Purchasing` (the
+   assembly name, not the namespace, which is `UnityEngine.Purchasing`).
+   No symbol needed: the asmdef's `versionDefine` raises `GRIDINFECT_IAP`
+   when the package is present. What the first open does: Unity resolves
+   the package and rewrites `packages-lock.json` (commit it), then compiles
+   `UnityIapPurchaseService.cs` for the first time. It is on the legacy
+   `IStoreListener` API, which 5.x keeps but marks obsolete; the file
+   silences that warning so a real error stands out. Android billing needs
+   no EDM step: the package injects `com.android.billingclient:billing`
+   into the generated gradle project itself at build time, so
+   `mainTemplate.gradle` does not change.
+   UGS linking is not required: the project is not linked
+   (`cloudProjectId` is empty) and IAP logs one warning about it and works.
 6. **`Services/Sdk/AdMobServices.cs` is close, not compiled.** Every call in
    it was checked against the public metadata of the committed
    `GoogleMobileAds*.dll` (method versus property, parameter lists, event
    shapes) and the one mismatch fixed. Open the project with the define now
    set and read the console: a leftover error there is a `using` or a type
    the metadata reader could not see, and the file header says what was
-   and was not checked. `UnityIapPurchaseService.cs` has had no such check
-   and only compiles once the package is in.
+   and was not checked. `UnityIapPurchaseService.cs` had the same pass
+   against the 5.4.3 package source (its header lists what was checked).
 7. The app IDs are already in `Assets ▸ Google Mobile Ads ▸ Settings`.
 
 ### The first build with ads in it
@@ -246,9 +259,18 @@ on the Mac is.
    §2a. The plugin adds the `AD_ID` permission itself (R-605).
 2. Declare the app **not** child-directed.
 3. Ads declaration: yes, the app contains ads.
-4. Create the `remove_ads` **non-consumable** in-app product. The ID must be
-   exactly `remove_ads` — `UnityIapPurchaseService.RemoveAdsProductId`. Price
-   it at the USD 4.99 tier and let Play localise from there (R-701).
+4. Create the `remove_ads` **non-consumable** in-app product and activate
+   it. The ID must be exactly `remove_ads` —
+   `UnityIapPurchaseService.RemoveAdsProductId`. Price it at the USD 4.99
+   tier and let Play localise from there (R-701). Three things Play needs
+   before the product is purchasable from the app: an AAB that carries the
+   `com.android.vending.BILLING` permission (the IAP package adds it; the
+   ads-only AAB does not have it) uploaded to a testing track; the test
+   account under **Setup ▸ Licence testing** so purchases are free and
+   refundable; and the install coming from that Play track, not a
+   sideloaded APK. The purchase test is then: buy, the NO ADS chip
+   vanishes, the next due interstitial does not show; clear app data and
+   relaunch, the chip is gone after the store answers without a tap.
 5. `app-ads.txt` on a developer-site domain once one exists. Recommended,
    not launch-blocking.
 

@@ -118,10 +118,13 @@ target 35+ ✓ (we target 36), iOS deployment target 13+ ✓ (we set 15),
 Xcode 16+. Install: import `GoogleMobileAds-v11.4.0.unitypackage` from the
 GitHub releases page. Serves R-601–605, R-801–803.
 
-**IAP: `com.unity.purchasing` 5.4.2** (registry, 2026-07-24; requires Unity
+**IAP: `com.unity.purchasing` 5.4.3** (registry, 2026-09-03; requires Unity
 2022.3+ ✓). First-party package, one API over both stores, no server needed
 for a single non-consumable — a custom StoreKit/Play Billing integration
-loses on maintenance for zero MVP benefit. Serves R-701–702, R-503. LATER.
+loses on maintenance for zero MVP benefit. Serves R-701–702, R-503. In the
+manifest since 2026-09-14; the runtime assembly to reference is
+`Unity.Purchasing`, and its Android billing dependency is injected by the
+package at gradle generation, not by EDM.
 
 **Analytics: `com.unity.services.analytics` 6.3.0** (registry, 2026-03-05;
 requires Unity 2022.3+ ✓). Package-manager native with a dashboard and no
@@ -205,7 +208,7 @@ unity/Assets/_Project/
 
 // GridInfect.Services.asmdef  — R-1303: SDKs referenced here only
 { "name": "GridInfect.Services",
-  "references": [ "GridInfect.Core" /* + GoogleMobileAds asmdefs, UnityEngine.Purchasing, Unity.Services.Analytics after wave-2 import (names confirmed at import) */ ] }
+  "references": [ "Unity.Purchasing" /* GMA is precompiled DLLs, auto-referenced; + Unity.Services.Analytics when R-606 lands */ ] }
 
 // GridInfect.Core.Tests.asmdef  — editor-only test assembly
 { "name": "GridInfect.Core.Tests", "references": [ "GridInfect.Core" ],
@@ -256,7 +259,7 @@ Edit-mode only, editor on macOS, no device, no player build (R-1302):
   URP template, Input System 1.20.0, Test Framework 1.4.6,
   Newtonsoft JSON 3.2.2. Nothing else.
 - **Wave 2** (import when its requirement starts): GMA plugin v11.4.0
-  (ads + consent, MVP), Unity IAP 5.4.2 (LATER), Unity Analytics 6.3.0
+  (ads + consent, MVP), Unity IAP 5.4.3 (in), Unity Analytics 6.3.0
   (LATER), the ≤5 Asset Store items (overhaul), Play Games/GameKit plugins
   (LATER, versions verified then).
 
@@ -275,7 +278,7 @@ grid) but MVP (needed for the internal-testing build that serves an ad).
 | com.unity.ugui (bundled, TMP included) | R-202, R-203, R-303, R-901, R-1003 |
 | com.unity.2d.sprite (bundled) | R-101, R-1001 |
 | GMA Unity plugin v11.4.0 (incl. UMP, EDM4U 1.2.188) | R-601–605, R-801–803 |
-| com.unity.purchasing 5.4.2 | R-503, R-701, R-702 |
+| com.unity.purchasing 5.4.3 | R-503, R-701, R-702 |
 | com.unity.services.analytics 6.3.0 | R-606 |
 | PrimeTween (free) | R-1102 |
 | Feel (~$45) | R-1102, R-603 presentation |
@@ -293,7 +296,7 @@ grid) but MVP (needed for the internal-testing build that serves an ad).
 - GMA plugin prerequisites (Unity 2019.4+, Android min 23 / target 35+, iOS 13+ / Xcode 16+): developers.google.com/admob/unity/quick-start (page dated 2026-08-27, via search).
 - UMP consent APIs inside the Unity plugin: developers.google.com/admob/unity/privacy (`GoogleMobileAds.Ump.Api`).
 - Demo ad unit IDs: developers.google.com/admob/unity/test-ads.
-- com.unity.purchasing **5.4.2** (2026-07-24, unity: 2022.3): github.com/needle-mirror/com.unity.purchasing (tags + package.json, fetched directly).
+- com.unity.purchasing **5.4.3** (2026-09-03, unity: 2022.3): github.com/needle-mirror/com.unity.purchasing (package.json and CHANGELOG, cloned 2026-09-14).
 - com.unity.inputsystem **1.20.0** (2026-07-21, unity: 6000.0): needle-mirror, fetched directly.
 - com.unity.services.analytics **6.3.0** (2026-03-05, unity: 2022.3): needle-mirror, fetched directly.
 - com.unity.test-framework **1.4.6** (unity: 2019.4): needle-mirror, fetched directly.

@@ -97,8 +97,9 @@ python3 docs/tools/verify_test_vectors.py   # sanity: vectors self-verify
 
 - Core rules, generator, save model, action log: done, fully tested.
 - Next pass (`docs/EXECUTION_PLAN.md`): solver, generator v2, worlds,
-  Daily/Endless, Lock, RulesV2 and the five new elements are in; ads,
-  consent and remove-ads wait on the SDK packages and a device build.
+  Daily/Endless, Lock, RulesV2 and the five new elements are in; ads and
+  consent serve test ads on device; remove-ads waits on the Play product
+  and a purchase test.
 - Board VFX, portrait layout across every screen: written, and verified by
   numbers and by a WebGL port of the shader — see `docs/infection-vfx-spec.md`.
 - Visual style pass (PCB, glass, bug glyphs): written against the locked
@@ -124,8 +125,11 @@ python3 docs/tools/verify_test_vectors.py   # sanity: vectors self-verify
 - Ads, IAP and consent: the game-side half is in — the cadence gate and its
   tests, the `AdCadence`/`AdConfig` assets, the SDK adapters fenced behind
   `GRIDINFECT_ADMOB`/`GRIDINFECT_IAP`, and an assembly-boundary gate keeping
-  the SDKs inside `GridInfect.Services` (R-1303). What is left is account-side
-  and device-side: `docs/ADMOB_SETUP.md` is the order of operations. The
+  the SDKs inside `GridInfect.Services` (R-1303). Test ads run on device;
+  the Unity IAP package is in the manifest and its adapter checked against
+  the package source, not yet compiled in the editor. What is left is
+  account-side and device-side: `docs/ADMOB_SETUP.md` is the order of
+  operations. The
   application identifier is `com.bloodhoundstudios.gridinfect.app` on both
   stores (R-1203): the 2014 package's keystore is gone, which makes it
   unusable in both directions.
