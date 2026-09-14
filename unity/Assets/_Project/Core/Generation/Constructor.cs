@@ -56,7 +56,7 @@ namespace GridInfect.Core.Generation
             }
             var puzzle = new Puzzle(new LevelDef(board, sample.Specs, sample.CellData), sampled, spec);
             if (!puzzle.Valid()) { rejection = Rejection.Unwinnable; return null; }
-            if (spec.RequireAllPieces && HasDecoy(new LineMap(puzzle.Def), sampled)) { rejection = Rejection.Decoy; return null; }
+            if (spec.RequireAllPieces && HasDecoy(puzzle.Map, sampled)) { rejection = Rejection.Decoy; return null; }
 
             // 1. Discriminate: while another solution exists, add the given
             // that leaves the fewest; a lock only when no cell reduces them.
@@ -191,7 +191,7 @@ namespace GridInfect.Core.Generation
                     puzzle.State(given);
                     if (puzzle.Valid())
                     {
-                        var map = new LineMap(puzzle.Def);
+                        var map = puzzle.Map;   // built by Valid, shared here
                         int kills = 0;
                         foreach (int[] alt in alternatives)
                         {
@@ -315,8 +315,11 @@ namespace GridInfect.Core.Generation
             public readonly GenSpec Spec;
             readonly byte[] _cellData = new byte[Grid.Cells];
             readonly PieceSpec[] _specs;
-            readonly string _key;
+            readonly int[] _kind;                   // per piece: index of the first piece with an equal spec
+            readonly int[] _key;                    // the sample's (kind, cell) pairs, sorted
+            readonly int[] _keyScratch;
             LevelDef _def;
+            LineMap _map;
 
             public Puzzle(LevelDef def, int[] sampled, GenSpec spec)
             {
@@ -326,10 +329,22 @@ namespace GridInfect.Core.Generation
                 def.CopyCellDataTo(_cellData);
                 Sampled = sampled;
                 Spec = spec;
-                _key = Key(def, sampled);
+                _kind = new int[_specs.Length];
+                for (int k = 0; k < _kind.Length; k++)
+                {
+                    _kind[k] = k;
+                    for (int p = 0; p < k; p++) if (_specs[p] == _specs[k]) { _kind[k] = _kind[p]; break; }
+                }
+                _key = new int[sampled.Length];
+                _keyScratch = new int[sampled.Length];
+                Key(sampled, _key);
             }
 
             public LevelDef Def => _def ?? (_def = new LevelDef(Board, _specs, _cellData));
+
+            // The board's line map, once per board state: Valid, the
+            // discriminator's kill count and every order check share it.
+            public LineMap Map => _map ?? (_map = new LineMap(Def));
 
             public bool IsPieceCell(int loc)
             {
@@ -342,6 +357,7 @@ namespace GridInfect.Core.Generation
                 if (g.Kind == GivenKind.Lock) { Locks.Add(g.Piece); return; }
                 Board[g.Cell] = g.Value;
                 _def = null;
+                _map = null;
             }
 
             public void Withdraw(Given g)
@@ -349,6 +365,7 @@ namespace GridInfect.Core.Generation
                 if (g.Kind == GivenKind.Lock) { Locks.Remove(g.Piece); return; }
                 Board[g.Cell] = g.Absent;
                 _def = null;
+                _map = null;
             }
 
             // The locked pieces as the counter and the deducer see them.
@@ -377,7 +394,7 @@ namespace GridInfect.Core.Generation
                 return set;
             }
 
-            public (int piece, int cell)[] Order() => SolutionCounter.WinningOrder(Def, Ordered(), Locks.Count);
+            public (int piece, int cell)[] Order() => SolutionCounter.WinningOrder(Def, Ordered(), Locks.Count, Map);
 
             // The sampled placements still solve the level: each sits on an
             // active cell legally, together they cover every active cell,
@@ -386,7 +403,7 @@ namespace GridInfect.Core.Generation
             public bool Valid()
             {
                 var def = Def;
-                var map = new LineMap(def);
+                var map = Map;
                 var covered = CellMask.None;
                 foreach (int p in Sampled)
                 {
@@ -416,29 +433,30 @@ namespace GridInfect.Core.Generation
                 var sets = SolutionCounter.Sets(def, Placed(), cap, out capped);
                 var result = new List<int[]>();
                 if (capped) return result;
-                var map = new LineMap(def);
+                var map = Map;
                 foreach (int[] set in sets)
                 {
-                    if (Key(def, set) == _key) continue;
-                    if (map.HasDynamics && SolutionCounter.WinningOrder(def, set, Locks.Count) == null) continue;
+                    if (IsSample(set)) continue;
+                    if (map.HasDynamics && SolutionCounter.WinningOrder(def, set, Locks.Count, map) == null) continue;
                     result.Add(set);
                 }
                 return result;
             }
 
-            // The counter's key for a set: (piece kind, cell) pairs, sorted.
-            static string Key(LevelDef def, int[] set)
+            // The counter's identity for a set: (piece kind, cell) pairs,
+            // sorted, so identical pieces at swapped cells are one set.
+            void Key(int[] set, int[] into)
             {
-                var kind = new int[def.Specs.Length];
-                for (int k = 0; k < kind.Length; k++)
-                {
-                    kind[k] = k;
-                    for (int p = 0; p < k; p++) if (def.Specs[p] == def.Specs[k]) { kind[k] = kind[p]; break; }
-                }
-                var key = new int[set.Length];
-                for (int n = 0; n < set.Length; n++) key[n] = kind[set[n] / Grid.Cells] * Grid.Cells + set[n] % Grid.Cells;
-                Array.Sort(key);
-                return string.Join(",", key);
+                for (int n = 0; n < set.Length; n++) into[n] = _kind[set[n] / Grid.Cells] * Grid.Cells + set[n] % Grid.Cells;
+                Array.Sort(into, 0, set.Length);
+            }
+
+            bool IsSample(int[] set)
+            {
+                if (set.Length != _key.Length) return false;
+                Key(set, _keyScratch);
+                for (int n = 0; n < _key.Length; n++) if (_keyScratch[n] != _key[n]) return false;
+                return true;
             }
         }
     }

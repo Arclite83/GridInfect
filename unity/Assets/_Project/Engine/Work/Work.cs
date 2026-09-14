@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bloodhound.Engine
@@ -42,14 +44,26 @@ namespace Bloodhound.Engine
     // A key names a job: submitting the same key again while it is still
     // queued raises its priority rather than queueing it twice, Cancel
     // takes a queued job back, and Raise moves one up.
+    //
+    // Every thread here is Work's own, not the pool's, and runs at the OS's
+    // lowest priority: a job is seconds of solver work that the frame must
+    // never lose a core to, so the scheduler is told the main thread, the
+    // render thread and the mixer come first, and the job takes what is
+    // left. Parallelism is read at each Map, so the adapter can narrow the
+    // fan-out while something is on screen that must not stutter and widen
+    // it again on a menu.
     public sealed class Work
     {
         public static Work Shared = new Work(1);
 
         public int Workers { get; }
 
-        // How wide Map fans out: the cores, unless told otherwise.
+        // How wide Map fans out, the calling thread included: the cores,
+        // unless told otherwise. Read at each Map.
         public int Parallelism { get; set; }
+
+        // The OS priority of every worker and helper thread.
+        public ThreadPriority Priority { get; set; } = ThreadPriority.Lowest;
 
         abstract class Job
         {
@@ -120,7 +134,7 @@ namespace Bloodhound.Engine
                 if (_workersActive >= Workers) return job.Item;
                 _workersActive++;
             }
-            Task.Run((Action)Drain);
+            Start("Work.worker", Drain);
             return job.Item;
         }
 
@@ -177,17 +191,74 @@ namespace Bloodhound.Engine
             }
         }
 
-        // A job's own wide loop: body(i) for i in [0, count) across the
-        // cores, returning once every index has run.
+        // A job's own wide loop: body(i) for i in [0, count) across up to
+        // Parallelism threads (this one and Parallelism - 1 helpers, each
+        // at Priority), returning once every index has run. An exception
+        // in the body stops the hand-out of further indices and is
+        // rethrown here once the threads already in the body have returned.
         public void Map(int count, Action<int> body)
         {
             if (count <= 0) return;
-            if (Parallelism <= 1 || count == 1)
+            int width = Math.Min(Math.Max(1, Parallelism), count);
+            if (width == 1)
             {
                 for (int i = 0; i < count; i++) body(i);
                 return;
             }
-            Parallel.For(0, count, new ParallelOptions { MaxDegreeOfParallelism = Parallelism }, body);
+            var fan = new Fan(count, body, width);
+            for (int h = 1; h < width; h++) Start("Work.map", fan.Participate);
+            fan.Participate();
+            fan.Done.Wait();
+            if (fan.Error != null) ExceptionDispatchInfo.Capture(fan.Error).Throw();
+        }
+
+        sealed class Fan
+        {
+            public readonly ManualResetEventSlim Done = new ManualResetEventSlim(false);
+            public Exception Error;
+            readonly int _count;
+            readonly Action<int> _body;
+            int _next = -1;
+            int _participants;
+
+            public Fan(int count, Action<int> body, int participants)
+            {
+                _count = count;
+                _body = body;
+                _participants = participants;
+            }
+
+            public void Participate()
+            {
+                try
+                {
+                    while (Volatile.Read(ref Error) == null)
+                    {
+                        int i = Interlocked.Increment(ref _next);
+                        if (i >= _count) break;
+                        _body(i);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Interlocked.CompareExchange(ref Error, e, null);
+                }
+                finally
+                {
+                    if (Interlocked.Decrement(ref _participants) == 0) Done.Set();
+                }
+            }
+        }
+
+        void Start(string name, Action body)
+        {
+            var thread = new Thread(() => body())
+            {
+                IsBackground = true,
+                Name = name,
+                Priority = Priority,
+            };
+            thread.Start();
         }
 
         void Drain()

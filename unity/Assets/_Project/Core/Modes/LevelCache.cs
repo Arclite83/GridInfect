@@ -162,10 +162,13 @@ namespace GridInfect.Core
         // The first accepted seed at or after `seed`: the range is scanned a
         // chunk of seeds at a time across the cores, and the lowest accepted
         // seed in the chunk wins, so the board is the same on one core or eight.
+        // On one core the chunk stays one seed: a wide chunk only evens out
+        // the cores' finish times, and alone it would run every seed of the
+        // chunk past the winner before looking.
         PlayableLevel Produce(GenSpec spec, ulong seed)
         {
             int cores = Math.Max(1, _work.Parallelism);
-            int widest = cores * Math.Max(1, MaxChunkPerCore);
+            int widest = cores > 1 ? cores * Math.Max(1, MaxChunkPerCore) : 1;
             var results = new GeneratedLevel[widest];
             int chunk = cores;
             int start = 0;
@@ -216,34 +219,42 @@ namespace GridInfect.Core
 
         // ---- persistence: {"v":1,"gen":N,"tick":T,"levels":[{...}]} ----
 
+        // The JSON is built from a snapshot: the lock is held only to copy
+        // the entries out, never while up to Capacity boards are encoded,
+        // since the main thread takes the same lock for Has and Prefetch
+        // every frame a loading card is up and after every action.
         public string ToJson()
         {
-            var levels = new List<object>();
+            var entries = new List<KeyValuePair<string, Entry>>();
+            long tick;
             lock (_gate)
             {
-                foreach (var kv in _done)
+                foreach (var kv in _done) entries.Add(new KeyValuePair<string, Entry>(kv.Key, new Entry { Level = kv.Value.Level, Used = kv.Value.Used }));
+                tick = _tick;
+            }
+            var levels = new List<object>(entries.Count);
+            foreach (var kv in entries)
+            {
+                var l = kv.Value.Level;
+                levels.Add(new Dictionary<string, object>
                 {
-                    var l = kv.Value.Level;
-                    levels.Add(new Dictionary<string, object>
-                    {
-                        ["k"] = kv.Key,
-                        ["u"] = kv.Value.Used,
-                        ["seed"] = (long)l.Seed,
-                        ["grade"] = (long)(int)l.Grade,
-                        ["trace"] = (long)l.TraceLength,
-                        ["hash"] = l.Hash,
-                        ["board"] = LevelPools.BoardText(l.Def),
-                        ["pieces"] = LevelPools.PiecesText(l.Def),
-                        ["relays"] = LevelPools.RelaysText(l.Def),
-                        ["solution"] = LevelPools.PairsText(l.Solution),
-                        ["locks"] = LevelPools.PairsText(l.Locks),
-                    });
-                }
-                return MiniJson.Write(new Dictionary<string, object>
-                {
-                    ["v"] = 1L, ["gen"] = (long)GeneratorVersion, ["tick"] = _tick, ["levels"] = levels,
+                    ["k"] = kv.Key,
+                    ["u"] = kv.Value.Used,
+                    ["seed"] = (long)l.Seed,
+                    ["grade"] = (long)(int)l.Grade,
+                    ["trace"] = (long)l.TraceLength,
+                    ["hash"] = l.Hash,
+                    ["board"] = LevelPools.BoardText(l.Def),
+                    ["pieces"] = LevelPools.PiecesText(l.Def),
+                    ["relays"] = LevelPools.RelaysText(l.Def),
+                    ["solution"] = LevelPools.PairsText(l.Solution),
+                    ["locks"] = LevelPools.PairsText(l.Locks),
                 });
             }
+            return MiniJson.Write(new Dictionary<string, object>
+            {
+                ["v"] = 1L, ["gen"] = (long)GeneratorVersion, ["tick"] = tick, ["levels"] = levels,
+            });
         }
 
         // Loads a file written by ToJson; anything unreadable or from another
