@@ -15,6 +15,20 @@
 // rewrite for the same one product and can wait. The pragma keeps the
 // console clean so a real error in this file is not lost in the noise.
 //
+// That legacy path is a shim over the 5.x services, and it leaves two of
+// their events unsubscribed (Legacy/UnityPurchasing.cs, 5.4.3). The package
+// says so out loud under DEBUG — "IStoreService.Connect called without a
+// callback defined for IStoreService.OnStoreConnected", the same for
+// OnStoreDisconnected, and one for IPurchaseService.OnPurchasesFetchFailed.
+// The third one is not cosmetic: the purchases fetch is what puts the
+// receipt on the Product, and the shim starts it and then calls
+// OnInitialized without waiting for it. Firing ready from OnInitialized
+// therefore reported ownership one step too early — always false on a cold
+// start — and nothing fired again afterwards, so an owner kept the NO ADS
+// chip for the whole session. Ready now comes from the fetch itself, and
+// the events are subscribed directly on the 5.x services (UnityIAPServices,
+// which is not Obsolete) rather than through the shim.
+//
 // Gated by GRIDINFECT_IAP, which the Services asmdef defines automatically
 // when com.unity.purchasing is in the manifest (a versionDefine, so there is
 // no symbol to remember).
@@ -39,13 +53,39 @@ namespace GridInfect.Services
         IExtensionProvider _extensions;
         Action _ready;
         Action<bool> _pending;
+        bool _started;
+        bool _connected;
 
         public void Initialize(Action ready)
         {
+            if (_started) return;
+            _started = true;
             _ready = ready;
+
+            // StandardPurchasingModule.Instance() is what settles which store
+            // is the default one, and the service handles below are cached per
+            // store name. Build the module first or they resolve against the
+            // wrong store.
             var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
             builder.AddProduct(RemoveAdsProductId, ProductType.NonConsumable);
+
+            // Before Initialize, because Initialize calls Connect() on this
+            // same service and the warning is raised at the call.
+            var store = UnityIAPServices.DefaultStore();
+            store.OnStoreConnected += OnStoreConnected;
+            store.OnStoreDisconnected += OnStoreDisconnected;
+
             UnityPurchasing.Initialize(this, builder);
+
+            // After Initialize, and the order is load-bearing. Initialize
+            // constructs the legacy PurchasingManager, whose own
+            // OnPurchasesFetched handler is what copies each order's receipt
+            // onto its Product. Both handlers hang off the same multicast
+            // delegate and run in subscription order, so subscribing first
+            // would read RemoveAdsOwned before any receipt exists.
+            var purchases = UnityIAPServices.DefaultPurchase();
+            purchases.OnPurchasesFetched += OnPurchasesFetched;
+            purchases.OnPurchasesFetchFailed += OnPurchasesFetchFailed;
         }
 
         public bool RemoveAdsOwned
@@ -59,7 +99,7 @@ namespace GridInfect.Services
 
         public void BuyRemoveAds(Action<bool> owned)
         {
-            if (_controller == null) { owned?.Invoke(false); return; }
+            if (_controller == null || !_connected) { owned?.Invoke(false); return; }
             if (RemoveAdsOwned) { owned?.Invoke(true); return; }
             _pending = owned;
             _controller.InitiatePurchase(RemoveAdsProductId);
@@ -84,12 +124,16 @@ namespace GridInfect.Services
 
         // --- IStoreListener ---------------------------------------------------
 
+        // The store answered, but the receipts have not landed yet: the shim
+        // starts the purchases fetch and calls this without waiting on it.
+        // Ready belongs to OnPurchasesFetched, not here. Reaching this point
+        // does mean the connection is up, which is what _connected tracks
+        // from here on.
         public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
         {
             _controller = controller;
             _extensions = extensions;
-            _ready?.Invoke();
-            _ready = null;
+            _connected = true;
         }
 
         public void OnInitializeFailed(InitializationFailureReason error) => OnInitializeFailed(error, null);
@@ -98,10 +142,29 @@ namespace GridInfect.Services
         {
             // No store, no purchase, and the game plays on. The NO ADS chip
             // stays visible and its tap is inert, which is honest: the store
-            // is what is unavailable, not the product.
+            // is what is unavailable, not the product. Ready fires here
+            // because no purchases fetch will follow a failed initialize.
             _ready?.Invoke();
-            _ready = null;
         }
+
+        // --- 5.x service events ----------------------------------------------
+
+        void OnStoreConnected() => _connected = true;
+
+        // Billing can drop mid-session: a Play Store self-update, a killed
+        // service, a lost network. Nothing to undo — RemoveAdsOwned still
+        // reads the receipt already fetched — but a purchase started now
+        // would sit there with no callback, so BuyRemoveAds refuses instead.
+        void OnStoreDisconnected(StoreConnectionFailureDescription failure) => _connected = false;
+
+        // The receipts are on their Products by now (see the ordering note in
+        // Initialize), so this is the first moment RemoveAdsOwned is the
+        // store's word rather than the default.
+        void OnPurchasesFetched(Orders orders) => _ready?.Invoke();
+
+        // Ownership is unknown and stays false. Firing anyway keeps the one
+        // promise the callback makes: it always arrives.
+        void OnPurchasesFetchFailed(PurchasesFetchFailureDescription failure) => _ready?.Invoke();
 
         // A completed purchase. On Google Play an owned non-consumable can
         // also arrive here at initialize, with nothing pending; the receipt
