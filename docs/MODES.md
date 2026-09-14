@@ -238,9 +238,7 @@ actions and tests stay so old logs replay. Two modes replace it.
   pregenerated. `LevelCache` memoises that function on the device and
   has the kernel's `Work` scheduler run it ahead of time, one job at a
   time in priority order, each job scanning its seed range across the
-  cores (half of them on the device, so the frame keeps its own:
-  `GameApp.Awake` sets `Work.Shared.Parallelism`) and taking the lowest
-  accepted seed (`Warmup`: today's board at
+  cores and taking the lowest accepted seed (`Warmup`: today's board at
   boot, then the recent unsolved days, then Endless's opening boards; the
   calendar's visible month while it is open); a board the cache has not
   reached yet generates behind the loading card (`LoadingCard`: a row of
@@ -252,6 +250,19 @@ actions and tests stay so old logs replay. Two modes replace it.
   `LevelCache.GeneratorVersion` changes, which is the generator's
   versioning rule: a change to its output is a change to every daily,
   past and future, so it bumps the version.
+- The scan must never show in the frame. Every thread of it is `Work`'s
+  own at the OS's lowest priority, and its width follows the screen
+  (`GameApp.Update` sets `Work.Shared.Parallelism`): half the cores on a
+  menu, one core while a board is played, half again while a loading
+  card waits on the worker. The other half of that promise is the
+  generator's garbage: a managed runtime stops every thread to collect,
+  so a scan allocating hundreds of megabytes a second chopped the drag
+  and the infection wave from a core the frame never ran on. The
+  constructor now keeps one line map per board state, the counter keeps
+  its search tables per thread and its set keys as ints, and a spread
+  walks its pending cells on the stack; `GeneratorBudgetTests` pins the
+  per-board allocation, and the headless number to watch is
+  `dotnet run` of a seed range in `src/GenLevels` with allocation logging.
 - Any date from the epoch up to the clock's own UTC date opens: the
   calendar (`DailyScreen`) shows a month at a time, solved days marked,
   today ringed, future days out of bounds; a tap selects a day, whose

@@ -105,6 +105,7 @@ namespace GridInfect.GenLevels
             var rejections = new int[Enum.GetValues(typeof(Rejection)).Length];
             var seen = new HashSet<string>(StringComparer.Ordinal);
             var watch = Stopwatch.StartNew();
+            long allocatedAtStart = GC.GetTotalAllocatedBytes(true);
             long tried = 0;
             int accepted = 0, duplicates = 0;
             TextWriter output = outPath != null ? new StreamWriter(outPath, false, new UTF8Encoding(false)) : Console.Out;
@@ -151,6 +152,10 @@ namespace GridInfect.GenLevels
                 sb.Append($"accepted {accepted} of {tried} seeds in {watch.Elapsed.TotalSeconds:F1} s");
                 sb.Append($" (grade {(grade.HasValue ? grade.Value.ToString() : "any")}, pieces {spec.MinPieces}-{spec.MaxPieces})");
                 sb.Append($"; rate {(tried == 0 ? 0 : 100.0 * accepted / tried):F1}%; duplicates {duplicates}");
+                // The generator runs on a worker under the frame, and garbage
+                // there is a collection everywhere: watch this per seed.
+                double allocatedMb = (GC.GetTotalAllocatedBytes(true) - allocatedAtStart) / 1048576.0;
+                sb.Append($"; allocated {allocatedMb:F0} MB ({(tried == 0 ? 0 : allocatedMb / tried):F2} MB/seed)");
                 sb.Append("; rejected:");
                 foreach (Rejection r in Enum.GetValues(typeof(Rejection)))
                 {

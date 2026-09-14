@@ -79,6 +79,10 @@ namespace GridInfect.Game
     public sealed class ScreenManager
     {
         public AppScreen Current { get; private set; }
+
+        // A navigation is held on a board the cache has not landed yet: the
+        // loading card is up, and the worker is what the player is waiting on.
+        public bool Waiting => _ready != null;
         public bool Transitioning => _phase != Phase.None;
 
         enum Phase { None, FadeOut, Working, FadeIn }

@@ -28,6 +28,7 @@ namespace GridInfect.Game
         SavePort _save;
         LevelCachePort _levels;
         float _resolveAt = -1f;
+        int _menuParallelism = 1;
 
         // Touch gating. A transition swallows input outright; the two cool-
         // downs cover the frames either side of it — the tap that lands the
@@ -89,10 +90,13 @@ namespace GridInfect.Game
             // a phone every core is also the frame's: the main thread, the
             // render thread and the audio mixer have nowhere to go when the
             // scan takes all of them, and the menu stutters for as long as
-            // the warmer runs (a G5 opener is tens of core-seconds). Leave it
-            // half, so a frame always has a core of its own; the scan only
-            // takes longer in the background, where it was already waiting.
-            Work.Shared.Parallelism = Mathf.Max(1, System.Environment.ProcessorCount / 2);
+            // the warmer runs (a G5 opener is tens of core-seconds). Half
+            // the cores on a menu, so a frame always has a core of its own;
+            // one core while a board is played (Update), where a drag or an
+            // infection wave shows every lost frame. The scan only takes
+            // longer in the background, where it was already waiting.
+            _menuParallelism = Mathf.Max(1, System.Environment.ProcessorCount / 2);
+            Work.Shared.Parallelism = _menuParallelism;
 
             _camera = Camera.main;
             if (_camera == null)
@@ -232,6 +236,12 @@ namespace GridInfect.Game
             var screen = Screens.Current;
             if (screen == null) return;
             screen.Tick(dt);
+
+            // The warmer's width follows what is on screen: one core under
+            // a board being played, the menu's share otherwise, and the
+            // menu's share again while a loading card waits on the worker
+            // (the board it is waiting for is the one thing worth the cores).
+            Work.Shared.Parallelism = screen is BoardScreen && !Screens.Waiting ? 1 : _menuParallelism;
 
             // The interstitial's time gate counts board time only (R-602):
             // a menu left open is not the player working on a level.

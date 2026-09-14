@@ -71,24 +71,37 @@ namespace GridInfect.Core.Solving
     // Static coverage treats switches and traps as blockers and ignores
     // repels; the Python oracle (tools/level_metrics.py) does the same and
     // checks order feasibility on the final assignment only.
+    //
+    // The line tables are built on first use. Spread and everything on it
+    // (coverage, legality, trap checks, the counter's option table) needs
+    // only the board and the active mask, and the constructor builds a map
+    // per candidate given for exactly those; the deducer is the one caller
+    // that reasons about lines, once per board.
     public sealed class LineMap
     {
         public readonly LevelDef Def;
         public readonly Family[] Families;
-        public readonly List<Line>[] Lines;       // per family
-        public readonly int[][] LineOf;           // [family][loc] -> line id or -1
-        public readonly int[][] IndexIn;          // [family][loc] -> index in Line.Cells
         public readonly CellMask ActiveMask;      // cells that must be covered
         public readonly bool HasDynamics;         // any switch or trap on the board
         public readonly bool HasSwitches;         // any repel switch on the board
+
+        public List<Line>[] Lines => Tables.Lines;   // per family
+        public int[][] LineOf => Tables.LineOf;      // [family][loc] -> line id or -1
+        public int[][] IndexIn => Tables.IndexIn;    // [family][loc] -> index in Line.Cells
+
+        sealed class LineTables
+        {
+            public List<Line>[] Lines;
+            public int[][] LineOf;
+            public int[][] IndexIn;
+        }
+
+        LineTables _tables;
 
         public LineMap(LevelDef def, Family[] families = null)
         {
             Def = def ?? throw new ArgumentNullException(nameof(def));
             Families = families ?? Solving.Families.For(def);
-            Lines = new List<Line>[Families.Length];
-            LineOf = new int[Families.Length][];
-            IndexIn = new int[Families.Length][];
 
             for (int loc = 0; loc < Grid.Cells; loc++)
             {
@@ -97,19 +110,33 @@ namespace GridInfect.Core.Solving
                 if (v == Cell.RepelSwitch || v == Cell.ResetTrap) HasDynamics = true;
                 if (v == Cell.RepelSwitch) HasSwitches = true;
             }
+        }
 
+        // One reference, assigned once built, so a map shared across threads
+        // never shows one table without the others.
+        LineTables Tables => _tables ?? (_tables = BuildTables());
+
+        LineTables BuildTables()
+        {
+            var def = Def;
+            var t = new LineTables
+            {
+                Lines = new List<Line>[Families.Length],
+                LineOf = new int[Families.Length][],
+                IndexIn = new int[Families.Length][],
+            };
             for (int f = 0; f < Families.Length; f++)
             {
-                Lines[f] = new List<Line>();
-                LineOf[f] = new int[Grid.Cells];
-                IndexIn[f] = new int[Grid.Cells];
-                for (int loc = 0; loc < Grid.Cells; loc++) LineOf[f][loc] = -1;
+                t.Lines[f] = new List<Line>();
+                t.LineOf[f] = new int[Grid.Cells];
+                t.IndexIn[f] = new int[Grid.Cells];
+                for (int loc = 0; loc < Grid.Cells; loc++) t.LineOf[f][loc] = -1;
 
                 int di = TileArms.Di(Families[f].Pos), dj = TileArms.Dj(Families[f].Pos);
                 var run = new List<int>(Grid.Height);
                 for (int loc = 0; loc < Grid.Cells; loc++)
                 {
-                    if (LineOf[f][loc] >= 0 || IsBlocker(def.BoardAt(loc))) continue;
+                    if (t.LineOf[f][loc] >= 0 || IsBlocker(def.BoardAt(loc))) continue;
                     int i = loc / Grid.Width, j = loc % Grid.Width;
                     // Only start a line at its Neg end.
                     int pi = i - di, pj = j - dj;
@@ -120,16 +147,17 @@ namespace GridInfect.Core.Solving
                     while (Grid.InBounds(i, j) && !IsBlocker(def.BoardAt(Grid.Loc(i, j))))
                     {
                         int c = Grid.Loc(i, j);
-                        LineOf[f][c] = Lines[f].Count;
-                        IndexIn[f][c] = run.Count;
+                        t.LineOf[f][c] = t.Lines[f].Count;
+                        t.IndexIn[f][c] = run.Count;
                         run.Add(c);
                         if (def.BoardAt(c) == Cell.Active) active |= CellMask.Bit(c);
                         i += di;
                         j += dj;
                     }
-                    Lines[f].Add(new Line(f, Lines[f].Count, run.ToArray(), active));
+                    t.Lines[f].Add(new Line(f, t.Lines[f].Count, run.ToArray(), active));
                 }
             }
+            return t;
         }
 
         public static bool IsBlocker(byte v) => v == Cell.Wall || v == Cell.RepelSwitch || v == Cell.ResetTrap || v == Cell.Forbidden;
@@ -170,9 +198,17 @@ namespace GridInfect.Core.Solving
             var covered = CellMask.None;
             bool trips = false, forbidden = false, switches = false;
             int i0 = loc / Grid.Width, j0 = loc % Grid.Width;
-            var pending = new System.Collections.Generic.Stack<(int cell, byte arms)>();
+            // The cells still to spread from, as (cell << 8 | arms). A cell
+            // is pushed at most once (Infect checks `covered` first), plus
+            // the piece itself, so the stack never outgrows the board. On
+            // the stack rather than the heap: this runs for every option of
+            // every counter search and every alternative the constructor
+            // re-checks, tens of thousands of times per generated board,
+            // and a heap Stack<T> per call was most of the generator's garbage.
+            Span<int> pending = stackalloc int[Grid.Cells + 1];
+            int top = 0;
 
-            Infect(loc, ref covered, pending);
+            Infect(loc, ref covered, pending, ref top);
             if (spec.Area)
             {
                 for (int di = -1; di <= 1; di++)
@@ -184,15 +220,17 @@ namespace GridInfect.Core.Solving
                         if (!Grid.InBounds(ai, aj)) continue;
                         byte v = Def.BoardAt(Grid.Loc(ai, aj));
                         if (v == Cell.Forbidden) forbidden = true;
-                        else if (v == Cell.Active) Infect(Grid.Loc(ai, aj), ref covered, pending);
+                        else if (v == Cell.Active) Infect(Grid.Loc(ai, aj), ref covered, pending, ref top);
                     }
                 }
             }
-            if (spec.Arms != 0) pending.Push((loc, spec.Arms));
+            if (spec.Arms != 0) pending[top++] = (loc << 8) | spec.Arms;
 
-            while (pending.Count > 0)
+            while (top > 0)
             {
-                var (cell, arms) = pending.Pop();
+                int entry = pending[--top];
+                int cell = entry >> 8;
+                int arms = entry & 0xFF;
                 int ci = cell / Grid.Width, cj = cell % Grid.Width;
                 for (int d = 0; d < 8; d++)
                 {
@@ -207,19 +245,19 @@ namespace GridInfect.Core.Solving
                         if (v == Cell.RepelSwitch) { switches = true; break; }
                         if (v == Cell.ResetTrap) { trips = true; break; }
                         if (v == Cell.Forbidden) { forbidden = true; break; }
-                        if (v == Cell.Active) Infect(Grid.Loc(i, j), ref covered, pending);
+                        if (v == Cell.Active) Infect(Grid.Loc(i, j), ref covered, pending, ref top);
                     }
                 }
             }
             return new SpreadResult(covered & ActiveMask, trips, forbidden, switches);
         }
 
-        void Infect(int loc, ref CellMask covered, System.Collections.Generic.Stack<(int cell, byte arms)> pending)
+        void Infect(int loc, ref CellMask covered, Span<int> pending, ref int top)
         {
             if (covered.Has(loc)) return;
             covered |= CellMask.Bit(loc);
             byte relay = Def.CellDataAt(loc);
-            if (relay != 0) pending.Push((loc, relay));
+            if (relay != 0) pending[top++] = (loc << 8) | relay;
         }
 
         // Every cell in the two lines through `loc` (the cells a line rule

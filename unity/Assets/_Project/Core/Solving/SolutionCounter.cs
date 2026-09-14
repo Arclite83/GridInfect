@@ -33,7 +33,7 @@ namespace GridInfect.Core.Solving
 
         public static Result Analyse(LevelDef def, PieceState[] placed, int cap)
         {
-            var search = new Search(def, cap);
+            var search = Search.Rent(def, cap);
             int fixedCount = Fix(search, def, placed);
             search.Run();
             var result = new Result { Static = search.Sets.Count, Capped = search.HitCap };
@@ -42,7 +42,7 @@ namespace GridInfect.Core.Solving
             {
                 foreach (int[] set in search.Sets.Values)
                 {
-                    if (WinningOrder(def, set, fixedCount) == null) continue;
+                    if (WinningOrder(def, set, fixedCount, search.Map) == null) continue;
                     result.Solutions++;
                     if (min == 0 || set.Length < min) min = set.Length;
                 }
@@ -56,6 +56,7 @@ namespace GridInfect.Core.Solving
                 }
             }
             result.MinPieces = min;
+            search.Return();
             return result;
         }
 
@@ -66,11 +67,13 @@ namespace GridInfect.Core.Solving
 
         public static List<int[]> Sets(LevelDef def, PieceState[] placed, int cap, out bool capped)
         {
-            var search = new Search(def, cap);
+            var search = Search.Rent(def, cap);
             Fix(search, def, placed);
             search.Run();
             capped = search.HitCap;
-            return new List<int[]>(search.Sets.Values);
+            var sets = new List<int[]>(search.Sets.Values);
+            search.Return();
+            return sets;
         }
 
         static int Fix(Search search, LevelDef def, PieceState[] placed)
@@ -93,9 +96,12 @@ namespace GridInfect.Core.Solving
         // oracle reaches are skipped), so never the final verdict.
         public static int CountFast(LevelDef def, int cap)
         {
-            var search = new Search(def, cap) { Distinct = true };
+            var search = Search.Rent(def, cap);
+            search.Distinct = true;
             search.Run();
-            return search.HitCap ? cap : search.Sets.Count;
+            int count = search.HitCap ? cap : search.Sets.Count;
+            search.Return();
+            return count;
         }
 
         // The first feasible covering set in search order, as (piece, cell)
@@ -103,9 +109,12 @@ namespace GridInfect.Core.Solving
         // the level has no solution.
         public static (int piece, int cell)[] FirstSolution(LevelDef def)
         {
-            var search = new Search(def, int.MaxValue) { StopAtFirstFeasible = true };
+            var search = Search.Rent(def, int.MaxValue);
+            search.StopAtFirstFeasible = true;
             search.Run();
-            return search.FirstFeasible;
+            var first = search.FirstFeasible;
+            search.Return();
+            return first;
         }
 
         // A placement order for `set` (encoded piece*Cells+cell) that wins
@@ -116,40 +125,47 @@ namespace GridInfect.Core.Solving
         // check runs before the reset, RULES §4.1). With switches, orders
         // are searched depth-first so a prefix that already failed prunes
         // every order behind it.
-        public static (int piece, int cell)[] WinningOrder(LevelDef def, int[] set, int fixedPrefix = 0)
+        public static (int piece, int cell)[] WinningOrder(LevelDef def, int[] set, int fixedPrefix = 0) =>
+            WinningOrder(def, set, fixedPrefix, null);
+
+        // With the board's line map already built by the caller (the
+        // constructor asks this of every candidate given and every
+        // alternative; a map per call was a map too many).
+        public static (int piece, int cell)[] WinningOrder(LevelDef def, int[] set, int fixedPrefix, LineMap map)
         {
             var order = new (int piece, int cell)[set.Length];
             for (int n = 0; n < set.Length; n++) order[n] = (set[n] / Grid.Cells, set[n] % Grid.Cells);
 
-            var map = new LineMap(def);
+            if (map == null) map = new LineMap(def);
             if (!map.HasSwitches)
             {
                 // Non-trippers first (any order), then one tripper: the win
                 // check runs before the reset, so the order wins iff the
                 // board is complete by then. A second tripper never plays.
                 // A pre-placed tripper would reset the board at load.
-                int n = 0;
+                int n = 0, tripperCount = 0;
                 for (int i = 0; i < order.Length; i++)
                 {
                     bool trips = map.TripsTrap(def.Specs[order[i].piece], order[i].cell);
                     if (i < fixedPrefix && trips) return null;
                     if (!trips) order[n++] = (order[i].piece, order[i].cell);
+                    else tripperCount++;
                 }
-                var trippers = new List<(int piece, int cell)>();
-                for (int i = 0; i < set.Length; i++)
+                if (tripperCount == 0) return Wins(def, order) ? order : null;
+                var trippers = new (int piece, int cell)[tripperCount];
+                for (int i = 0, t = 0; i < set.Length; i++)
                 {
                     var p = (set[i] / Grid.Cells, set[i] % Grid.Cells);
-                    if (map.TripsTrap(def.Specs[p.Item1], p.Item2)) trippers.Add(p);
+                    if (map.TripsTrap(def.Specs[p.Item1], p.Item2)) trippers[t++] = p;
                 }
-                for (int t = 0; t < Math.Max(1, trippers.Count); t++)
+                for (int t = 0; t < trippers.Length; t++)
                 {
                     int at = n;
-                    for (int i = 0; i < trippers.Count; i++)
+                    for (int i = 0; i < trippers.Length; i++)
                     {
-                        order[at++] = trippers[(t + i) % trippers.Count];
+                        order[at++] = trippers[(t + i) % trippers.Length];
                     }
                     if (Wins(def, order)) return order;
-                    if (trippers.Count == 0) break;
                 }
                 return null;
             }
@@ -227,76 +243,183 @@ namespace GridInfect.Core.Solving
             return s.Solved;
         }
 
+        // A covering set's identity: its (piece kind, cell) pairs, sorted,
+        // so identical pieces at swapped cells count once (as the oracle's
+        // frozenset does). Compared as ints rather than as a joined string:
+        // the search reaches up to the cap of these per count, and a string
+        // per set was a third of the generator's garbage.
+        readonly struct SetKey : IEquatable<SetKey>
+        {
+            readonly int[] _pairs;
+            readonly int _length;
+            readonly int _hash;
+
+            public SetKey(int[] sortedPairs, int length)
+            {
+                _pairs = sortedPairs;
+                _length = length;
+                int h = 17;
+                for (int n = 0; n < length; n++) h = unchecked(h * 31 + sortedPairs[n]);
+                _hash = h;
+            }
+
+            public bool Equals(SetKey other)
+            {
+                if (_length != other._length || _hash != other._hash) return false;
+                for (int n = 0; n < _length; n++) if (_pairs[n] != other._pairs[n]) return false;
+                return true;
+            }
+
+            public override bool Equals(object obj) => obj is SetKey other && Equals(other);
+            public override int GetHashCode() => _hash;
+        }
+
         sealed class Search
         {
-            public readonly LineMap Map;
-            public readonly Dictionary<string, int[]> Sets = new Dictionary<string, int[]>(StringComparer.Ordinal);
+            public LineMap Map;
+            public Dictionary<SetKey, int[]> Sets;
             public bool HitCap;
             public bool Distinct;
             public bool StopAtFirstFeasible;
             public (int piece, int cell)[] FirstFeasible;
 
-            readonly LevelDef _def;
-            readonly int _cap;
-            readonly int _n;
-            readonly int[] _specId;            // per piece: index of the first piece with an equal spec
-            readonly CellMask[] _cov;          // [piece*Cells+loc]
-            readonly int[][] _covCells;        // [option] -> cells it covers
-            readonly bool[] _removed;          // option no longer available
-            readonly int[] _avail;             // per cell: available options covering it
-            readonly int[][] _optsByCell;      // per cell: options covering it (k-major)
-            readonly int[] _chosen;
-            readonly int[] _undo;              // stack of removed options
+            LevelDef _def;
+            int _cap;
+            int _n;
+            int[] _specId;            // per piece: index of the first piece with an equal spec
+            CellMask[] _cov;          // [piece*Cells+loc]
+            bool[] _removed;          // option no longer available
+            int[] _avail;             // per cell: available options covering it
+            // Two ragged tables, flat: the cells each option covers
+            // (_covCells[_covStart[opt] .. _covStart[opt+1])) and the options
+            // covering each cell (_opts[_optsStart[c] .. _optsStart[c+1])),
+            // options in piece-major order. Four arrays where a list and an
+            // array per option and per cell were hundreds of allocations per
+            // search, and the constructor runs dozens of searches per board.
+            int[] _covStart;
+            int[] _covCells;
+            int[] _optsStart;
+            int[] _opts;
+            int[] _chosen;
+            int[] _keyScratch;        // a found set's sorted pairs, before it is known to be new
+            int[] _undo;              // stack of removed options
+            int[] _fill;
             int _undoTop;
             bool _stop;
 
-            public Search(LevelDef def, int cap)
+            // One search's tables are tens of kilobytes, and the constructor
+            // runs dozens of searches per board on the worker: each thread
+            // keeps the last search's arrays and the next search on it
+            // reuses them. Rent takes the thread's set (a nested search,
+            // should one ever happen, simply allocates its own); Return
+            // hands it back once the caller has copied out what it needs.
+            [ThreadStatic] static Search _spare;
+
+            const int MaxOptions = LevelDef.MaxPieces * Grid.Cells;
+
+            public static Search Rent(LevelDef def, int cap)
+            {
+                var search = _spare ?? new Search();
+                _spare = null;
+                search.Reset(def, cap);
+                return search;
+            }
+
+            public void Return()
+            {
+                _def = null;
+                Map = null;
+                FirstFeasible = null;
+                _spare = this;
+            }
+
+            Search()
+            {
+                Sets = new Dictionary<SetKey, int[]>();
+                _specId = new int[LevelDef.MaxPieces];
+                _cov = new CellMask[MaxOptions];
+                _removed = new bool[MaxOptions];
+                _avail = new int[Grid.Cells];
+                _covStart = new int[MaxOptions + 1];
+                _optsStart = new int[Grid.Cells + 1];
+                _covCells = new int[0];
+                _opts = new int[0];
+                _chosen = new int[LevelDef.MaxPieces];
+                _keyScratch = new int[LevelDef.MaxPieces];
+                _undo = new int[MaxOptions * (LevelDef.MaxPieces + 1)];
+                _fill = new int[Grid.Cells];
+            }
+
+            void Reset(LevelDef def, int cap)
             {
                 _def = def;
                 _cap = cap;
                 Map = new LineMap(def);
+                Sets.Clear();
+                HitCap = false;
+                Distinct = false;
+                StopAtFirstFeasible = false;
+                FirstFeasible = null;
+                _undoTop = 0;
+                _stop = false;
+                _fixedCovered = CellMask.None;
+                _fixedDepth = 0;
                 _n = def.Pieces.Length;
-                _specId = new int[_n];
                 for (int k = 0; k < _n; k++)
                 {
                     _specId[k] = k;
                     for (int p = 0; p < k; p++) if (def.Specs[p] == def.Specs[k]) { _specId[k] = _specId[p]; break; }
                 }
                 int options = _n * Grid.Cells;
-                _cov = new CellMask[options];
-                _covCells = new int[options][];
-                _removed = new bool[options];
-                _avail = new int[Grid.Cells];
-                var byCell = new List<int>[Grid.Cells];
-                for (int c = 0; c < Grid.Cells; c++) byCell[c] = new List<int>();
+                Array.Clear(_cov, 0, options);
+                Array.Clear(_removed, 0, options);
+                Array.Clear(_avail, 0, Grid.Cells);
+                int total = 0;
                 for (int k = 0; k < _n; k++)
                 {
                     for (int loc = 0; loc < Grid.Cells; loc++)
                     {
                         int opt = k * Grid.Cells + loc;
+                        _covStart[opt] = total;
                         if (def.BoardAt(loc) != Cell.Active || Map.IsIllegal(def.Specs[k], loc))
                         {
                             _removed[opt] = true;
-                            _covCells[opt] = Array.Empty<int>();
                             continue;
                         }
                         var cov = Map.Coverage(def.Specs[k], loc);
                         _cov[opt] = cov;
-                        var cells = new List<int>();
+                        total += cov.Count;
                         for (int c = 0; c < Grid.Cells; c++)
                         {
-                            if (!cov.Has(c)) continue;
-                            cells.Add(c);
-                            _avail[c]++;
-                            byCell[c].Add(opt);
+                            if (cov.Has(c)) _avail[c]++;
                         }
-                        _covCells[opt] = cells.ToArray();
                     }
                 }
-                _optsByCell = new int[Grid.Cells][];
-                for (int c = 0; c < Grid.Cells; c++) _optsByCell[c] = byCell[c].ToArray();
-                _chosen = new int[_n];
-                _undo = new int[options * (_n + 1)];
+                _covStart[options] = total;
+                if (_covCells.Length < total)
+                {
+                    _covCells = new int[total];
+                    _opts = new int[total];
+                }
+                for (int c = 0, at = 0; c < Grid.Cells; c++)
+                {
+                    _optsStart[c] = at;
+                    _fill[c] = at;
+                    at += _avail[c];
+                }
+                _optsStart[Grid.Cells] = total;
+                for (int opt = 0; opt < options; opt++)
+                {
+                    if (_removed[opt]) continue;
+                    var cov = _cov[opt];
+                    int at = _covStart[opt];
+                    for (int c = 0; c < Grid.Cells; c++)
+                    {
+                        if (!cov.Has(c)) continue;
+                        _covCells[at++] = c;
+                        _opts[_fill[c]++] = opt;
+                    }
+                }
             }
 
             CellMask _fixedCovered;
@@ -342,8 +465,9 @@ namespace GridInfect.Core.Solving
                 }
 
                 int outer = _undoTop;
-                foreach (int opt in _optsByCell[best])
+                for (int x = _optsStart[best], end = _optsStart[best + 1]; x < end; x++)
                 {
+                    int opt = _opts[x];
                     if (_removed[opt]) continue;
                     int k = opt / Grid.Cells, loc = opt % Grid.Cells;
                     _chosen[depth] = opt;
@@ -364,7 +488,7 @@ namespace GridInfect.Core.Solving
                 {
                     int o = _undo[--_undoTop];
                     _removed[o] = false;
-                    foreach (int c in _covCells[o]) _avail[c]++;
+                    for (int x = _covStart[o], end = _covStart[o + 1]; x < end; x++) _avail[_covCells[x]]++;
                 }
             }
 
@@ -372,31 +496,30 @@ namespace GridInfect.Core.Solving
             {
                 if (_removed[opt]) return;
                 _removed[opt] = true;
-                foreach (int c in _covCells[opt]) _avail[c]--;
+                for (int x = _covStart[opt], end = _covStart[opt + 1]; x < end; x++) _avail[_covCells[x]]--;
                 _undo[_undoTop++] = opt;
             }
 
             void Found(int depth)
             {
-                // Key: the set of (piece kind, cell) pairs, so identical pieces
-                // at swapped cells count once (as the oracle's frozenset does).
-                var key = new int[depth];
+                var key = _keyScratch;
                 for (int n = 0; n < depth; n++)
                 {
                     int k = _chosen[n] / Grid.Cells, loc = _chosen[n] % Grid.Cells;
                     key[n] = _specId[k] * Grid.Cells + loc;
                 }
-                Array.Sort(key);
-                string text = string.Join(",", key);
-                if (Sets.ContainsKey(text)) return;
+                Array.Sort(key, 0, depth);
+                if (Sets.ContainsKey(new SetKey(key, depth))) return;
 
+                var pairs = new int[depth];
+                Array.Copy(key, pairs, depth);
                 var set = new int[depth];
                 Array.Copy(_chosen, set, depth);
-                Sets.Add(text, set);
+                Sets.Add(new SetKey(pairs, depth), set);
 
                 if (StopAtFirstFeasible)
                 {
-                    var order = WinningOrder(_def, set);
+                    var order = WinningOrder(_def, set, 0, Map);
                     if (order != null)
                     {
                         FirstFeasible = order;
