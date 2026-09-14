@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Android build from a terminal (docs/UNITY_SETUP.md §8).
 #
-#   tools/build-android.sh [apk|aab] [--dev] [--install]
+#   tools/build-android.sh [apk|aab] [--dev] [--install] [--no-commit]
 #
-#   apk        debug-signed, for a USB device (default)
-#   aab        signed with the upload key, next versionCode, for Play
-#   --dev      development build: full C# stack traces in logcat (apk only)
-#   --install  after an apk build, adb install -r it on the connected phone
+#   apk          debug-signed, for a USB device (default)
+#   aab          signed with the upload key, next versionCode, for Play
+#   --dev        development build: full C# stack traces in logcat (apk only)
+#   --install    after an apk build, adb install -r it on the connected phone
+#   --no-commit  after an aab build, leave the versionCode hunk uncommitted
 #
 # Unity: $UNITY if set, else the Hub install for the version pinned in
 # unity/ProjectSettings/ProjectVersion.txt (macOS and Linux paths). adb:
@@ -17,19 +18,25 @@
 # stops before Unity starts when GI_KEYSTORE is unset or missing: Play will
 # not take a debug-signed bundle and the build takes minutes.
 # The version code: MobileBuild takes the next one per aab build
-# (GI_VERSION_CODE overrides). Commit the ProjectSettings.asset hunk.
+# (GI_VERSION_CODE overrides) and writes it to ProjectSettings.asset. After
+# a successful aab build the script commits that file as "build <code>",
+# the way the hand-made commits were, unless --no-commit is given or the
+# file already had uncommitted changes before the build (then the hunk is
+# left in the tree and the script says so). Nothing is pushed.
 set -euo pipefail
 
 root=$(cd "$(dirname "$0")/.." && pwd)
 project="$root/unity"
 format=apk
 install=0
+commit=1
 for arg in "$@"; do
   case "$arg" in
     apk|aab) format=$arg ;;
     --install) install=1 ;;
+    --no-commit) commit=0 ;;
     --dev) export GI_DEV=1 ;;
-    -h|--help) sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,25p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown argument: $arg" >&2; exit 2 ;;
   esac
 done
@@ -79,6 +86,19 @@ if [ -f "$project/Temp/UnityLockfile" ]; then
   exit 1
 fi
 
+# Whether the settings file is clean going in decides whether the versionCode
+# hunk can be committed on its own afterwards.
+asset=unity/ProjectSettings/ProjectSettings.asset
+asset_dirty=0
+if [ "$format" = aab ] && [ $commit -eq 1 ]; then
+  if ! git -C "$root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "not a git checkout; the versionCode hunk will not be committed" >&2
+    commit=0
+  elif ! git -C "$root" diff --quiet -- "$asset"; then
+    asset_dirty=1
+  fi
+fi
+
 mkdir -p "$project/Builds"
 log="$project/Builds/build-$format.log"
 echo "Unity $version, $format, log $log"
@@ -97,6 +117,20 @@ if [ ! -f "$out" ]; then
   exit 1
 fi
 echo "$out"
+if [ "$format" = aab ] && [ $commit -eq 1 ]; then
+  if git -C "$root" diff --quiet -- "$asset"; then
+    echo "$asset unchanged (GI_VERSION_CODE equal to the stored code?); nothing to commit"
+  elif [ $asset_dirty -eq 1 ]; then
+    echo "$asset had uncommitted changes before the build; not committing the versionCode hunk with them. Commit it yourself." >&2
+  else
+    code=$(sed -n 's/^ *AndroidBundleVersionCode: *//p' "$root/$asset")
+    if ! git -C "$root" commit -q -m "build $code" -- "$asset"; then
+      echo "commit failed; the versionCode hunk is still in the tree" >&2
+      exit 1
+    fi
+    echo "committed \"build $code\" ($(git -C "$root" rev-parse --short HEAD)); push it before the next upload build elsewhere"
+  fi
+fi
 if [ $install -eq 1 ] && [ "$format" = apk ]; then
   # The editor's own SDK: <version>/PlaybackEngines/AndroidPlayer on macOS,
   # Editor/Data/PlaybackEngines/AndroidPlayer on Linux. Walk up from the binary.
