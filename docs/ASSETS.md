@@ -74,6 +74,9 @@ Tutorial copy exists only inside `message_*.png` bitmaps.
   app icons; `Default*.png` launch images (iPhone/iPad,
   portrait/landscape); `Info.plist` forces landscape
   (`UISupportedInterfaceOrientations` — the game is landscape-only).
+  `Default-Landscape@2x~ipad.png` is the last lossless copy of the studio
+  mark and is what `tools/make_splash_logo.py` cuts the Unity splash logo
+  from (`docs/UNITY_SETUP.md` §8).
 - `proj.android/res/drawable-*dpi/icon.png` launcher icons;
   `res/values/strings.xml` (app name + GPGS `app_id` 478989149128).
 - `proj.wp8-xaml/.../SplashScreenImage.jpg`,

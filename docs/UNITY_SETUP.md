@@ -178,6 +178,19 @@ and icon assignment without building (run it once after the first open and
 commit what it changes in `ProjectSettings/ProjectSettings.asset`, which is
 where the icon slots are serialized).
 
+**Splash screen:** serialized in `ProjectSettings.asset`, not applied from
+code. The background is the style's `maskLo` green (`#5f8b4a`) and the Unity
+logo is the light-on-dark one, drawn below ours, so both marks are on screen
+together for the two seconds Unity allows as a minimum. Ours is
+`Assets/_Project/Art/Splash/bloodhound_studios_mono.png`, cut from the
+cocos2d-x launch image by `tools/make_splash_logo.py` — the studio mark is
+not one of the generated marks and no vector master survives, so the tool
+lifts the artwork off its white (a 753x525 cut) and recolours it white. The mark's
+black is doing two jobs there, and `ink_roles()` in the tool covers how the
+hound's line work and the STUDIOS wordmark are told apart. Re-run it only if
+the source changes: the cut is committed, and the `.meta`'s guid is what
+`m_SplashScreenLogos` points at, so do not let a re-import replace it.
+
 **From a terminal:**
 
 ```sh
