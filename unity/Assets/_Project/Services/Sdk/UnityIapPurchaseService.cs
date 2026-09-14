@@ -1,21 +1,33 @@
 // R-701/R-702: the single non-consumable, over Unity IAP.
 //
-// UNVERIFIED AGAINST THE REAL SDK — see the header in AdMobServices.cs. This
-// one is gated by GRIDINFECT_IAP, which the Services asmdef defines
-// automatically when com.unity.purchasing is in the manifest (a versionDefine,
-// so there is no symbol to remember). Unity IAP 5.x reworked the API from 4.x;
-// if this does not compile on import, that is the likely reason and the fix is
-// mechanical.
+// Checked against the com.unity.purchasing 5.4.3 source (needle-mirror,
+// 2026-09-14), not yet compiled in the editor. What was checked: every type
+// here is in the UnityEngine.Purchasing namespace and the Unity.Purchasing
+// assembly (the asmdef reference); IStoreListener's two OnInitializeFailed
+// overloads; IAppleExtensions.RestoreTransactions takes Action<bool, string>;
+// Product.hasReceipt, ProductCollection.WithID and
+// IStoreController.InitiatePurchase(string) exist. One mismatch fixed: the
+// PurchaseFailureDescription constructor takes a CartItem, so the old
+// single-reason failure overload no longer builds one.
+//
+// This is the legacy IStoreListener path, which 5.x marks Obsolete (warning,
+// not error) and still ships fixes for; the 5.x StoreController API is a
+// rewrite for the same one product and can wait. The pragma keeps the
+// console clean so a real error in this file is not lost in the noise.
+//
+// Gated by GRIDINFECT_IAP, which the Services asmdef defines automatically
+// when com.unity.purchasing is in the manifest (a versionDefine, so there is
+// no symbol to remember).
 //
 // Ownership is read from the store's own receipt, never from a local flag: a
 // bool in PlayerPrefs is a one-line "unlock everything" for anyone with a file
 // browser, and remove-ads is the only thing in this game worth forging.
 
 #if GRIDINFECT_IAP
+#pragma warning disable CS0618   // the legacy IAP API, on purpose; see the header
 using System;
 using UnityEngine;
 using UnityEngine.Purchasing;
-using UnityEngine.Purchasing.Extension;
 
 namespace GridInfect.Services
 {
@@ -91,6 +103,9 @@ namespace GridInfect.Services
             _ready = null;
         }
 
+        // A completed purchase. On Google Play an owned non-consumable can
+        // also arrive here at initialize, with nothing pending; the receipt
+        // is what RemoveAdsOwned reads, so that case needs no work.
         public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
         {
             bool isRemoveAds = string.Equals(
@@ -101,11 +116,13 @@ namespace GridInfect.Services
             return PurchaseProcessingResult.Complete;
         }
 
-        public void OnPurchaseFailed(Product product, PurchaseFailureReason reason) =>
-            OnPurchaseFailed(product, new PurchaseFailureDescription(
-                product != null ? product.definition.id : string.Empty, reason, string.Empty));
+        // Both overloads land here: the store calls one or the other, and
+        // the reason is not something this game acts on.
+        public void OnPurchaseFailed(Product product, PurchaseFailureReason reason) => Fail();
 
-        public void OnPurchaseFailed(Product product, PurchaseFailureDescription description)
+        public void OnPurchaseFailed(Product product, PurchaseFailureDescription description) => Fail();
+
+        void Fail()
         {
             var pending = _pending;
             _pending = null;

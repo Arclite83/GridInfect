@@ -1,7 +1,9 @@
 {
     "name": "GridInfect.Services",
     "rootNamespace": "GridInfect.Services",
-    "references": [],
+    "references": [
+        "Unity.Purchasing"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

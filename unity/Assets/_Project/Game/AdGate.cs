@@ -20,6 +20,11 @@ namespace GridInfect.Game
         bool _adsReady;
         bool _dirty;
 
+        // The store has answered (or failed to): RemoveAdsOwned is now the
+        // receipt's word rather than the default. Fires after boot, while a
+        // screen built on the default is already up; the menu listens.
+        public event Action PurchasesReady;
+
         public AdGate(IConsentService consent, IAdService ads, IPurchaseService purchases, AdCadence cadence)
         {
             Consent = consent;
@@ -44,7 +49,7 @@ namespace GridInfect.Game
         // never waits on either.
         public void Start()
         {
-            Purchases.Initialize(null);
+            Purchases.Initialize(() => PurchasesReady?.Invoke());
             Consent.Request(_ =>
             {
                 if (Consent.CanRequestAds) Ads.Initialize(() => _adsReady = true);
