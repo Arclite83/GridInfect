@@ -296,11 +296,25 @@ string and nothing else.
 product is permanent unless the app consumes it, and this one never does
 — `ProcessPurchase` returns `Complete`, which acknowledges without
 consuming. `ProductType.NonConsumable` in `ConfigurationBuilder` is what
-tells Unity IAP that. So: leave multi-quantity **off**, and if the
-console shows the newer purchase-options UI, give the product exactly one
-purchase option of type **Buy** and no offers. A second option or an
-offer makes the store answer ambiguous for a product the game only ever
-names by ID.
+tells Unity IAP that. So leave multi-quantity **off**.
+
+If the console shows the newer purchase-options UI, the product needs one
+purchase option and no offers:
+
+| Field | Value |
+|---|---|
+| Purchase option ID | `default` |
+| Type | Buy |
+| Backwards compatible | on (the first Buy option gets this automatically) |
+| Price | the product's USD 4.99 |
+
+That ID is Play's own bookkeeping and appears nowhere in the game. Unity
+IAP names the product and only the product — `AddProduct("remove_ads")`,
+`InitiatePurchase("remove_ads")` — and the store resolves it to the one
+purchase option. `default` is the value in Google's own API examples, and
+like the product ID it is worth treating as permanent. A second option or
+an offer is what would make the resolution ambiguous, which is the reason
+for keeping it at one rather than any limit of the package.
 
 No sales, no promo codes, no introductory price: R-701 is one price point,
 never discounted. That is a deliberate decision, not an omission — a
