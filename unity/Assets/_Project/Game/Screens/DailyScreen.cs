@@ -11,7 +11,8 @@ namespace GridInfect.Game
     // Daily: one month of the calendar at a time, in the board's own
     // language. The HUD, a month row of chips, the weekday bands as
     // silkscreen (the ramp is by weekday, so the header never changes),
-    // the well holding the days as tiles, two readout badges, and today's
+    // the well holding the days as tiles, the streak bar and the month's
+    // count, and today's
     // board in a tray slot with the one lit control. A solved day is an
     // infected tile, today wears the copper ring, a past day is dormant
     // glass, a future day is out of bounds. A tap selects a day: the slot
@@ -209,12 +210,15 @@ namespace GridInfect.Game
                 _tiles.Add((new Rect(x - _cell / 2f, y - _cell / 2f, _cell, _cell), new Vector2(x, y), date));
             }
 
-            // Readouts (§7 counter style): the streak, and solved over playable this month.
+            // Readouts (§7 counter style): the streak bar from the leading
+            // edge, and solved over playable this month from the trailing.
+            // Both in full copper: a zero streak used to dim its badge to
+            // 2:1, which made the fact of a zero streak the thing you could
+            // not read.
             int streak = Queries.DailyStreakOn(profile, _today);
-            // Both readouts in full copper: a zero streak used to dim its
-            // badge to 2:1, which made the fact of a zero streak the thing
-            // you could not read.
-            Badge("streak", Str.Fmt(Str.DailyStreak, streak), L.Lead(0f), true);
+            var bar = StreakBar.Box(Str.Fmt(Str.DailyStreak, streak));
+            StreakBar.Make(_page.transform, new Vector2(L.Lead(bar.x / 2f), _badgeY), streak,
+                !Rewards.StreakFirstTaken(profile), 20);
             Badge("month", Str.Fmt(Str.DailyMonthCount, Str.MonthShort(month), solved, playable), L.Trail(0f), false);
 
             // The month's unplayed days go to the worker, newest first, behind

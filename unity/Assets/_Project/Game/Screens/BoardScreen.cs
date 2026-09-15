@@ -628,13 +628,15 @@ namespace GridInfect.Game
             {
                 int levelId = App.State.ClassicLevelId;
                 int next = Queries.NextClassicId(levelId);
+                bool first = !Queries.IsClassicSolved(App.State.Profile, levelId);
                 var earned = SkinEarnedBy(BoardPalette.SkinId.Breadboard,
                     () => App.Do(GridInfectActions.ProgressSolved, Inputs.Solved(levelId)));
+                bool granted = first && Rewards.LegacyGrant(levelId) && Grant(Rewards.Legacy);
                 ShowSolvedPopup(next >= 0
                     ? () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(next)).Applied
                     : (System.Func<bool>)null,
                     () => App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(levelId)).Applied,
-                    earned);
+                    earned, granted);
             }
             else if (App.State.Mode == GameMode.World)
             {
@@ -643,8 +645,10 @@ namespace GridInfect.Game
                 string worldId = App.State.WorldId;
                 int index = App.State.WorldIndex;
                 World world = Worlds.Get(worldId);
+                bool first = !Queries.IsWorldLevelSolved(App.State.Profile, worldId, index);
                 var earned = SkinEarnedBy(BoardPalette.SkinId.Blue,
                     () => App.Do(GridInfectActions.ProgressSolvedWorld, Inputs.SolvedWorld(worldId, index)));
+                bool granted = first && Rewards.WorldLevelGrant(world, index) && Grant(Rewards.World);
                 System.Func<bool> next = null;
                 if (index + 1 < world.Count)
                 {
@@ -660,31 +664,37 @@ namespace GridInfect.Game
                 }
                 ShowSolvedPopup(next,
                     () => App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(worldId, index)).Applied,
-                    earned);
+                    earned, granted);
             }
             else if (App.State.Mode == GameMode.Daily)
             {
                 var run = App.State.DailyRun;
+                bool granted = false;
                 if (!run.Completed)
                 {
                     App.Do(GridInfectActions.DailyComplete, Inputs.Now(GameApp.NowMs()));
                     App.DailyScores.Submit(run.DateUtc, Queries.ElapsedMs(run, GameApp.NowMs()));
-                    if (run.StreakGrantDue)
-                    {
-                        App.Do(GridInfectActions.LocksGrant, Inputs.LocksGrant(1, "streak")); // +1 lock every 7-day streak
-                    }
+                    granted = run.StreakGrantDue && Grant(Rewards.Streak);
                 }
                 // The same word every other mode uses: COMPLETE. No clock —
                 // the daily is scored on solving it, and a stopwatch on the
-                // popup only ever made a casual solve feel slow. A day played
-                // from the archive says nothing extra; it just says complete.
-                // The streak line stays where the run actually moved it.
-                int streak = App.State.Profile.DailyStreak;
+                // popup only ever made a casual solve feel slow. Under it,
+                // where the run moved the streak, the streak bar exactly as
+                // the calendar draws it, and the +1 SOLVE badge under that
+                // on a day that was a rung of the ladder. A day played from
+                // the archive says nothing extra; it just says complete.
+                var profile = App.State.Profile;
                 bool onTheDay = run.DateUtc == GameApp.TodayUtc();
-                OpenPopup(!onTheDay ? Str.BoardComplete
-                    : streak <= 1 ? Str.BoardCompleteStreakStarted
-                    : Str.Fmt(Str.BoardCompleteStreakDays, streak));
-                AddPopupButton(Str.BoardPopupCalendar, new Vector2(0f, -Short * 0.06f),
+                OpenPopup(Str.BoardComplete, !onTheDay ? 0 : granted ? 2 : 1);
+                if (onTheDay)
+                {
+                    // The pad under 3 stays on the popup that takes it.
+                    bool firstPad = !Rewards.StreakFirstTaken(profile)
+                                    || (run.StreakGrantDue && profile.DailyStreak == Rewards.StreakFirst);
+                    StreakBar.Make(_popupPanel.transform, new Vector2(0f, PopupRowY(0)), profile.DailyStreak, firstPad, 42);
+                }
+                if (granted) PopupBadge(Str.BoardPlusSolve, PopupRowY(1));
+                AddPopupButton(Str.BoardPopupCalendar, new Vector2(0f, _popupChipY),
                     new Vector2(L.ContentWidth / 3f, L.BarHeight), () => App.Screens.Show(new DailyScreen()));
             }
             else if (Tutorial)
@@ -707,7 +717,7 @@ namespace GridInfect.Game
                     HoldThen(() =>
                     {
                         OpenPopup(Str.BoardTutorialComplete);
-                        AddPopupButton(Str.BoardPopupPlay, new Vector2(0f, -Short * 0.06f),
+                        AddPopupButton(Str.BoardPopupPlay, new Vector2(0f, _popupChipY),
                             new Vector2(L.ContentWidth / 3f, L.BarHeight),
                             () => App.Screens.Show(new BoardScreen(), prepare: () =>
                                 App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(Worlds.First.Id, 0)).Applied));
@@ -839,6 +849,16 @@ namespace GridInfect.Game
             return !before && App.SkinEarned(skin) ? skin : (BoardPalette.SkinId?)null;
         }
 
+        // One free solve for `reason` (Rewards), and whether the wallet
+        // moved: at the cap the grant is a no-op, and the popup then says
+        // nothing rather than announce a solve that did not arrive.
+        bool Grant(string reason)
+        {
+            int before = App.State.Profile.Locks;
+            App.Do(GridInfectActions.LocksGrant, Inputs.LocksGrant(1, reason));
+            return App.State.Profile.Locks > before;
+        }
+
         // `next` and `replay` load the level in question and report whether
         // the load applied. On an ordinary solve they run in place: the
         // session changes under this screen and it rebinds. On the solve
@@ -848,9 +868,9 @@ namespace GridInfect.Game
         // in it whole: chrome, glass, substrate, board. Every piece of glass
         // bakes its colours when it is made, which is why the same level
         // reloaded in place would have come up half in each.
-        void ShowSolvedPopup(System.Func<bool> next, System.Func<bool> replay, BoardPalette.SkinId? newSkin)
+        void ShowSolvedPopup(System.Func<bool> next, System.Func<bool> replay, BoardPalette.SkinId? newSkin, bool granted)
         {
-            float y = -Short * 0.06f;
+            int rows = granted ? 1 : 0;
             float step = L.ContentWidth / 3f;
             // Three chips on a step, so the box is the step less the room a
             // chip needs beside it: at 0.82 of the step the boxes cleared
@@ -862,7 +882,9 @@ namespace GridInfect.Game
 
             if (newSkin == null)
             {
-                OpenPopup(Str.BoardComplete);
+                OpenPopup(Str.BoardComplete, rows);
+                if (granted) PopupBadge(Str.BoardPlusSolve, PopupRowY(0));
+                float y = _popupChipY;
                 AddPopupButton(Str.BoardPopupMenu, new Vector2(-step * L.Dir, y), size, GoBack);
                 AddPopupButton(Str.BoardPopupReplay, new Vector2(0f, y), size, () => replay());
                 if (next != null)
@@ -874,15 +896,17 @@ namespace GridInfect.Game
 
             var skin = newSkin.Value;
             App.Do(GridInfectActions.SettingsSkin, Inputs.Skin((int)skin));
-            OpenPopup(Str.Fmt(Str.BoardCompleteSkin, SettingsScreen.SkinName(skin)));
+            OpenPopup(Str.Fmt(Str.BoardCompleteSkin, SettingsScreen.SkinName(skin)), rows);
+            if (granted) PopupBadge(Str.BoardPlusSolve, PopupRowY(0));
+            float chipY = _popupChipY;
             System.Func<bool> restyle = () => { App.ApplySkin(); return true; };
-            AddPopupButton(Str.BoardPopupMenu, new Vector2(-step * L.Dir, y), size,
+            AddPopupButton(Str.BoardPopupMenu, new Vector2(-step * L.Dir, chipY), size,
                 () => App.Screens.Show(BackScreen(), prepare: restyle));
-            AddPopupButton(Str.BoardPopupReplay, new Vector2(0f, y), size,
+            AddPopupButton(Str.BoardPopupReplay, new Vector2(0f, chipY), size,
                 () => App.Screens.Show(new BoardScreen(), prepare: () => restyle() && replay()));
             if (next != null)
             {
-                AddPopupButton(Str.BoardPopupNext, new Vector2(step * L.Dir, y), size,
+                AddPopupButton(Str.BoardPopupNext, new Vector2(step * L.Dir, chipY), size,
                     () => App.Screens.Show(new BoardScreen(), prepare: () => restyle() && next()));
             }
         }
@@ -890,12 +914,24 @@ namespace GridInfect.Game
         void ShowCompletedPopup()
         {
             OpenPopup(Str.BoardComplete);
-            AddPopupButton(Str.BoardPopupMenu, new Vector2(0f, -Short * 0.06f),
+            AddPopupButton(Str.BoardPopupMenu, new Vector2(0f, _popupChipY),
                 new Vector2(L.ContentWidth / 3f, L.BarHeight),
                 () => App.Screens.Show(new FreePlayMenuScreen()));
         }
 
-        void OpenPopup(string message)
+        // The popup's rows, top down: the message, `rows` readout rows (the
+        // streak bar, a +1 SOLVE badge: each a badge high), the chips. The
+        // guide's plain panel is 0.36 of the short edge, its message 0.10
+        // down from the top and its chips 0.12 up from the bottom; that
+        // has room for one row between them, and more rows grow the panel
+        // by what they need. The chips' line is _popupChipY and the rows'
+        // are PopupRowY, so a caller never measures the panel itself.
+        float _popupChipY;
+        float _popupRowTop, _popupRowPitch;
+
+        float PopupRowY(int row) => _popupRowTop - row * _popupRowPitch;
+
+        void OpenPopup(string message, int rows = 0)
         {
             _popupOpen = true;
             _backButton.Enabled = false;
@@ -907,12 +943,29 @@ namespace GridInfect.Game
             _popup.transform.SetParent(Root.transform, false);
             Ui.MakeRect("dim", _popup.transform, new Vector2(ScreenW, ScreenH), BoardTheme.PanelDim, 40);
 
+            int lines = 1;
+            foreach (char ch in message) if (ch == '\n') lines++;
+            float messageDrop = Short * 0.10f;
+            float messageH = L.HeadingText * 1.15f * lines;
+            float chipRise = Short * 0.12f;
+            float rowH = Ui.BadgeBox(Str.BoardPlusSolve).y;
+            float rowGap = S.Px(8f);
+            // Top pad, the message, the rows, a gap and the lit chip's halo,
+            // then the chip's own box above its line.
+            float needed = messageDrop + messageH / 2f + rows * (rowGap + rowH) + rowGap + L.ChipGlow
+                           + (chipRise - L.BarHeight / 2f);
+            float panelH = Mathf.Max(Short * 0.36f, needed);
+            float top = panelH / 2f;
+            _popupChipY = -top + chipRise;
+            _popupRowTop = top - messageDrop - messageH / 2f - rowGap - rowH / 2f;
+            _popupRowPitch = rowGap + rowH;
+
             // A glass panel (the chip material at the well's radius), ink type.
             var panel = new GameObject("panel");
             panel.transform.SetParent(_popup.transform, false);
-            Ui.MakeGlass("bg", panel.transform, new Vector2(L.ContentWidth, Short * 0.36f), GlassStyle.Panel(BoardPalette.Default), 41);
+            Ui.MakeGlass("bg", panel.transform, new Vector2(L.ContentWidth, panelH), GlassStyle.Panel(BoardPalette.Default), 41);
             var text = Ui.MakeText("message", panel.transform, message, L.HeadingText, BoardTheme.Text, 42);
-            Ui.SetPos(text.gameObject, 0f, Short * 0.08f);
+            Ui.SetPos(text.gameObject, 0f, top - messageDrop);
 
             // Slide in (0.15 s, linear).
             panel.transform.localPosition = new Vector3(0f, -ScreenH, 0f);
@@ -930,6 +983,15 @@ namespace GridInfect.Game
                 BoardTheme.Primary, BoardTheme.TextOnAccent,
                 () => { if (IsTutorial || !App.Ads.MaybeShowInterstitial(onClick)) onClick?.Invoke(); }, 43);
             Buttons.Add(button);
+        }
+
+        // A readout row on the popup in the HUD counter's material: what
+        // the solve earned, said the way the counter says it.
+        void PopupBadge(string text, float y)
+        {
+            var badge = UiButton.Make(_popupPanel.transform, text, new Vector2(0f, y), Ui.BadgeBox(text),
+                GlassStyle.Badge(BoardPalette.Default), BoardTheme.Copper, null, 42, pads: false, padAlpha: 1f, mono: true);
+            badge.Enabled = false;
         }
 
         void ClosePopup()

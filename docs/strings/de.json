@@ -1,10 +1,8 @@
 {
   "_": "German. Keys mirror en.json; the baker rejects a missing or extra key, a changed placeholder set, or a tutorial line wider than the band. Casing is authored here. A better wording is a change to this file and nothing else.",
-
   "nav.menu": "MENÜ",
   "nav.worlds": "WELTEN",
   "common.page": "{0}/{1}",
-
   "menu.worlds": "WELTEN",
   "menu.daily": "TÄGLICH",
   "menu.endless": "ENDLOS",
@@ -15,7 +13,6 @@
   "menu.offer.line": "Lern die Grundlagen in einer Minute.",
   "menu.offer.accept": "TUTORIAL",
   "menu.offer.skip": "ÜBERSPRINGEN",
-
   "settings.title": "EINSTELLUNGEN",
   "settings.privacy": "DATENSCHUTZ",
   "settings.language": "SPRACHE",
@@ -31,7 +28,6 @@
   "settings.skin.tan": "BEIGE",
   "settings.skin.wantWorlds": "ALLE WELTEN\nSCHAFFEN",
   "settings.skin.wantLegacy": "GANZ KLASSIK\nSCHAFFEN",
-
   "rules.title": "SPIELANLEITUNG",
   "rules.goal": "Infiziere jede Zelle des Bretts, um zu gewinnen.",
   "rules.intro": "Zieh einen Käfer auf eine beliebige Zelle.",
@@ -54,21 +50,17 @@
   "rules.spread.cardinal": "Strahlen laufen bis zum Rand.",
   "rules.spread.diagonal": "Oder von Ecke zu Ecke.",
   "rules.spread.area": "Ein Klecks nimmt die acht ringsum.",
-
   "legacy.title": "KLASSIK",
   "legacy.caption": "DAS ORIGINAL VON 2014, ALLE 128 LEVEL",
-
   "freeplay.title": "FREIES SPIEL",
   "freeplay.difficulty.beginner": "ANFÄNGER",
   "freeplay.difficulty.easy": "LEICHT",
   "freeplay.difficulty.medium": "MITTEL",
   "freeplay.difficulty.hard": "SCHWER",
   "freeplay.difficulty.challenging": "FORDERND",
-
   "worlds.title": "WELTEN",
   "worlds.row": "{0}  {1}",
   "worlds.progress": "{0}/{1}",
-
   "daily.title": "TÄGLICH",
   "daily.today": "HEUTE",
   "daily.past": "VERGANGEN",
@@ -82,10 +74,8 @@
   "daily.unplayed": "UNGESPIELT",
   "daily.playAgain": "NOCHMAL",
   "daily.begin": "START",
-
   "endless.title": "ENDLOS",
   "endless.best": "REKORD {0}",
-
   "board.reset": "RESET",
   "board.legacy": "KLASSIK",
   "board.daily": "TÄGLICH",
@@ -95,10 +85,9 @@
   "board.begin": "START",
   "board.freeSolve": "GRATIS LÖSEN",
   "board.plusSolve": "+1 LÖSEN",
+  "board.solvePip": "+1",
   "board.solve": "LÖSEN {0:00}",
   "board.complete": "GESCHAFFT",
-  "board.completeStreakStarted": "GESCHAFFT\nSerie gestartet",
-  "board.completeStreakDays": "GESCHAFFT\n{0} Tage in Folge",
   "board.completeSkin": "GESCHAFFT\nNeuer Skin: {0}",
   "board.tutorialComplete": "TUTORIAL GESCHAFFT",
   "board.popup.menu": "MENÜ",
@@ -109,17 +98,13 @@
   "board.hud.streak": "SERIE {0}",
   "board.hud.best": "REKORD {0}",
   "board.hud.runCount": "{0}/5",
-
   "tier.name": "STUFE {0}",
   "tier.short": "S{0}",
   "tier.band": "{0}-{1}",
-
   "loading.caption": "LADEN",
-
   "language.title": "SPRACHE",
   "language.auto": "AUTO",
   "language.name": "Deutsch",
-
   "cal.day.1": "MO",
   "cal.day.2": "DI",
   "cal.day.3": "MI",
@@ -151,7 +136,6 @@
   "cal.month.10.short": "OKT",
   "cal.month.11.short": "NOV",
   "cal.month.12.short": "DEZ",
-
   "tut.1.line": "Zieh den Käfer auf die markierte Zelle.",
   "tut.2.line": "Strahlen kreuzen Lücken.",
   "tut.3.line": "Zwei Käfer. Tipp einen, um ihn aufzuheben.",
@@ -162,7 +146,6 @@
   "tut.8.line": "Ein Abstoßer löscht den treffenden Strahl.",
   "tut.9.line": "Eine Falle setzt das ganze Brett zurück.",
   "tut.10.line": "Leuchtet ein Relais, feuert es Strahlen.",
-
   "world.w01.name": "ERSTE SCHRITTE",
   "world.w02.name": "ZWEI LINIEN",
   "world.w03.name": "ECKEN",

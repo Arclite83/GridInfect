@@ -1,10 +1,8 @@
 {
   "_": "Source of truth for every user-facing string. tools/bake_strings.py emits unity/Assets/_Project/Game/Strings.g.cs from this file and its siblings; CI re-derives and fails a stale bake. Keys are stable, values are not. Casing is authored here, never applied in code (ARCHITECTURE.md §8). {0} placeholders keep their order and their format specifiers; a translation may reorder them. \\n is a hard break: wrapping is off, so every break is deliberate.",
-
   "nav.menu": "MENU",
   "nav.worlds": "WORLDS",
   "common.page": "{0}/{1}",
-
   "menu.worlds": "WORLDS",
   "menu.daily": "DAILY",
   "menu.endless": "ENDLESS",
@@ -15,7 +13,6 @@
   "menu.offer.line": "Learn the basics in a minute.",
   "menu.offer.accept": "TUTORIAL",
   "menu.offer.skip": "SKIP",
-
   "settings.title": "SETTINGS",
   "settings.privacy": "PRIVACY OPTIONS",
   "settings.language": "LANGUAGE",
@@ -31,7 +28,6 @@
   "settings.skin.tan": "TAN",
   "settings.skin.wantWorlds": "CLEAR\nALL WORLDS",
   "settings.skin.wantLegacy": "CLEAR\nALL CLASSIC",
-
   "rules.title": "HOW TO PLAY",
   "rules.goal": "Infect every cell on the board to win.",
   "rules.intro": "Drag a bug onto any cell.",
@@ -54,21 +50,17 @@
   "rules.spread.cardinal": "Rays run to the edge.",
   "rules.spread.diagonal": "Or corner to corner.",
   "rules.spread.area": "A blot takes the eight around it.",
-
   "legacy.title": "CLASSIC",
   "legacy.caption": "THE 2014 ORIGINAL, ALL 128 LEVELS",
-
   "freeplay.title": "FREE PLAY",
   "freeplay.difficulty.beginner": "BEGINNER",
   "freeplay.difficulty.easy": "EASY",
   "freeplay.difficulty.medium": "MEDIUM",
   "freeplay.difficulty.hard": "HARD",
   "freeplay.difficulty.challenging": "CHALLENGING",
-
   "worlds.title": "WORLDS",
   "worlds.row": "{0}  {1}",
   "worlds.progress": "{0}/{1}",
-
   "daily.title": "DAILY",
   "daily.today": "TODAY",
   "daily.past": "PAST",
@@ -82,10 +74,8 @@
   "daily.unplayed": "UNPLAYED",
   "daily.playAgain": "PLAY AGAIN",
   "daily.begin": "BEGIN",
-
   "endless.title": "ENDLESS",
   "endless.best": "BEST {0}",
-
   "board.reset": "RESET",
   "board.legacy": "CLASSIC",
   "board.daily": "DAILY",
@@ -95,10 +85,9 @@
   "board.begin": "BEGIN",
   "board.freeSolve": "FREE SOLVE",
   "board.plusSolve": "+1 SOLVE",
+  "board.solvePip": "+1",
   "board.solve": "SOLVE {0:00}",
   "board.complete": "COMPLETE",
-  "board.completeStreakStarted": "COMPLETE\nStreak started",
-  "board.completeStreakDays": "COMPLETE\n{0} days in a row",
   "board.completeSkin": "COMPLETE\nNew skin: {0}",
   "board.tutorialComplete": "TUTORIAL COMPLETE",
   "board.popup.menu": "MENU",
@@ -109,17 +98,13 @@
   "board.hud.streak": "STREAK {0}",
   "board.hud.best": "BEST {0}",
   "board.hud.runCount": "{0}/5",
-
   "tier.name": "TIER {0}",
   "tier.short": "T{0}",
   "tier.band": "{0}-{1}",
-
   "loading.caption": "LOADING",
-
   "language.title": "LANGUAGE",
   "language.auto": "AUTO",
   "language.name": "English",
-
   "cal.day.1": "MON",
   "cal.day.2": "TUE",
   "cal.day.3": "WED",
@@ -151,7 +136,6 @@
   "cal.month.10.short": "OCT",
   "cal.month.11.short": "NOV",
   "cal.month.12.short": "DEC",
-
   "tut.1.line": "Drag the bug onto the marked cell.",
   "tut.2.line": "Rays cross gaps.",
   "tut.3.line": "Two bugs. Tap a placed bug to pick it up.",
@@ -162,7 +146,6 @@
   "tut.8.line": "A repel clears the ray that hit it.",
   "tut.9.line": "A trap resets the whole board.",
   "tut.10.line": "A relay fires its own rays when lit.",
-
   "world.w01.name": "FIRST STEPS",
   "world.w02.name": "TWO LINES",
   "world.w03.name": "CORNERS",

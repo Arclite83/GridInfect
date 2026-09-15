@@ -124,7 +124,8 @@ namespace GridInfect.Game
 
     // The level layer for one world: a rack of square tiles like the Legacy
     // select, sized from the shared layout so it stays a thumb target. Open
-    // throughout; a beaten level is infected.
+    // throughout; a beaten level is infected, and the two whose first clear
+    // grants a solve (Rewards.WorldLevelGrant) wear the pip until then.
     public sealed class WorldLevelSelectScreen : AppScreen
     {
         const int Columns = 5;
@@ -170,6 +171,7 @@ namespace GridInfect.Game
                         App.Do(GridInfectActions.WorldLoad, Inputs.WorldLoad(_worldId, captured)).Applied),
                     20, pads: false, padAlpha: 1f, mono: false);
                 if (solved) Ui.MarkSolved(button.Root.transform, tile);
+                else if (Rewards.WorldLevelGrant(world, n)) Ui.MarkGrant(button.Root.transform, tile);
                 Buttons.Add(button);
             }
         }

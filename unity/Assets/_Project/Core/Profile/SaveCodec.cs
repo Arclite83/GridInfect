@@ -15,9 +15,12 @@ namespace GridInfect.Core
     // v7: + tutorialSeen, tutorialStep (the first-open offer answered; the
     // highest tutorial step beaten plus one).
     // v8: + lang (BCP-47 tag; absent or "" = follow the device).
+    // v9: + dailyStreakBest (the longest streak ever; absent = the current
+    // streak, so a returning player's bar does not offer a rung they are
+    // already past).
     public static class SaveCodec
     {
-        public const int Version = 8;
+        public const int Version = 9;
 
         public static string Save(Profile profile)
         {
@@ -78,6 +81,8 @@ namespace GridInfect.Core
                 ["dailyBest"] = dailyBest,
                 ["dailyStreak"] = profile.DailyStreak,
                 ["dailyLast"] = profile.DailyLastDate ?? "",
+                // Never below the streak, on the way out as on the way in.
+                ["dailyStreakBest"] = System.Math.Max(profile.DailyStreakBest, profile.DailyStreak),
                 ["endlessBest"] = endless,
                 ["locks"] = profile.Locks,
                 ["tutorialSeen"] = profile.TutorialSeen,
@@ -137,6 +142,10 @@ namespace GridInfect.Core
             }
             if (root.TryGetValue("dailyStreak", out object ds) && ds is long streak && streak >= 0) profile.DailyStreak = (int)streak;
             if (root.TryGetValue("dailyLast", out object dl) && dl is string last && DailySpec.TryParseDate(last, out _)) profile.DailyLastDate = last;
+            if (root.TryGetValue("dailyStreakBest", out object dsb) && dsb is long streakBest && streakBest >= 0) profile.DailyStreakBest = (int)streakBest;
+            // Never below the streak itself: a v8 save has no best, and a
+            // best that lags the streak would re-offer a rung already passed.
+            if (profile.DailyStreakBest < profile.DailyStreak) profile.DailyStreakBest = profile.DailyStreak;
             if (root.TryGetValue("endlessBest", out object eb) && eb is List<object> endlessList)
             {
                 for (int g = 0; g < 5 && g < endlessList.Count; g++)
