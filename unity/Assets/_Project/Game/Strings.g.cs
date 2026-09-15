@@ -134,10 +134,9 @@ namespace GridInfect.Game
             "BEGIN",   // board.begin
             "FREE SOLVE",   // board.freeSolve
             "+1 SOLVE",   // board.plusSolve
+            "+1",   // board.solvePip
             "SOLVE {0:00}",   // board.solve
             "COMPLETE",   // board.complete
-            "COMPLETE\nStreak started",   // board.completeStreakStarted
-            "COMPLETE\n{0} days in a row",   // board.completeStreakDays
             "COMPLETE\nNew skin: {0}",   // board.completeSkin
             "TUTORIAL COMPLETE",   // board.tutorialComplete
             "MENU",   // board.popup.menu
@@ -302,10 +301,9 @@ namespace GridInfect.Game
             "\u0627\u0628\u062f\u0623",   // board.begin
             "\u062d\u0644 \u0645\u062c\u0627\u0646\u064a",   // board.freeSolve
             "+1 \u062d\u0644",   // board.plusSolve
+            "+1",   // board.solvePip
             "\u062d\u0644 {0:00}",   // board.solve
             "\u0645\u0643\u062a\u0645\u0644",   // board.complete
-            "\u0645\u0643\u062a\u0645\u0644\n\u0628\u062f\u0623\u062a \u0627\u0644\u0633\u0644\u0633\u0644\u0629",   // board.completeStreakStarted
-            "\u0645\u0643\u062a\u0645\u0644\n{0} \u0623\u064a\u0627\u0645 \u0645\u062a\u062a\u0627\u0644\u064a\u0629",   // board.completeStreakDays
             "\u0645\u0643\u062a\u0645\u0644\n\u0645\u0638\u0647\u0631 \u062c\u062f\u064a\u062f: {0}",   // board.completeSkin
             "\u0627\u0643\u062a\u0645\u0644 \u0627\u0644\u062a\u0639\u0644\u064a\u0645\u064a",   // board.tutorialComplete
             "\u0627\u0644\u0642\u0627\u0626\u0645\u0629",   // board.popup.menu
@@ -470,10 +468,9 @@ namespace GridInfect.Game
             "START",   // board.begin
             "GRATIS L\u00d6SEN",   // board.freeSolve
             "+1 L\u00d6SEN",   // board.plusSolve
+            "+1",   // board.solvePip
             "L\u00d6SEN {0:00}",   // board.solve
             "GESCHAFFT",   // board.complete
-            "GESCHAFFT\nSerie gestartet",   // board.completeStreakStarted
-            "GESCHAFFT\n{0} Tage in Folge",   // board.completeStreakDays
             "GESCHAFFT\nNeuer Skin: {0}",   // board.completeSkin
             "TUTORIAL GESCHAFFT",   // board.tutorialComplete
             "MEN\u00dc",   // board.popup.menu
@@ -638,10 +635,9 @@ namespace GridInfect.Game
             "EMPEZAR",   // board.begin
             "RESOLVER GRATIS",   // board.freeSolve
             "+1 RESOLVER",   // board.plusSolve
+            "+1",   // board.solvePip
             "RESOLVER {0:00}",   // board.solve
             "COMPLETO",   // board.complete
-            "COMPLETO\nRacha iniciada",   // board.completeStreakStarted
-            "COMPLETO\n{0} d\u00edas seguidos",   // board.completeStreakDays
             "COMPLETO\nNuevo aspecto: {0}",   // board.completeSkin
             "TUTORIAL COMPLETO",   // board.tutorialComplete
             "MEN\u00da",   // board.popup.menu
@@ -806,10 +802,9 @@ namespace GridInfect.Game
             "D\u00c9MARRER",   // board.begin
             "R\u00c9SOUDRE OFFERT",   // board.freeSolve
             "+1 R\u00c9SOUDRE",   // board.plusSolve
+            "+1",   // board.solvePip
             "R\u00c9SOUDRE {0:00}",   // board.solve
             "TERMIN\u00c9",   // board.complete
-            "TERMIN\u00c9\nS\u00e9rie lanc\u00e9e",   // board.completeStreakStarted
-            "TERMIN\u00c9\n{0} jours de suite",   // board.completeStreakDays
             "TERMIN\u00c9\nNouveau th\u00e8me : {0}",   // board.completeSkin
             "TUTORIEL TERMIN\u00c9",   // board.tutorialComplete
             "MENU",   // board.popup.menu
@@ -974,10 +969,9 @@ namespace GridInfect.Game
             "\u05d4\u05ea\u05d7\u05dc",   // board.begin
             "\u05e4\u05ea\u05e8\u05d5\u05df \u05d7\u05d9\u05e0\u05dd",   // board.freeSolve
             "+1 \u05e4\u05ea\u05e8\u05d5\u05df",   // board.plusSolve
+            "+1",   // board.solvePip
             "\u05e4\u05ea\u05e8\u05d5\u05df {0:00}",   // board.solve
             "\u05d4\u05d5\u05e9\u05dc\u05dd",   // board.complete
-            "\u05d4\u05d5\u05e9\u05dc\u05dd\n\u05d4\u05e8\u05e6\u05e3 \u05d4\u05ea\u05d7\u05d9\u05dc",   // board.completeStreakStarted
-            "\u05d4\u05d5\u05e9\u05dc\u05dd\n{0} \u05d9\u05de\u05d9\u05dd \u05d1\u05e8\u05e6\u05e3",   // board.completeStreakDays
             "\u05d4\u05d5\u05e9\u05dc\u05dd\n\u05de\u05e8\u05d0\u05d4 \u05d7\u05d3\u05e9: {0}",   // board.completeSkin
             "\u05d4\u05d4\u05d3\u05e8\u05db\u05d4 \u05d4\u05d5\u05e9\u05dc\u05de\u05d4",   // board.tutorialComplete
             "\u05ea\u05e4\u05e8\u05d9\u05d8",   // board.popup.menu
@@ -1142,10 +1136,9 @@ namespace GridInfect.Game
             "INIZIA",   // board.begin
             "RISOLVI GRATIS",   // board.freeSolve
             "+1 RISOLVI",   // board.plusSolve
+            "+1",   // board.solvePip
             "RISOLVI {0:00}",   // board.solve
             "COMPLETO",   // board.complete
-            "COMPLETO\nSerie iniziata",   // board.completeStreakStarted
-            "COMPLETO\n{0} giorni di fila",   // board.completeStreakDays
             "COMPLETO\nNuovo aspetto: {0}",   // board.completeSkin
             "TUTORIAL COMPLETO",   // board.tutorialComplete
             "MENU",   // board.popup.menu
@@ -1310,10 +1303,9 @@ namespace GridInfect.Game
             "\u30b9\u30bf\u30fc\u30c8",   // board.begin
             "\u7121\u6599\u3067\u89e3\u304f",   // board.freeSolve
             "+1 \u89e3\u304f",   // board.plusSolve
+            "+1",   // board.solvePip
             "\u89e3\u304f {0:00}",   // board.solve
             "\u30af\u30ea\u30a2",   // board.complete
-            "\u30af\u30ea\u30a2\n\u9023\u7d9a\u8a18\u9332\u30b9\u30bf\u30fc\u30c8",   // board.completeStreakStarted
-            "\u30af\u30ea\u30a2\n{0}\u65e5\u9023\u7d9a",   // board.completeStreakDays
             "\u30af\u30ea\u30a2\n\u65b0\u3057\u3044\u30b9\u30ad\u30f3\uff1a{0}",   // board.completeSkin
             "\u30c1\u30e5\u30fc\u30c8\u30ea\u30a2\u30eb\u5b8c\u4e86",   // board.tutorialComplete
             "\u30e1\u30cb\u30e5\u30fc",   // board.popup.menu
@@ -1478,10 +1470,9 @@ namespace GridInfect.Game
             "\uc2dc\uc791",   // board.begin
             "\ubb34\ub8cc \ud480\uae30",   // board.freeSolve
             "+1 \ud480\uae30",   // board.plusSolve
+            "+1",   // board.solvePip
             "\ud480\uae30 {0:00}",   // board.solve
             "\ud074\ub9ac\uc5b4",   // board.complete
-            "\ud074\ub9ac\uc5b4\n\uc5f0\uc18d \uae30\ub85d \uc2dc\uc791",   // board.completeStreakStarted
-            "\ud074\ub9ac\uc5b4\n{0}\uc77c \uc5f0\uc18d",   // board.completeStreakDays
             "\ud074\ub9ac\uc5b4\n\uc0c8 \uc2a4\ud0a8: {0}",   // board.completeSkin
             "\ud29c\ud1a0\ub9ac\uc5bc \uc644\ub8cc",   // board.tutorialComplete
             "\uba54\ub274",   // board.popup.menu
@@ -1646,10 +1637,9 @@ namespace GridInfect.Game
             "COME\u00c7AR",   // board.begin
             "RESOLVER GR\u00c1TIS",   // board.freeSolve
             "+1 RESOLVER",   // board.plusSolve
+            "+1",   // board.solvePip
             "RESOLVER {0:00}",   // board.solve
             "COMPLETO",   // board.complete
-            "COMPLETO\nS\u00e9rie iniciada",   // board.completeStreakStarted
-            "COMPLETO\n{0} dias seguidos",   // board.completeStreakDays
             "COMPLETO\nNovo visual: {0}",   // board.completeSkin
             "TUTORIAL COMPLETO",   // board.tutorialComplete
             "MENU",   // board.popup.menu
@@ -1814,10 +1804,9 @@ namespace GridInfect.Game
             "\u041d\u0410\u0427\u0410\u0422\u042c",   // board.begin
             "\u0420\u0415\u0428\u0418\u0422\u042c \u0411\u0415\u0421\u041f\u041b\u0410\u0422\u041d\u041e",   // board.freeSolve
             "+1 \u0420\u0415\u0428\u0418\u0422\u042c",   // board.plusSolve
+            "+1",   // board.solvePip
             "\u0420\u0415\u0428\u0418\u0422\u042c {0:00}",   // board.solve
             "\u0413\u041e\u0422\u041e\u0412\u041e",   // board.complete
-            "\u0413\u041e\u0422\u041e\u0412\u041e\n\u0421\u0435\u0440\u0438\u044f \u043d\u0430\u0447\u0430\u043b\u0430\u0441\u044c",   // board.completeStreakStarted
-            "\u0413\u041e\u0422\u041e\u0412\u041e\n{0} \u0434\u043d\u0435\u0439 \u043f\u043e\u0434\u0440\u044f\u0434",   // board.completeStreakDays
             "\u0413\u041e\u0422\u041e\u0412\u041e\n\u041d\u043e\u0432\u044b\u0439 \u0432\u0438\u0434: {0}",   // board.completeSkin
             "\u041e\u0411\u0423\u0427\u0415\u041d\u0418\u0415 \u041f\u0420\u041e\u0419\u0414\u0415\u041d\u041e",   // board.tutorialComplete
             "\u041c\u0415\u041d\u042e",   // board.popup.menu
@@ -1982,10 +1971,9 @@ namespace GridInfect.Game
             "BA\u015eLA",   // board.begin
             "\u00dcCRETS\u0130Z \u00c7\u00d6Z",   // board.freeSolve
             "+1 \u00c7\u00d6Z",   // board.plusSolve
+            "+1",   // board.solvePip
             "\u00c7\u00d6Z {0:00}",   // board.solve
             "TAMAM",   // board.complete
-            "TAMAM\nSeri ba\u015flad\u0131",   // board.completeStreakStarted
-            "TAMAM\n{0} g\u00fcn \u00fcst \u00fcste",   // board.completeStreakDays
             "TAMAM\nYeni g\u00f6r\u00fcn\u00fcm: {0}",   // board.completeSkin
             "E\u011e\u0130T\u0130M TAMAM",   // board.tutorialComplete
             "MEN\u00dc",   // board.popup.menu
@@ -2150,10 +2138,9 @@ namespace GridInfect.Game
             "\u5f00\u59cb",   // board.begin
             "\u514d\u8d39\u89e3\u9898",   // board.freeSolve
             "+1 \u89e3\u9898",   // board.plusSolve
+            "+1",   // board.solvePip
             "\u89e3\u9898 {0:00}",   // board.solve
             "\u5b8c\u6210",   // board.complete
-            "\u5b8c\u6210\n\u8fde\u7eed\u8bb0\u5f55\u5f00\u59cb",   // board.completeStreakStarted
-            "\u5b8c\u6210\n\u8fde\u7eed {0} \u5929",   // board.completeStreakDays
             "\u5b8c\u6210\n\u65b0\u76ae\u80a4\uff1a{0}",   // board.completeSkin
             "\u6559\u7a0b\u5b8c\u6210",   // board.tutorialComplete
             "\u83dc\u5355",   // board.popup.menu
@@ -2318,10 +2305,9 @@ namespace GridInfect.Game
             "\u958b\u59cb",   // board.begin
             "\u514d\u8cbb\u89e3\u984c",   // board.freeSolve
             "+1 \u89e3\u984c",   // board.plusSolve
+            "+1",   // board.solvePip
             "\u89e3\u984c {0:00}",   // board.solve
             "\u5b8c\u6210",   // board.complete
-            "\u5b8c\u6210\n\u9023\u7e8c\u7d00\u9304\u958b\u59cb",   // board.completeStreakStarted
-            "\u5b8c\u6210\n\u9023\u7e8c {0} \u5929",   // board.completeStreakDays
             "\u5b8c\u6210\n\u65b0\u5916\u89c0\uff1a{0}",   // board.completeSkin
             "\u6559\u5b78\u5b8c\u6210",   // board.tutorialComplete
             "\u9078\u55ae",   // board.popup.menu
@@ -2486,10 +2472,9 @@ namespace GridInfect.Game
             "[B\u00c9\u011e\u00cd\u00d1\u00b7\u00b7]",   // board.begin
             "[FR\u00c9\u00c9 \u0160\u00d3LV\u00c9\u00b7\u00b7\u00b7\u00b7]",   // board.freeSolve
             "[+1 \u0160\u00d3LV\u00c9\u00b7\u00b7]",   // board.plusSolve
+            "[+1]",   // board.solvePip
             "[\u0160\u00d3LV\u00c9 \u00b7\u00b7{0:00}]",   // board.solve
             "[\u00c7\u00d3MPL\u00c9T\u00c9\u00b7\u00b7\u00b7]",   // board.complete
-            "[\u00c7\u00d3MPL\u00c9T\u00c9\u00b7\u00b7\u00b7]\n[\u0160tr\u00e9\u00e1k \u0161t\u00e1rt\u00e9\u0111\u00b7\u00b7\u00b7\u00b7\u00b7]",   // board.completeStreakStarted
-            "[\u00c7\u00d3MPL\u00c9T\u00c9\u00b7\u00b7\u00b7]\n[{0} \u0111\u00e1\u00fd\u0161 \u00ed\u00f1 \u00e1 r\u00f3w\u00b7\u00b7\u00b7\u00b7]",   // board.completeStreakDays
             "[\u00c7\u00d3MPL\u00c9T\u00c9\u00b7\u00b7\u00b7]\n[\u00d1\u00e9w \u0161k\u00ed\u00f1: \u00b7\u00b7\u00b7{0}]",   // board.completeSkin
             "[T\u00daT\u00d3R\u00cd\u00c1L \u00c7\u00d3MPL\u00c9T\u00c9\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7]",   // board.tutorialComplete
             "[M\u00c9\u00d1\u00da\u00b7\u00b7]",   // board.popup.menu
@@ -2599,10 +2584,10 @@ namespace GridInfect.Game
 
         // ---- families ----
 
-        static readonly int[] MonthIdx = { 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124 };
-        static readonly int[] MonthShortIdx = { 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136 };
-        static readonly int[] DayIdx = { 106, 107, 108, 109, 110, 111, 112 };
-        static readonly int[] TutIdx = { 137, 138, 139, 140, 141, 142, 143, 144, 145, 146 };
+        static readonly int[] MonthIdx = { 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123 };
+        static readonly int[] MonthShortIdx = { 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135 };
+        static readonly int[] DayIdx = { 105, 106, 107, 108, 109, 110, 111 };
+        static readonly int[] TutIdx = { 136, 137, 138, 139, 140, 141, 142, 143, 144, 145 };
         static readonly int[] DifficultyIdx = { 53, 54, 55, 56, 57 };
 
         // Month 1-12, weekday 1-7 Monday first, tutorial step 1-based,
@@ -2618,22 +2603,22 @@ namespace GridInfect.Game
         {
             switch (worldId)
             {
-                case "w01": return _v[147];
-                case "w02": return _v[148];
-                case "w03": return _v[149];
-                case "w04": return _v[150];
-                case "w05": return _v[151];
-                case "w06": return _v[152];
-                case "w07": return _v[153];
-                case "w08": return _v[154];
-                case "w09": return _v[155];
-                case "w10": return _v[156];
-                case "w11": return _v[157];
-                case "w12": return _v[158];
-                case "w14": return _v[159];
-                case "w15": return _v[160];
-                case "w16": return _v[161];
-                case "w17": return _v[162];
+                case "w01": return _v[146];
+                case "w02": return _v[147];
+                case "w03": return _v[148];
+                case "w04": return _v[149];
+                case "w05": return _v[150];
+                case "w06": return _v[151];
+                case "w07": return _v[152];
+                case "w08": return _v[153];
+                case "w09": return _v[154];
+                case "w10": return _v[155];
+                case "w11": return _v[156];
+                case "w12": return _v[157];
+                case "w14": return _v[158];
+                case "w15": return _v[159];
+                case "w16": return _v[160];
+                case "w17": return _v[161];
             }
             return worldId;
         }
@@ -2725,83 +2710,82 @@ namespace GridInfect.Game
         public static string BoardBegin => _v[82];
         public static string BoardFreeSolve => _v[83];
         public static string BoardPlusSolve => _v[84];
-        public static string BoardSolve => _v[85];
-        public static string BoardComplete => _v[86];
-        public static string BoardCompleteStreakStarted => _v[87];
-        public static string BoardCompleteStreakDays => _v[88];
-        public static string BoardCompleteSkin => _v[89];
-        public static string BoardTutorialComplete => _v[90];
-        public static string BoardPopupMenu => _v[91];
-        public static string BoardPopupReplay => _v[92];
-        public static string BoardPopupNext => _v[93];
-        public static string BoardPopupPlay => _v[94];
-        public static string BoardPopupCalendar => _v[95];
-        public static string BoardHudStreak => _v[96];
-        public static string BoardHudBest => _v[97];
-        public static string BoardHudRunCount => _v[98];
-        public static string TierName => _v[99];
-        public static string TierShort => _v[100];
-        public static string TierBand => _v[101];
-        public static string LoadingCaption => _v[102];
-        public static string LanguageTitle => _v[103];
-        public static string LanguageAuto => _v[104];
-        public static string LanguageName => _v[105];
-        public static string CalDay1 => _v[106];
-        public static string CalDay2 => _v[107];
-        public static string CalDay3 => _v[108];
-        public static string CalDay4 => _v[109];
-        public static string CalDay5 => _v[110];
-        public static string CalDay6 => _v[111];
-        public static string CalDay7 => _v[112];
-        public static string CalMonth1 => _v[113];
-        public static string CalMonth2 => _v[114];
-        public static string CalMonth3 => _v[115];
-        public static string CalMonth4 => _v[116];
-        public static string CalMonth5 => _v[117];
-        public static string CalMonth6 => _v[118];
-        public static string CalMonth7 => _v[119];
-        public static string CalMonth8 => _v[120];
-        public static string CalMonth9 => _v[121];
-        public static string CalMonth10 => _v[122];
-        public static string CalMonth11 => _v[123];
-        public static string CalMonth12 => _v[124];
-        public static string CalMonth1Short => _v[125];
-        public static string CalMonth2Short => _v[126];
-        public static string CalMonth3Short => _v[127];
-        public static string CalMonth4Short => _v[128];
-        public static string CalMonth5Short => _v[129];
-        public static string CalMonth6Short => _v[130];
-        public static string CalMonth7Short => _v[131];
-        public static string CalMonth8Short => _v[132];
-        public static string CalMonth9Short => _v[133];
-        public static string CalMonth10Short => _v[134];
-        public static string CalMonth11Short => _v[135];
-        public static string CalMonth12Short => _v[136];
-        public static string Tut1Line => _v[137];
-        public static string Tut2Line => _v[138];
-        public static string Tut3Line => _v[139];
-        public static string Tut4Line => _v[140];
-        public static string Tut5Line => _v[141];
-        public static string Tut6Line => _v[142];
-        public static string Tut7Line => _v[143];
-        public static string Tut8Line => _v[144];
-        public static string Tut9Line => _v[145];
-        public static string Tut10Line => _v[146];
-        public static string WorldW01Name => _v[147];
-        public static string WorldW02Name => _v[148];
-        public static string WorldW03Name => _v[149];
-        public static string WorldW04Name => _v[150];
-        public static string WorldW05Name => _v[151];
-        public static string WorldW06Name => _v[152];
-        public static string WorldW07Name => _v[153];
-        public static string WorldW08Name => _v[154];
-        public static string WorldW09Name => _v[155];
-        public static string WorldW10Name => _v[156];
-        public static string WorldW11Name => _v[157];
-        public static string WorldW12Name => _v[158];
-        public static string WorldW14Name => _v[159];
-        public static string WorldW15Name => _v[160];
-        public static string WorldW16Name => _v[161];
-        public static string WorldW17Name => _v[162];
+        public static string BoardSolvePip => _v[85];
+        public static string BoardSolve => _v[86];
+        public static string BoardComplete => _v[87];
+        public static string BoardCompleteSkin => _v[88];
+        public static string BoardTutorialComplete => _v[89];
+        public static string BoardPopupMenu => _v[90];
+        public static string BoardPopupReplay => _v[91];
+        public static string BoardPopupNext => _v[92];
+        public static string BoardPopupPlay => _v[93];
+        public static string BoardPopupCalendar => _v[94];
+        public static string BoardHudStreak => _v[95];
+        public static string BoardHudBest => _v[96];
+        public static string BoardHudRunCount => _v[97];
+        public static string TierName => _v[98];
+        public static string TierShort => _v[99];
+        public static string TierBand => _v[100];
+        public static string LoadingCaption => _v[101];
+        public static string LanguageTitle => _v[102];
+        public static string LanguageAuto => _v[103];
+        public static string LanguageName => _v[104];
+        public static string CalDay1 => _v[105];
+        public static string CalDay2 => _v[106];
+        public static string CalDay3 => _v[107];
+        public static string CalDay4 => _v[108];
+        public static string CalDay5 => _v[109];
+        public static string CalDay6 => _v[110];
+        public static string CalDay7 => _v[111];
+        public static string CalMonth1 => _v[112];
+        public static string CalMonth2 => _v[113];
+        public static string CalMonth3 => _v[114];
+        public static string CalMonth4 => _v[115];
+        public static string CalMonth5 => _v[116];
+        public static string CalMonth6 => _v[117];
+        public static string CalMonth7 => _v[118];
+        public static string CalMonth8 => _v[119];
+        public static string CalMonth9 => _v[120];
+        public static string CalMonth10 => _v[121];
+        public static string CalMonth11 => _v[122];
+        public static string CalMonth12 => _v[123];
+        public static string CalMonth1Short => _v[124];
+        public static string CalMonth2Short => _v[125];
+        public static string CalMonth3Short => _v[126];
+        public static string CalMonth4Short => _v[127];
+        public static string CalMonth5Short => _v[128];
+        public static string CalMonth6Short => _v[129];
+        public static string CalMonth7Short => _v[130];
+        public static string CalMonth8Short => _v[131];
+        public static string CalMonth9Short => _v[132];
+        public static string CalMonth10Short => _v[133];
+        public static string CalMonth11Short => _v[134];
+        public static string CalMonth12Short => _v[135];
+        public static string Tut1Line => _v[136];
+        public static string Tut2Line => _v[137];
+        public static string Tut3Line => _v[138];
+        public static string Tut4Line => _v[139];
+        public static string Tut5Line => _v[140];
+        public static string Tut6Line => _v[141];
+        public static string Tut7Line => _v[142];
+        public static string Tut8Line => _v[143];
+        public static string Tut9Line => _v[144];
+        public static string Tut10Line => _v[145];
+        public static string WorldW01Name => _v[146];
+        public static string WorldW02Name => _v[147];
+        public static string WorldW03Name => _v[148];
+        public static string WorldW04Name => _v[149];
+        public static string WorldW05Name => _v[150];
+        public static string WorldW06Name => _v[151];
+        public static string WorldW07Name => _v[152];
+        public static string WorldW08Name => _v[153];
+        public static string WorldW09Name => _v[154];
+        public static string WorldW10Name => _v[155];
+        public static string WorldW11Name => _v[156];
+        public static string WorldW12Name => _v[157];
+        public static string WorldW14Name => _v[158];
+        public static string WorldW15Name => _v[159];
+        public static string WorldW16Name => _v[160];
+        public static string WorldW17Name => _v[161];
     }
 }

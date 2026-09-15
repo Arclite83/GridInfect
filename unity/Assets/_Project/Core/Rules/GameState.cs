@@ -80,6 +80,11 @@ namespace GridInfect.Core
             new System.Collections.Generic.Dictionary<string, long>(System.StringComparer.Ordinal);
         public int DailyStreak;
         public string DailyLastDate = "";
+        // The longest streak ever, never below DailyStreak. Read for one
+        // thing: whether the ladder's one-off grant at 3 has been taken
+        // (Rewards.StreakFirstTaken), which is also whether the streak bar
+        // still marks it.
+        public int DailyStreakBest;
         public readonly int[] EndlessBest = new int[5];
 
         // Lock wallet (stage 5): start 5, free grants capped at LocksCap,

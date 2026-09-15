@@ -114,9 +114,17 @@ world and level progression.
 Engine: `PieceState.Locked`; input refuses to lift; `FullReset` skips locked
 pieces; undo re-propagation treats them as ordinary placed pieces.
 
-Economy: wallet, cap 10, start 5, +1 per rewarded ad, +1 per 7-day daily
-streak. Remove-ads does not change it. The cap only bounds free grants;
-ad-earned locks are revenue, so there is no reason to cap them tighter.
+Economy: wallet, cap 10, start 5, +1 per rewarded ad, and three free
+faucets (`Rewards`): the daily streak's ladder (the first time a streak
+reaches 3, then every 7th day), a world's midpoint and last level on first
+clear, and every tenth Legacy level on first clear. Rates were picked
+against the cap: a grant landing on a full wallet is a no-op, so a faucet
+fast enough to pin the wallet at ten makes the counter meaningless; two
+per world keeps most grants live at a stuck rate of one solve in ten
+levels. The granting tiles wear a `+1` pip on the rack until beaten, so
+the rack is the counter and nothing shows an x/y. Remove-ads does not
+change it. The cap only bounds free grants; ad-earned locks are revenue,
+so there is no reason to cap them tighter.
 
 ## New element candidates
 

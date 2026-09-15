@@ -278,8 +278,12 @@ actions and tests stay so old logs replay. Two modes replace it.
   the run's date is the clock's own UTC date, and once per date
   (completing today's board again improves the best, never the streak; a
   past day solved from the calendar sets its best and its mark, never the
-  streak); every 7th day sets `StreakGrantDue`, which stage 5 turns into
-  `locks.grant { 1, "streak" }`.
+  streak). A day that lands the streak on a rung of the ladder
+  (`Rewards.StreakGrant`: the first time a streak ever reaches 3, then
+  every 7th day) sets `StreakGrantDue`, which the adapter turns into
+  `locks.grant { 1, "streak" }`. The calendar and the COMPLETE popup draw
+  the streak as a seven-segment bar with copper pads under the rungs; the
+  pad under 3 goes once that one-off is taken (`DailyStreakBest >= 3`).
 - Friends leaderboard: out of stage 4. `IDailyScoreSink` in
   `GridInfect.Game` is the hook; the shipped sink is local.
 

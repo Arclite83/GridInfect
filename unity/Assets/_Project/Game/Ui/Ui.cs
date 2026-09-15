@@ -424,6 +424,25 @@ namespace GridInfect.Game
             check.transform.localPosition = new Vector3(tilePx * 0.27f, -tilePx * 0.27f, 0f);
         }
 
+        // The solve pip on a select tile whose first clear grants one
+        // (Rewards): the SOLVE counter's material at pip size, riding the
+        // top-trailing corner the way a chip's pads ride its sides, so it
+        // reads as a solve and not as a padlock. The rack is the counter:
+        // the player sees the grant two tiles ahead, in the place they are
+        // already looking. Solving the tile takes it away.
+        public static void MarkGrant(Transform tile, float tilePx)
+        {
+            float textPx = S.Px(S.SmallText);
+            var box = new Vector2(S.Px(10f) + MeasureWidth(Str.BoardSolvePip, textPx, mono: true, bold: true), S.Px(17f));
+            var style = GlassStyle.Badge(BoardPalette.Default);
+            style.Radius = 5f;
+            var pip = new GameObject("pip");
+            pip.transform.SetParent(tile, false);
+            SetPos(pip, PresentationConfig.Layout.Dir * (tilePx / 2f + S.Px(6f) - box.x / 2f), tilePx / 2f + S.Px(7f) - box.y / 2f);
+            MakeGlass("glass", pip.transform, box, style, 24);
+            MakeText("label", pip.transform, Str.BoardSolvePip, textPx, BoardTheme.Copper, 25, mono: true);
+        }
+
         public static void SetPos(GameObject go, float x, float y)
         {
             go.transform.localPosition = new Vector3(x, y, 0f);

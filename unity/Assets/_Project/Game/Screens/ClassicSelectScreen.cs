@@ -102,6 +102,8 @@ namespace GridInfect.Game
 
             // Every level is open, so the rack carries one distinction and
             // it is legible across the page: a beaten level is infected.
+            // Every tenth level's first clear grants a solve
+            // (Rewards.LegacyGrant), and wears the pip until it is beaten.
             for (int n = 0; n < PerPage; n++)
             {
                 int levelId = _page * PerPage + n;
@@ -118,6 +120,7 @@ namespace GridInfect.Game
                         App.Do(GridInfectActions.LevelLoad, Inputs.LevelLoad(captured)).Applied),
                     20, pads: false, padAlpha: 1f, mono: false);
                 if (solved) Ui.MarkSolved(button.Root.transform, tile);
+                else if (Rewards.LegacyGrant(levelId)) Ui.MarkGrant(button.Root.transform, tile);
                 Buttons.Add(button);
             }
         }

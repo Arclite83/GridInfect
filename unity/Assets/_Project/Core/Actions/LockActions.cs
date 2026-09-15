@@ -59,7 +59,8 @@ namespace GridInfect.Core
     }
 
     // locks.grant { amount, reason }: "rewarded" (an ad) is uncapped; any
-    // other reason ("streak") tops the wallet up to the cap at most.
+    // other reason (the faucets in Rewards: "streak", "world", "legacy")
+    // tops the wallet up to the cap at most.
     public sealed class GrantLocksAction : GameAction<GameState>
     {
         public const string Rewarded = "rewarded";

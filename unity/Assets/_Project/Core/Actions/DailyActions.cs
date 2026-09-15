@@ -56,7 +56,10 @@ namespace GridInfect.Core
     // Rejects a backward clock. Completing the same date again records a
     // better time but never moves the streak, and neither does a date solved
     // from the archive: the streak counts dates solved on the day, so only a
-    // run whose date is the clock's own UTC date can extend it.
+    // run whose date is the clock's own UTC date can extend it. A day that
+    // moves the streak onto a rung of the ladder (Rewards.StreakGrant: the
+    // first 3 ever, then every 7th) sets StreakGrantDue, which the adapter
+    // turns into locks.grant { 1, "streak" }.
     public sealed class CompleteDailyAction : GameAction<GameState>
     {
         public override string Name => "daily.complete";
@@ -88,9 +91,11 @@ namespace GridInfect.Core
                 DailySpec.TryParseDate(run.DateUtc, out DateTime today);
                 bool consecutive = DailySpec.TryParseDate(profile.DailyLastDate, out DateTime last)
                                    && last.AddDays(1) == today;
+                int bestBefore = profile.DailyStreakBest;
                 profile.DailyStreak = consecutive ? profile.DailyStreak + 1 : 1;
                 profile.DailyLastDate = run.DateUtc;
-                run.StreakGrantDue = profile.DailyStreak % 7 == 0;
+                if (profile.DailyStreak > profile.DailyStreakBest) profile.DailyStreakBest = profile.DailyStreak;
+                run.StreakGrantDue = Rewards.StreakGrant(profile.DailyStreak, bestBefore);
             }
             profile.Dirty = true;
         }

@@ -89,6 +89,7 @@ namespace GridInfect.Core
             profile.DailyBestMs.Clear();
             profile.DailyStreak = 0;
             profile.DailyLastDate = "";
+            profile.DailyStreakBest = 0;
             for (int d = 0; d < 5; d++)
             {
                 profile.BestTimesMs[d] = 0;
