@@ -274,6 +274,74 @@ on the Mac is.
 5. `app-ads.txt` on a developer-site domain once one exists. Recommended,
    not launch-blocking.
 
+### 4a. The `remove_ads` product, field by field
+
+**Monetise with Play ▸ Products ▸ In-app products ▸ Create product.**
+
+| Field | Value |
+|---|---|
+| Product ID | `remove_ads` |
+| Name (≤55 chars) | `Remove Ads` |
+| Description (≤200 chars) | `Removes the ads that interrupt play. A one-time purchase, yours for good on this Google account. The optional ads you choose to watch for a SOLVE stay available.` |
+| Price | USD 4.99, auto-converted to the other currencies |
+| Status | Active |
+
+The ID is the one thing here that cannot be changed later, and Play never
+releases it again — not even after the product is deleted. It has to be
+exactly `remove_ads`, which is
+`UnityIapPurchaseService.RemoveAdsProductId`; the game asks for that
+string and nothing else.
+
+"Non-consumable" is not a Play Console setting. On Play a one-time
+product is permanent unless the app consumes it, and this one never does
+— `ProcessPurchase` returns `Complete`, which acknowledges without
+consuming. `ProductType.NonConsumable` in `ConfigurationBuilder` is what
+tells Unity IAP that. So: leave multi-quantity **off**, and if the
+console shows the newer purchase-options UI, give the product exactly one
+purchase option of type **Buy** and no offers. A second option or an
+offer makes the store answer ambiguous for a product the game only ever
+names by ID.
+
+No sales, no promo codes, no introductory price: R-701 is one price point,
+never discounted. That is a deliberate decision, not an omission — a
+player who paid full price a week earlier has no way to feel good about a
+discount on the only paid thing in the game.
+
+Localised names are optional and cost nothing, since the translations
+already exist as the main-menu chip. Title case, not the chip's caps —
+the purchase sheet is not the chip:
+
+| Locale | Name |
+|---|---|
+| ar | بلا إعلانات |
+| de | Keine Werbung |
+| es | Sin anuncios |
+| fr | Sans pub |
+| he | ללא פרסומות |
+| it | Niente pubblicità |
+| ja | 広告なし |
+| ko | 광고 제거 |
+| pt-BR | Sem anúncios |
+| ru | Без рекламы |
+| tr | Reklamsız |
+| zh-Hans | 去广告 |
+| zh-Hant | 移除廣告 |
+
+Leaving the descriptions English-only is fine; an unreviewed machine
+translation of the one paid thing in the game is worth less than a blank.
+
+Order matters for the three preconditions in item 4 above. The AAB
+carrying `com.android.vending.BILLING` has to be live on a track *before*
+the product will activate, and the product stays unpurchasable for a few
+hours after activation while Play propagates it. A purchase that fails in
+that window is not a bug in the game — `OnPurchaseFailed`, chip still
+there. Confirm the permission is actually in the bundle before blaming
+anything else:
+
+```sh
+bundletool dump manifest --bundle=build/GridInfect.aab | grep -i billing
+```
+
 ---
 
 ## 5. What "done" looks like
